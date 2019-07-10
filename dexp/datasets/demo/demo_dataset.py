@@ -30,8 +30,13 @@ def demo(path):
     first_stack = array[0]
     print(first_stack.shape)
 
+    with app_context():
+        viewer = Viewer()
+
+        viewer.add_image(dataset.get_stacks('sequential', per_z_slice=True), name='image', clim_range=[0, 1000])
+
     time_start = time()
-    dataset.to_zarr("/Users/royer/Downloads/testzarr.zarr", slice=s_[0:5], overwrite=True)
+    dataset.copy("/Users/royer/Downloads/testzarr.zarr", slice=s_[0:2], overwrite=True, project=2)
     time_stop = time()
     print(f"Elapsed time to save to Zarr: {time_stop - time_start} seconds")
 
