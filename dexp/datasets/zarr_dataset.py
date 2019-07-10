@@ -37,7 +37,7 @@ class ZDataset(DatasetBase):
     def info(self, channel=None):
 
         if channel:
-            info_str =  f"Channel: '{channel}'', nb time points: {self.nb_timepoints(channel)}, shape: {self.shape(channel)}"
+            info_str = f"Channel: '{channel}'', nb time points: {self.nb_timepoints(channel)}, shape: {self.shape(channel)}"
             info_str += "\n"
             info_str += str(self._arrays[channel].info)
             return info_str
@@ -46,10 +46,9 @@ class ZDataset(DatasetBase):
             info_str += "\n\n"
             info_str += "Channels: \n"
             for channel in self.channels():
-                info_str += "  └──"+self.info(channel) + "\n\n"
+                info_str += "  └──" + self.info(channel) + "\n\n"
 
             return info_str
-
 
     def get_stacks(self, channel):
 

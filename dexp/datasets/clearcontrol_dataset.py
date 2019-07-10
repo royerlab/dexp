@@ -26,7 +26,7 @@ class CCDataset(DatasetBase):
         self._index_files = {}
 
         all_files = list(listdir(folder))
-        #print(all_files)
+        # print(all_files)
 
         for file in all_files:
             if fnmatch(file, '*.index.txt'):
@@ -35,7 +35,7 @@ class CCDataset(DatasetBase):
                     self._channels.append(channel)
                     self._index_files[channel] = join(folder, file)
 
-        #print(self._channels)
+        # print(self._channels)
         #print(self._index_files)
 
         self._nb_time_points = {}
@@ -66,7 +66,7 @@ class CCDataset(DatasetBase):
             info_str += "\n\n"
             info_str += "Channels: \n"
             for channel in self.channels():
-                info_str += "  └──"+self.info(channel)+"\n"
+                info_str += "  └──" + self.info(channel) + "\n"
 
             return info_str
 
@@ -167,9 +167,9 @@ class CCDataset(DatasetBase):
                 array = array[slice]
 
             if project:
-                shape = array.shape[0:project]+array.shape[project+1:]
+                shape = array.shape[0:project] + array.shape[project + 1:]
                 dim = len(shape)
-                chunks = (1,) + (None,) * (dim-1)
+                chunks = (1,) + (None,) * (dim - 1)
                 print(f"projecting along axis {project} to shape: {shape} and chunks: {chunks}")
 
             else:
@@ -183,7 +183,6 @@ class CCDataset(DatasetBase):
 
             print(f"Writing Zarr array for channel '{channel}' of shape {array.shape} ")
 
-
             z = channel_group.create(name=channel,
                                      shape=shape,
                                      dtype=array.dtype,
@@ -194,11 +193,11 @@ class CCDataset(DatasetBase):
             for tp in range(0, array.shape[0]):
                 print(f"Writing time point: {tp} ")
 
-                tp_array =array[tp].compute()
+                tp_array = array[tp].compute()
 
                 if project:
                     # project is the axis for projection, but here we are not considering the T dimension anymore...
-                    axis = project-1
+                    axis = project - 1
                     tp_array = tp_array.max(axis=axis)
 
                 z[tp] = tp_array
@@ -281,5 +280,3 @@ class CCDataset(DatasetBase):
         except FileNotFoundError:
             print(f"Could  not find file: {file_name} for array of shape: {shape} at z={z}")
             return numpy.zeros(shape[1:], dtype=uint16)
-
-

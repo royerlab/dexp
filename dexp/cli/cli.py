@@ -26,13 +26,12 @@ def cli():
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
-@click.option('--channels', '-c', default=None)  # , help='list of channels'
-@click.option('--slice', '-s', default=None)  # , help='dataset slice'
-@click.option('--codec', '-z', default='zstd')  # , help='dataset slice'
-@click.option('--overwrite', '-w', is_flag=True)  # , help='dataset slice'
-@click.option('--project', '-p', type=int, default=1)  # , help='dataset slice'
+@click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')  #
+@click.option('--slice', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
+@click.option('--codec', '-z', default='zstd', help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ')  #
+@click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target')  # , help='dataset slice'
+@click.option('--project', '-p', type=int, default=1, help='max projection over given axis (0->T, 1->Z, 2->Y, 3->X)')  # , help='dataset slice'
 def copy(input_path, output_path, channels, slice, codec, overwrite, project):
-
     if input_path.endswith('.zarr'):
         input_dataset = ZDataset(input_path)
     else:
@@ -81,23 +80,19 @@ def get_folder_name_without_end_slash(input_path):
 @click.command()
 @click.argument('input_path')
 def info(input_path):
-
     if input_path.endswith('.zarr'):
         input_dataset = ZDataset(input_path)
     else:
         input_dataset = CCDataset(input_path)
-
     print(input_dataset.info())
-
     pass
 
 
 @click.command()
 @click.argument('input_path')
-@click.option('--channels', '-c', default=None)  # , help='list of channels'
-@click.option('--slice', '-s', default=None)  # , help='dataset slice'
+@click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')
+@click.option('--slice', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
 def view(input_path, channels, slice):
-
     if input_path.endswith('.zarr'):
         input_dataset = ZDataset(input_path)
     else:
@@ -136,7 +131,6 @@ def view(input_path, channels, slice):
 
             print(f"Adding array of shape={array.shape} and dtype={array.dtype} for channel '{channel}'.")
 
-
             first_stack = numpy.array(input_dataset.get_stack(channel, 0, per_z_slice=False))
 
             print(f"Computing min and max from first stack...")
@@ -144,7 +138,7 @@ def view(input_path, channels, slice):
             max_value = first_stack.max()
             print(f"min={min_value} and max={max_value}.")
 
-            viewer.add_image(array, name='channel', clim_range=[max(0,min_value-100), max_value+100])
+            viewer.add_image(array, name='channel', clim_range=[max(0, min_value - 100), max_value + 100])
 
     pass
 
