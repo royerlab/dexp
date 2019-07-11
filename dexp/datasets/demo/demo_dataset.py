@@ -1,7 +1,6 @@
 from time import time
 
-from napari import Viewer
-from napari.util import app_context
+from napari import Viewer, gui_qt
 from numpy import s_
 
 from dexp.datasets.clearcontrol_dataset import CCDataset
@@ -30,7 +29,7 @@ def demo(path):
     first_stack = array[0]
     print(first_stack.shape)
 
-    with app_context():
+    with gui_qt():
         viewer = Viewer()
 
         viewer.add_image(dataset.get_stacks('sequential', per_z_slice=True), name='image', clim_range=[0, 1000])

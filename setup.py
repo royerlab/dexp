@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='dexp',
     version='0.0.1',
-    packages=['dexp', 'dexp.cli', 'dexp.demo', 'dexp.datasets', 'dexp.datasets.demo'],
+    packages=['dexp', 'dexp.cli', 'dexp.datasets', 'dexp.datasets.demo'],
     url='',
     license='',
     author='royer',
@@ -12,13 +12,7 @@ setup(
 
     install_requires=[
         'click',
-        'napari',
-        'dask',
-        'zarr',
-        'numcodecs',
-        'numpy',
-        'tifffile',
-        'cachey'
+        'napari==0.1.1'
     ],
 
     entry_points='''

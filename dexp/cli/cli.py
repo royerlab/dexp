@@ -2,8 +2,7 @@ from time import time
 
 import click
 import numpy
-from napari import Viewer
-from napari.util import app_context
+from napari import Viewer, gui_qt
 from numpy import s_
 
 from dexp.datasets.clearcontrol_dataset import CCDataset
@@ -117,7 +116,7 @@ def view(input_path, channels, slice):
     import warnings
     warnings.filterwarnings("ignore")
 
-    with app_context():
+    with gui_qt():
         viewer = Viewer()
 
         for channel in input_dataset.channels():
@@ -138,7 +137,7 @@ def view(input_path, channels, slice):
             max_value = first_stack.max()
             print(f"min={min_value} and max={max_value}.")
 
-            viewer.add_image(array, name='channel', clim_range=[max(0, min_value - 100), max_value + 100])
+            viewer.add_image(array, name=channel, clim_range=[max(0, min_value - 100), max_value + 100])
 
     pass
 
