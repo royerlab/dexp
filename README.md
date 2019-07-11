@@ -21,13 +21,7 @@ Once Napari supports 3D viewing we will also have that...
 # Prerequisites:
 
 Install Anaconda:
-https://repo.anaconda.com/archive/Anaconda3-2019.03-MacOSX-x86_64.pkg
-
-Update Anaconda:
-```
-conda update conda
-conda update anaconda
-```
+https://www.anaconda.com/distribution/
 
 # Installation:
 
