@@ -1,4 +1,4 @@
-## dexp
+## DEXP
 Dataset Exploration Tool
 
 
