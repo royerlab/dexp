@@ -86,3 +86,24 @@ Options:
   --help               Show this message and exit.
 ```
 
+# Examples:
+
+The folowing examples can be test on the micro1 shared folder:
+
+Gathers info on the dataset '2019-07-03-16-23-15-65-f2va.mch7' with napari: 
+```
+dexp info 2019-07-03-16-23-15-65-f2va.mch7
+```
+
+Copies a z-max-projection for the first 10n timepoints (-s [0:10]) from scope acquisition '2019-07-03-16-23-15-65-f2va.mch7' to Zarr folder '~/Downloads/local.zarr', and overwrites whatever is there (-w). 
+```
+dexp copy 2019-07-03-16-23-15-65-f2va.mch7 -o ~/Downloads/local.zarr -w -p 1 -s [0:10]
+```
+
+Views the first 100 times points '2019-07-03-16-23-15-65-f2va.mch7' with napari: 
+```
+dexp view 2019-07-03-16-23-15-65-f2va.mch7 -s [0:100]
+```
+
+
+
