@@ -6,10 +6,17 @@ DEXP let's you view both ClearControl and Zarr formats, and copy (convert) from 
 to Zarr. You can select channels and slice which lets you crop aerbitrarily in time and space.
 You can also query information for both formats. 
 
+DEXP should be run ideally on very fast machines very close to the storage,
+so we need to think about docker images and such...
+
 Long term, features will include more processing options while copying, such as denoising, fusion,
 registration, decopnvolution, etc... 
 This is meant to be _the_ tool for processing our data into beautifull timelapses -- excluding analysis.
- 
+
+Once Napari supports 3D viewing we will also have that...
+
+# TODO:
+
 
 # Prerequisites:
 
@@ -98,7 +105,7 @@ Options:
 
 # Examples:
 
-The folowing examples can be test on the micro1 shared folder:
+The folowing examples can be tested on existing datasets:
 
 Gathers info on the dataset '2019-07-03-16-23-15-65-f2va.mch7' with napari: 
 ```
@@ -114,6 +121,10 @@ Views the first 100 times points '2019-07-03-16-23-15-65-f2va.mch7' with napari:
 ```
 dexp view 2019-07-03-16-23-15-65-f2va.mch7 -s [0:100]
 ```
+
+# Technical notes:
+
+
 
 
 
