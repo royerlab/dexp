@@ -50,6 +50,14 @@ source activate dexp
 
 There is currently 3 dexp commands: copy, info and view:
 
+## info:
+```
+Usage: dexp info [OPTIONS] INPUT_PATH
+
+Options:
+  --help  Show this message and exit.
+```
+
 ## copy:
 ```
 Usage: dexp copy [OPTIONS] INPUT_PATH
@@ -65,14 +73,6 @@ Options:
   -p, --project INTEGER   max projection over given axis (0->T, 1->Z, 2->Y,
                           3->X)
   --help                  Show this message and exit.
-```
-
-## info:
-```
-Usage: dexp info [OPTIONS] INPUT_PATH
-
-Options:
-  --help  Show this message and exit.
 ```
 
 ## view:
