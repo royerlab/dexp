@@ -12,6 +12,7 @@ setup(
 
     install_requires=[
         'click',
+        'cachey',
         'napari==0.1.1'
     ],
 
