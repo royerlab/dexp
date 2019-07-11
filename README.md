@@ -15,9 +15,6 @@ This is meant to be _the_ tool for processing our data into beautifull timelapse
 
 Once Napari supports 3D viewing we will also have that...
 
-# TODO:
-
-
 # Prerequisites:
 
 Install Anaconda:
@@ -108,17 +105,15 @@ dexp info 2019-07-03-16-23-15-65-f2va.mch7
 
 Copies a z-max-projection for the first 10n timepoints (-s [0:10]) from scope acquisition '2019-07-03-16-23-15-65-f2va.mch7' to Zarr folder '~/Downloads/local.zarr', and overwrites whatever is there (-w). 
 ```
-dexp copy 2019-07-03-16-23-15-65-f2va.mch7 -o ~/Downloads/local.zarr -w -p 1 -s [0:10]
+dexp copy -w -p 1 -s '[0:10]' 2019-07-03-16-23-15-65-f2va.mch7 -o ~/Downloads/local.zarr
 ```
 
 Views the first 100 times points '2019-07-03-16-23-15-65-f2va.mch7' with napari: 
 ```
-dexp view 2019-07-03-16-23-15-65-f2va.mch7 -s [0:100]
+dexp view -s '[0:100]' 2019-07-03-16-23-15-65-f2va.mch7
 ```
 
 # Technical notes:
 
-
-
-
-
+- You can pass arguments in any order for bash but not for all shells, i.e. zsh.
+- You can pass string arguments as non string in bash but not in all shells.
