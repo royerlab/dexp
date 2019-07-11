@@ -2,6 +2,15 @@
 Dataset Exploration Tool
 
 
+DEXP let's you view both ClearControl and Zarr formats, and copy (convert) from ClearControl format
+to Zarr. You can select channels and slice which lets you crop aerbitrarily in time and space.
+You can also query information for both formats. 
+
+Long term, features will include more processing options while copying, such as denoising, fusion,
+registration, decopnvolution, etc... 
+This is meant to be _the_ tool for processing our data into beautifull timelapses -- excluding analysis.
+ 
+
 # Prerequisites:
 
 Install Anaconda:
@@ -85,6 +94,7 @@ Options:
                        [:,0:100] (cropping in z).
   --help               Show this message and exit.
 ```
+
 
 # Examples:
 
