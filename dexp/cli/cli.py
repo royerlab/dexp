@@ -119,7 +119,7 @@ def view(input_path, channels, slice):
     with gui_qt():
         viewer = Viewer()
 
-        for channel in input_dataset.channels():
+        for channel in selected_channels:
             print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
             print(input_dataset.info(channel))
 
