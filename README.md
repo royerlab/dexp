@@ -34,7 +34,8 @@ conda activate dexp
 
 Install important packages:
 ```
-conda install numpy mkl zarr dask click numcodecs
+conda install numpy mkl zarr dask click numcodecs joblib
+pip install spimagine
 ```
 
 Clone dexp:
