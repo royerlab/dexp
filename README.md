@@ -34,7 +34,9 @@ conda activate dexp
 
 Install important packages:
 ```
-conda install numpy mkl zarr dask click numcodecs joblib
+conda config --add channels conda-forge
+conda config --add channels talley
+conda install numpy mkl zarr dask click numcodecs joblib pyopencl
 pip install spimagine
 ```
 
