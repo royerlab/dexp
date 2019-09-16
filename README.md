@@ -37,7 +37,7 @@ Install important packages:
 conda config --add channels conda-forge
 conda config --add channels talley
 conda install numpy mkl zarr dask click numcodecs joblib pyopencl
-pip install spimagine
+pip install tiffile
 ```
 
 Clone dexp:
