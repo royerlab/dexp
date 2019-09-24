@@ -1,3 +1,4 @@
+
 ## DEXP
 Dataset Exploration Tool
 
@@ -34,7 +35,10 @@ conda activate dexp
 
 Install important packages:
 ```
-conda install numpy mkl zarr dask click numcodecs
+conda config --add channels conda-forge
+conda config --add channels talley
+conda install numpy mkl zarr dask click numcodecs joblib pyopencl
+pip install tiffile napari
 ```
 
 Clone dexp:
@@ -55,7 +59,7 @@ Always make sure that you are in the correct environment:
 source activate dexp
 ```
 
-There is currently 3 dexp commands: copy, info and view:
+There is currently 5 dexp commands: info, copy, fuse, tiff and view:
 
 ## info:
 ```
@@ -80,6 +84,16 @@ Options:
   -p, --project INTEGER   max projection over given axis (0->T, 1->Z, 2->Y,
                           3->X)
   --help                  Show this message and exit.
+```
+
+## fuse:
+```
+ TODO
+```
+
+## tiff:
+```
+ TODO
 ```
 
 ## view:
@@ -117,3 +131,4 @@ dexp view -s '[0:100]' 2019-07-03-16-23-15-65-f2va.mch7
 
 - You can pass arguments in any order for bash but not for all shells, i.e. zsh.
 - You can pass string arguments as non string in bash but not in all shells.
+

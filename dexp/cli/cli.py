@@ -279,9 +279,8 @@ def view(input_path, channels=None, slice=None, volume=False):
     pass
 
 
-
+cli.add_command(info)
 cli.add_command(copy)
 cli.add_command(fuse)
-cli.add_command(info)
 cli.add_command(tiff)
 cli.add_command(view)
