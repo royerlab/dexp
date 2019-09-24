@@ -38,7 +38,7 @@ Install important packages:
 conda config --add channels conda-forge
 conda config --add channels talley
 conda install numpy mkl zarr dask click numcodecs joblib pyopencl
-pip install tiffile napari
+pip install tiffile napari joblib
 ```
 
 Clone dexp:
@@ -65,13 +65,19 @@ There is currently 5 dexp commands: info, copy, fuse, tiff and view:
 ```
 Usage: dexp info [OPTIONS] INPUT_PATH
 
+  Retrieves all available information about the dataset.
+
 Options:
   --help  Show this message and exit.
+
 ```
 
 ## copy:
 ```
 Usage: dexp copy [OPTIONS] INPUT_PATH
+
+  Copies a dataset in ZARR format or CC format. Slicing, projection and
+  channel selection are available.
 
 Options:
   -o, --output_path TEXT
@@ -84,26 +90,55 @@ Options:
   -p, --project INTEGER   max projection over given axis (0->T, 1->Z, 2->Y,
                           3->X)
   --help                  Show this message and exit.
+
 ```
 
 ## fuse:
 ```
- TODO
+Usage: dexp fuse [OPTIONS] INPUT_PATH
+
+  Fuses a multi-view dataset.
+
+Options:
+  -o, --output_path TEXT
+  -s, --slice TEXT        dataset slice (TZYX), e.g. [0:5] (first five stacks)
+                          [:,0:100] (cropping in z)
+  -z, --codec TEXT        compression codec: ‘zstd’, ‘blosclz’, ‘lz4’,
+                          ‘lz4hc’, ‘zlib’ or ‘snappy’
+  -w, --overwrite         to force overwrite of target
+  -m, --mode [fast]       Available fusion algorithms.
+  --help                  Show this message and exit.
+
+
 ```
 
 ## tiff:
 ```
- TODO
+Usage: dexp tiff [OPTIONS] INPUT_PATH
+
+  Exports a dataset to TIFF format.
+
+Options:
+  -o, --output_path TEXT
+  -c, --channel TEXT      selected channel.
+  -s, --slice TEXT        dataset slice (TZYX), e.g. [0:5] (first five stacks)
+                          [:,0:100] (cropping in z)
+  -w, --overwrite         to force overwrite of target
+  --help                  Show this message and exit.
+
 ```
 
 ## view:
 ```
 Usage: dexp view [OPTIONS] INPUT_PATH
 
+  Opens dataset for viewing using napari.
+
 Options:
   -c, --channels TEXT  list of channels, all channels when ommited.
   -s, --slice TEXT     dataset slice (TZYX), e.g. [0:5] (first five stacks)
                        [:,0:100] (cropping in z).
+  -v, --volume         to view with volume rendering (3D ray casting)
   --help               Show this message and exit.
 ```
 

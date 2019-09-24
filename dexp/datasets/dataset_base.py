@@ -134,6 +134,7 @@ class DatasetBase(ABC):
     def fuse(self,
              path,
              slice=None,
+             mode='fast',
              compression='zstd',
              compression_level=3,
              overwrite=False):
@@ -153,11 +154,11 @@ class DatasetBase(ABC):
 
         shape = array_C0L0.shape
 
-        mode = 'w' + ('' if overwrite else '-')
-        root = None
+        zarr_mode = 'w' + ('' if overwrite else '-')
+        zarr_root = None
         try:
             print(f"opening Zarr file for writing at: {path}")
-            root = open_group(path, mode=mode)
+            zarr_root = open_group(path, mode=zarr_mode)
         except Exception as e:
             print(
                 f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect.")
@@ -165,7 +166,7 @@ class DatasetBase(ABC):
 
         filters = []  # [Delta(dtype='i4')]
         compressor = Blosc(cname=compression, clevel=compression_level, shuffle=Blosc.BITSHUFFLE)
-        channel_group = root.create_group('fused')
+        channel_group = zarr_root.create_group('fused')
         print(f"Writing Zarr array for fused channel of shape {shape} ")
         zarr_array = channel_group.create(  name='fused',
                                             shape=shape,
@@ -174,50 +175,52 @@ class DatasetBase(ABC):
                                             filters=filters,
                                             compressor=compressor)
 
-        spx = shape[-1] // 2
-        spz = shape[1] // 2
-        smoothx = 60
-        smoothz = 60
+        if mode=='fast':
 
-        print(f"Creating blend weights...")
-        blending_x = numpy.fromfunction(lambda z, y, x: 1.0 - 0.5*(1+(((x-spx)/smoothx) / (1.0 + ((x-spx)/smoothx) ** 2) ** 0.5)), shape=shape[1:], dtype=numpy.float32)
-        blending_z = numpy.fromfunction(lambda z, y, x: 1.0 - 0.5*(1+(((z-spz)/smoothz) / (1.0 + ((z-spz)/smoothz) ** 2) ** 0.5)), shape=shape[1:], dtype=numpy.float32)
+            spx = shape[-1] // 2
+            spz = shape[1] // 2
+            smoothx = 60
+            smoothz = 60
 
-        blending_C0L0 = blending_z*blending_x
-        blending_C0L1 = blending_z*(1-blending_x)
-        blending_C1L0 = (1-blending_z)*(blending_x)
-        blending_C1L1 = (1-blending_z)*(1-blending_x)
+            print(f"Creating blend weights...")
+            blending_x = numpy.fromfunction(lambda z, y, x: 1.0 - 0.5*(1+(((x-spx)/smoothx) / (1.0 + ((x-spx)/smoothx) ** 2) ** 0.5)), shape=shape[1:], dtype=numpy.float32)
+            blending_z = numpy.fromfunction(lambda z, y, x: 1.0 - 0.5*(1+(((z-spz)/smoothz) / (1.0 + ((z-spz)/smoothz) ** 2) ** 0.5)), shape=shape[1:], dtype=numpy.float32)
+
+            blending_C0L0 = blending_z*blending_x
+            blending_C0L1 = blending_z*(1-blending_x)
+            blending_C1L0 = (1-blending_z)*(blending_x)
+            blending_C1L1 = (1-blending_z)*(1-blending_x)
 
 
-        def process(tp):
-            print(f"Writing time point: {tp} ")
+            def process(tp):
+                print(f"Writing time point: {tp} ")
 
-            tp_array_C0L0 = array_C0L0[tp].compute()
-            tp_array_C0L1 = array_C0L1[tp].compute()
-            tp_array_C1L0 = numpy.flip(array_C1L0[tp].compute(),-1)
-            tp_array_C1L1 = numpy.flip(array_C1L1[tp].compute(),-1)
+                tp_array_C0L0 = array_C0L0[tp].compute()
+                tp_array_C0L1 = array_C0L1[tp].compute()
+                tp_array_C1L0 = numpy.flip(array_C1L0[tp].compute(),-1)
+                tp_array_C1L1 = numpy.flip(array_C1L1[tp].compute(),-1)
 
-            array    = blending_C0L0*tp_array_C0L0\
-                       +blending_C0L1*tp_array_C0L1\
-                       +blending_C1L0*tp_array_C1L0\
-                       +blending_C1L1*tp_array_C1L1
+                array    = blending_C0L0*tp_array_C0L0\
+                           +blending_C0L1*tp_array_C0L1\
+                           +blending_C1L0*tp_array_C1L0\
+                           +blending_C1L1*tp_array_C1L1
 
-            print(f'array dtype: {array.dtype}')
+                print(f'array dtype: {array.dtype}')
 
-            zarr_array[tp] = array.astype(zarr_array.dtype)
-            #zarr_array[tp] = blending_x.astype(zarr_array.dtype)
+                zarr_array[tp] = array.astype(zarr_array.dtype)
+                #zarr_array[tp] = blending_x.astype(zarr_array.dtype)
 
-        #for tp in range(0, shape[0] - 1):
-        #    process(tp)
+            #for tp in range(0, shape[0] - 1):
+            #    process(tp)
 
-        from joblib import Parallel, delayed
-        Parallel(n_jobs=-1)(delayed(process)(tp) for tp in range(0, shape[0] - 1))
+            from joblib import Parallel, delayed
+            Parallel(n_jobs=-1)(delayed(process)(tp) for tp in range(0, shape[0] - 1))
 
 
         print("Zarr tree:")
-        print(root.tree())
+        print(zarr_root.tree())
 
-        return root
+        return zarr_root
 
 
     def tiff(self,
@@ -252,23 +255,5 @@ class DatasetBase(ABC):
                 tif.save(array_tp)
 
 
-        # print(f"Creating memory mapped TIFF file at: {path}.")
-        # memmap_tiff = memmap(path, shape=shape, dtype=dtype)
-        #
-        # def process(tp):
-        #     print(f"Writing time point: {tp} ")
-        #
-        #     array_tp = array[tp].compute()
-        #
-        #     memmap_tiff[tp] = array_tp
-        #
-        # from joblib import Parallel, delayed
-        # Parallel(n_jobs=-1)(delayed(process)(tp) for tp in range(0, shape[0] - 1))
-        #
-        # print(f"Flushing memory mapped TIFF file.")
-        # memmap_tiff.flush()
-        #
-        # print(f"Flushing memory mapped TIFF file.")
-        # del memmap_tiff
 
 

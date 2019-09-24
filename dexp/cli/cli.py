@@ -43,7 +43,7 @@ def cli():
     pass
 
 
-@click.command()
+@click.command(help='Copies a dataset in ZARR format or CC format. Slicing, projection and channel selection are available.')
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')  #
@@ -88,13 +88,14 @@ def copy(input_path, output_path, channels, slice, codec, overwrite, project):
     pass
 
 
-@click.command()
+@click.command(help='Fuses a multi-view dataset.')
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--slice', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
 @click.option('--codec', '-z', default='zstd', help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ')  #
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target')  # , help='dataset slice'
-def fuse(input_path, output_path, slice, codec, overwrite):
+@click.option('--mode', '-m', default='fast', type=click.Choice(['fast']), help='Available fusion algorithms.')
+def fuse(input_path, output_path, slice, codec, overwrite, mode):
     input_dataset = get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -115,7 +116,8 @@ def fuse(input_path, output_path, slice, codec, overwrite):
     input_dataset.fuse(output_path,
                        slice=slice,
                        compression=codec,
-                       overwrite=overwrite
+                       overwrite=overwrite,
+                       mode=mode
                        )
     time_stop = time()
     print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
@@ -123,7 +125,7 @@ def fuse(input_path, output_path, slice, codec, overwrite):
 
     pass
 
-@click.command()
+@click.command(help='Exports a dataset to TIFF format.')
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channel', '-c', default=None, help='selected channel.')  #
@@ -159,7 +161,7 @@ def tiff(input_path, output_path, channel, slice, overwrite):
 
 
 
-@click.command()
+@click.command(help='Retrieves all available information about the dataset.')
 @click.argument('input_path')
 def info(input_path):
     input_dataset = get_dataset_from_path(input_path)
@@ -167,7 +169,7 @@ def info(input_path):
     pass
 
 
-@click.command()
+@click.command(help='Opens dataset for viewing using napari.')
 @click.argument('input_path')
 @click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')
 @click.option('--slice', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
