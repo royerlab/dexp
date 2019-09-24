@@ -13,7 +13,10 @@ setup(
     install_requires=[
         'click',
         'cachey',
-        'napari==0.1.1'
+        'napari',
+        'numpy',
+        'dask',
+        'zarr',
     ],
 
     entry_points='''

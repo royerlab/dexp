@@ -1,26 +1,40 @@
+import math
+
+import dask
+import numpy
 import zarr
+from numcodecs.blosc import Blosc
+from zarr import open_group
 
 from dexp.datasets.dataset_base import DatasetBase
 
 
 class ZDataset(DatasetBase):
 
-    def __init__(self, folder, mode='r', cache_size=8e9):
+    def __init__(self, folder, mode='r', cache_active=False, cache_size=int(8e9)):
 
         self._folder = folder
 
+        print(f"Initialising Zarr storage...")
         store = zarr.storage.DirectoryStore(folder)
-        cache_store = zarr.LRUStoreCache(store, max_size=cache_size)
 
-        self._z = zarr.convenience.open(cache_store, mode=mode)
+        if cache_active:
+            print(f"Setting up Zarr cache...")
+            store = zarr.LRUStoreCache(store, max_size=cache_size)
+
+        print(f"Opening Zarr storage...")
+        self._z = zarr.convenience.open(store, mode=mode)
         self._channels = [channel for channel, _ in self._z.groups()]
         self._arrays = {}
 
+        print(f"Exploring Zarr hierarchy...")
         for channel, channel_group in self._z.groups():
+            print(f"Found channel: {channel}")
 
             channel_items = channel_group.items()
 
             for item_name, array in channel_items:
+                print(f"Found array: {item_name}")
 
                 if item_name == channel:
                     self._arrays[channel] = array
@@ -50,23 +64,14 @@ class ZDataset(DatasetBase):
 
             return info_str
 
-    def get_stacks(self, channel):
+    def get_stacks(self, channel, per_z_slice=False):
 
-        return self._arrays[channel]
+        return dask.array.from_array(self._arrays[channel])
 
-    def get_stack(self, channel, time_point):
+    def get_stack(self, channel, time_point, per_z_slice=False):
 
         stack_array = self.get_stacks(channel)[time_point]
         return stack_array
 
-    def copy(self,
-             path,
-             channels=None,
-             slice=None,
-             compression='zstd',
-             compression_level=3,
-             chunk_size=64,
-             overwrite=False,
-             project=None):
 
-        raise NotImplemented("This is not yet implemented!")
+

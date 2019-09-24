@@ -29,7 +29,7 @@ conda create --name dexp python=3.7
 
 Activate environment:
 ```
-source activate dexp
+conda activate dexp
 ```
 
 Install important packages:

@@ -127,92 +127,7 @@ class CCDataset(DatasetBase):
 
         return stack
 
-    def copy(self,
-             path,
-             channels=None,
-             slice=None,
-             compression='zstd',
-             compression_level=3,
-             chunk_size=64,
-             overwrite=False,
-             project=None):
 
-        mode = 'w' + ('' if overwrite else '-')
-        root = None
-        try:
-            root = open_group(path, mode=mode)
-        except Exception as e:
-            print(f"Problem: can't create target file/directory, most likely the target dataset already exists: {path}")
-            return None
-
-        filters = []  # [Delta(dtype='i4')]
-        compressor = Blosc(cname=compression, clevel=compression_level, shuffle=Blosc.BITSHUFFLE)
-
-        if channels is None:
-            selected_channels = self._channels
-        else:
-            selected_channels = list(set(channels) & set(self._channels))
-
-        print(f"Available channels: {self._channels}")
-        print(f"Requested channels: {channels if channels else '--All--'} ")
-        print(f"Selected channels:  {selected_channels}")
-
-        for channel in selected_channels:
-
-            channel_group = root.create_group(channel)
-
-            array = self.get_stacks(channel, per_z_slice=False)
-
-            if not slice is None:
-                array = array[slice]
-
-            if project:
-                shape = array.shape[0:project] + array.shape[project + 1:]
-                dim = len(shape)
-                chunks = (1,) + (None,) * (dim - 1)
-                print(f"projecting along axis {project} to shape: {shape} and chunks: {chunks}")
-
-            else:
-                shape = array.shape
-                dim = len(shape)
-
-                if dim <= 3:
-                    chunks = (chunk_size,) * dim
-                else:
-                    chunks = (1,) * (dim - 3) + (chunk_size,) * 3
-
-            print(f"Writing Zarr array for channel '{channel}' of shape {array.shape} ")
-
-            z = channel_group.create(name=channel,
-                                     shape=shape,
-                                     dtype=array.dtype,
-                                     chunks=chunks,
-                                     filters=filters,
-                                     compressor=compressor)
-
-            for tp in range(0, array.shape[0]):
-                print(f"Writing time point: {tp} ")
-
-                tp_array = array[tp].compute()
-
-                if project:
-                    # project is the axis for projection, but here we are not considering the T dimension anymore...
-                    axis = project - 1
-                    tp_array = tp_array.max(axis=axis)
-
-                z[tp] = tp_array
-
-            # channel_group.array(channel,
-            #                         data=array,
-            #                         chunks=chunks,
-            #                         filters=filters,
-            #                         compressor=compressor)
-
-        # print(root.info)
-        print("Zarr tree:")
-        print(root.tree())
-
-        return root
 
     def _parse_channel(self, channel):
 
@@ -249,7 +164,11 @@ class CCDataset(DatasetBase):
             with open(file_name, 'rb') as my_file:
                 print(f"Accessing file: {file_name}")
                 buffer = my_file.read()
-                array = frombuffer(buffer, dtype=uint16)
+
+                dt = numpy.dtype(uint16)
+                dt = dt.newbyteorder('L')
+
+                array = frombuffer(buffer, dtype=dt)
 
             if not shape is None:
                 array = array.reshape(shape)
