@@ -43,7 +43,7 @@ def cli():
     pass
 
 
-@click.command(help='Copies a dataset in ZARR format or CC format. Slicing, projection and channel selection are available.')
+@click.command()
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')  #
@@ -88,14 +88,13 @@ def copy(input_path, output_path, channels, slice, codec, overwrite, project):
     pass
 
 
-@click.command(help='Fuses a multi-view dataset.')
+@click.command()
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--slice', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
 @click.option('--codec', '-z', default='zstd', help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ')  #
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target')  # , help='dataset slice'
-@click.option('--mode', '-m', default='fast', type=click.Choice(['fast']), help='Available fusion algorithms.')
-def fuse(input_path, output_path, slice, codec, overwrite, mode):
+def fuse(input_path, output_path, slice, codec, overwrite):
     input_dataset = get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -116,8 +115,7 @@ def fuse(input_path, output_path, slice, codec, overwrite, mode):
     input_dataset.fuse(output_path,
                        slice=slice,
                        compression=codec,
-                       overwrite=overwrite,
-                       mode=mode
+                       overwrite=overwrite
                        )
     time_stop = time()
     print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
@@ -125,7 +123,7 @@ def fuse(input_path, output_path, slice, codec, overwrite, mode):
 
     pass
 
-@click.command(help='Exports a dataset to TIFF format.')
+@click.command()
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channel', '-c', default=None, help='selected channel.')  #
@@ -161,7 +159,7 @@ def tiff(input_path, output_path, channel, slice, overwrite):
 
 
 
-@click.command(help='Retrieves all available information about the dataset.')
+@click.command()
 @click.argument('input_path')
 def info(input_path):
     input_dataset = get_dataset_from_path(input_path)
@@ -169,12 +167,13 @@ def info(input_path):
     pass
 
 
-@click.command(help='Opens dataset for viewing using napari.')
+@click.command()
 @click.argument('input_path')
 @click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')
 @click.option('--slice', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
 @click.option('--volume', '-v', is_flag=True, help='to view with volume rendering (3D ray casting)')
-def view(input_path, channels=None, slice=None, volume=False):
+@click.option('--aspect', '-a', default=None, help='to view with volume rendering (3D ray casting)')
+def view(input_path, channels=None, slice=None, volume=False, aspect=None):
     input_dataset = get_dataset_from_path(input_path)
 
     if channels is None:
@@ -192,97 +191,57 @@ def view(input_path, channels=None, slice=None, volume=False):
     print(f"Requested channels: {channels}")
     print(f"Selected channels:  {selected_channels}")
 
-    if volume:
+    # Annoying napari induced warnings:
+    import warnings
+    warnings.filterwarnings("ignore")
 
-        array = input_dataset.get_stacks(selected_channels[0])[0]
+    with gui_qt():
+        viewer = Viewer()
 
-        #from spimagine import volshow
-        #volshow(array)
+        for channel in selected_channels:
+            print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
+            print(input_dataset.info(channel))
 
-        #import yt
-        #ds = yt.load("IsolatedGalaxy/galaxy0030/galaxy0030")
-        #yt.interactive_render(ds)
+            array = input_dataset.get_stacks(channel)
 
-        from vispy import app, scene, io
-        from vispy.color import get_colormaps, BaseColormap
-        from vispy.visuals.transforms import STTransform
+            if slice:
+                array = array[slice]
 
-        # Prepare canvas
-        canvas = scene.SceneCanvas(keys='interactive', size=(800, 600), show=True)
-        canvas.measure_fps()
+            print(f"Adding array of shape={array.shape} and dtype={array.dtype} for channel '{channel}'.")
 
-        # Set up a viewbox to display the image with interactive pan/zoom
-        view = canvas.central_widget.add_view()
+            first_stack = numpy.array(input_dataset.get_stack(channel, 0, per_z_slice=False))
 
-        # Set whether we are emulating a 3D texture
-        emulate_texture = False
+            print(f"Computing min and max from first stack...")
+            min_value = first_stack.min()
+            max_value = first_stack.max()
+            print(f"min={min_value} and max={max_value}.")
 
-        # Create the volume visuals, only one is visible
-        volume1 = scene.visuals.Volume(array,
-                                       parent=view.scene,
-                                       threshold=0.225,
-                                       emulate_texture=emulate_texture)
+            # flip x for second camera:
+            if 'C1' in channel:
+                array = dask.array.flip(array,-1)
 
-        volume1.transform = scene.STTransform(translate=(64, 64, 0))
+            if 'C0' in channel:
+                colormap = 'red'
+            elif 'C1' in channel:
+                colormap = 'blue'
+            else:
+                colormap = 'viridis'
 
+            layer = viewer.add_image(array,
+                             name=channel,
+                             contrast_limits=[max(0, min_value - 100), max_value + 100],
+                             blending='additive',
+                             colormap=colormap)
 
-        # Create three cameras (Fly, Turntable and Arcball)
-        fov = 60.
-
-        view.camera = scene.cameras.ArcballCamera(parent=view.scene, fov=fov, name='Arcball')
-
-        app.run()
-
-    else:
-
-        # Annoying napari induced warnings:
-        import warnings
-        warnings.filterwarnings("ignore")
-
-        with gui_qt():
-            viewer = Viewer()
-
-            for channel in selected_channels:
-                print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
-                print(input_dataset.info(channel))
-
-                array = input_dataset.get_stacks(channel)
-
-                if slice:
-                    array = array[slice]
-
-                print(f"Adding array of shape={array.shape} and dtype={array.dtype} for channel '{channel}'.")
-
-                first_stack = numpy.array(input_dataset.get_stack(channel, 0, per_z_slice=False))
-
-                print(f"Computing min and max from first stack...")
-                min_value = first_stack.min()
-                max_value = first_stack.max()
-                print(f"min={min_value} and max={max_value}.")
-
-                # flip x for second camera:
-                if 'C1' in channel:
-                    array = dask.array.flip(array,-1)
-
-                if 'C0' in channel:
-                    colormap = 'red'
-                elif 'C1' in channel:
-                    colormap = 'blue'
-                else:
-                    colormap = 'viridis'
-
-                viewer.add_image(array,
-                                 name=channel,
-                                 contrast_limits=[max(0, min_value - 100), max_value + 100],
-                                 blending='additive',
-                                 colormap=colormap)
+            if volume and not aspect is None:
+                layer.scale=aspect
 
 
-    pass
 
 
-cli.add_command(info)
+
 cli.add_command(copy)
 cli.add_command(fuse)
+cli.add_command(info)
 cli.add_command(tiff)
 cli.add_command(view)
