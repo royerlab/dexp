@@ -6,10 +6,10 @@ import zarr
 from numcodecs.blosc import Blosc
 from zarr import open_group
 
-from dexp.datasets.dataset_base import DatasetBase
+from dexp.datasets.base_dataset import BaseDataset
 
 
-class ZDataset(DatasetBase):
+class ZDataset(BaseDataset):
 
     def __init__(self, folder, mode='r', cache_active=False, cache_size=int(8e9)):
 

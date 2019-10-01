@@ -51,7 +51,8 @@ def cli():
 @click.option('--codec', '-z', default='zstd', help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ')  #
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target')  # , help='dataset slice'
 @click.option('--project', '-p', type=int, default=None, help='max projection over given axis (0->T, 1->Z, 2->Y, 3->X)')  # , help='dataset slice'
-def copy(input_path, output_path, channels, slice, codec, overwrite, project):
+@click.option('--enhancements', '-e', default=None, help='list of enhancements to apply to each stack.')  #
+def copy(input_path, output_path, channels, slice, codec, overwrite, project, enhancements):
     input_dataset = get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -72,6 +73,11 @@ def copy(input_path, output_path, channels, slice, codec, overwrite, project):
 
     print(f"Selected channel: '{channels}' and slice: {slice}")
 
+    if not enhancements is None:
+        enhancements = enhancements.split(',')
+
+    print(f"Enhancements requested: {enhancements} ")
+
     print("Converting dataset.")
     print(f"Saving dataset to: {output_path} with zarr format... ")
     time_start = time()
@@ -80,7 +86,8 @@ def copy(input_path, output_path, channels, slice, codec, overwrite, project):
                        slice=slice,
                        compression=codec,
                        overwrite=overwrite,
-                       project=project)
+                       project=project,
+                       enhancements=enhancements)
     time_stop = time()
     print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
     print("Done!")
@@ -108,7 +115,6 @@ def fuse(input_path, output_path, slice, codec, overwrite):
         dummy = s_[1, 2]
         slice = eval(f"s_{slice}")
 
-
     print("Fusing dataset.")
     print(f"Saving dataset to: {output_path} with zarr format... ")
     time_start = time()
@@ -122,6 +128,48 @@ def fuse(input_path, output_path, slice, codec, overwrite):
     print("Done!")
 
     pass
+
+
+@click.command()
+@click.argument('input_path')  # ,  help='input path'
+@click.option('--output_path', '-o')  # , help='output path'
+@click.option('--slice', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
+@click.option('--codec', '-z', default='zstd', help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ')  #
+@click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target')  # , help='dataset slice'
+@click.option('--context', '-c', default='default', help="IsoNet context name")  # , help='dataset slice'
+@click.option('--mode', '-m', default='pta', help="mode: 'pta' -> prepare, train and apply, 'a' just apply  ")  # , help='dataset slice'
+@click.option('--max_epochs', '-e', type=int, default='50', help='to force overwrite of target')  # , help='dataset slice'
+def isonet(input_path, output_path, slice, codec, overwrite, context, mode, max_epochs):
+    input_dataset = get_dataset_from_path(input_path)
+
+    print(f"Available Channels: {input_dataset.channels()}")
+    for channel in input_dataset.channels():
+        print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
+
+    if output_path is None or not output_path.strip():
+        output_path = get_folder_name_without_end_slash(input_path) + '.zarr'
+
+    if not slice is None:
+        dummy = s_[1, 2]
+        slice = eval(f"s_{slice}")
+
+    print("Fusing dataset.")
+    print(f"Saving dataset to: {output_path} with zarr format... ")
+    time_start = time()
+    input_dataset.isonet(output_path,
+                       slice=slice,
+                       compression=codec,
+                       overwrite=overwrite,
+                       context=context,
+                       mode=mode,
+                       max_epochs=max_epochs
+                       )
+    time_stop = time()
+    print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
+    print("Done!")
+
+    pass
+
 
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
@@ -242,6 +290,7 @@ def view(input_path, channels=None, slice=None, volume=False, aspect=None):
 
 cli.add_command(copy)
 cli.add_command(fuse)
+cli.add_command(isonet)
 cli.add_command(info)
 cli.add_command(tiff)
 cli.add_command(view)

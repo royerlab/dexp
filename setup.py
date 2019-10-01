@@ -17,6 +17,13 @@ setup(
         'numpy',
         'dask',
         'zarr',
+        'tensorflow-gpu',
+        'keras',
+        'dtcwt',
+        'cupy-cuda100',
+        'gputools',
+        'numexpr'
+
     ],
 
     entry_points='''

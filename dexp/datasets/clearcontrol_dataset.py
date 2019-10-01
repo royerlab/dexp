@@ -11,13 +11,13 @@ from numcodecs.blosc import Blosc
 from numpy import uint16, frombuffer
 from zarr import open_group
 
-from dexp.datasets.dataset_base import DatasetBase
+from dexp.datasets.base_dataset import BaseDataset
 
 numcodecs.blosc.use_threads = True
 numcodecs.blosc.set_nthreads(cpu_count() // 2)
 
 
-class CCDataset(DatasetBase):
+class CCDataset(BaseDataset):
 
     def __init__(self, folder, cache_size=8e9):
 
