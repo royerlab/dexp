@@ -35,7 +35,7 @@ def demo(path):
         viewer.add_image(dataset.get_stacks('sequential', per_z_slice=True), name='image', clim_range=[0, 1000])
 
     time_start = time()
-    dataset.copy("/Users/royer/Downloads/testzarr.zarr", slice=s_[0:2], overwrite=True, project=2)
+    dataset.copy("/Users/royer/Downloads/testzarr.zarr", slicing=s_[0:2], overwrite=True, project=2)
     time_stop = time()
     print(f"Elapsed time to save to Zarr: {time_stop - time_start} seconds")
 

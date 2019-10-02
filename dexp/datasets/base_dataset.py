@@ -3,11 +3,9 @@ from abc import ABC, abstractmethod
 from os.path import join
 
 import numpy
-import zarr
 from numcodecs.blosc import Blosc
-from scipy.ndimage import zoom
 from skimage.transform import downscale_local_mean
-from tifffile import memmap, TiffWriter
+from tifffile import TiffWriter
 from zarr import open_group
 
 from dexp.enhance.sharpen import sharpen
@@ -49,7 +47,7 @@ class BaseDataset(ABC):
     def copy(self,
              path,
              channels=None,
-             slice=None,
+             slicing=None,
              compression='zstd',
              compression_level=3,
              chunk_size=512,
@@ -84,8 +82,8 @@ class BaseDataset(ABC):
 
             array = self.get_stacks(channel, per_z_slice=False)
 
-            if not slice is None:
-                array = array[slice]
+            if not slicing is None:
+                array = array[slicing]
 
             if project:
                 shape = array.shape[0:project] + array.shape[project + 1:]
@@ -155,7 +153,7 @@ class BaseDataset(ABC):
 
     def fuse(self,
              path,
-             slice=None,
+             slicing=None,
              compression='zstd',
              compression_level=3,
              overwrite=False):
@@ -166,12 +164,12 @@ class BaseDataset(ABC):
         array_C1L0 = self.get_stacks('C1L0', per_z_slice=False)
         array_C1L1 = self.get_stacks('C1L1', per_z_slice=False)
 
-        if not slice is None:
-            print(f"Slicing with: {slice}")
-            array_C0L0 = array_C0L0[slice]
-            array_C0L1 = array_C0L1[slice]
-            array_C1L0 = array_C1L0[slice]
-            array_C1L1 = array_C1L1[slice]
+        if not slicing is None:
+            print(f"Slicing with: {slicing}")
+            array_C0L0 = array_C0L0[slicing]
+            array_C0L1 = array_C0L1[slicing]
+            array_C1L0 = array_C1L0[slicing]
+            array_C1L1 = array_C1L1[slicing]
 
         shape = array_C0L0.shape
 
@@ -223,20 +221,20 @@ class BaseDataset(ABC):
         return root
 
     def isonet(self,
-                 path,
-                 channel=None,
-                 slice=None,
-                 compression='zstd',
-                 compression_level=3,
-                 overwrite=False,
-                 context='default',
-                 mode='pta',
-                 dxy = 0.4,
-                 dz  = 6.349,
-                 binning = 2,
-                 sharpening = False,
-                 training_tp_index=0,
-                 max_epochs=100):
+               path,
+               channel=None,
+               slicing=None,
+               compression='zstd',
+               compression_level=3,
+               overwrite=False,
+               context='default',
+               mode='pta',
+               dxy = 0.4,
+               dz  = 6.349,
+               binning = 2,
+               sharpening = False,
+               training_tp_index=0,
+               max_epochs=100):
 
 
         if channel is None:
@@ -247,9 +245,9 @@ class BaseDataset(ABC):
         print(f"getting Dask arrays to apply isonet on...")
         array = self.get_stacks(channel, per_z_slice=False)
 
-        if not slice is None:
-            print(f"Slicing with: {slice}")
-            array = array[slice]
+        if not slicing is None:
+            print(f"Slicing with: {slicing}")
+            array = array[slicing]
 
         print(f"Binning image by a factor {binning}...")
         dxy *= binning
@@ -336,7 +334,7 @@ class BaseDataset(ABC):
     def tiff(self,
              path,
              channel,
-             slice=None,
+             slicing=None,
              overwrite=True,
              one_file_per_first_dim=True):
 
@@ -349,9 +347,9 @@ class BaseDataset(ABC):
         array = self.get_stacks(channel, per_z_slice=False)
 
 
-        if not slice is None:
-            print(f"Slicing with: {slice}")
-            array = array[slice]
+        if not slicing is None:
+            print(f"Slicing with: {slicing}")
+            array = array[slicing]
             print(f"Done slicing.")
 
 
@@ -362,9 +360,10 @@ class BaseDataset(ABC):
 
             tp=0
             for stack in array:
-                print(f"Writing time point: {tp} ")
-                tiff_save(join(path, f"file{tp}.tiff"), stack.compute())
-                tp+=1
+                with timeit('Elapsed time: '):
+                    print(f"Writing time point: {tp} ")
+                    tiff_save(join(path, f"file{tp}.tiff"), stack.compute())
+                    tp+=1
 
 
         else:
@@ -372,8 +371,9 @@ class BaseDataset(ABC):
             with TiffWriter(path, bigtiff=True, imagej=True) as tif:
                 tp = 0
                 for stack in array:
-                    print(f"Writing time point: {tp} ")
-                    stack = stack.compute()
-                    tif.save(stack)
-                    tp += 1
+                    with timeit('Elapsed time: '):
+                        print(f"Writing time point: {tp} ")
+                        stack = stack.compute()
+                        tif.save(stack)
+                        tp += 1
 

@@ -47,12 +47,12 @@ def cli():
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')  #
-@click.option('--slice', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
+@click.option('--slicing', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
 @click.option('--codec', '-z', default='zstd', help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ')  #
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target')  # , help='dataset slice'
 @click.option('--project', '-p', type=int, default=None, help='max projection over given axis (0->T, 1->Z, 2->Y, 3->X)')  # , help='dataset slice'
 @click.option('--enhancements', '-e', default=None, help='list of enhancements to apply to each stack.')  #
-def copy(input_path, output_path, channels, slice, codec, overwrite, project, enhancements):
+def copy(input_path, output_path, channels, slicing, codec, overwrite, project, enhancements):
     input_dataset = get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -62,16 +62,16 @@ def copy(input_path, output_path, channels, slice, codec, overwrite, project, en
     if output_path is None or not output_path.strip():
         output_path = get_folder_name_without_end_slash(input_path) + '.zarr'
 
-    if not slice is None:
+    if not slicing is None:
         dummy = s_[1, 2]
-        slice = eval(f"s_{slice}")
+        slicing = eval(f"s_{slicing}")
 
     print(f"Requested channels  {channels if channels else '--All--'} ")
 
     if not channels is None:
         channels = channels.split(',')
 
-    print(f"Selected channel: '{channels}' and slice: {slice}")
+    print(f"Selected channel: '{channels}' and slice: {slicing}")
 
     if not enhancements is None:
         enhancements = enhancements.split(',')
@@ -83,7 +83,7 @@ def copy(input_path, output_path, channels, slice, codec, overwrite, project, en
     time_start = time()
     input_dataset.copy(output_path,
                        channels=channels,
-                       slice=slice,
+                       slicing=slicing,
                        compression=codec,
                        overwrite=overwrite,
                        project=project,
@@ -98,10 +98,10 @@ def copy(input_path, output_path, channels, slice, codec, overwrite, project, en
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
-@click.option('--slice', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
+@click.option('--slicing', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
 @click.option('--codec', '-z', default='zstd', help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ')  #
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target')  # , help='dataset slice'
-def fuse(input_path, output_path, slice, codec, overwrite):
+def fuse(input_path, output_path, slicing, codec, overwrite):
     input_dataset = get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -111,15 +111,15 @@ def fuse(input_path, output_path, slice, codec, overwrite):
     if output_path is None or not output_path.strip():
         output_path = get_folder_name_without_end_slash(input_path) + '.zarr'
 
-    if not slice is None:
+    if not slicing is None:
         dummy = s_[1, 2]
-        slice = eval(f"s_{slice}")
+        slicing = eval(f"s_{slicing}")
 
     print("Fusing dataset.")
     print(f"Saving dataset to: {output_path} with zarr format... ")
     time_start = time()
     input_dataset.fuse(output_path,
-                       slice=slice,
+                       slicing=slicing,
                        compression=codec,
                        overwrite=overwrite
                        )
@@ -133,13 +133,13 @@ def fuse(input_path, output_path, slice, codec, overwrite):
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
-@click.option('--slice', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
+@click.option('--slicing', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
 @click.option('--codec', '-z', default='zstd', help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ')  #
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target')  # , help='dataset slice'
 @click.option('--context', '-c', default='default', help="IsoNet context name")  # , help='dataset slice'
 @click.option('--mode', '-m', default='pta', help="mode: 'pta' -> prepare, train and apply, 'a' just apply  ")  # , help='dataset slice'
 @click.option('--max_epochs', '-e', type=int, default='50', help='to force overwrite of target')  # , help='dataset slice'
-def isonet(input_path, output_path, slice, codec, overwrite, context, mode, max_epochs):
+def isonet(input_path, output_path, slicing, codec, overwrite, context, mode, max_epochs):
     input_dataset = get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -149,21 +149,21 @@ def isonet(input_path, output_path, slice, codec, overwrite, context, mode, max_
     if output_path is None or not output_path.strip():
         output_path = get_folder_name_without_end_slash(input_path) + '.zarr'
 
-    if not slice is None:
+    if not slicing is None:
         dummy = s_[1, 2]
-        slice = eval(f"s_{slice}")
+        slicing = eval(f"s_{slicing}")
 
     print("Fusing dataset.")
     print(f"Saving dataset to: {output_path} with zarr format... ")
     time_start = time()
     input_dataset.isonet(output_path,
-                       slice=slice,
-                       compression=codec,
-                       overwrite=overwrite,
-                       context=context,
-                       mode=mode,
-                       max_epochs=max_epochs
-                       )
+                         slicing=slicing,
+                         compression=codec,
+                         overwrite=overwrite,
+                         context=context,
+                         mode=mode,
+                         max_epochs=max_epochs
+                         )
     time_stop = time()
     print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
     print("Done!")
@@ -175,9 +175,10 @@ def isonet(input_path, output_path, slice, codec, overwrite, context, mode, max_
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channel', '-c', default=None, help='selected channel.')  #
-@click.option('--slice', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
+@click.option('--slicing', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target')  # , help='dataset slice'
-def tiff(input_path, output_path, channel, slice, overwrite):
+@click.option('--split', '-s', is_flag=True, help='Splits dataset along first dimension, be carefull, if you slice to a single time point this will split along z!')  # , help='dataset slice'
+def tiff(input_path, output_path, channel, slicing, overwrite, split):
     input_dataset = get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -187,17 +188,18 @@ def tiff(input_path, output_path, channel, slice, overwrite):
     if output_path is None or not output_path.strip():
         output_path = get_folder_name_without_end_slash(input_path) + '.zarr'
 
-    if not slice is None:
+    if not slicing is None:
         dummy = s_[1, 2]
-        slice = eval(f"s_{slice}")
+        slicing = eval(f"s_{slicing}")
 
 
     print(f"Saving dataset to TIFF file: {output_path}")
     time_start = time()
     input_dataset.tiff(output_path,
                        channel=channel,
-                       slice=slice,
-                       overwrite=overwrite
+                       slicing=slicing,
+                       overwrite=overwrite,
+                       one_file_per_first_dim = split
                        )
     time_stop = time()
     print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
@@ -218,10 +220,10 @@ def info(input_path):
 @click.command()
 @click.argument('input_path')
 @click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')
-@click.option('--slice', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
+@click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
 @click.option('--volume', '-v', is_flag=True, help='to view with volume rendering (3D ray casting)')
 @click.option('--aspect', '-a', default=None, help='to view with volume rendering (3D ray casting)')
-def view(input_path, channels=None, slice=None, volume=False, aspect=None):
+def view(input_path, channels=None, slicing=None, volume=False, aspect=None):
     input_dataset = get_dataset_from_path(input_path)
 
     if channels is None:
@@ -230,10 +232,10 @@ def view(input_path, channels=None, slice=None, volume=False, aspect=None):
         channels = channels.split(',')
         selected_channels = list(set(channels) & set(input_dataset.channels()))
 
-    if not slice is None:
+    if not slicing is None:
         # do not remove dummy, this is to ensure that import is there...
         dummy = s_[1, 2]
-        slice = eval(f"s_{slice}")
+        slicing = eval(f"s_{slicing}")
 
     print(f"Available channels: {input_dataset.channels()}")
     print(f"Requested channels: {channels}")
@@ -252,8 +254,8 @@ def view(input_path, channels=None, slice=None, volume=False, aspect=None):
 
             array = input_dataset.get_stacks(channel)
 
-            if slice:
-                array = array[slice]
+            if slicing:
+                array = array[slicing]
 
             print(f"Adding array of shape={array.shape} and dtype={array.dtype} for channel '{channel}'.")
 
