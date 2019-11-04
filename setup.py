@@ -28,6 +28,6 @@ setup(
 
     entry_points='''
         [console_scripts]
-        dexp=dexp.cli.cli:cli
+        dexp=dexp.cli.main:cli
     ''',
 )

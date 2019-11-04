@@ -54,7 +54,7 @@ class BaseDataset(ABC):
              chunk_all_z=False,
              overwrite=False,
              project=None,
-             enhancements=[]):
+             enhancements=None):
 
         mode = 'w' + ('' if overwrite else '-')
         root = None
@@ -75,6 +75,11 @@ class BaseDataset(ABC):
         print(f"Available channels: {self._channels}")
         print(f"Requested channels: {channels if channels else '--All--'} ")
         print(f"Selected channels:  {selected_channels}")
+
+        if enhancements is None:
+            enhancements=[]
+
+        print(f"Enhancements:  {enhancements}")
 
         for channel in selected_channels:
 
@@ -134,11 +139,11 @@ class BaseDataset(ABC):
 
             from joblib import Parallel, delayed
 
-            number_of_workers = 1 if len(enhancements)>0 else -1
+            number_of_workers = 1 if (not (enhancements is None) and len(enhancements)>0) else -1
 
             print(f"Number of workers: {number_of_workers}")
 
-            Parallel(n_jobs=number_of_workers)(delayed(process)(tp) for tp in range(0, shape[0] - 1))
+            Parallel(n_jobs=number_of_workers)(delayed(process)(tp) for tp in range(0, shape[0]))
 
 
         # print(root.info)
@@ -212,7 +217,7 @@ class BaseDataset(ABC):
 
 
         from joblib import Parallel, delayed
-        Parallel(n_jobs=-1)(delayed(process)(tp) for tp in range(0, shape[0] - 1))
+        Parallel(n_jobs=-1)(delayed(process)(tp) for tp in range(0, shape[0]))
 
 
         print("Zarr tree:")
@@ -336,12 +341,9 @@ class BaseDataset(ABC):
              channel,
              slicing=None,
              overwrite=True,
-             one_file_per_first_dim=True):
+             one_file_per_first_dim=True,
+             compress=0):
 
-
-        if not overwrite and os.path.exists(path):
-            print(f"File {path} already exists! Set option -w to overwrite.")
-            return
 
         print(f"getting Dask arrays for channel {channel}")
         array = self.get_stacks(channel, per_z_slice=False)
@@ -358,17 +360,30 @@ class BaseDataset(ABC):
 
             os.makedirs(path, exist_ok=True)
 
-            tp=0
-            for stack in array:
+            from joblib import Parallel, delayed
+
+            def process(tp):
                 with timeit('Elapsed time: '):
-                    print(f"Writing time point: {tp} ")
-                    tiff_save(join(path, f"file{tp}.tiff"), stack.compute())
-                    tp+=1
+                    tiff_file_path = join(path, f"file{tp}.tiff")
+                    if overwrite or not os.path.exists(tiff_file_path):
+                        stack = array[tp].compute()
+                        print(f"Writing time point: {tp} of shape: {stack.shape}, dtype:{stack.dtype} as TIFF file: '{tiff_file_path}', with compression: {compress}")
+                        tiff_save(tiff_file_path, stack, compress=compress)
+                        print(f"Done writing time point: {tp} !")
+                    else:
+                        print(f"File for time point (or z slice): {tp} already exists.")
+
+            Parallel(n_jobs=6)(delayed(process)(tp) for tp in range(0, array.shape[0]))
 
 
         else:
+
+            if not overwrite and os.path.exists(path):
+                print(f"File {path} already exists! Set option -w to overwrite.")
+                return
+
             print(f"Creating memory mapped TIFF file at: {path}.")
-            with TiffWriter(path, bigtiff=True, imagej=True) as tif:
+            with TiffWriter(path, bigtiff=True, imagej=True, compress=compress) as tif:
                 tp = 0
                 for stack in array:
                     with timeit('Elapsed time: '):

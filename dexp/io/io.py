@@ -2,7 +2,7 @@ import numpy
 from tifffile import imsave
 
 
-def tiff_save(file, img, **imsave_kwargs):
+def tiff_save(file, img, axes='ZYX', compress=0,  **imsave_kwargs):
     """Save image in ImageJ-compatible TIFF format.
 
     Parameters
@@ -28,4 +28,4 @@ def tiff_save(file, img, **imsave_kwargs):
 
 
     imsave_kwargs['imagej'] = True
-    imsave(file, img, **imsave_kwargs)
+    imsave(file, img, **imsave_kwargs, compress=compress, metadata={'axes': axes}) # ,
