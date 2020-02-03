@@ -2,6 +2,7 @@ import os
 from abc import ABC, abstractmethod
 from os.path import join
 
+import numexpr
 import numpy
 from numcodecs.blosc import Blosc
 from skimage.transform import downscale_local_mean
@@ -15,6 +16,7 @@ from dexp.isonet.isonet import IsoNet
 from dexp.utils.timeit import timeit
 
 
+
 class BaseDataset(ABC):
 
     def __init__(self, dask_backed=False):
@@ -23,6 +25,10 @@ class BaseDataset(ABC):
         """
 
         self.dask_backed = dask_backed
+
+        self._chunk_xy = 512
+        self._chunk_z  = 32
+        self._chunk_t  = 1
 
     @abstractmethod
     def channels(self):
@@ -50,8 +56,6 @@ class BaseDataset(ABC):
              slicing=None,
              compression='zstd',
              compression_level=3,
-             chunk_size=512,
-             chunk_all_z=False,
              overwrite=False,
              project=None,
              enhancements=None):
@@ -83,8 +87,6 @@ class BaseDataset(ABC):
 
         for channel in selected_channels:
 
-            channel_group = root.create_group(channel)
-
             array = self.get_stacks(channel, per_z_slice=False)
 
             if not slicing is None:
@@ -100,17 +102,14 @@ class BaseDataset(ABC):
                 shape = array.shape
                 dim = len(shape)
 
-                if dim <= 3:
-                    chunks = (chunk_size,) * dim
-                else:
-                    if chunk_all_z:
-                        chunks = (1,) * (dim - 3) + (chunk_size,) * 3
-                    else:
-                        chunks = (1,) * (dim - 2) + (chunk_size,) * 2
+                if dim == 3:
+                    chunks = (self._chunk_z, self._chunk_xy, self._chunk_xy)
+                elif dim == 4:
+                    chunks = (self._chunk_t, self._chunk_z, self._chunk_xy, self._chunk_xy)
 
 
             print(f"Writing Zarr array for channel '{channel}' of shape {array.shape} ")
-
+            channel_group = root.create_group(channel)
             z = channel_group.create(name=channel,
                                      shape=shape,
                                      dtype=array.dtype,
@@ -119,27 +118,35 @@ class BaseDataset(ABC):
                                      compressor=compressor)
 
             def process(tp):
-                print(f"Starting to process time point: {tp} ...")
 
-                tp_array = array[tp].compute()
+                try:
 
-                for enhancement in enhancements:
-                    print(f"Applying enhancement: {enhancement}...")
-                    if enhancement.strip() == 'sharpen':
-                        tp_array = sharpen(tp_array)
-                    print(f"Done applying enhancement: {enhancement}")
+                    print(f"Starting to process time point: {tp} ...")
 
-                if project:
-                    # project is the axis for projection, but here we are not considering the T dimension anymore...
-                    axis = project - 1
-                    tp_array = tp_array.max(axis=axis)
+                    tp_array = array[tp].compute()
 
-                z[tp] = tp_array
-                print(f"Done processing time point: {tp} .")
+                    for enhancement in enhancements:
+                        print(f"Applying enhancement: {enhancement}...")
+                        if enhancement.strip() == 'sharpen':
+                            tp_array = sharpen(tp_array)
+                        print(f"Done applying enhancement: {enhancement}")
+
+                    if project:
+                        # project is the axis for projection, but here we are not considering the T dimension anymore...
+                        axis = project - 1
+                        tp_array = tp_array.max(axis=axis)
+
+                    z[tp] = tp_array
+                    print(f"Done processing time point: {tp} .")
+
+                except Exception as error:
+                    print(error)
+                    print(f"Error occurred while copying time point {tp} !")
+
 
             from joblib import Parallel, delayed
 
-            number_of_workers = 1 if (not (enhancements is None) and len(enhancements)>0) else -1
+            number_of_workers = 1 if (not (enhancements is None) and len(enhancements)>0) else os.cpu_count()//2
 
             print(f"Number of workers: {number_of_workers}")
 
@@ -161,6 +168,9 @@ class BaseDataset(ABC):
              slicing=None,
              compression='zstd',
              compression_level=3,
+             dtype =None,
+             value_offset = -100,
+             value_scale = 0.5,
              overwrite=False):
 
         print(f"getting Dask arrays for all channels to fuse...")
@@ -188,16 +198,19 @@ class BaseDataset(ABC):
                 f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect.")
             return None
 
+        if dtype is None:
+            dtype = array_C0L0.dtype
+
         filters = []  # [Delta(dtype='i4')]
         compressor = Blosc(cname=compression, clevel=compression_level, shuffle=Blosc.BITSHUFFLE)
         channel_group = root.create_group('fused')
         print(f"Writing Zarr array for fused channel of shape {shape} ")
-        zarr_array = channel_group.create(  name='fused',
-                                            shape=shape,
-                                            dtype=array_C0L0.dtype,
-                                            chunks=(1, 1, 512, 512),
-                                            filters=filters,
-                                            compressor=compressor)
+        zarr_array = channel_group.create(name='fused',
+                                          shape=shape,
+                                          dtype=dtype,
+                                          chunks=(self._chunk_t, self._chunk_z, self._chunk_xy, self._chunk_xy),
+                                          filters=filters,
+                                          compressor=compressor)
 
         fusion = FastFusion(zarr_array[0].shape)
 
@@ -209,15 +222,21 @@ class BaseDataset(ABC):
             C1L0 = numpy.flip(array_C1L0[tp].compute(),-1)
             C1L1 = numpy.flip(array_C1L1[tp].compute(),-1)
 
+            print(f'Fusing...')
             array = fusion.fuse(C0L0, C0L1, C1L0, C1L1)
 
-            print(f'array dtype: {array.dtype}')
+            if dtype is numpy.uint8:
+                print(f"dtype is uint8, Scaling voxel values with x -> (x+{value_offset})*{value_scale} ")
+                array = numexpr.evaluate('(abs(array+value_offset))*value_scale')
 
-            zarr_array[tp] = array.astype(zarr_array.dtype)
+            array = array.astype(zarr_array.dtype, copy=False)
+
+            print(f'Writing array of dtype: {array.dtype}')
+            zarr_array[tp] = array
 
 
         from joblib import Parallel, delayed
-        Parallel(n_jobs=-1)(delayed(process)(tp) for tp in range(0, shape[0]))
+        Parallel(n_jobs=os.cpu_count()//2, backend='threading')(delayed(process)(tp) for tp in range(0, shape[0]))
 
 
         print("Zarr tree:")
@@ -316,7 +335,7 @@ class BaseDataset(ABC):
                         zarr_array = channel_group.create(name=channel,
                                                           shape=shape,
                                                           dtype=array.dtype,
-                                                          chunks=(1, 1, 512, 512),
+                                                          chunks=(self._chunk_t, self._chunk_z, self._chunk_xy, self._chunk_xy),
                                                           filters=filters,
                                                           compressor=compressor)
 
@@ -341,7 +360,7 @@ class BaseDataset(ABC):
              channel,
              slicing=None,
              overwrite=True,
-             one_file_per_first_dim=True,
+             one_file_per_first_dim=False,
              compress=0):
 
 
@@ -383,7 +402,7 @@ class BaseDataset(ABC):
                 return
 
             print(f"Creating memory mapped TIFF file at: {path}.")
-            with TiffWriter(path, bigtiff=True, imagej=True, compress=compress) as tif:
+            with TiffWriter(path, bigtiff=True, imagej=True) as tif:
                 tp = 0
                 for stack in array:
                     with timeit('Elapsed time: '):

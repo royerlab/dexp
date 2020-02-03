@@ -21,6 +21,8 @@ class CCDataset(BaseDataset):
 
     def __init__(self, folder, cache_size=8e9):
 
+        super().__init__(dask_backed=False)
+
         self.folder = folder
         self._channels = []
         self._index_files = {}

@@ -102,8 +102,9 @@ def copy(input_path, output_path, channels, slicing, codec, overwrite, project, 
 @click.option('--slicing', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
 @click.option('--codec', '-z', default='zstd', help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ')  #
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target')  # , help='dataset slice'
+@click.option('--uint8', '-8', is_flag=True, help='convert to uint8')
 @click.option('--only_camera', '-oc', is_flag=True, help='only fuse images from same camera')  # , help='dataset slice'
-def fuse(input_path, output_path, slicing, codec, overwrite, only_camera):
+def fuse(input_path, output_path, slicing, codec, overwrite, uint8, only_camera):
     input_dataset = get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -123,6 +124,7 @@ def fuse(input_path, output_path, slicing, codec, overwrite, only_camera):
     input_dataset.fuse(output_path,
                        slicing=slicing,
                        compression=codec,
+                       dtype=numpy.uint8 if uint8 else None,
                        overwrite=overwrite
                        )
     time_stop = time()

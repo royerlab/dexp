@@ -19,11 +19,10 @@ class FastFusion(BaseFusion):
         blending_x = numpy.fromfunction(lambda z, y, x: 1.0 - 0.5*(1+(((x-spx)/smoothx) / (1.0 + ((x-spx)/smoothx) ** 2) ** 0.5)), shape=shape, dtype=numpy.float32)
         blending_z = numpy.fromfunction(lambda z, y, x: 1.0 - 0.5*(1+(((z-spz)/smoothz) / (1.0 + ((z-spz)/smoothz) ** 2) ** 0.5)), shape=shape, dtype=numpy.float32)
 
-        self.blending_C0L0 = blending_z*blending_x
-        self.blending_C0L1 = blending_z*(1-blending_x)
-        self.blending_C1L0 = (1-blending_z)*(blending_x)
-        self.blending_C1L1 = (1-blending_z)*(1-blending_x)
-
+        self.blending_C0L0 = numexpr.evaluate('blending_z*blending_x')
+        self.blending_C0L1 = numexpr.evaluate('blending_z*(1-blending_x)')
+        self.blending_C1L0 = numexpr.evaluate('(1-blending_z)*(blending_x)')
+        self.blending_C1L1 = numexpr.evaluate('(1-blending_z)*(1-blending_x)')
 
     def fuse(self, C0L0, C0L1, C1L0, C1L1):
 

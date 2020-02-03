@@ -13,6 +13,8 @@ class ZDataset(BaseDataset):
 
     def __init__(self, folder, mode='r', cache_active=False, cache_size=int(8e9)):
 
+        super().__init__(dask_backed=False)
+
         self._folder = folder
 
         print(f"Initialising Zarr storage...")
