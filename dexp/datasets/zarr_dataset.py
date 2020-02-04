@@ -1,13 +1,15 @@
-import math
+from multiprocessing.pool import ThreadPool
 
 import dask
-import numpy
 import zarr
-from numcodecs.blosc import Blosc
-from zarr import open_group
-
+from numcodecs import blosc
 from dexp.datasets.base_dataset import BaseDataset
+import multiprocessing
 
+nb_threads = 2*multiprocessing.cpu_count()
+dask.config.set(scheduler='threads')
+dask.config.set(pool=ThreadPool(nb_threads))
+blosc.set_nthreads(nb_threads)
 
 class ZDataset(BaseDataset):
 

@@ -228,7 +228,7 @@ def info(input_path):
 @click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')
 @click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
 @click.option('--volume', '-v', is_flag=True, help='to view with volume rendering (3D ray casting)')
-@click.option('--aspect', '-a', type=float, default=None, help='sets aspect ratio e.g. 4')
+@click.option('--aspect', '-a', type=float, default=4, help='sets aspect ratio e.g. 4')
 def view(input_path, channels=None, slicing=None, volume=False, aspect=None):
     input_dataset = get_dataset_from_path(input_path)
 
@@ -294,6 +294,8 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None):
 
             if not aspect is None:
                 layer.scale[-3] = aspect
+                print(f"Setting aspect ratio to {aspect} (layer.scale={layer.scale})")
+
 
 
 
