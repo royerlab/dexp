@@ -289,8 +289,11 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None):
                              blending='additive',
                              colormap=colormap)
 
-            if volume and not aspect is None:
-                layer.scale=(aspect,1,1)
+            if volume:
+                layer.ndim = 3
+
+            if not aspect is None:
+                layer.scale[-3] = aspect
 
 
 

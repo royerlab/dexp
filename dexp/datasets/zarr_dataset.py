@@ -11,7 +11,7 @@ from dexp.datasets.base_dataset import BaseDataset
 
 class ZDataset(BaseDataset):
 
-    def __init__(self, folder, mode='r', cache_active=False, cache_size=int(8e9)):
+    def __init__(self, folder, mode='r', cache_active=False, cache_size=int(8e9), use_dask=False):
 
         super().__init__(dask_backed=False)
 
@@ -39,7 +39,10 @@ class ZDataset(BaseDataset):
                 print(f"Found array: {item_name}")
 
                 if item_name == channel:
-                    self._arrays[channel] = array
+                    if use_dask:
+                        self._arrays[channel] = dask.array.from_zarr(folder, component=f"{channel}/{item_name}")
+                    else:
+                        self._arrays[channel] = array
 
     def channels(self):
         return list(self._channels)

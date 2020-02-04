@@ -10,20 +10,22 @@ setup(
     author_email='',
     description='',
 
-    install_requires=[
-        'click',
-        'cachey',
-        'napari',
-        'numpy',
-        'dask',
-        'zarr',
-        'tensorflow-gpu',
-        'keras',
-        'dtcwt',
-        'cupy-cuda100',
-        'gputools',
-        'numexpr'
+    dependency_links=[
+        "https://download.pytorch.org/whl/torch_stable.html"
+    ],
 
+    install_requires=[
+#        'tensorflow-gpu',
+#        'click',
+#        'cachey',
+#        'napari',
+#        'dask',
+#        'zarr',
+#        'keras',
+#        'dtcwt',
+#        'cupy-cuda100',
+#        'gputools',
+#        'numexpr'
     ],
 
     entry_points='''

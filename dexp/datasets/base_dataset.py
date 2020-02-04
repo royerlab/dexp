@@ -9,7 +9,7 @@ from skimage.transform import downscale_local_mean
 from tifffile import TiffWriter
 from zarr import open_group
 
-from dexp.enhance.sharpen import sharpen
+#from dexp.enhance.sharpen import sharpen
 from dexp.fusion.fast_fusion import FastFusion
 from dexp.io.io import tiff_save
 from dexp.isonet.isonet import IsoNet

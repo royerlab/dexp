@@ -1,5 +1,6 @@
 from time import time
 
+import napari
 from napari import Viewer, gui_qt
 from numpy import s_
 
@@ -8,7 +9,7 @@ from dexp.datasets.zarr_dataset import ZDataset
 
 
 def demo(path):
-    dataset = CCDataset(path)
+    dataset = ZDataset(path)
 
     assert not dataset is None
 
@@ -45,10 +46,10 @@ def demo(path):
     print(dataset.info('sequential'))
     print(dataset.get_stacks('sequential').shape)
 
-    with app_context():
+    with napari.qt_gui():
         viewer = Viewer()
 
         viewer.add_image(dataset.get_stacks('sequential'), name='image', clim_range=[0, 1000])
 
 
-demo('/Users/royer/Volumes/micro1/data/prod/2019-07-03-16-23-15-65-f2va.mch7')
+demo('D:/2020-01-14-18-20-22-55-h2afva.mcherry.mezzo.gfp.ch0.fused.zarr')

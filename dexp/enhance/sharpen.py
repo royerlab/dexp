@@ -2,10 +2,9 @@ import numexpr
 from math import sqrt
 
 import numpy
-import scipy
 from gputools import OCLArray, gaussian_filter
 from gputools.convolve import median_filter
-from gputools.denoise import nlm3
+
 
 
 def fast_median_filter(image, size):
