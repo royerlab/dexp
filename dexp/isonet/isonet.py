@@ -12,7 +12,7 @@ from csbdeep.models import Config, IsotropicCARE
 
 class IsoNet:
 
-    def __init__(self, context_name='default'):
+    def __init__(self, context_name='default', subsampling = 5):
         """
 
         """
@@ -23,19 +23,19 @@ class IsoNet:
 
         self.model = None
 
-
-
-    def prepare(self, image, subsampling = 5, psf=np.ones((3, 3)) / 9, threshold=0.9):
-
         self.subsampling = subsampling
 
+
+
+    def prepare(self, image, psf=np.ones((3, 3)) / 9, threshold=0.9):
+
         print('image size         =', image.shape)
-        print('Z subsample factor =', subsampling)
+        print('Z subsample factor =', self.subsampling)
 
         raw_data = RawData.from_arrays(image, image, axes='ZYX')
 
         anisotropic_transform = anisotropic_distortions(
-            subsample=subsampling,
+            subsample=self.subsampling,
             psf=psf,  # use the actual PSF here
             psf_axes='YX',
         )

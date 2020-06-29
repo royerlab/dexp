@@ -253,16 +253,19 @@ class BaseDataset(ABC):
                overwrite=False,
                context='default',
                mode='pta',
-               dxy = 0.4,
-               dz  = 6.349,
+               dxy = 0.485,
+               dz  = 1.97,
                binning = 2,
                sharpening = False,
-               training_tp_index=0,
+               training_tp_index=None,
                max_epochs=100):
 
 
         if channel is None:
             channel = 'fused'
+
+        if training_tp_index is None:
+            training_tp_index = self.nb_timepoints(channel)//2
 
         print(f"Selected channel {channel}")
 
@@ -279,14 +282,20 @@ class BaseDataset(ABC):
         subsampling = dz / dxy
         print(f"Parameters: dxy={dxy}, dz={dz}, subsampling={subsampling}")
 
+        psf = numpy.ones((1, 1)) / 1
+        print(f"PSF (along xy): {psf}")
 
-        isonet = IsoNet(context)
+        isonet = IsoNet(context, subsampling=subsampling)
 
         if 'p' in mode:
-            psf = numpy.ones((1, 1)) / 1
 
             training_array_tp = array[training_tp_index].compute()
-            isonet.prepare(training_array_tp, subsampling=subsampling, psf=psf, threshold=0.99)
+
+            training_downscaled_array_tp = downscale_local_mean(training_array_tp, factors=(1, binning, binning))
+
+            print(f"Training image shape: {training_downscaled_array_tp.shape} ")
+
+            isonet.prepare(training_downscaled_array_tp, psf=psf, threshold=0.999)
 
         if 't' in mode:
             isonet.train(max_epochs=max_epochs)
