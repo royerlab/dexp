@@ -1,13 +1,4 @@
-import os
 from abc import ABC, abstractmethod
-
-import numpy
-import zarr
-from numcodecs.blosc import Blosc
-from tifffile import memmap, TiffWriter
-from zarr import open_group
-
-from dexp.enhance.sharpen import sharpen
 
 
 class BaseFusion(ABC):
@@ -18,8 +9,27 @@ class BaseFusion(ABC):
         """
 
     @abstractmethod
-    def fuse(self, C0L0, C0L1, C1L0, C1L1):
+    def equalise_intensity(self, image1, image2, zero_level=90, percentile=0.999):
         pass
+
+    @abstractmethod
+    def fuse_lightsheets(self, CxL0, CxL1, asnumpy=True):
+        pass
+
+    @abstractmethod
+    def register_stacks(self, C0Lx, C1Lx):
+        pass
+
+    @abstractmethod
+    def fuse_cameras(self, C0Lx, C1Lx, asnumpy=True):
+        pass
+
+
+
+
+
+
+
 
 
 

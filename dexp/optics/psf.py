@@ -15,7 +15,7 @@ References:
 1. Li et al, "Fast and accurate three-dimensional point spread function computation
    for fluorescence microscopy", JOSA, 2017.
 
-2. Gibson, S. & Lanni, F. "Experimental test of an analytical model of
+2. Gibson, S. & Lanni, F. "Experimental demo of an analytical model of
    aberration in an oil-immersion objective lens used in three-dimensional
    light microscopy", J. Opt. Soc. Am. A 9, 154-166 (1992), [Originally
    published in J. Opt. Soc. Am. A 8, 1601-1613 (1991)].

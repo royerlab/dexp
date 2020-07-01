@@ -1,12 +1,10 @@
-import cupy
 import numpy
 from napari import gui_qt, Viewer
 from scipy.ndimage import zoom
 from tifffile import imread, imwrite
 
-from dexp.enhance.sharpen import sharpen
+from dexp.enhance import sharpen
 from dexp.isonet.isonet import  IsoNet
-from dexp.optics.psf import gLXYZFocalScan, m_params, nikon16x08na
 from dexp.utils.timeit import timeit
 
 #image = imread('data/retina/cropped_farred_RFP_GFP_2109175_2color_sub_10.20.tif')

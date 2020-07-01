@@ -23,22 +23,25 @@ https://www.anaconda.com/distribution/
 
 # Installation:
 
-Create conda environment:
+###Create conda environment:
 ```
 conda create --name dexp python=3.7 
 ```
 
-Activate environment:
+###Activate environment:
 ```
 conda activate dexp
 ```
 
-Install important packages:
+###Install dependencies:
+
+On a Linux system:
 ```
-conda config --add channels conda-forge
-conda config --add channels talley
-conda install numpy mkl zarr dask click numcodecs joblib pyopencl
-pip install tiffile napari joblib
+install_linux.sh
+```
+or on Windows:
+```
+install_windows.sh
 ```
 
 Clone dexp:

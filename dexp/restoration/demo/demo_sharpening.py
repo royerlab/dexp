@@ -1,7 +1,7 @@
 from napari import gui_qt, Viewer
 from tifffile import imread
 
-from dexp.enhance.sharpen import median_sharpening, gaussian_sharpening, hybrid_sharpening, sharpen
+from dexp.enhance import sharpen
 from dexp.utils.timeit import timeit
 
 image = imread('../../data/zfish/zfish2.tif')
