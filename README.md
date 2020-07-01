@@ -54,8 +54,17 @@ If some errors occur -- in paticular related to pypencl r mako -- please rerun t
 On Ubuntu, you might still have issues, yu might need to install these packages (as root):
 ```
 apt-get install opencl-headers
+apt install ocl-icd-opencl-dev
 apt-get install ocl-icd-libopencl1
 ```
+
+You might want to install clinf to check your OpenCL install:
+```
+apt-get install beignet clinfo
+```
+
+
+
 ### Install Aydin:
 
 DEXP depends on Aydin (for denoising, deconvolution and more...)
