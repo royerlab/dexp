@@ -49,6 +49,13 @@ or on Windows:
 bash install_windows.sh
 ```
 
+If some errors occur -- in paticular related to pypencl r mako -- please rerun the script.
+
+On Ubuntu, you might still have issues, yu might need to install these packages (as root):
+```
+apt-get install opencl-headers
+apt-get install ocl-icd-libopencl1
+```
 ### Install Aydin:
 
 DEXP depends on Aydin (for denoising, deconvolution and more...)
