@@ -23,33 +23,41 @@ https://www.anaconda.com/distribution/
 
 # Installation:
 
-###Create conda environment:
-```
-conda create --name dexp python=3.7 
-```
-
-###Activate environment:
-```
-conda activate dexp
-```
-
-###Install dependencies:
-
-On a Linux system:
-```
-install_linux.sh
-```
-or on Windows:
-```
-install_windows.sh
-```
-
-Clone dexp:
+### Clone dexp:
 ```
 git clone https://github.com/royerlab/dexp.git
 ```
 
-Install dexp:
+### Create conda environment:
+```
+conda create --name dexp python=3.7 
+```
+
+### Activate environment:
+```
+conda activate dexp
+```
+
+### Install dependencies:
+
+On a Linux system:
+```
+bash install_linux.sh
+```
+or on Windows:
+```
+bash install_windows.sh
+```
+
+### Install Aydin:
+
+DEXP depends on Aydin (for denoising, deconvolution and more...)
+```
+cd aydin
+pip install -e .
+```
+
+### Install dexp:
 ```
 cd dexp
 pip install -e .
