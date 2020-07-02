@@ -1,17 +1,18 @@
 
 conda install -y pytorch torchvision cudatoolkit=10.1 -c pytorch
-conda install -y dask zarr
+conda install -y dask zarr 
 conda install -y tifffile
-pip install cupy-cuda101
-pip install torch-dct
-pip install scikit-image
-pip install pybind11 Mako
-pip install tensorflow-gpu==1.15 keras==2.2.4
+conda update  dask zarr tifffile pytorch
+pip install cupy-cuda101 --upgrade
+pip install torch-dct --upgrade
+pip install scikit-image --upgrade
+pip install pybind11 Mako --upgrade
+pip install tensorflow-gpu==1.15 keras==2.2.4 --upgrade
 pip install napari[all] --upgrade
-pip install click cachey numexpr joblib
-pip install pyopencl
-pip install gputools dtcwt csbdeep cupy-cuda100
-pip install git+https://github.com/guiwitz/naparimovie.git@master#egg=naparimovie
-pip install spimagine
+pip install click cachey numexpr joblib --upgrade
+pip install pyopencl --upgrade
+pip install gputools dtcwt csbdeep cupy-cuda100 --upgrade
+pip install git+https://github.com/guiwitz/naparimovie.git@master#egg=naparimovie --upgrade
+pip install spimagine --upgrade
 pip install -e .
 

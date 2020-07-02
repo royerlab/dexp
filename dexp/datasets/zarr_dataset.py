@@ -26,7 +26,7 @@ class ZDataset(BaseDataset):
         print(f"Initialising Zarr storage...")
         if isfile(path) and path.endswith('.zarr.zip'):
             store = zarr.storage.ZipStore(path)
-        elif isdir(path) and path.endswith('.zarr'):
+        elif isdir(path) and ( path.endswith('.zarr') or path.endswith('.zarr/')):
             store = zarr.storage.DirectoryStore(path)
         else:
             print(f'Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr`), or a zipped zarr file (file that ends with `.zarr.zip`)')

@@ -6,9 +6,6 @@ from time import time
 import click
 import dask
 import numpy
-from napari import Viewer, gui_qt
-from napari._qt.threading import thread_worker
-from naparimovie import Movie
 from numpy import s_
 
 from dexp.datasets.clearcontrol_dataset import CCDataset
@@ -386,6 +383,10 @@ def info(input_path):
 @click.option('--windowsize', '-ws', type=int, default=1536, help='Sets the napari window size. i.e. -ws 400 sets the window to 400x400', show_default=True)
 @click.option('--clim', '-cl', type=str, default=None, help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]', show_default=True)
 def view(input_path, channels=None, slicing=None, volume=False, aspect=None, colormap='viridis', render=None, windowsize=1536, clim=None):
+    
+    from napari import Viewer, gui_qt
+    from napari._qt.threading import thread_worker
+        
     input_dataset = get_dataset_from_path(input_path)
 
     if channels is None:
@@ -465,12 +466,14 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
 
 
             if render is not None:
+
                 render = render.strip()
                 parameters = dict(item.split("=") for item in render.split(",")) if render != 'defaults' else dict()
 
                 backend = parameters['backend'] if 'backend' in parameters else 'naparimovie'
 
                 if backend == 'naparimovie':
+                    from naparimovie import Movie
 
                     script = parameters['script'] if 'script' in parameters else 'script.txt'
                     steps = int(parameters['steps']) if 'steps' in parameters else 60
