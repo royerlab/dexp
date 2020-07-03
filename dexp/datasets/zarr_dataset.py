@@ -5,7 +5,7 @@ import dask
 import psutil
 import zarr
 from numcodecs import blosc
-from zarr import ZipStore, DirectoryStore, open_group, convenience
+from zarr import ZipStore, DirectoryStore, open_group, convenience, CopyError
 
 from dexp.datasets.base_dataset import BaseDataset
 import multiprocessing
@@ -119,17 +119,26 @@ class ZDataset(BaseDataset):
                 f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect.")
             return None
 
+        print(f"Existing groups in store: {root.items()}")
+
         for channel, new_name in zip(channels, rename):
+            try:
+                array = self.get_stacks(channel, per_z_slice=False)
+                source_group = self.get_group_for_channel(channel)
+                source_array = tuple((a for n,a in source_group.items() if n == channel))[0]
 
-            array = self.get_stacks(channel, per_z_slice=False)
-            source_group = self.get_group_for_channel(channel)
-            source_array = tuple((a for n,a in source_group.items() if n == channel))[0]
 
-            print(f"Creating group for channel {channel} of new name {new_name}.")
-            dest_group = root.create_group(new_name)
+                print(f"Creating group for channel {channel} of new name {new_name}.")
+                if new_name not in root.group_keys():
+                    dest_group = root.create_group(new_name)
+                else:
+                    dest_group = root[new_name]
 
-            print(f"Fast copying channel {channel} renamed to {new_name} of shape {array.shape} and dtype {array.dtype} ")
-            convenience.copy(source_array, dest_group, if_exists='replace' if overwrite else 'raise')
+                print(f"Fast copying channel {channel} renamed to {new_name} of shape {array.shape} and dtype {array.dtype} ")
+                convenience.copy(source_array, dest_group, if_exists='replace' if overwrite else 'raise')
+            except CopyError:
+                print(f"Channel already exists, set option '-w' to force overwriting! ")
+
 
 
 

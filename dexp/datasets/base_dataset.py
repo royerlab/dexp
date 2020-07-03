@@ -228,8 +228,9 @@ class BaseDataset(ABC):
             if load_shifts:
                 line = shifts_file.readline().strip()
                 shifts = tuple(float(shift) for shift in line.split('\t'))
+                print(f"loaded shifts: {shifts} ")
             else:
-                shifts=None
+                shifts = None
 
             print(f'Fusing...')
             array, shifts = fusion.fuse_2I2D(C0L0, C0L1, C1L0, C1L1, shifts=shifts, zero_level=zero_level, as_numpy=True)
@@ -252,6 +253,8 @@ class BaseDataset(ABC):
 
         print("Zarr tree:")
         print(root.tree())
+
+        shifts_file.close()
 
         return root
 
