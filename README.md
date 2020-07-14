@@ -21,6 +21,8 @@ Once Napari supports 3D viewing we will also have that...
 Install Anaconda:
 https://www.anaconda.com/distribution/
 
+On windows, make sure to insatll CUDA 10.2 (exactly that version for the current version of dexp)
+
 # Installation:
 
 ### Clone dexp:
@@ -63,14 +65,13 @@ You might want to install clinf to check your OpenCL install:
 apt-get install beignet clinfo
 ```
 
-
-
 ### Install Aydin:
 
 DEXP depends on Aydin (for denoising, deconvolution and more...)
 ```
 cd aydin
 pip install -e .
+python setup.py develop
 ```
 
 ### Install dexp:
