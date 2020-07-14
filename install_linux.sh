@@ -11,7 +11,7 @@ pip install tensorflow-gpu==1.15 keras==2.2.4 --upgrade
 pip install napari[all] --upgrade
 pip install click cachey numexpr joblib --upgrade
 pip install pyopencl --upgrade
-pip install gputools dtcwt csbdeep cupy-cuda100 --upgrade
+pip install gputools dtcwt csbdeep --upgrade
 pip install git+https://github.com/guiwitz/naparimovie.git@master#egg=naparimovie --upgrade
 pip install spimagine --upgrade
 pip install -e .
