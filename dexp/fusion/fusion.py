@@ -125,8 +125,9 @@ class SimpleFusion(BaseFusion):
 
         median_ratio = xp.percentile(ratios.astype(numpy.float32), q=50)
 
-        image1 -= zero_level
-        image2 -= zero_level
+        if zero_level!=0:
+            image1 -= zero_level
+            image2 -= zero_level
 
         image1.clip(0, math.inf, out=image1)
         image2.clip(0, math.inf, out=image2)

@@ -248,8 +248,12 @@ class BaseDataset(ABC):
         if workers is None:
             workers = os.cpu_count()//2
 
-        from joblib import Parallel, delayed
-        Parallel(n_jobs=workers, backend='threading')(delayed(process)(tp) for tp in range(0, shape[0]))
+        if workers == 1:
+            for tp in range(0, shape[0]):
+                process(tp)
+        else:
+            from joblib import Parallel, delayed
+            Parallel(n_jobs=workers, backend='threading')(delayed(process)(tp) for tp in range(0, shape[0]))
 
         print("Zarr tree:")
         print(root.tree())
