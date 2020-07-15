@@ -72,9 +72,7 @@ class SimpleFusion(BaseFusion):
         spz = int(split_point_z * length)
         profile = numpy.fromfunction(lambda z: 1.0 - 0.5 * (1 + (((z - spz) / smoothness) / (1.0 + ((z - spz) / smoothness) ** 2) ** 0.5)), shape=(length,), dtype=self.dtype)
         profile = profile.astype(self.dtype, copy=False)
-        blending_map = numpy.outer(numpy.ones(shape[1:3], dtype=self.dtype), profile)
-        blending_map = numpy.moveaxis(blending_map, 0, -1)
-        blending_map = numpy.reshape(blending_map, newshape=shape)
+        blending_map = profile[...,newaxis, newaxis]
         return blending_map
 
     def _get_blending_map_x(self, shape, split_point_x, smoothness):
@@ -82,8 +80,7 @@ class SimpleFusion(BaseFusion):
         spx = int(split_point_x * length)
         profile = numpy.fromfunction(lambda x: 1.0 - 0.5 * (1 + (((x - spx) / smoothness) / (1.0 + ((x - spx) / smoothness) ** 2) ** 0.5)), shape=(length,), dtype=self.dtype)
         profile = profile.astype(self.dtype, copy=False)
-        blending_map = numpy.outer(numpy.ones(shape[0:2], dtype=self.dtype), profile)
-        blending_map = numpy.reshape(blending_map, newshape=shape)
+        blending_map = profile[newaxis, newaxis, ...]
         return blending_map
 
     def _initialise_blending_maps(self, shape):
@@ -157,8 +154,11 @@ class SimpleFusion(BaseFusion):
             with torch.no_grad():
                 fused = self._cb(bCxL0) * self._cb(CxL0) + self._cb(bCxL1) * self._cb(CxL1)
         elif 'cupy' in self.backend:
-            fuse = cupy.ElementwiseKernel('T a, T b, T c, T d', 'T f', 'f = a*b+c*d', 'fuse')
-            fused = fuse(self._cb(bCxL0), self._cb(CxL0), self._cb(bCxL1), self._cb(CxL1))
+            CxL0 = self._cb(CxL0)
+            CxL1 = self._cb(CxL1)
+            CxL0 *= self._cb(bCxL0)
+            CxL1 *= self._cb(bCxL1)
+            fused = CxL0+CxL1
 
         elif 'numpy' in self.backend:
             fused = numexpr.evaluate("bCxL0 * CxL0 + "
@@ -299,7 +299,11 @@ class SimpleFusion(BaseFusion):
             with torch.no_grad():
                 fused = self._cb(bC0Lx) * self._cb(C0Lx) + self._cb(bC1Lx) * self._cb(C1Lx)
         elif 'cupy' in self.backend:
-            fused = self._cb(bC0Lx) * self._cb(C0Lx) + self._cb(bC1Lx) * self._cb(C1Lx)
+            C0Lx = self._cb(C0Lx)
+            C1Lx = self._cb(C1Lx)
+            C0Lx *= self._cb(bC0Lx)
+            C1Lx *= self._cb(bC1Lx)
+            fused = C0Lx + C1Lx
         elif 'numexpr' in self.backend:
             fused = numexpr.evaluate("bC0Lx * C0Lx + "
                                      "bC1Lx * C1Lx ")

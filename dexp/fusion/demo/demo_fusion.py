@@ -4,7 +4,7 @@
 import time
 
 import numpy
-from aydin.it.llr_deconv import ImageTranslatorLearnedLRDeconv
+#from aydin.it.llr_deconv import ImageTranslatorLearnedLRDeconv
 from napari import gui_qt, Viewer
 from tifffile import imread
 
@@ -28,10 +28,11 @@ C1L1 = array[3]
 C1L0 = numpy.flip(C1L0, -1)
 C1L1 = numpy.flip(C1L1, -1)
 
-CxLx, shifts = fusion.fuse_2I2D(C0L0, C0L1, C1L0, C1L1, as_numpy=True).astype(numpy.float32)
+CxLx, shifts = fusion.fuse_2I2D(C0L0, C0L1, C1L0, C1L1, as_numpy=True)
+CxLx = CxLx.astype(numpy.float32)
 print(f"Shifts = {shifts}")
 
-lr = ImageTranslatorLearnedLRDeconv(psf_kernel=psf_kernel, max_num_iterations=40)
+#lr = ImageTranslatorLearnedLRDeconv(psf_kernel=psf_kernel, max_num_iterations=40)
 
 stop = time.time()
 print(f"Elapsed fusion time:  {stop-start} (includes loading)")

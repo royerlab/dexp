@@ -226,9 +226,13 @@ class BaseDataset(ABC):
             C1L1 = numpy.flip(C1L1, -1)
 
             if load_shifts:
-                line = shifts_file.readline().strip()
-                shifts = tuple(float(shift) for shift in line.split('\t'))
-                print(f"loaded shifts: {shifts} ")
+                try:
+                    line = shifts_file.readline().strip()
+                    shifts = tuple(float(shift) for shift in line.split('\t'))
+                    print(f"loaded shifts: {shifts} ")
+                except ValueError:
+                    print(f"Cannot read shift from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
+
             else:
                 shifts = None
 
