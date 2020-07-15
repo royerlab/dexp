@@ -177,6 +177,10 @@ Options:
 ```
 
 ## Fusion (& registration):
+Fuses and registers stacks acquired on a lightsheet mcroscope.
+Right now we have only support for SimView type lightsheet microscope
+with 2 detection arms and 2 illmination arms. Channels must be named:
+'C0L0', 'C0L1', 'C1L0', 'C1L1'. The result has a single channel called 'fused'.
 ```
 Usage: dexp fuse [OPTIONS] INPUT_PATH
 
@@ -205,6 +209,8 @@ Options:
 ```
 
 ## Deconvolution:
+Deconvolvesstacks using a simulated PSF. Right now we only support the optics of
+our SimVew type light sheet (0.8 NA objectives wth custom magnfication.)
 ```
 Usage: dexp deconv [OPTIONS] INPUT_PATH
 
@@ -254,6 +260,8 @@ Options:
 ```
 
 ## Isonet:
+Provides support for Isonet deep learning based axial deconvolution:
+https://arxiv.org/abs/1704.01510
 ```
 Usage: dexp isonet [OPTIONS] INPUT_PATH
 
@@ -279,6 +287,10 @@ Options:
 
 
 ## Volume rendering:
+Simple but effective volume rendering. By default should produce nice rotating views,
+but lots of parameters can be configured!
+This command produces video frames as individual PNG files in a subfolder (frames).
+To make a movie, blend channels together, or stich panels together, use the blend, stack and mp4 commands.
 ```
 Usage: dexp render [OPTIONS] INPUT_PATH
 
@@ -312,6 +324,9 @@ Options:
 ```
 
 ## Video compositing:
+Takes frames and blend them together. Typically used for merging channels,
+but can also be used to add text -- if you provide a folder to a sngle PNG image
+of correct dimensions
 ```
 Usage: dexp blend [OPTIONS] [INPUT_PATHS]...
 
@@ -328,25 +343,9 @@ Options:
 
 ```
 
-## Video compositing:
-```
-Usage: dexp blend [OPTIONS] [INPUT_PATHS]...
-
-Options:
-  -o, --output_path TEXT  Output folder for blended frames.
-  -b, --blending TEXT     Blending mode: max, add, addclip, adderf (add stands
-                          for addclip).  [default: max]
-
-  -w, --overwrite         to force overwrite of target  [default: False]
-  -k, --workers INTEGER   Number of worker threads to spawn, set to -1 for
-                          maximum number of workers  [default: -1]
-
-  --help                  Show this message and exit.
-
-```
-
-
-## Video stacking -- horyzontal or vertical:
+## Video stacking:
+In addition to blending frames you can also stack frames horyzontally or vertically
+to make multi-panel videos. Again, here we just manipulate folders of PNG files. 
 ```
 Usage: dexp stack [OPTIONS] [INPUT_PATHS]...
 
@@ -362,6 +361,7 @@ Options:
 ```
 
 ## Conversion from frame sequences to mp4 file:
+Takes a folder of PNG files and makes it into a MP4 file.
 ```
 Usage: dexp mp4 [OPTIONS] INPUT_PATH
 
@@ -376,6 +376,7 @@ Options:
 ```
 
 ## view:
+Views a dataset with napari
 ```
 Usage: dexp view [OPTIONS] INPUT_PATH
 
