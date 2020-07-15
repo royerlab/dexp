@@ -53,18 +53,18 @@ or on Windows:
 bash install_windows.sh
 ```
 
-If some errors occur -- in paticular related to pypencl r mako -- please rerun the script.
+If some errors occur -- in paticular related to pyopencl or mako -- please rerun the script.
 
 On Ubuntu, you might still have issues, yu might need to install these packages (as root):
 ```
-apt-get install opencl-headers
-apt-get install ocl-icd-opencl-dev
-apt-get install ocl-icd-libopencl1
+sudo apt-get install opencl-headers
+sudo apt-get install ocl-icd-opencl-dev
+sudo apt-get install ocl-icd-libopencl1
 ```
 
 You might want to install clinf to check your OpenCL install:
 ```
-apt-get install beignet clinfo
+sudo apt-get install beignet clinfo
 ```
 
 ### Install Aydin:
