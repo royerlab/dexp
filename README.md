@@ -45,6 +45,14 @@ conda activate dexp
 ### Install dependencies:
 
 On a Linux system:
+
+First make sure to have headers for OpenCL:
+```
+sudo apt-get install opencl-headers
+sudo apt-get install ocl-icd-opencl-dev
+sudo apt-get install ocl-icd-libopencl1
+```
+and then install dependencies:
 ```
 bash install_linux.sh
 ```
@@ -55,12 +63,7 @@ bash install_windows.sh
 
 If some errors occur -- in paticular related to pyopencl or mako -- please rerun the script.
 
-On Ubuntu, you might still have issues, yu might need to install these packages (as root):
-```
-sudo apt-get install opencl-headers
-sudo apt-get install ocl-icd-opencl-dev
-sudo apt-get install ocl-icd-libopencl1
-```
+
 
 You might want to install clinf to check your OpenCL install:
 ```
