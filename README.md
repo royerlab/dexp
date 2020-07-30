@@ -421,11 +421,11 @@ dexp view -s '[0:100]' 2019-07-03-16-23-15-65-f2va.mch7
 ## redirect to file and to standard output:
 You can send the output to a log file and still be able to see the output by using the following postfix:
 ```
-2>&1 | tee outfile
+2>&1 | tee logfile.txt
 ```
 Example:
 ```
-dexp ... dexp parameters ... 2>&1 | tee outfile
+dexp ... dexp parameters ... 2>&1 | tee logfile.txt
 ```
 
 ## use tmux to keep track of long runing jobs
