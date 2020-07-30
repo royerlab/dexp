@@ -452,7 +452,7 @@ tmux new -s database
 
 Once in your session you can activate the dexp environment, and start dexp, etc...
 
-Important: You can leave a session by pressing the keys: <CTRL>+<B> then <D> 
+Important: You can leave a session by pressing the keys: CTRL+B then D 
  
 To come back to a session, you reattach:
 ```
@@ -469,7 +469,7 @@ tmux ls
 ```
 
 To close a session:
-First kill the running process within the session by pressing <CTRL>+<C> or/and <CTRL>+<Z>,
+First kill the running process within the session by pressing CTRL+C or/and CTRL+Z,
 and then, simply type the command exit in the termnal within the session. This is another 
   
  
