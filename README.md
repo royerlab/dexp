@@ -415,3 +415,73 @@ dexp view -s '[0:100]' 2019-07-03-16-23-15-65-f2va.mch7
 - You can pass arguments in any order for bash but not for all shells, i.e. zsh.
 - You can pass string arguments as non string in bash but not in all shells.
 
+
+# Pro Tips
+
+## redirect to file and to standard output:
+You can send the output to a log file and still be able to see the output by using the following postfix:
+```
+2>&1 | tee outfile
+```
+Example:
+```
+dexp ... dexp parameters ... 2>&1 | tee outfile
+```
+
+## use tmux to keep track of long runing jobs
+
+Why TMUX? When you connect via network adn SSH, you can start a process on a remote machine,
+but it often occurs that closing the terminal or loosing the network connection will kill the running
+process. Even if one figures out how to keep the processs running, you rarely can see again the log 
+outputs - unless you have explictely redirected to a file.
+
+First make sure that tmux is instaled on your system:
+```
+sudo apt-get install tmux
+```
+
+Connect to your machine using, for example, ssh:
+```
+ssh username@machine
+```
+
+Create the session in which you want to run your long-running process:
+```
+tmux new -s database
+```
+
+Once in your session you can activate the dexp environment, and start dexp, etc...
+
+Important: You can leave a session by pressing the keys: <CTRL>+<B> then <D> 
+ 
+To come back to a session, you reattach:
+```
+tmux attach -t dexp
+```
+Once a session is created, it will remain active until you close it, no need
+to create it again. You can disconnect your SSH session, loose network connection, 
+close your computer, and still be able to reconnect to your session and have everything 
+as if you had kept everything open.
+
+To list all active sessions:
+```
+tmux ls
+```
+
+To close a session:
+First kill the running process within the session by pressing <CTRL>+<C> or/and <CTRL>+<Z>,
+and then, simply type the command exit in the termnal within the session. This is another 
+  
+ 
+
+
+
+
+  
+  
+
+
+
+
+
+
