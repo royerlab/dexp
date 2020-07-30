@@ -430,10 +430,12 @@ dexp ... dexp parameters ... 2>&1 | tee outfile
 
 ## use tmux to keep track of long runing jobs
 
-Why TMUX? When you connect via network adn SSH, you can start a process on a remote machine,
+Why tmux? When you connect via network adn SSH, you can start a process on a remote machine,
 but it often occurs that closing the terminal or loosing the network connection will kill the running
 process. Even if one figures out how to keep the processs running, you rarely can see again the log 
-outputs - unless you have explictely redirected to a file.
+outputs - unless you have explictely redirected to a file. tmux greatly simplifies all this by providing
+persistent terminal sessions.
+
 
 First make sure that tmux is instaled on your system:
 ```
@@ -459,17 +461,17 @@ To come back to a session, you reattach:
 tmux attach -t dexp
 ```
 Once a session is created, it will remain active until you close it, no need
-to create it again. You can disconnect your SSH session, loose network connection, 
+to create it again (unless you have closed it!). You can disconnect your SSH session, loose network connection, 
 close your computer, and still be able to reconnect to your session and have everything 
 as if you had kept everything open.
 
-To list all active sessions:
+In doubt, you can list all active sessions:
 ```
 tmux ls
 ```
 
 To close a session:
-First kill the running process within the session by pressing CTRL+C or/and CTRL+Z,
+First kill, if needed, the running process within the session by pressing CTRL+C or/and CTRL+Z,
 and then, simply type the command exit in the termnal within the session. This is another 
   
  
