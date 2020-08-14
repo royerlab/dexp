@@ -150,7 +150,7 @@ class BaseDataset(ABC):
         print("Zarr tree:")
         print(root.tree())
 
-        return root
+        store.close()
 
 
 
@@ -264,7 +264,7 @@ class BaseDataset(ABC):
 
         shifts_file.close()
 
-        return root
+        store.close()
 
 
     def deconv(self,
@@ -384,7 +384,7 @@ class BaseDataset(ABC):
         print("Zarr tree:")
         print(root.tree())
 
-        return root
+        store.close()
 
 
 
@@ -509,7 +509,7 @@ class BaseDataset(ABC):
             print("Zarr tree:")
             print(root.tree())
 
-            return root
+            store.close()
 
 
 
