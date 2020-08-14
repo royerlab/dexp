@@ -23,10 +23,12 @@ class ZDataset(BaseDataset):
 
         self._folder = path
 
-        print(f"Initialising Zarr storage...")
+        print(f"Initialising Zarr storage: '{path}'")
         if isfile(path) and path.endswith('.zarr.zip'):
+            print(f"Opening as ZIP store")
             store = zarr.storage.ZipStore(path)
         elif isdir(path) and ( path.endswith('.zarr') or path.endswith('.zarr/')):
+            print(f"Opening as Directory store")
             store = zarr.storage.DirectoryStore(path)
         else:
             print(f'Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr`), or a zipped zarr file (file that ends with `.zarr.zip`)')
@@ -35,7 +37,7 @@ class ZDataset(BaseDataset):
             print(f"Setting up Zarr cache with {cache_size / 1e9} GB...")
             store = zarr.LRUStoreCache(store, max_size=cache_size)
 
-        print(f"Opening Zarr storage...")
+        print(f"Opening Zarr storage with mode='{mode}'")
         self._z = zarr.convenience.open(store, mode=mode)
         self._channels = [channel for channel, _ in self._z.groups()]
         self._arrays = {}
