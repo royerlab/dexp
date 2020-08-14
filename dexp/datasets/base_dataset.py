@@ -366,6 +366,8 @@ class BaseDataset(ABC):
                 except Exception as error:
                     print(error)
                     print(f"Error occurred while copying time point {tp} !")
+                    import traceback
+                    traceback.print_exc()
 
 
             from joblib import Parallel, delayed
