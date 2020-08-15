@@ -1,6 +1,6 @@
 import os
 from abc import ABC, abstractmethod
-from os.path import join
+from os.path import join, exists
 
 import numpy
 from numcodecs import blosc
@@ -62,6 +62,8 @@ class BaseDataset(ABC):
         try:
             if store == 'zip':
                 path = path if path.endswith('.zip') else path+'.zip'
+                if exists(path) and overwrite:
+                    os.remove(path)
                 store = ZipStore(path)
             elif  store == 'dir':
                 store = DirectoryStore(path)
@@ -186,6 +188,8 @@ class BaseDataset(ABC):
             print(f"opening Zarr file for writing at: {path}")
             if store == 'zip':
                 path = path if path.endswith('.zip') else path+'.zip'
+                if exists(path) and overwrite:
+                    os.remove(path)
                 store = ZipStore(path)
             elif  store == 'dir':
                 store = DirectoryStore(path)
@@ -291,6 +295,8 @@ class BaseDataset(ABC):
         try:
             if store == 'zip':
                 path = path if path.endswith('.zip') else path+'.zip'
+                if exists(path) and overwrite:
+                    os.remove(path)
                 store = ZipStore(path)
             elif  store == 'dir':
                 store = DirectoryStore(path)
@@ -455,6 +461,8 @@ class BaseDataset(ABC):
                 print(f"opening Zarr file for writing at: {path}")
                 if store == 'zip':
                     path = path if path.endswith('.zip') else path+'.zip'
+                    if exists(path) and overwrite:
+                        os.remove(path)
                     store = ZipStore(path)
                 elif store == 'dir':
                     store = DirectoryStore(path)
