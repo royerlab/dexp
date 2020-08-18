@@ -3,6 +3,7 @@ conda install -y pytorch torchvision cudatoolkit=10.2 -c pytorch
 conda install -y dask zarr 
 conda install -y tifffile
 conda update -y dask zarr tifffile pytorch
+conda install -c conda-forge ocl-icd-system
 pip install cupy-cuda102 --upgrade
 pip install torch-dct --upgrade
 pip install scikit-image --upgrade
