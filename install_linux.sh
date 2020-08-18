@@ -3,6 +3,7 @@ conda install -y dask zarr
 conda update -y dask zarr pytorch
 
 conda config --add channels conda-forge
+conda install -c conda-forge ocl-icd-system
 conda install pyopencl
 conda install -y tifffile
 
