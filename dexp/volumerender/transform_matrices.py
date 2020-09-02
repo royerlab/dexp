@@ -11,11 +11,8 @@ mat4_perspective = gluPerspective
 author: Martin Weigert
 email: mweigert@mpi-cbg.de
 """
-
-from __future__ import absolute_import, print_function
-
 import numpy as np
-from spimagine.utils.quaternion import Quaternion
+from dexp.volumerender.quaternion import Quaternion
 
 
 def mat4_scale(x=1., y=1., z=1.):
