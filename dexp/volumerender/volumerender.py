@@ -25,11 +25,14 @@ author: Martin Weigert
 email: mweigert@mpi-cbg.de
 """
 
-from __future__ import absolute_import, print_function
+
 
 import logging
 
+
 from six.moves import zip
+
+from dexp.volumerender.transform_matrices import mat4_perspective, mat4_identity, mat4_scale
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +42,7 @@ from scipy.linalg import inv
 from time import time
 import sys
 from gputools import init_device, get_device, OCLProgram, OCLArray, OCLImage
-from spimagine.utils.transform_matrices import *
-import spimagine
+import numpy as np
 
 
 def absPath(myPath):
@@ -70,6 +72,8 @@ class VolumeRenderer:
     def __init__(self, size=None, interpolation='linear'):
         """ e.g. size = (300,300)"""
 
+        self.__DEFAULTMAXSTEPS__ = 200
+        self.__QUALIFIER_CONSTANT_TO_GLOBAL__ = 0
         try:
             # simulate GPU fail...
             # raise Exception()
@@ -134,11 +138,11 @@ class VolumeRenderer:
 
     def rebuild_program(self, interpolation = "linear"):
         build_options_basic = ["-I", "%s" % absPath("kernels/"),
-                               "-D", "maxSteps=%s" % spimagine.config.__DEFAULTMAXSTEPS__,
+                               "-D", "maxSteps=%s" % self.__DEFAULTMAXSTEPS__,
 
                                ]
 
-        if spimagine.config.__QUALIFIER_CONSTANT_TO_GLOBAL__:
+        if self.__QUALIFIER_CONSTANT_TO_GLOBAL__:
             build_options_basic += ["-D", "QUALIFIER_CONSTANT_TO_GLOBAL"]
 
         if interpolation in VolumeRenderer.interpolation_defines:
@@ -348,7 +352,7 @@ class VolumeRenderer:
                              np.float32(self.gamma),
                              np.float32(self.alphaPow),
                              np.int32(numParts),
-                               np.int32(currentPart),
+                             np.int32(currentPart),
                              self.invPBuf.data,
                              self.invMBuf.data,
                              self.dataImg)

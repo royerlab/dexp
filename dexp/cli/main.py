@@ -102,10 +102,8 @@ def copy(input_path, output_path, channels, slicing, store, codec, clevel, overw
 @click.option('--channels', '-c', default=None, help='List of channels, all channels when ommited.')
 @click.option('--rename', '-rc', default=None, help='You can rename channels: e.g. if channels are `channel1,anotherc` then `gfp,rfp` would rename the `channel1` channel to `gfp`, and `anotherc` to `rfp` ')
 @click.option('--store', '-st', default=_default_store, help='Store: ‘dir’, ‘zip’', show_default=True)
-@click.option('--codec', '-z', default=_default_codec, help='Compression codec: zstd for ’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ', show_default=True)
-@click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='Forces overwrite of target', show_default=True)
-def add(input_path, output_path, channels, rename, store, codec, clevel, overwrite):
+def add(input_path, output_path, channels, rename, store, overwrite):
     input_dataset = get_dataset_from_path(input_path)
 
     if channels is None:
