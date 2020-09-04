@@ -449,7 +449,7 @@ ssh username@machine
 
 Create the session in which you want to run your long-running process:
 ```
-tmux new -s database
+tmux new -s dexp
 ```
 
 Once in your session you can activate the dexp environment, and start dexp, etc...
