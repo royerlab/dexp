@@ -1,6 +1,6 @@
 
 ## DEXP
-Dataset Exploration Tool
+Dataset Exploration and Processing Tool
 
 
 DEXP let's you view both ClearControl and Zarr formats, and copy (convert) from ClearControl format
@@ -11,7 +11,7 @@ DEXP ZARR storage supports both directory and zip storage and different compress
 compression for raw data, 10x compression for deconvolved and/or denoised data, and up to 90x compression for sparse expression.
 Substracting the backgroundlight level (~ around 100 for sCMOS cameras) brings compression from typically 3X on raw data to almost 10x.
 
-DEXP currently supports fusion&registration, deconvolution, isonet, viweing with napari, volumetric rendering,
+DEXP currently supports fusion, registration, deconvolution, isonet, vieweing with napari, volumetric rendering,
 video compositing (merging channels), video export to mp4, export to tiff. 
 
 DEXP should be run ideally on very fast machines very close to the storage.
@@ -128,9 +128,9 @@ Options:
 
 ## copy:
 Copies a dataset from one file/folder to another file/folder.
-Teh destination is _always_ in ZARR format (dir ort zip).
+The destination is _always_ in ZARR format (dir ort zip).
 Prefer 'zip' for fully processed datasets (<200GB) to be able to 
-convenienytly copy a single file instead of a gazillion failes.
+convenienytly copy a single file instead of a gazillion files.
 ```
 Usage: dexp copy [OPTIONS] INPUT_PATH
 
@@ -177,7 +177,7 @@ Options:
 ```
 
 ## Fusion (& registration):
-Fuses and registers stacks acquired on a lightsheet mcroscope.
+Fuses and registers stacks acquired on a multi-view lightsheet microscope.
 Right now we have only support for SimView type lightsheet microscope
 with 2 detection arms and 2 illmination arms. Channels must be named:
 'C0L0', 'C0L1', 'C1L0', 'C1L1'. The result has a single channel called 'fused'.
@@ -209,7 +209,7 @@ Options:
 ```
 
 ## Deconvolution:
-Deconvolvesstacks using a simulated PSF. Right now we only support the optics of
+Deconvolves stacks using a simulated PSF. Right now we only support the optics of
 our SimVew type light sheet (0.8 NA objectives wth custom magnfication.)
 ```
 Usage: dexp deconv [OPTIONS] INPUT_PATH
@@ -325,7 +325,7 @@ Options:
 
 ## Video compositing:
 Takes frames and blend them together. Typically used for merging channels,
-but can also be used to add text -- if you provide a folder to a sngle PNG image
+but can also be used to add text -- if you provide a folder with a single PNG image
 of correct dimensions
 ```
 Usage: dexp blend [OPTIONS] [INPUT_PATHS]...
