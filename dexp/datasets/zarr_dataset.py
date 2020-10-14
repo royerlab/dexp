@@ -1,49 +1,98 @@
+import os
 from multiprocessing.pool import ThreadPool
-from os.path import isfile, isdir
+from os.path import isfile, isdir, exists
+from typing import Tuple
 
 import dask
 import psutil
 import zarr
+from dask.array import from_zarr
 from numcodecs import blosc
-from zarr import ZipStore, DirectoryStore, open_group, convenience, CopyError
+from zarr import ZipStore, DirectoryStore, open_group, convenience, CopyError, Blosc
 
 from dexp.datasets.base_dataset import BaseDataset
 import multiprocessing
 
-nb_threads = multiprocessing.cpu_count()//2
+# Configure multithreading for Dask:
+nb_threads = multiprocessing.cpu_count()//2-1
 dask.config.set(scheduler='threads')
 dask.config.set(pool=ThreadPool(nb_threads))
+
+# Configure multithreading for Blosc:
 blosc.set_nthreads(nb_threads//2 - 1)
 
 class ZDataset(BaseDataset):
 
-    def __init__(self, path, mode='r', cache_active=False, cache_size=psutil.virtual_memory().available, use_dask=False):
+    def __init__(self, path:str, mode:str ='r', store:str ='dir'):
+        """Convenience function to open a group or array using file-mode-like semantics.
+
+        Parameters
+        ----------
+        path : path to zarr styorage (directory or zip).
+        mode : Access mode:
+            'r' means read only (must exist);
+            'r+' means read/write (must exist);
+            'a' means read/write (create if doesn't exist);
+            'w' means create (overwrite if exists);
+            'w-' means create (fail if exists).
+        store : type of store, can be 'dir' or 'zip'
+
+        Returns
+        -------
+        Zarr dataset
+
+
+        """
+
 
         super().__init__(dask_backed=False)
 
         self._folder = path
 
+        if exists(path) and mode=='r':
+            print(f"Storage exist but must be overwritten, deleting {path} !")
+            os.remove(path)
+
         print(f"Initialising Zarr storage: '{path}'")
-        if isfile(path) and path.endswith('.zarr.zip'):
-            print(f"Opening as ZIP store")
-            store = zarr.storage.ZipStore(path)
-        elif isdir(path) and ( path.endswith('.zarr') or path.endswith('.zarr/')):
-            print(f"Opening as Directory store")
-            store = zarr.storage.DirectoryStore(path)
+        if exists(path):
+            print(f"Path exists, opening zarr storage...")
+            self._root_group = zarr.convenience.open(path, mode=mode)
+            self._initialise_existing(path)
+            self._store = None
         else:
-            print(f'Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr`), or a zipped zarr file (file that ends with `.zarr.zip`)')
+            try:
+                print(f"Path does not exist, creating zarr storage...")
+                if isfile(path) and (path.endswith('.zarr.zip') or store=='zip' ):
+                    print(f"Opening as ZIP store")
+                    # correcting path to adhere to convention:
+                    path = path+'.zip' if path.endswith('.zarr') else path
+                    path = path if path.endswith('.zarr.zip') else path+'zarr.zip'
+                    self._store = zarr.storage.ZipStore(path)
+                elif isdir(path) and ( path.endswith('.zarr') or path.endswith('.zarr/') or store=='dir'):
+                    print(f"Opening as Nested Directory store")
+                    # correcting path to adhere to convention:
+                    path = path if path.endswith('.zarr') else path+'.zarr'
+                    self._store = zarr.storage.NestedDirectoryStore(path)
+                else:
+                    print(f'Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr`), or a zipped zarr file (file that ends with `.zarr.zip`)')
+                print(f"Opening Zarr storage with mode='{mode}'")
+                self._root_group = zarr.convenience.open(store, mode=mode)
+                self._initialise_empty()
+            except Exception as e:
+                print(f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect: {path}")
+                return None
 
-        if cache_active:
-            print(f"Setting up Zarr cache with {cache_size / 1e9} GB...")
-            store = zarr.LRUStoreCache(store, max_size=cache_size)
 
-        print(f"Opening Zarr storage with mode='{mode}'")
-        self._z = zarr.convenience.open(store, mode=mode)
-        self._channels = [channel for channel, _ in self._z.groups()]
+    def _initialise_empty(self):
+        self._channels = []
+        self._arrays = {}
+
+    def _initialise_existing(self, path):
+        self._channels = [channel for channel, _ in self._root_group.groups()]
         self._arrays = {}
 
         print(f"Exploring Zarr hierarchy...")
-        for channel, channel_group in self._z.groups():
+        for channel, channel_group in self._root_group.groups():
             print(f"Found channel: {channel}")
 
             channel_items = channel_group.items()
@@ -52,26 +101,37 @@ class ZDataset(BaseDataset):
                 print(f"Found array: {item_name}")
 
                 if item_name == channel or item_name == 'fused':
-                    if use_dask:
-                        self._arrays[channel] = dask.array.from_zarr(path, component=f"{channel}/{item_name}")
-                    else:
-                        self._arrays[channel] = array
+                    self._arrays[channel] = from_zarr(path, component=f"{channel}/{item_name}")
 
-    def channels(self):
-        return list(self._channels)
-
-    def get_group_for_channel(self, channel):
-        groups = [g for c, g in self._z.groups() if c == channel]
-        if len(groups)==0:
+    def _get_group_for_channel(self, channel):
+        groups = [g for c, g in self._root_group.groups() if c == channel]
+        if len(groups) == 0:
             return None
         else:
             return groups[0]
 
+    def close(self):
+        # We close the store if it exists, i.e. if we have been writing to the dataset
+        if self._store is not None:
+            try:
+                self._store.close()
+            except AttributeError:
+                pass
+
+    def channels(self):
+        return list(self._channels)
+
     def shape(self, channel):
         return self._arrays[channel].shape
 
+    def chunks(self, channel):
+        return self._arrays[channel].chunks
+
     def nb_timepoints(self, channel):
         return self.get_stacks(channel).shape[0]
+
+    def tree(self):
+        return self._root_group.tree()
 
     def info(self, channel=None):
 
@@ -81,7 +141,7 @@ class ZDataset(BaseDataset):
             info_str += str(self._arrays[channel].info)
             return info_str
         else:
-            info_str = str(self._z.tree())
+            info_str = str(self._root_group.tree())
             info_str += "\n\n"
             info_str += "Channels: \n"
             for channel in self.channels():
@@ -99,36 +159,77 @@ class ZDataset(BaseDataset):
         return stack_array
 
 
+    def add_channel(self, name:str, shape:Tuple[int], dtype, chunks:Tuple[int], codec:str = 'zstd', clevel:int = 3):
+        """Adds a channel to this dataset
 
-    def add(self,
-            path,
-            channels,
-            rename,
-            store,
-            overwrite
-            ):
+        Parameters
+        ----------
+        name : name of channel.
+        shape : shape of correspodning array.
+        dtype : dtype of array.
+        chunks: chunks shape.
+        codec: Compression codec to be used ('zstd', 'blosclz', 'lz4', 'lz4hc', 'zlib' or 'snappy').
+        clevel: An integer between 0 and 9 specifying the compression level.
 
-        try:
-            print(f"opening Zarr file for writing at: {path}")
-            if store == 'zip':
-                path = path if path.endswith('.zip') else path+'.zip'
-                store = ZipStore(path)
-            elif  store == 'dir':
-                store = DirectoryStore(path)
-            root = open_group(store, mode='a')
-        except Exception as e:
-            print(
-                f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect.")
-            return None
+        Returns
+        -------
+        zarr array
 
-        print(f"Existing groups in store: {root.items()}")
+
+        """
+
+        print(f"Adding channel: '{name}' of shape: {shape}, dtype: {dtype}, and chunks:{chunks} ")
+        compressor = Blosc(cname=codec, clevel=clevel, shuffle=Blosc.BITSHUFFLE)
+        filters = []
+
+        channel_group = self._root_group.create_group(name)
+        array = channel_group.create(name=name,
+                                     shape=shape,
+                                     dtype=dtype,
+                                     chunks=chunks,
+                                     filters=filters,
+                                     compressor=compressor)
+
+        return array
+
+
+
+    def add_channels_to(self,
+                        path,
+                        channels,
+                        rename,
+                        store,
+                        overwrite
+                        ):
+        """Adds channels from this zarr dataset into an other possibly existing zarr dataset
+
+        Parameters
+        ----------
+        path : name of channel.
+        channels: list or tuple of channels to add
+        rename: list or tuple of new names for channels
+        store: type of zarr store: 'dir' or 'zip'
+        overwrite: overwrite destination (not fully functional for zip stores!)
+
+        Returns
+        -------
+        zarr array
+
+
+        """
+
+        mode = 'w' + ('' if overwrite else '-')
+
+        zdataset = ZDataset(path, mode, store)
+        root = zdataset._root_group
+
+        print(f"Existing channels: {zdataset.channels()}")
 
         for channel, new_name in zip(channels, rename):
             try:
                 array = self.get_stacks(channel, per_z_slice=False)
-                source_group = self.get_group_for_channel(channel)
+                source_group = self._get_group_for_channel(channel)
                 source_array = tuple((a for n,a in source_group.items() if n == channel))[0]
-
 
                 print(f"Creating group for channel {channel} of new name {new_name}.")
                 if new_name not in root.group_keys():

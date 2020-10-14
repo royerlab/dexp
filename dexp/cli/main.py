@@ -123,12 +123,12 @@ def add(input_path, output_path, channels, rename, store, overwrite):
     print(f"New names for channel(s): {rename}")
 
     time_start = time()
-    input_dataset.add(output_path,
-                       channels=selected_channels,
-                       rename=rename,
-                       store=store,
-                       overwrite=overwrite,
-                       )
+    input_dataset.add_channels_to(output_path,
+                                  channels=selected_channels,
+                                  rename=rename,
+                                  store=store,
+                                  overwrite=overwrite,
+                                  )
     time_stop = time()
     print(f"Elapsed time: {time_stop - time_start} seconds")
     print("Done!")

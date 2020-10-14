@@ -10,6 +10,7 @@ from skimage.transform import downscale_local_mean
 from tifffile import TiffWriter
 from zarr import open_group, ZipStore, DirectoryStore, convenience
 
+from dexp.datasets.zarr_dataset import ZDataset
 from dexp.io.io import tiff_save
 from dexp.utils.timeit import timeit
 
@@ -22,10 +23,7 @@ class BaseDataset(ABC):
         """
 
         self.dask_backed = dask_backed
-
-        self._chunk_xy = 512
-        self._chunk_z  = 32
-        self._chunk_t  = 1
+        self._default_chunks = tuple(1, 32, 512, 512)
 
     @abstractmethod
     def channels(self):
@@ -47,6 +45,20 @@ class BaseDataset(ABC):
     def get_stack(self, channel, time_point, per_z_slice):
         pass
 
+
+
+    def _selected_channels(self, channels):
+        if channels is None:
+            selected_channels = self._channels
+        else:
+            selected_channels = list(set(channels) & set(self._channels))
+
+        print(f"Available channels: {self._channels}")
+        print(f"Requested channels: {channels if channels else '--All--'} ")
+        print(f"Selected channels:  {selected_channels}")
+
+        return selected_channels
+
     def copy(self,
              path,
              channels,
@@ -59,32 +71,9 @@ class BaseDataset(ABC):
              workers):
 
         mode = 'w' + ('' if overwrite else '-')
-        try:
-            if store == 'zip':
-                path = path if path.endswith('.zip') else path+'.zip'
-                if exists(path) and overwrite:
-                    os.remove(path)
-                store = ZipStore(path)
-            elif  store == 'dir':
-                store = DirectoryStore(path)
-            root = open_group(store, mode=mode)
-        except Exception as e:
-            print(f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect: {path}")
-            return None
+        zdataset = ZDataset(path, mode, store)
 
-        filters = []  # [Delta(dtype='i4')]
-        compressor = Blosc(cname=compression, clevel=compression_level, shuffle=Blosc.BITSHUFFLE)
-
-        if channels is None:
-            selected_channels = self._channels
-        else:
-            selected_channels = list(set(channels) & set(self._channels))
-
-        print(f"Available channels: {self._channels}")
-        print(f"Requested channels: {channels if channels else '--All--'} ")
-        print(f"Selected channels:  {selected_channels}")
-
-        for channel in selected_channels:
+        for channel in self._selected_channels(channels):
 
             array = self.get_stacks(channel, per_z_slice=False)
 
@@ -100,37 +89,29 @@ class BaseDataset(ABC):
             else:
                 shape = array.shape
                 dim = len(shape)
-
                 if dim == 3:
-                        chunks = (self._chunk_z, self._chunk_xy, self._chunk_xy)
+                        chunks = self._default_chunks[1:]
                 elif dim == 4:
-                        chunks = (self._chunk_t, self._chunk_z, self._chunk_xy, self._chunk_xy)
+                        chunks = self._default_chunks
 
-
-            print(f"Writing Zarr array for channel '{channel}' of shape {shape} ")
-            channel_group = root.create_group(channel)
-            z = channel_group.create(name=channel,
-                                     shape=shape,
-                                     dtype=array.dtype,
-                                     chunks=chunks,
-                                     filters=filters,
-                                     compressor=compressor)
+            dest_array = zdataset.add_channel(name=channel,
+                                             shape=shape,
+                                             dtype=array.dtype,
+                                             chunks=chunks,
+                                             codec =compression,
+                                             clevel=compression_level)
 
 
             def process(tp):
-
                 try:
-
                     print(f"Starting to process time point: {tp} ...")
-
                     tp_array = array[tp].compute()
-
                     if project:
                         # project is the axis for projection, but here we are not considering the T dimension anymore...
                         axis = project - 1
                         tp_array = tp_array.max(axis=axis)
 
-                    z[tp] = tp_array
+                    dest_array[tp] = tp_array
                     print(f"Done processing time point: {tp} .")
 
                 except Exception as error:
@@ -147,12 +128,9 @@ class BaseDataset(ABC):
 
             Parallel(n_jobs=workers)(delayed(process)(tp) for tp in range(0, shape[0]))
 
-
-        # print(root.info)
         print("Zarr tree:")
-        print(root.tree())
-
-        store.close()
+        print(zdataset.tree())
+        zdataset.close()
 
 
 
@@ -180,36 +158,19 @@ class BaseDataset(ABC):
             array_C1L0 = array_C1L0[slicing]
             array_C1L1 = array_C1L1[slicing]
 
+        # shape and dtype of views to fuse:
         shape = array_C0L0.shape
+        dtype = array_C0L0.dtype
 
         mode = 'w' + ('' if overwrite else '-')
-        root = None
-        try:
-            print(f"opening Zarr file for writing at: {path}")
-            if store == 'zip':
-                path = path if path.endswith('.zip') else path+'.zip'
-                if exists(path) and overwrite:
-                    os.remove(path)
-                store = ZipStore(path)
-            elif  store == 'dir':
-                store = DirectoryStore(path)
-            root = open_group(store, mode=mode)
-        except Exception as e:
-            print(
-                f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect.")
-            return None
+        zdataset = ZDataset(path, mode, store)
 
-        dtype = array_C0L0.dtype
-        filters = []
-        compressor = Blosc(cname=compression, clevel=compression_level, shuffle=Blosc.BITSHUFFLE)
-        channel_group = root.create_group('fused')
-        print(f"Writing Zarr array for fused channel of shape {shape} ")
-        zarr_array = channel_group.create(name='fused',
+        dest_array = zdataset.add_channel('fused',
                                           shape=shape,
                                           dtype=dtype,
-                                          chunks=(self._chunk_t, self._chunk_z, self._chunk_xy, self._chunk_xy),
-                                          filters=filters,
-                                          compressor=compressor)
+                                          chunks=self._default_chunks,
+                                          codec=compression,
+                                          clevel=compression_level)
 
         from dexp.fusion.fusion import SimpleFusion
         fusion = SimpleFusion()
@@ -248,27 +209,22 @@ class BaseDataset(ABC):
                     shifts_file.write(f"{shift}\t")
                 shifts_file.write(f"\n")
 
-            array = array.astype(zarr_array.dtype, copy=False)
+            array = array.astype(dest_array.dtype, copy=False)
 
             print(f'Writing array of dtype: {array.dtype}')
-            zarr_array[tp] = array
+            dest_array[tp] = array
 
-        if workers is None:
-            workers = os.cpu_count()//2
+        # TODO: we are not yet distributing computation over GPUs, that would require a proper use of DASK for that.
+        # See: https://medium.com/rapids-ai/parallelizing-custom-cupy-kernels-with-dask-4d2ccd3b0732
 
-        if workers == 1:
-            for tp in range(0, shape[0]):
-                process(tp)
-        else:
-            from joblib import Parallel, delayed
-            Parallel(n_jobs=workers, backend='threading')(delayed(process)(tp) for tp in range(0, shape[0]))
+        for tp in range(0, shape[0]):
+            process(tp)
 
         print("Zarr tree:")
-        print(root.tree())
+        print(zdataset.tree())
 
         shifts_file.close()
-
-        store.close()
+        zdataset.close()
 
 
     def deconv(self,
@@ -291,34 +247,10 @@ class BaseDataset(ABC):
                downscalexy2):
 
         mode = 'w' + ('' if overwrite else '-')
-        root = None
-        try:
-            if store == 'zip':
-                path = path if path.endswith('.zip') else path+'.zip'
-                if exists(path) and overwrite:
-                    os.remove(path)
-                store = ZipStore(path)
-            elif  store == 'dir':
-                store = DirectoryStore(path)
-            root = open_group(store, mode=mode)
-        except Exception as e:
-            print(f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect: {path}")
-            return None
-
-        filters = []
-        compressor = Blosc(cname=compression, clevel=compression_level, shuffle=Blosc.BITSHUFFLE)
-
-        if channels is None:
-            selected_channels = self._channels
-        else:
-            selected_channels = list(set(channels) & set(self._channels))
-
-        print(f"Available channels: {self._channels}")
-        print(f"Requested channels: {channels if channels else '--All--'} ")
-        print(f"Selected channels:  {selected_channels}")
+        zdataset = ZDataset(path, mode, store)
 
 
-        for channel in selected_channels:
+        for channel in self._selected_channels(channels):
 
             array = self.get_stacks(channel, per_z_slice=False)
 
@@ -329,19 +261,16 @@ class BaseDataset(ABC):
             dim = len(shape)
 
             if dim == 3:
-                chunks = (self._chunk_z, self._chunk_xy, self._chunk_xy)
+                chunks = self._default_chunks[1:]
             elif dim == 4:
-                chunks = (self._chunk_t, self._chunk_z, self._chunk_xy, self._chunk_xy)
+                chunks = self._default_chunks
 
-
-            print(f"Writing Zarr array for channel '{channel}' of shape {shape} ")
-            channel_group = root.create_group(channel)
-            z = channel_group.create(name=channel,
-                                     shape=shape,
-                                     dtype=array.dtype,
-                                     chunks=chunks,
-                                     filters=filters,
-                                     compressor=compressor)
+            dest_array = zdataset.add_channel(name=channel,
+                                              shape=shape,
+                                              dtype=array.dtype,
+                                              chunks=chunks,
+                                              codec =compression,
+                                              clevel=compression_level)
 
             from dexp.restoration.deconvolution import Deconvolution
             deconvolution = Deconvolution(method=method,
@@ -366,7 +295,7 @@ class BaseDataset(ABC):
 
                     tp_array = deconvolution.restore(tp_array)
 
-                    z[tp] = tp_array
+                    dest_array[tp] = tp_array
                     print(f"Done processing time point: {tp} .")
 
                 except Exception as error:
@@ -376,21 +305,15 @@ class BaseDataset(ABC):
                     traceback.print_exc()
 
 
-            from joblib import Parallel, delayed
+            # TODO: we are not yet distributing computation over GPUs, that would require a proper use of DASK for that.
+            # See: https://medium.com/rapids-ai/parallelizing-custom-cupy-kernels-with-dask-4d2ccd3b0732
 
-            if workers is None:
-                workers = os.cpu_count()//2
+            for tp in range(0, shape[0]):
+                process(tp)
 
-            print(f"Number of workers: {workers}")
-
-            Parallel(n_jobs=workers)(delayed(process)(tp) for tp in range(0, shape[0]))
-
-
-        # print(root.info)
         print("Zarr tree:")
-        print(root.tree())
-
-        store.close()
+        print(zdataset.tree())
+        zdataset.close()
 
 
 
@@ -505,7 +428,7 @@ class BaseDataset(ABC):
                         zarr_array = channel_group.create(name=channel,
                                                           shape=shape,
                                                           dtype=array.dtype,
-                                                          chunks=(self._chunk_t, self._chunk_z, self._chunk_xy, self._chunk_xy),
+                                                          chunks=self._default_chunks,
                                                           filters=filters,
                                                           compressor=compressor)
 
