@@ -16,5 +16,6 @@ pip install click cachey numexpr joblib --upgrade
 pip install gputools dtcwt csbdeep --upgrade
 pip install git+https://github.com/guiwitz/naparimovie.git@master#egg=naparimovie --upgrade
 pip install spimagine --upgrade
+pip install pytest --upgrade
 pip install -e .
 
