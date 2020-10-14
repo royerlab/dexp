@@ -15,5 +15,6 @@ pip install ./wheels/pyopencl-2019.1.2+cl12-cp37-cp37m-win_amd64.whl
 pip install gputools dtcwt csbdeep --upgrade
 pip install git+https://github.com/guiwitz/naparimovie.git@master#egg=naparimovie --upgrade
 pip install spimagine --upgrade
+pip install pytest --upgrade
 pip install -e .
 
