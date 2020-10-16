@@ -1,55 +1,78 @@
+import tempfile
+from os.path import join
 from time import time
 
 import napari
 from napari import Viewer, gui_qt
 from numpy import s_
+from skimage.data import binary_blobs
+from skimage.filters import gaussian
 
-from dexp.datasets.clearcontrol_dataset import CCDataset
 from dexp.datasets.zarr_dataset import ZDataset
 
 
-def demo(path):
-    dataset = ZDataset(path)
+def demo():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        print('created temporary directory', tmpdir)
 
-    assert not dataset is None
+        zdataset = ZDataset(path=join(tmpdir,'test.zarr'),
+                            mode='w',
+                            store='dir')
 
-    print(dataset.channels())
+        array1 = zdataset.add_channel(name='first',
+                                      shape=(10, 100, 100, 100),
+                                      chunks=(1, 50, 50, 50),
+                                      dtype='f4',
+                                      codec='zstd',
+                                      clevel=3)
 
-    print(dataset.nb_timepoints(dataset._channels[0]))
+        array2 = zdataset.add_channel(name='second',
+                                      shape=(17, 10, 20, 30),
+                                      chunks=(1, 5, 1, 6),
+                                      dtype='f4',
+                                      codec='zstd',
+                                      clevel=3)
 
-    time_start = time()
-    first_stack_no_dask = dataset.get_stack('sequential', 0)
-    time_stop = time()
+        for i in range(0, 10):
+            blobs = binary_blobs(length=100, n_dim=3, blob_size_fraction=0.1).astype('f4')
+            blobs = gaussian(blobs, sigma=1)
+            array1[i] = blobs
 
-    print(f"Elapsed time to load one stack: {time_stop - time_start} seconds")
-    print(first_stack_no_dask.shape)
+        for i in range(0, 17):
+            blobs = binary_blobs(length=30, n_dim=3, blob_size_fraction=0.03).astype('f4')
+            blobs = gaussian(blobs, sigma=1)
+            array2[i] = blobs[0:10, 0:20, 0:30]
 
-    array = dataset.get_stacks('sequential')
-    print(array.shape)
+        print(array1.info)
+        print(array2.info)
 
-    first_stack = array[0]
-    print(first_stack.shape)
-
-    with gui_qt():
-        viewer = Viewer()
-
-        viewer.add_image(dataset.get_stacks('sequential', per_z_slice=True), name='image', clim_range=[0, 1000])
-
-    time_start = time()
-    dataset.copy("/Users/royer/Downloads/testzarr.zarr", slicing=s_[0:2], overwrite=True, project=2)
-    time_stop = time()
-    print(f"Elapsed time to save to Zarr: {time_stop - time_start} seconds")
-
-    dataset = ZDataset("/Users/royer/Downloads/testzarr.zarr")
-
-    print(dataset.channels())
-    print(dataset.info('sequential'))
-    print(dataset.get_stacks('sequential').shape)
-
-    with napari.qt_gui():
-        viewer = Viewer()
-
-        viewer.add_image(dataset.get_stacks('sequential'), name='image', clim_range=[0, 1000])
+        with napari.gui_qt():
+            viewer = Viewer()
+            viewer.add_image(array1, name='array_first')
+            viewer.add_image(array2, name='array_second')
 
 
-demo('D:/2020-01-14-18-20-22-55-h2afva.mcherry.mezzo.gfp.ch0.fused.zarr')
+
+        zdataset.close()
+        del zdataset
+        del array1
+        del array2
+
+
+        zdataset_read = ZDataset(path=join(tmpdir,'test.zarr'),
+                                 mode='r')
+
+        array1 = zdataset_read.get_array('first')
+        array2 = zdataset_read.get_array('second')
+
+        print(array1.info)
+        print(array2.info)
+
+
+        with napari.gui_qt():
+            viewer = Viewer()
+            viewer.add_image(array1, name='array_first')
+            viewer.add_image(array2, name='array_second')
+
+
+demo()

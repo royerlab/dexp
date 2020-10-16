@@ -2,6 +2,7 @@ import re
 from fnmatch import fnmatch
 from os import listdir, cpu_count
 from os.path import join
+from typing import Sequence
 
 import numcodecs
 import numpy
@@ -9,7 +10,6 @@ from cachey import Cache
 from dask import array, delayed
 from numcodecs.blosc import Blosc
 from numpy import uint16, frombuffer
-from zarr import open_group
 
 from dexp.datasets.base_dataset import BaseDataset
 
@@ -49,87 +49,6 @@ class CCDataset(BaseDataset):
             self._parse_channel(channel)
 
         self.cache = Cache(cache_size)  # Leverage two gigabytes of memory
-
-    def channels(self):
-        return list(self._channels)
-
-    def shape(self, channel, time_point=0):
-        if (channel, time_point) in self._shapes:
-            return self._shapes[(channel, time_point)]
-        else:
-            return ()
-
-    def info(self, channel=None):
-        if channel:
-            info_str = f"Channel: '{channel}', nb time points: {self.nb_timepoints(channel)}, shape: {self.shape(channel)} "
-            return info_str
-        else:
-            info_str = f"CC dataset at: {self.folder}"
-            info_str += "\n\n"
-            info_str += "Channels: \n"
-            for channel in self.channels():
-                info_str += "  └──" + self.info(channel) + "\n"
-
-            return info_str
-
-    def nb_timepoints(self, channel):
-        return self._nb_time_points[channel]
-
-    def get_stacks(self, channel, per_z_slice=True):
-
-        if False:
-
-            # For some reason this is slower, should have been faster!:
-
-            # Construct a small Dask array for every lazy value:
-            arrays = [self.get_stack(channel, time_point, per_z_slice) for time_point in self._time_points[channel]]
-
-            stacked_array = array.stack(arrays, axis=0)  # Stack all small Dask arrays into one
-
-            return stacked_array
-
-        else:
-            # Lazy and memorized version of get_stack:
-            lazy_get_stack = delayed(self.cache.memoize(self.get_stack), pure=True)
-
-            # Lazily load each stack for each time point:
-            lazy_stacks = [lazy_get_stack(channel, time_point, per_z_slice) for time_point in self._time_points[channel]]
-
-            # Construct a small Dask array for every lazy value:
-            arrays = [array.from_delayed(lazy_stack,
-                                         dtype=uint16,
-                                         shape=self._shapes[(channel, 0)])
-                      for lazy_stack in lazy_stacks]
-
-            stacked_array = array.stack(arrays, axis=0)  # Stack all small Dask arrays into one
-
-            return stacked_array
-
-    def get_stack(self, channel, time_point, per_z_slice=True):
-
-        file_name = self._get_stack_file_name(channel, time_point)
-        shape = self._shapes[(channel, time_point)]
-
-        if per_z_slice:
-
-            lazy_get_slice_array_for_stack_file_and_z = delayed(self.cache.memoize(self._get_slice_array_for_stack_file_and_z), pure=True)
-
-            # Lazily load each stack for each time point:
-            lazy_stacks = [lazy_get_slice_array_for_stack_file_and_z(file_name, shape, z) for z in range(0, shape[0])]
-
-            arrays = [array.from_delayed(lazy_stack,
-                                         dtype=uint16,
-                                         shape=shape[1:])
-                      for lazy_stack in lazy_stacks]
-
-            stack = array.stack(arrays, axis=0)
-
-        else:
-            stack = self._get_array_for_stack_file(file_name, shape=shape)
-
-        return stack
-
-
 
     def _parse_channel(self, channel):
 
@@ -201,3 +120,93 @@ class CCDataset(BaseDataset):
         except FileNotFoundError:
             print(f"Could  not find file: {file_name} for array of shape: {shape} at z={z}")
             return numpy.zeros(shape[1:], dtype=uint16)
+
+    def close(self):
+        #Nothing to do...
+        pass
+
+    def channels(self):
+        return list(self._channels)
+
+    def shape(self, channel: str, time_point: int = 0) -> Sequence[int]:
+        if (channel, time_point) in self._shapes:
+            return (self._nb_time_points[channel],)+self._shapes[(channel, time_point)]
+        else:
+            return ()
+
+    def chunks(self, channel: str) -> Sequence[int]:
+        return (1,)*len(self.shape())
+
+    def tree(self) -> str:
+        tree_str = f"CC dataset at: {self.folder}"
+        tree_str += "\n\n"
+        tree_str += "Channels: \n"
+        for channel in self.channels():
+            tree_str += "  └──" + self.info(channel) + "\n"
+        return tree_str
+
+    def info(self, channel: str = None) -> str:
+        if channel:
+            info_str = f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]} "
+            return info_str
+        else:
+            return self.tree()
+
+
+    def get_array(self, channel: str, per_z_slice:bool = True, wrap_with_dask: bool = False):
+
+        if False:
+            # For some reason this is slower, should have been faster!:
+            # Construct a small Dask array for every lazy value:
+            arrays = [self.get_stack(channel, time_point, per_z_slice) for time_point in self._time_points[channel]]
+            stacked_array = array.stack(arrays, axis=0)  # Stack all small Dask arrays into one
+            return stacked_array
+
+        else:
+            # Lazy and memorized version of get_stack:
+            lazy_get_stack = delayed(self.cache.memoize(self.get_stack), pure=True)
+
+            # Lazily load each stack for each time point:
+            lazy_stacks = [lazy_get_stack(channel, time_point, per_z_slice) for time_point in self._time_points[channel]]
+
+            # Construct a small Dask array for every lazy value:
+            arrays = [array.from_delayed(lazy_stack,
+                                         dtype=uint16,
+                                         shape=self._shapes[(channel, 0)])
+                      for lazy_stack in lazy_stacks]
+
+            stacked_array = array.stack(arrays, axis=0)  # Stack all small Dask arrays into one
+
+            return stacked_array
+
+    def get_stack(self, channel, time_point, per_z_slice=True):
+
+        file_name = self._get_stack_file_name(channel, time_point)
+        shape = self._shapes[(channel, time_point)]
+
+        if per_z_slice:
+
+            lazy_get_slice_array_for_stack_file_and_z = delayed(self.cache.memoize(self._get_slice_array_for_stack_file_and_z), pure=True)
+
+            # Lazily load each stack for each time point:
+            lazy_stacks = [lazy_get_slice_array_for_stack_file_and_z(file_name, shape, z) for z in range(0, shape[0])]
+
+            arrays = [array.from_delayed(lazy_stack,
+                                         dtype=uint16,
+                                         shape=shape[1:])
+                      for lazy_stack in lazy_stacks]
+
+            stack = array.stack(arrays, axis=0)
+
+        else:
+            stack = self._get_array_for_stack_file(file_name, shape=shape)
+
+        return stack
+
+    def check_integrity(self) -> bool:
+        #TODO: actually implement!
+        return True
+
+
+
+
