@@ -2,7 +2,7 @@ from time import time
 
 import click
 
-from dexp.cli.main import _get_dataset_from_path, _get_folder_name_without_end_slash, _default_clevel
+from dexp.cli.main import _get_dataset_from_path, _get_folder_name_without_end_slash, _default_clevel, _parse_slicing
 from dexp.datasets.operations.tiff import dataset_tiff
 
 
@@ -16,7 +16,7 @@ from dexp.datasets.operations.tiff import dataset_tiff
 @click.option('--split', is_flag=True, help='Splits dataset along first dimension, be carefull, if you slice to a single time point this will split along z!')  # , help='dataset slice'
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level, 0 means no compression, max is 9', show_default=True)  # , help='dataset slice'
 @click.option('--workers', '-k', default=1, help='Number of worker threads to spawn.', show_default=True)  #
-def tiff(input_path, output_path, channels, slicing, overwrite, project, split, compress, clevel, workers):
+def tiff(input_path, output_path, channels, slicing, overwrite, project, split, clevel, workers):
     input_dataset = _get_dataset_from_path(input_path)
 
     print(f"Available Channel(s): {input_dataset.channels()}")
