@@ -2,7 +2,6 @@ import gc
 
 import cupy
 # Disable memory pool for device memory (GPU)
-from napari import Viewer, gui_qt
 from numpy import newaxis, real
 
 cupy.cuda.set_allocator(None)
@@ -15,7 +14,7 @@ import numexpr
 import numpy
 import torch
 from scipy.ndimage import center_of_mass
-from dexp.fusion.base_fusion import BaseFusion
+from dexp.processing.fusion import BaseFusion
 
 
 class SimpleFusion(BaseFusion):

@@ -3,7 +3,7 @@ import os
 from aydin.it.llr_deconv import ImageTranslatorLearnedLRDeconv
 from aydin.util.psf.simple_microscope_psf import SimpleMicroscopePSF
 
-from dexp.restoration.base_restoration import BaseRestoration
+from dexp.processing.restoration.base_restoration import BaseRestoration
 
 os.environ["PYOPENCL"] = "0"
 

@@ -4,7 +4,7 @@ import numpy
 import torch
 from scipy.fft import dctn, idctn
 from torch_dct import dct_3d, idct_3d
-from dexp.fusion.fusion import SimpleFusion
+from dexp.processing.fusion import SimpleFusion
 
 
 class DCTFusion(SimpleFusion):

@@ -41,7 +41,7 @@ def dataset_fuse(dataset,
                                           codec=compression,
                                           clevel=compression_level)
 
-    from dexp.fusion.fusion import SimpleFusion
+    from dexp.processing.fusion import SimpleFusion
     fusion = SimpleFusion()
 
     shifts_file = open("registration_shifts.txt", "r" if load_shifts else 'w')

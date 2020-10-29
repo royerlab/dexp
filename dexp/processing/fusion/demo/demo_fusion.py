@@ -8,7 +8,7 @@ import numpy
 from napari import gui_qt, Viewer
 from tifffile import imread
 
-from dexp.fusion.fusion import SimpleFusion
+from dexp.processing.fusion import SimpleFusion
 
 
 filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'

@@ -4,7 +4,7 @@ from scipy.ndimage import zoom
 from tifffile import imread, imwrite
 
 from dexp.enhance import sharpen
-from dexp.isonet.isonet import  IsoNet
+from dexp.processing.isonet import  IsoNet
 from dexp.utils.timeit import timeit
 
 #image = imread('data/retina/cropped_farred_RFP_GFP_2109175_2color_sub_10.20.tif')

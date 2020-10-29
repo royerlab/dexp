@@ -44,7 +44,7 @@ def dataset_isonet(dataset,
 
     psf = numpy.ones((1, 1)) / 1
     print(f"PSF (along xy): {psf}")
-    from dexp.isonet.isonet import IsoNet
+    from dexp.processing.isonet import IsoNet
     isonet = IsoNet(context, subsampling=subsampling)
 
 
@@ -75,7 +75,7 @@ def dataset_isonet(dataset,
 
                 if sharpening:
                     print("Sharpening image...")
-                    from dexp.restoration.sharpen import sharpen
+                    from dexp.processing.restoration import sharpen
                     array_tp = sharpen(array_tp, mode='hybrid', min=0, max=1024, margin_pad=False)
 
                 print("Applying IsoNet to image...")
