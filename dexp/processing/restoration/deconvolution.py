@@ -1,6 +1,6 @@
 import os
 
-from aydin.it.llr_deconv import ImageTranslatorLearnedLRDeconv
+
 from aydin.util.psf.simple_microscope_psf import SimpleMicroscopePSF
 
 from dexp.processing.restoration.base_restoration import BaseRestoration
@@ -32,6 +32,7 @@ class Deconvolution(BaseRestoration):
     def calibrate(self, images):
 
         if self.deconvolver is None:
+            from aydin.it.deconvolution.llr_deconv import ImageTranslatorLearnedLRDeconv
             self.deconvolver = ImageTranslatorLearnedLRDeconv(backend='cupy',
                                                               psf_kernel=self.psf_kernel,
                                                               max_num_iterations=self.max_num_iterations,
