@@ -4,7 +4,7 @@ from skimage.filters import gaussian
 from skimage.util import random_noise
 
 
-def generate_fusion_test_data(length=128):
+def generate_fusion_test_data(length=128, add_noise=True):
     image_gt = binary_blobs(length=length, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.01).astype('f4')
     image_gt = gaussian(image_gt, sigma=1)
     image_gt = image_gt / numpy.max(image_gt)
@@ -20,7 +20,13 @@ def generate_fusion_test_data(length=128):
     image1 = image_highq * blend + image_lowq * (1 - blend)
     image2 = image_highq * (1 - blend) + image_lowq * blend
 
-    image1 = 95+300*random_noise(image1, mode='speckle', var=0.5)
-    image2 = 95+300*random_noise(image2, mode='speckle', var=0.5)
+    if add_noise:
+        image1 = random_noise(image1, mode='speckle', var=0.5)
+        image2 = random_noise(image2, mode='speckle', var=0.5)
+
+    image1 = 95+300*image1
+    image2 = 95+300*image2
+    image_gt = 95+300*image_gt
+    image_lowq= 95+300*image_lowq
 
     return image_gt, image_lowq, blend, image1, image2
