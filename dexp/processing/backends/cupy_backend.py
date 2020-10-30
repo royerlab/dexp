@@ -2,16 +2,20 @@ from abc import abstractmethod
 from typing import Any
 
 import numpy
+from cupy.cuda import cub, cutensor
 
 from dexp.processing.backends.backend import Backend
 
 
 class CupyBackend(Backend):
 
-    def __init__(self):
+    def __init__(self, enable_cub: bool = True, enable_cutensor: bool = True):
         """ Instanciates a Numpy-based Image Processing backend
 
         """
+        import cupy
+        cub.available = enable_cub
+        cutensor.available = enable_cutensor
 
     def close(self):
         #Nothing to do
