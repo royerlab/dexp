@@ -1,5 +1,8 @@
+from numba import jit
+
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+
 
 
 def fuse_dct_nd(backend: Backend, image_a, image_b, cutoff: float = 0, clip: bool = True):

@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Any
 
 import numpy
-from cupy.cuda import cub, cutensor
+
 
 from dexp.processing.backends.backend import Backend
 
@@ -13,7 +13,7 @@ class CupyBackend(Backend):
         """ Instanciates a Numpy-based Image Processing backend
 
         """
-        import cupy
+        from cupy.cuda import cub, cutensor
         cub.available = enable_cub
         cutensor.available = enable_cutensor
 

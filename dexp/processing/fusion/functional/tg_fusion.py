@@ -1,8 +1,15 @@
+import numpy
+import scipy
+from scipy.ndimage import sobel
+
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.filters.tenengrad import tenengrad
 
 
-def fuse_tg_nd(backend: Backend, image_a, image_b, cutoff: float = 0, clip: bool = True):
+def fuse_tg_nd(backend: Backend, image_a, image_b,
+               downscale:int = 2, sharpness:float = 24, tenenegrad_smoothing=4, blend_map_smoothing=10,
+               clip: bool = True):
 
     if not image_a.shape == image_b.shape:
         raise ValueError("Arrays must have the same shape")
@@ -18,13 +25,64 @@ def fuse_tg_nd(backend: Backend, image_a, image_b, cutoff: float = 0, clip: bool
     min_value = min(min_a, min_b)
     max_value = min(max_a, max_b)
 
+    # downscale to speed up computation and reduce noise
+    t_image_a = sp.ndimage.zoom(image_a, zoom=1/downscale)
+    t_image_b = sp.ndimage.zoom(image_b, zoom=1/downscale)
 
-    image_fused =
+    # Compute Tenengrad filter:
+    t_image_a = tenengrad(backend, t_image_a)
+    t_image_b = tenengrad(backend, t_image_b)
+
+    # Apply maximum filter:
+    t_image_a = sp.ndimage.maximum_filter(t_image_a, size=tenenegrad_smoothing)
+    t_image_b = sp.ndimage.maximum_filter(t_image_b, size=tenenegrad_smoothing)
+
+    # Apply smoothing filter:
+    t_image_a = sp.ndimage.uniform_filter(t_image_a, size=1+tenenegrad_smoothing//2)
+    t_image_b = sp.ndimage.uniform_filter(t_image_b, size=1+tenenegrad_smoothing//2)
+
+    # Normalise:
+    t_min_value = min(xp.min(t_image_a), xp.min(t_image_b))
+    t_max_value = min(xp.max(t_image_a), xp.max(t_image_b))
+    t_image_a -= t_min_value
+    t_image_b -= t_min_value
+    t_image_a /= (t_max_value-t_min_value)
+    t_image_b /= (t_max_value-t_min_value)
+
+    # compute the absolute difference and sign:
+    diff = t_image_a-t_image_b
+    abs_diff = xp.absolute(diff) ** (1/sharpness)
+    sgn_diff = xp.sign(diff)
+
+    # compute blending map:
+    blend_map = 0.5+0.5*sgn_diff*abs_diff
+
+    # Upscale blending map back to original size:
+    blend_map = sp.ndimage.zoom(blend_map, zoom=downscale)
+
+    # Smooth blend map to have less seams:
+    blend_map = sp.ndimage.uniform_filter(blend_map, size=blend_map_smoothing)
+
+    # Fuse:
+    image_fused = blend_map*image_a + (1-blend_map)*image_b
 
     if clip:
         image_fused = xp.clip(image_fused, min_value, max_value)
 
+
+    # from napari import Viewer, gui_qt
+    # with gui_qt():
+    #     viewer = Viewer()
+    #     viewer.add_image(image_a, name='image_a')
+    #     viewer.add_image(image_b, name='image_b')
+    #     viewer.add_image(t_image_a, name='t_image_a')
+    #     viewer.add_image(t_image_b, name='t_image_b')
+    #     viewer.add_image(blend_map, name='blend_map')
+    #     viewer.add_image(image_fused, name='image_fused')
+
     return image_fused
+
+
 
 
 
