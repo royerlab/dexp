@@ -1,10 +1,9 @@
 import numpy
-from numpy.linalg import norm
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.fusion.functional.dft_fusion import fuse_dft_nd
-from dexp.processing.fusion.functional.test.fusion_test_data import generate_fusion_test_data
+from dexp.processing.datasets.multiview_data import generate_fusion_test_data
 
 
 def test_dft_fusion_numpy():
@@ -22,9 +21,10 @@ def test_dft_fusion_cupy():
 def dft_fusion(backend):
     image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=False)
     image_fused = fuse_dft_nd(backend, image1, image2)
+    image_fused = backend.to_numpy(image_fused)
     error = numpy.median(numpy.abs(image_gt - image_fused))
     print(error)
-    assert error < 22
+    assert error < 23
 
     # from napari import Viewer, gui_qt
     # with gui_qt():

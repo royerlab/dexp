@@ -1,10 +1,7 @@
-import numpy
-
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.tenengrad import tenengrad
-from dexp.processing.fusion.functional.dft_fusion import fuse_dft_nd
-from dexp.processing.fusion.functional.test.fusion_test_data import generate_fusion_test_data
+from dexp.processing.datasets.multiview_data import generate_fusion_test_data
 
 
 def test_tenengrad_numpy():

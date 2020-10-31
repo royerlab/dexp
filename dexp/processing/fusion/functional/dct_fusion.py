@@ -1,5 +1,3 @@
-from numba import jit
-
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 

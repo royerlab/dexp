@@ -47,7 +47,7 @@ class Backend(ABC):
 
 
     @abstractmethod
-    def get_xp_module(self, array) -> Any:
+    def get_xp_module(self, array=None) -> Any:
         """ Returns the numpy-like module for a given array
 
         Parameters
@@ -61,7 +61,7 @@ class Backend(ABC):
         pass
 
     @abstractmethod
-    def get_sp_module(self, array) -> Any:
+    def get_sp_module(self, array=None) -> Any:
         """ Returns the scipy-like module for a given array
 
         Parameters

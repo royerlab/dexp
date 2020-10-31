@@ -39,10 +39,10 @@ class PytorchBackend(Backend):
         else:
             return torch.tensor(array, requires_grad=False, device=self.device)
 
-    def get_xp_module(self, array) -> Any:
+    def get_xp_module(self, array=None) -> Any:
         raise NotImplementedError("numpy-like module not defined for Pytorch backend")
 
-    def get_sp_module(self, array) -> Any:
+    def get_sp_module(self, array=None) -> Any:
         raise NotImplementedError("numpy-like module not defined for Pytorch backend")
 
 
