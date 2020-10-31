@@ -1,10 +1,4 @@
-import cupyx
-import numpy
-import scipy
-from scipy.ndimage import sobel
-
 from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.tenengrad import tenengrad
 
 

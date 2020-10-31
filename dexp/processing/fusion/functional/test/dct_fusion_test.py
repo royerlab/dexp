@@ -3,6 +3,7 @@ import numpy
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.fusion.functional.dct_fusion import fuse_dct_nd
 from dexp.processing.datasets.multiview_data import generate_fusion_test_data
+from dexp.utils.timeit import timeit
 
 
 def test_dct_fusion_numpy():
@@ -11,9 +12,10 @@ def test_dct_fusion_numpy():
 
 
 def dct_fusion(backend):
-    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=False)
-    image_fused = fuse_dct_nd(backend, image1, image2)
-    image_fused = backend.to_numpy(image_fused)
+    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend, add_noise=False)
+    with timeit("dcf fusion + data transfer"):
+        image_fused = fuse_dct_nd(backend, image1, image2)
+        image_fused = backend.to_numpy(image_fused)
     error = numpy.median(numpy.abs(image_gt - image_fused))
     print(error)
     assert error < 22

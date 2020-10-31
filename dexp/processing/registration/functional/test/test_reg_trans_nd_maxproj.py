@@ -6,8 +6,10 @@ from skimage.util import random_noise
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.datasets.multiview_data import generate_fusion_test_data
 from dexp.processing.registration.functional.reg_trans_2d import register_translation_2d_skimage, register_translation_2d_dexp
 from dexp.processing.registration.functional.reg_trans_nd_maxproj import register_translation_maxproj_nd
+from dexp.utils.timeit import timeit
 
 
 def test_register_translation_nD_numpy():
@@ -24,16 +26,17 @@ def test_register_translation_nD_cupy():
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def register_translation_nD(backend, reg_trans_2d):
+def register_translation_nD(backend, reg_trans_2d, length_xy=256):
 
-    image = binary_blobs(length=100, n_dim=3, blob_size_fraction=0.04, volume_fraction=0.01).astype('f4')
-    image = gaussian(image, sigma=1)
-    translated_image = scipy.ndimage.shift(image, shift=(1, 5, -13))
+    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend,
+                                                                                       add_noise=False,
+                                                                                       shift=(1, 5, -13),
+                                                                                       volume_fraction=0.5,
+                                                                                       length_xy=length_xy,
+                                                                                       length_z_factor=2)
 
-    image = random_noise(image, mode='speckle', var=0.5)
-    translated_image = random_noise(translated_image, mode='speckle', var=0.5)
-
-    shifts, error = register_translation_maxproj_nd(backend, image, translated_image, register_translation_2d=reg_trans_2d)
+    with timeit("register_translation_maxproj_nd"):
+        shifts, error = register_translation_maxproj_nd(backend, image1, image2, register_translation_2d=reg_trans_2d)
 
     print(shifts, error)
 

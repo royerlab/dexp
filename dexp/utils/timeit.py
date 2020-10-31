@@ -11,3 +11,4 @@ def timeit(description: str = '') -> None:
     elapsed_time = time() - start
 
     print(f"Elapsed time for '{description}': {elapsed_time} seconds")
+    return elapsed_time

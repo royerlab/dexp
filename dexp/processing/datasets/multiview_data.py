@@ -6,12 +6,17 @@ from dexp.processing.backends.backend import Backend
 from dexp.utils.timeit import timeit
 
 
-def generate_fusion_test_data(backend:Backend, length_xy=320, length_z_factor=4, add_noise=True):
+def generate_fusion_test_data(backend:Backend,
+                              length_xy=320,
+                              length_z_factor=4,
+                              add_noise=True,
+                              shift=None,
+                              volume_fraction=0.8):
 
     with timeit("generate blob images"):
         image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype('f4')
-        blend_a = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=0.8).astype('f4')
-        blend_b = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=0.8).astype('f4')
+        blend_a = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype('f4')
+        blend_b = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype('f4')
 
     with timeit("convert blob images to backend"):
         image_gt = backend.to_backend(image_gt)
@@ -34,17 +39,16 @@ def generate_fusion_test_data(backend:Backend, length_xy=320, length_z_factor=4,
         blend_b = sp.ndimage.gaussian_filter(blend_b, sigma=2)
         blend_b = blend_b / numpy.max(blend_b)
 
-    # blend_a = blend_a
-    # blend_b = 1-blend_b
     with timeit("generate two views via blending"):
         image1 = image_highq * blend_a + image_lowq * blend_b
         image2 = image_highq * blend_b + image_lowq * blend_a
 
-    with timeit("downscale along z"):
-        image_gt = sp.ndimage.zoom(image_gt, zoom=(1/length_z_factor, 1, 1), order=0)
-        image_lowq = sp.ndimage.zoom(image_lowq, zoom=(1/length_z_factor, 1, 1), order=0)
-        image1 = sp.ndimage.zoom(image1, zoom=(1/length_z_factor, 1, 1), order=0)
-        image2 = sp.ndimage.zoom(image2, zoom=(1/length_z_factor, 1, 1), order=0)
+    if length_z_factor != 1:
+        with timeit("downscale along z"):
+            image_gt = sp.ndimage.zoom(image_gt, zoom=(1/length_z_factor, 1, 1), order=0)
+            image_lowq = sp.ndimage.zoom(image_lowq, zoom=(1/length_z_factor, 1, 1), order=0)
+            image1 = sp.ndimage.zoom(image1, zoom=(1/length_z_factor, 1, 1), order=0)
+            image2 = sp.ndimage.zoom(image2, zoom=(1/length_z_factor, 1, 1), order=0)
 
     if add_noise:
         with timeit("add noise"):
@@ -54,6 +58,10 @@ def generate_fusion_test_data(backend:Backend, length_xy=320, length_z_factor=4,
             image2 = random_noise(image2, mode='speckle', var=0.5)
             image1 = backend.to_backend(image1)
             image2 = backend.to_backend(image2)
+
+    if shift is not None:
+        with timeit("Shift second view relative to first"):
+            image2 = sp.ndimage.shift(image2, shift=shift)
 
     with timeit("scale image intensities"):
         image1 = 95+300*image1
