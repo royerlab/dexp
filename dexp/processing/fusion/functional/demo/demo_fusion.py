@@ -4,7 +4,7 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.fusion.functional.dct_fusion import fuse_dct_nd
 from dexp.processing.fusion.functional.dft_fusion import fuse_dft_nd
-from dexp.processing.datasets.multiview_data import generate_fusion_test_data
+from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 from dexp.processing.fusion.functional.tg_fusion import fuse_tg_nd
 from dexp.utils.timeit import timeit
 

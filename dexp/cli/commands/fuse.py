@@ -15,7 +15,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--workers', '-k', type=int, default=1, help='Number of worker threads to spawn, recommended: 1 (unless you know what you are doing)', show_default=True)  #
-@click.option('--zerolevel', '-zl', type=int, default=110,  help='Sets the \'zero-level\' i.e. the pixel values in the background (to be substracted)', show_default=True)  #
+@click.option('--zerolevel', '-zl', type=int, default=110,  help='Sets the \'zero-level\' i.e. the pixel values in the restoration (to be substracted)', show_default=True)  #
 @click.option('--loadshifts', '-ls', is_flag=True, help='Turn on to load the registration parameters (i.e translation shifts) from another run', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def fuse(input_path, output_path, slicing, store, codec, clevel, overwrite, workers, zerolevel, loadshifts, check):

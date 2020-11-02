@@ -1,0 +1,56 @@
+from napari import gui_qt, Viewer
+
+from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.restoration.functional.dehazing import dehaze, dehaze
+from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.utils.timeit import timeit
+
+
+def demo_dehaze_numpy():
+    backend = NumpyBackend()
+    demo_dehaze_data(backend)
+
+def demo_dehaze_cupy():
+    try:
+        backend = CupyBackend()
+        demo_dehaze_data(backend)
+    except (ModuleNotFoundError, NotImplementedError):
+        print("Cupy module not found! ignored!")
+
+def demo_dehaze_data(backend, length_xy=320):
+
+    xp = backend.get_xp_module()
+
+    with timeit("generate data"):
+        image_gt, background, image = generate_nuclei_background_data(backend,
+                                                                     add_noise=True,
+                                                                     length_xy=length_xy,
+                                                                     length_z_factor=4,
+                                                                     independent_haze=True)
+        
+    with timeit('dehaze_new'):
+        dehazed = dehaze(backend, image, size=25)
+        dehazed = backend.to_numpy(dehazed)
+
+    background_voxels_image = (1-image_gt) * image
+    background_voxels_dehazed = (1-image_gt)*dehazed
+    total_haze = xp.sum(background_voxels_image)
+    total_remaining_haze = xp.sum(background_voxels_dehazed)
+
+    percent_removed = (total_haze-total_remaining_haze)/total_haze
+
+    print(f"percent_removed = {percent_removed}")
+
+    with gui_qt():
+        viewer = Viewer()
+        viewer.add_image(image_gt, name='image_gt')
+        viewer.add_image(background, name='background')
+        viewer.add_image(image, name='image')
+        viewer.add_image(dehazed, name='dehazed')
+
+
+
+demo_dehaze_cupy()
+demo_dehaze_numpy()
+

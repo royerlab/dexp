@@ -13,6 +13,9 @@ def generate_fusion_test_data(backend:Backend,
                               shift=None,
                               volume_fraction=0.8):
 
+    xp = backend.get_xp_module()
+    sp = backend.get_sp_module()
+
     with timeit("generate blob images"):
         image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype('f4')
         blend_a = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype('f4')
@@ -22,9 +25,6 @@ def generate_fusion_test_data(backend:Backend,
         image_gt = backend.to_backend(image_gt)
         blend_a = backend.to_backend(blend_a)
         blend_b = backend.to_backend(blend_b)
-
-    xp = backend.get_xp_module(image_gt)
-    sp = backend.get_sp_module(image_gt)
 
     with timeit("prepare high/low image pair"):
         image_gt = sp.ndimage.gaussian_filter(image_gt, sigma=1)

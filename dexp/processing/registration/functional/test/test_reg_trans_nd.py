@@ -1,13 +1,9 @@
-import scipy
 from pytest import approx
-from skimage.data import binary_blobs
-from skimage.filters import gaussian
-from skimage.util import random_noise
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.datasets.multiview_data import generate_fusion_test_data
 from dexp.processing.registration.functional.reg_trans_nd import register_translation_nd
+from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 from dexp.utils.timeit import timeit
 
 

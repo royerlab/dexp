@@ -3,7 +3,7 @@ import os
 
 from aydin.util.psf.simple_microscope_psf import SimpleMicroscopePSF
 
-from dexp.processing.restoration.base_restoration import BaseRestoration
+from dexp.processing.base_restoration import BaseRestoration
 
 os.environ["PYOPENCL"] = "0"
 

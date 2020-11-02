@@ -18,7 +18,7 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--workers', '-k', default=1, help='Number of worker threads to spawn, recommended: 1 (unless you know what you are doing)', show_default=True)
 @click.option('--method', '-m', type=str, default='lr', help='Deconvolution method: for now only lr (Lucy Richardson)', show_default=True)
 @click.option('--iterations', '-i', type=int, default=15, help='Number of deconvolution iterations. More iterations takes longer, will be sharper, but might also be potentially more noisy depending on method.', show_default=True)
-@click.option('--maxcorrection', '-mc', type=int, default=2, help='Max correction in folds per iteration. Noisy datasets benefit from mc=2 (recommended), for noiseless datasets you can push to mc=8 or even more.', show_default=True)
+@click.option('--maxcorrection', '-mc', type=int, default=2, help='Max correction in folds per iteration. Noisy synthetic_datasets benefit from mc=2 (recommended), for noiseless synthetic_datasets you can push to mc=8 or even more.', show_default=True)
 @click.option('--power', '-pw', type=float, default=1.5, help='Correction exponent, default for standard LR is 1, set to 1.5 for acceleration.', show_default=True)
 @click.option('--dxy', '-dxy', type=float, default=0.485, help='Voxel size along x and y in microns', show_default=True)
 @click.option('--dz', '-dz', type=float, default=4*0.485, help='Voxel size along z in microns', show_default=True)

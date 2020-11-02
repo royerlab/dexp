@@ -2,31 +2,31 @@ import numpy
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.datasets.multiview_data import generate_fusion_test_data
-from dexp.processing.fusion.functional.tg_fusion import fuse_tg_nd
+from dexp.processing.fusion.functional.dft_fusion import fuse_dft_nd
+from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 from dexp.utils.timeit import timeit
 
 
-def test_tg_fusion_numpy():
+def test_dft_fusion_numpy():
     backend = NumpyBackend()
-    tg_fusion(backend)
+    dft_fusion(backend)
 
-def test_tg_fusion_cupy():
+def test_dft_fusion_cupy():
     try:
         backend = CupyBackend()
-        tg_fusion(backend)
+        dft_fusion(backend)
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def tg_fusion(backend):
+def dft_fusion(backend):
     image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend, add_noise=False)
     with timeit("dcf fusion + data transfer"):
-        image_fused = fuse_tg_nd(backend, image1, image2)
+        image_fused = fuse_dft_nd(backend, image1, image2)
         image_fused = backend.to_numpy(image_fused)
     error = numpy.median(numpy.abs(image_gt - image_fused))
     print(error)
-    assert error < 22
+    assert error < 23
 
     # from napari import Viewer, gui_qt
     # with gui_qt():

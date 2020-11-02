@@ -1,6 +1,6 @@
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.datasets.binary_blobs import binary_blobs
+from dexp.processing.synthetic_datasets.binary_blobs import binary_blobs
 from dexp.utils.timeit import timeit
 
 
