@@ -20,23 +20,28 @@ class PytorchBackend(Backend):
         #Nothing to do
         pass
 
-    def to_numpy(self, array, dtype=None) -> numpy.ndarray:
-
+    def to_numpy(self, array, dtype=None, copy: bool = False) -> numpy.ndarray:
         if torch.is_tensor(array):
             array = array.cpu().detach().numpy()
             if dtype:
-                array = array.astype(dtype, copy=False)
-            return array
+                return array.astype(dtype, copy=copy)
+            elif copy:
+                return array.copy()
+            else:
+                return array
         else:
             return array.astype(dtype, copy=False)
 
-    def to_backend(self, array, dtype=None) -> Any:
-        if dtype:
-            array = array.astype(dtype, copy=False)
-
+    def to_backend(self, array, dtype=None, copy: bool = False) -> Any:
+        #TODO: handle better dtype conversion...
         if torch.is_tensor(array):
-            return array
+            if copy:
+                return array.detach().clone()
+            else:
+                return array
         else:
+            if dtype:
+                array = array.astype(dtype, copy=copy)
             return torch.tensor(array, requires_grad=False, device=self.device)
 
     def get_xp_module(self, array=None) -> Any:

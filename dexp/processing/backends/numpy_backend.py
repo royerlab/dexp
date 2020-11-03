@@ -20,15 +20,21 @@ class NumpyBackend(Backend):
         #Nothing to do
         pass
 
-    def to_numpy(self, array, dtype=None) -> numpy.ndarray:
+    def to_numpy(self, array, dtype=None, copy: bool = False) -> numpy.ndarray:
         if dtype:
-            array = array.astype(dtype, copy=False)
-        return array
+            return array.astype(dtype, copy=copy)
+        elif copy:
+            return array.copy()
+        else:
+            return array
 
-    def to_backend(self, array, dtype=None) -> Any:
+    def to_backend(self, array, dtype=None, copy: bool = False) -> Any:
         if dtype:
-            array = array.astype(dtype, copy=False)
-        return array
+            return array.astype(dtype, copy=copy)
+        elif copy:
+            return array.copy()
+        else:
+            return array
 
     def get_xp_module(self, array=None) -> Any:
         return numpy

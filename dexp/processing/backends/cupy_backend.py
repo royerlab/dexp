@@ -26,24 +26,33 @@ class CupyBackend(Backend):
         #Nothing to do
         pass
 
-    def to_numpy(self, array, dtype=None) -> numpy.ndarray:
+    def to_numpy(self, array, dtype=None, copy: bool = False) -> numpy.ndarray:
         import cupy
         if cupy.get_array_module(array) == cupy:
             array = cupy.asnumpy(array)
             if dtype:
-                array = array.astype(dtype, copy=False)
-            return array
+                return array.astype(dtype, copy=copy)
+            elif copy:
+                return array.copy()
+            else:
+                return array
         else:
             if dtype:
-                array = array.astype(dtype, copy=False)
-            return array
+                return array.astype(dtype, copy=copy)
+            elif copy:
+                return array.copy()
+            else:
+                return array
 
-    def to_backend(self, array, dtype=None) -> Any:
+    def to_backend(self, array, dtype=None, copy: bool = False) -> Any:
         import cupy
         if cupy.get_array_module(array) == cupy:
             if dtype:
-                array = array.astype(dtype, copy=False)
-            return array
+                return array.astype(dtype, copy=copy)
+            elif copy:
+                return array.copy()
+            else:
+                return array
         else:
             with cupy.cuda.Device(self.device):
                 return cupy.asarray(array, dtype=dtype)
