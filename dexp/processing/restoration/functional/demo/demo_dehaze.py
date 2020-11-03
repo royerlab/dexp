@@ -31,7 +31,6 @@ def demo_dehaze_data(backend, length_xy=320):
         
     with timeit('dehaze_new'):
         dehazed = dehaze(backend, image, size=25)
-        dehazed = backend.to_numpy(dehazed)
 
     background_voxels_image = (1-image_gt) * image
     background_voxels_dehazed = (1-image_gt)*dehazed
@@ -43,11 +42,13 @@ def demo_dehaze_data(backend, length_xy=320):
     print(f"percent_removed = {percent_removed}")
 
     with gui_qt():
+        def _c(array):
+            return backend.to_numpy(array)
         viewer = Viewer()
-        viewer.add_image(image_gt, name='image_gt')
-        viewer.add_image(background, name='background')
-        viewer.add_image(image, name='image')
-        viewer.add_image(dehazed, name='dehazed')
+        viewer.add_image(_c(image_gt), name='image_gt')
+        viewer.add_image(_c(background), name='background')
+        viewer.add_image(_c(image), name='image')
+        viewer.add_image(_c(dehazed), name='dehazed')
 
 
 

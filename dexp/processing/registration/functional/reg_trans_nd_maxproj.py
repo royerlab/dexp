@@ -3,6 +3,7 @@ from numpy.linalg import norm
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.functional.reg_trans_2d import register_translation_2d_skimage
+from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 
 
 def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register_translation_2d=register_translation_2d_skimage, gamma=4):
@@ -25,9 +26,9 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
         ibp1 = _normalised_projection(backend, image_b, axis=1, gamma=gamma)
         ibp2 = _normalised_projection(backend, image_b, axis=2, gamma=gamma)
 
-        shifts_p0, error_p0 = register_translation_2d(backend, iap0, ibp0)
-        shifts_p1, error_p1 = register_translation_2d(backend, iap1, ibp1)
-        shifts_p2, error_p2 = register_translation_2d(backend, iap2, ibp2)
+        shifts_p0, error_p0 = register_translation_2d(backend, iap0, ibp0).get_shift_and_error()
+        shifts_p1, error_p1 = register_translation_2d(backend, iap1, ibp1).get_shift_and_error()
+        shifts_p2, error_p2 = register_translation_2d(backend, iap2, ibp2).get_shift_and_error()
 
         shifts_p0 = numpy.asarray([0, shifts_p0[0], shifts_p0[1]])
         shifts_p1 = numpy.asarray([shifts_p1[0], 0, shifts_p1[1]])
@@ -36,7 +37,7 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
         shifts = (shifts_p0+shifts_p1+shifts_p2)/2
         error = norm([error_p0, error_p1, error_p2])
 
-    return shifts, error
+    return TranslationRegistrationModel(shift_vector=shifts, error=error)
 
 def _normalised_projection(backend:Backend, image, axis, gamma=3):
     image = backend.to_backend(image)

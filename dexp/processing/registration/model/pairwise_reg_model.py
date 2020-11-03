@@ -14,7 +14,7 @@ class PairwiseRegistrationModel(ABC):
 
 
     @abstractmethod
-    def apply(self, backend: Backend, image_a, image_b) -> numpy.ndarray:
+    def apply(self, backend: Backend, image_a, image_b, pad: bool = False) -> numpy.ndarray:
         """ Applies this pairwise registration model to the two given images.
         Two images will be returned as there might be need to pad both images.
 
@@ -23,6 +23,7 @@ class PairwiseRegistrationModel(ABC):
         ----------
         backend : Backend to use for computation
         image_a, image_b : backend array to be converted
+        pad : Set to True to add padding, False otherwise
 
         Returns
         -------

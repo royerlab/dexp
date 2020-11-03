@@ -2,15 +2,17 @@ import math
 
 import numpy
 from dexp.processing.backends.backend import Backend
+from dexp.processing.registration.model.pairwise_reg_model import PairwiseRegistrationModel
+from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 
 
-def register_translation_nd(backend: Backend, image_a, image_b, max_range_ratio=0.5, fine_window_radius=4, decimate=16, percentile=99.9, dtype=numpy.float32, log=False):
+def register_translation_nd(backend: Backend, image_a, image_b, max_range_ratio=0.5, fine_window_radius=4, decimate=16, percentile=99.9, dtype=numpy.float32, log=False) -> TranslationRegistrationModel:
 
     image_a = backend.to_backend(image_a)
     image_b = backend.to_backend(image_b)
 
-    xp = backend.get_xp_module(image_a)
-    sp = backend.get_sp_module(image_a)
+    xp = backend.get_xp_module()
+    sp = backend.get_sp_module()
 
     # We compute the phase correlation:
     raw_correlation = _phase_correlation(backend, image_a, image_b, dtype)
@@ -67,20 +69,21 @@ def register_translation_nd(backend: Backend, image_a, image_b, max_range_ratio=
 
     # We compute the signed rough shift
     signed_rough_shift = xp.array(rough_shift) - max_range
+    signed_rough_shift = backend.to_numpy(signed_rough_shift)
     if log:
         print(f"signed_rough_shift= {signed_rough_shift}")
-
-    signed_rough_shift = backend.to_numpy(signed_rough_shift)
     cropped_correlation = backend.to_numpy(cropped_correlation)
 
     # We compute the center of mass:
     # We take the square to squash small values far from the maximum that are likely noisy...
     signed_com_shift = (
-            numpy.array(sp.ndimage.center_of_mass(cropped_correlation ** 2))
+            xp.array(_center_of_mass(backend, cropped_correlation**2))
             - fine_window_radius
     )
+    signed_com_shift = backend.to_numpy(signed_com_shift)
     if log:
         print(f"signed_com_shift= {signed_com_shift}")
+
 
     # The final shift is the sum of the rough sight plus the fine center of mass shift:
     shift = list(signed_rough_shift + signed_com_shift)
@@ -88,7 +91,32 @@ def register_translation_nd(backend: Backend, image_a, image_b, max_range_ratio=
     if log:
         print(f"shift = {shift}")
 
-    return shift, 0
+    return TranslationRegistrationModel(shift_vector=shift, error=0)
+
+
+def _center_of_mass(backend: Backend, image):
+
+    image = backend.to_backend(image)
+
+    xp = backend.get_xp_module()
+    sp = backend.get_sp_module()
+
+    try:
+        return sp.ndimage.center_of_mass(image)
+    except AttributeError:
+        # Workaround for the lack of implementation of center_of_mass in cupy
+        # TODO: remove this code path once center_of_mass is implemented in cupy!
+
+        normalizer = xp.sum(image)
+
+        grids = numpy.ogrid[[slice(0, i) for i in image.shape]]
+        grids = list([backend.to_backend(grid) for grid in grids])
+
+        results = list([xp.sum(image * grids[dir].astype(float)) / normalizer
+                   for dir in range(image.ndim)])
+
+        return tuple(float(f) for f in results)
+
 
 def _normalised_projection(backend:Backend, image, axis, gamma=3):
     xp = backend.get_xp_module(image)

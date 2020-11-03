@@ -30,7 +30,6 @@ def _test_dehaze(backend, length_xy=128):
 
     with timeit('dehaze_new'):
         dehazed = dehaze(backend, image, size=25)
-        dehazed = backend.to_numpy(dehazed)
 
     # compute [ercentage of haze removed:
     background_voxels_image = (1 - image_gt) * image

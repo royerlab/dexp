@@ -1,9 +1,7 @@
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.functional.reg_trans_nd import register_translation_nd
-from dexp.processing.registration.functional.reg_trans_nd_maxproj import register_translation_maxproj_nd
+from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
-from dexp.utils.timeit import timeit
 
 
 def demo_register_translation_nD_numpy():
@@ -26,24 +24,23 @@ def register_translation_nD(backend, length_xy=320):
                                                                                        length_xy=length_xy,
                                                                                        length_z_factor=2)
 
-    with timeit("register_translation_nd"):
-        shifts, error = register_translation_nd(backend, image1, image2)
-        print(f"shifts: {shifts}, error: {error}")
+    model = TranslationRegistrationModel(shift_vector=(-1, -5, 13))
 
-    with timeit("register_translation_maxproj_nd"):
-        shifts_maxproj, error_maxproj = register_translation_maxproj_nd(backend, image1, image2)
-        print(f"shifts: {shifts_maxproj}, error: {error_maxproj}")
-
+    image1_reg, image2_reg = model.apply(backend, image1, image2, pad=False)
+    image1_reg_pad, image2_reg_pad = model.apply(backend, image1, image2, pad=True)
 
     from napari import Viewer, gui_qt
     with gui_qt():
+        def _c(array):
+            return backend.to_numpy(array)
         viewer = Viewer()
-        viewer.add_image(image_gt, name='image_gt')
-        viewer.add_image(image_lowq, name='image_lowq')
-        viewer.add_image(blend_a, name='blend_a')
-        viewer.add_image(blend_b, name='blend_b')
-        viewer.add_image(image1, name='image1')
-        viewer.add_image(image2, name='image2')
+        viewer.add_image(_c(image_gt), name='image_gt')
+        viewer.add_image(_c(image1), name='image1')
+        viewer.add_image(_c(image2), name='image2')
+        viewer.add_image(_c(image1_reg), name='image1_reg')
+        viewer.add_image(_c(image2_reg), name='image2_reg')
+        viewer.add_image(_c(image1_reg_pad), name='image1_reg_pad')
+        viewer.add_image(_c(image2_reg_pad), name='image2_reg_pad')
 
 demo_register_translation_nD_cupy()
 demo_register_translation_nD_numpy()

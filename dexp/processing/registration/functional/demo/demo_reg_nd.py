@@ -37,14 +37,18 @@ def register_translation_nD(backend, length_xy=320):
 
     from napari import Viewer, gui_qt
     with gui_qt():
+        def _c(array):
+            return backend.to_numpy(array)
         viewer = Viewer()
-        viewer.add_image(image_gt, name='image_gt')
-        viewer.add_image(image_lowq, name='image_lowq')
-        viewer.add_image(blend_a, name='blend_a')
-        viewer.add_image(blend_b, name='blend_b')
-        viewer.add_image(image1, name='image1')
-        viewer.add_image(image2, name='image2')
+        viewer.add_image(_c(image_gt), name='image_gt')
+        viewer.add_image(_c(image_lowq), name='image_lowq')
+        viewer.add_image(_c(blend_a), name='blend_a')
+        viewer.add_image(_c(blend_b), name='blend_b')
+        viewer.add_image(_c(image1), name='image1')
+        viewer.add_image(_c(image2), name='image2')
 
 demo_register_translation_nD_cupy()
 demo_register_translation_nD_numpy()
+
+
 

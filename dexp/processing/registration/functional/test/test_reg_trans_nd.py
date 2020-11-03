@@ -18,7 +18,7 @@ def test_register_translation_nD_cupy():
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
-def register_translation_nD(backend, length_xy=256):
+def register_translation_nD(backend, length_xy=128):
 
     image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend,
                                                                                        add_noise=False,
@@ -28,7 +28,7 @@ def register_translation_nD(backend, length_xy=256):
                                                                                        length_z_factor=2)
 
     with timeit("register_translation_nd"):
-        shifts, error = register_translation_nd(backend, image1, image2)
+        shifts, error = register_translation_nd(backend, image1, image2).get_shift_and_error()
 
     print(shifts, error)
 

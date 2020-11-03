@@ -21,6 +21,7 @@ class CupyBackend(Backend):
         ## Leave this:
         import cupyx.scipy.ndimage
 
+
     def close(self):
         #Nothing to do
         pass
@@ -39,7 +40,6 @@ class CupyBackend(Backend):
 
     def to_backend(self, array, dtype=None) -> Any:
         import cupy
-
         if cupy.get_array_module(array) == cupy:
             if dtype:
                 array = array.astype(dtype, copy=False)

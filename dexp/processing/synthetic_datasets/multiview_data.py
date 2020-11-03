@@ -1,3 +1,5 @@
+from typing import Tuple, Optional
+
 import numpy
 from skimage.data import binary_blobs
 from skimage.util import random_noise
@@ -7,11 +9,13 @@ from dexp.utils.timeit import timeit
 
 
 def generate_fusion_test_data(backend:Backend,
-                              length_xy=320,
-                              length_z_factor=4,
-                              add_noise=True,
-                              shift=None,
-                              volume_fraction=0.8):
+                              length_xy: Optional[int] = 320,
+                              length_z_factor: Optional[int] = 4,
+                              add_noise: Optional[bool] = True,
+                              shift: Optional[Tuple[int,...]] = None,
+                              volume_fraction: Optional[float] = 0.8,
+                              amount_low: Optional[float] = 1,
+                              zero_level: Optional[float] = 95):
 
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
@@ -31,7 +35,7 @@ def generate_fusion_test_data(backend:Backend,
         image_gt = image_gt / xp.max(image_gt)
         image_highq = image_gt.copy()
         image_lowq = image_gt.copy()
-        image_lowq = sp.ndimage.gaussian_filter(image_lowq, sigma=7)
+        image_lowq = amount_low*sp.ndimage.gaussian_filter(image_lowq, sigma=7)
 
     with timeit("prepare blend maps"):
         blend_a = sp.ndimage.gaussian_filter(blend_a, sigma=2)
@@ -64,10 +68,10 @@ def generate_fusion_test_data(backend:Backend,
             image2 = sp.ndimage.shift(image2, shift=shift)
 
     with timeit("scale image intensities"):
-        image1 = 95+300*image1
-        image2 = 95+300*image2
-        image_gt = 95+300*image_gt
-        image_lowq= 95+300*image_lowq
+        image1 = zero_level+300*image1
+        image2 = zero_level+300*image2
+        image_gt = zero_level+300*image_gt
+        image_lowq= zero_level+300*image_lowq
 
     return image_gt.astype('f4', copy=False), \
            image_lowq.astype('f4', copy=False), \
