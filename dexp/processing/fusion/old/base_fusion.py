@@ -23,13 +23,3 @@ class BaseFusion(ABC):
     @abstractmethod
     def fuse_cameras(self, C0Lx, C1Lx, asnumpy=True):
         pass
-
-
-
-
-
-
-
-
-
-

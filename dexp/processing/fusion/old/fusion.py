@@ -23,7 +23,6 @@ class SimpleFusion(BaseFusion):
 
         super().__init__()
 
-
         self.backend = backend
         self.device = self.backend.split('-')[1] if '-' in self.backend else None
         self.dtype = dtype
@@ -36,7 +35,8 @@ class SimpleFusion(BaseFusion):
 
         self.butterworth_filter = None
 
-        #_convert_to_backend
+        # _convert_to_backend
+
     def _cb(self, array):
         if 'pytorch' in self.backend:
             if torch.is_tensor(array):
@@ -51,7 +51,7 @@ class SimpleFusion(BaseFusion):
         elif 'numpy' in self.backend:
             return array.astype(self.dtype, copy=False)
 
-    #_convert_to_numpy (from backend)
+    # _convert_to_numpy (from backend)
     def _cn(self, array):
         if 'pytorch' in self.backend:
             if torch.is_tensor(array):
@@ -71,7 +71,7 @@ class SimpleFusion(BaseFusion):
         spz = int(split_point_z * length)
         profile = numpy.fromfunction(lambda z: 1.0 - 0.5 * (1 + (((z - spz) / smoothness) / (1.0 + ((z - spz) / smoothness) ** 2) ** 0.5)), shape=(length,), dtype=self.dtype)
         profile = profile.astype(self.dtype, copy=False)
-        blending_map = profile[...,newaxis, newaxis]
+        blending_map = profile[..., newaxis, newaxis]
         return blending_map
 
     def _get_blending_map_x(self, shape, split_point_x, smoothness):
@@ -95,7 +95,6 @@ class SimpleFusion(BaseFusion):
             self.blending_C1Lx = (1.0 - blending_z).astype(self.dtype, copy=False)
             print(f"Done creating blend weights...")
 
-
     def equalise_intensity(self, image1, image2, zero_level=90, percentile=0.999, reduction=32, as_numpy=False):
 
         image1 = self._cb(image1)
@@ -106,8 +105,8 @@ class SimpleFusion(BaseFusion):
         strided_image1 = image1.ravel()[::reduction]
         strided_image2 = image2.ravel()[::reduction]
 
-        highvalue1 = xp.percentile(strided_image1.astype(numpy.float32), q=percentile*100)
-        highvalue2 = xp.percentile(strided_image2.astype(numpy.float32), q=percentile*100)
+        highvalue1 = xp.percentile(strided_image1.astype(numpy.float32), q=percentile * 100)
+        highvalue2 = xp.percentile(strided_image2.astype(numpy.float32), q=percentile * 100)
 
         mask1 = strided_image1 >= highvalue1
         mask2 = strided_image2 >= highvalue2
@@ -117,21 +116,21 @@ class SimpleFusion(BaseFusion):
         highvalues1 = strided_image1[mask]
         highvalues2 = strided_image2[mask]
 
-        ratios = highvalues1/highvalues2
+        ratios = highvalues1 / highvalues2
 
         median_ratio = xp.percentile(ratios.astype(numpy.float32), q=50)
 
-        if zero_level!=0:
+        if zero_level != 0:
             image1 -= zero_level
             image2 -= zero_level
 
         image1.clip(0, math.inf, out=image1)
         image2.clip(0, math.inf, out=image2)
 
-        if median_ratio>1:
+        if median_ratio > 1:
             image2 *= median_ratio
         else:
-            image1 *= (1/median_ratio)
+            image1 *= (1 / median_ratio)
 
         image1 = image1.astype(self.dtype, copy=False)
         image2 = image2.astype(self.dtype, copy=False)
@@ -157,7 +156,7 @@ class SimpleFusion(BaseFusion):
             CxL1 = self._cb(CxL1)
             CxL0 *= self._cb(bCxL0)
             CxL1 *= self._cb(bCxL1)
-            fused = CxL0+CxL1
+            fused = CxL0 + CxL1
 
         elif 'numpy' in self.backend:
             fused = numexpr.evaluate("bCxL0 * CxL0 + "
@@ -166,7 +165,6 @@ class SimpleFusion(BaseFusion):
             fused = self._cn(fused)
 
         return fused
-
 
     def _find_shift(self, a, b, max_range=128, fine_window_radius=4, decimate=16, percentile=99.9):
 
@@ -181,9 +179,9 @@ class SimpleFusion(BaseFusion):
         correlation = raw_correlation
 
         # We estimate the noise floor of the correlation:
-        max_ranges = tuple(max(0, min(max_range, s-2*max_range)) for s in correlation.shape)
+        max_ranges = tuple(max(0, min(max_range, s - 2 * max_range)) for s in correlation.shape)
         print(f"max_ranges={max_ranges}")
-        empty_region = correlation[tuple(slice(r, s-r) for r,s in zip(max_ranges, correlation.shape))].copy()
+        empty_region = correlation[tuple(slice(r, s - r) for r, s in zip(max_ranges, correlation.shape))].copy()
         noise_floor_level = xp.percentile(empty_region.ravel()[::decimate].astype(numpy.float32), q=percentile)
         print(f"noise_floor_level={noise_floor_level}")
 
@@ -195,7 +193,7 @@ class SimpleFusion(BaseFusion):
         correlation = correlation[(slice(0, 2 * max_range),) * a.ndim]
 
         # denoise cropped corelation image:
-        #correlation = gaussian_filter(correlation, sigma=sigma, mode='wrap')
+        # correlation = gaussian_filter(correlation, sigma=sigma, mode='wrap')
 
         # We use the max as quickly computed proxy for the real center:
         rough_shift = xp.unravel_index(
@@ -243,8 +241,6 @@ class SimpleFusion(BaseFusion):
 
         return shift, correlation
 
-
-
     def _phase_correlation(self, image, reference_image, as_numpy=False):
 
         xp = cupy.get_array_module(image)
@@ -260,7 +256,6 @@ class SimpleFusion(BaseFusion):
 
         return r
 
-
     def register_stacks(self, C0Lx, C1Lx, overlapp=96, crop_x=128, crop_y=512, shifts=None, as_numpy=False):
 
         C0Lx = self._cb(C0Lx)
@@ -268,14 +263,14 @@ class SimpleFusion(BaseFusion):
 
         # We compute the registration parameters on the central overlap region:
         length = C0Lx.shape[0]
-        begin_z = length//2-overlapp//2
-        end_z   = length//2+overlapp//2
+        begin_z = length // 2 - overlapp // 2
+        end_z = length // 2 + overlapp // 2
 
         C0Lx_crop = C0Lx[begin_z:end_z, crop_y:-crop_y, crop_x:-crop_x]
         C1Lx_crop = C1Lx[begin_z:end_z, crop_y:-crop_y, crop_x:-crop_x]
 
         if shifts is None:
-            shifts, _ = self._find_shift(C0Lx_crop, C1Lx_crop, max_range=overlapp//2)
+            shifts, _ = self._find_shift(C0Lx_crop, C1Lx_crop, max_range=overlapp // 2)
 
         for i, shift in enumerate(shifts):
             integral_shift = int(round(shift))
@@ -311,30 +306,28 @@ class SimpleFusion(BaseFusion):
 
         return fused
 
-
     def butterworth(self, filter_shape, cutoffs, n=3):
 
         lz, ly, lx = filter_shape
         cz, cy, cx = cutoffs
 
-        x =  numpy.linspace(-0.5, 0.5, lx)
-        y =  numpy.linspace(-0.5, 0.5, ly)
-        z =  numpy.linspace(-0.5, 0.5, lz)
+        x = numpy.linspace(-0.5, 0.5, lx)
+        y = numpy.linspace(-0.5, 0.5, ly)
+        z = numpy.linspace(-0.5, 0.5, lz)
 
         # An array with every pixel = radius relative to center
-        radius = numpy.sqrt(((x/cx)**2)[newaxis, newaxis, :] + ((y / cy) ** 2)[newaxis, :, newaxis] + ((z / cz) ** 2)[:, newaxis, newaxis])
+        radius = numpy.sqrt(((x / cx) ** 2)[newaxis, newaxis, :] + ((y / cy) ** 2)[newaxis, :, newaxis] + ((z / cz) ** 2)[:, newaxis, newaxis])
 
-        filter = 1 / (1.0 + radius**(2*n))
+        filter = 1 / (1.0 + radius ** (2 * n))
 
         from numpy.fft import fftshift
         from numpy.fft import ifftn
         from numpy.fft import ifftshift
         kernel = fftshift(real(ifftn(ifftshift(filter))))
 
-        kernel = kernel/kernel.sum()
+        kernel = kernel / kernel.sum()
 
         return kernel.astype(numpy.float32)
-
 
     def butterworth_noise_filter(self, image, filter_shape, cutoffs, n=3, as_numpy=False):
 
@@ -362,7 +355,6 @@ class SimpleFusion(BaseFusion):
 
         return filtered_image
 
-
     def fuse_2I2D(self, C0L0, C0L1, C1L0, C1L1, shifts=None, zero_level=100, filter=False, as_numpy=False):
 
         start = time.time()
@@ -376,7 +368,7 @@ class SimpleFusion(BaseFusion):
         gc.collect()
 
         print(f"equalise_intensity...")
-        C1L0, C1L1 = self.equalise_intensity(C1L0, C1L1, zero_level=zero_level,  as_numpy=False)
+        C1L0, C1L1 = self.equalise_intensity(C1L0, C1L1, zero_level=zero_level, as_numpy=False)
         gc.collect()
         print(f"fuse_lightsheets...")
         C1lx = self.fuse_lightsheets(C1L0, C1L1, as_numpy=False)
@@ -396,7 +388,7 @@ class SimpleFusion(BaseFusion):
         del C1lx
         gc.collect()
         stop = time.time()
-        print(f"Elapsed fusion time:  {stop-start} for backend: {self.backend} ")
+        print(f"Elapsed fusion time:  {stop - start} for backend: {self.backend} ")
 
         if filter:
             print(f"Filter output using a Butterworth filter")
@@ -406,6 +398,3 @@ class SimpleFusion(BaseFusion):
             CxLx = self._cn(CxLx)
 
         return CxLx, shifts
-
-
-

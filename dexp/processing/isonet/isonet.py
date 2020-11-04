@@ -12,7 +12,7 @@ from csbdeep.models import Config, IsotropicCARE
 
 class IsoNet:
 
-    def __init__(self, context_name='default', subsampling = 5):
+    def __init__(self, context_name='default', subsampling=5):
         """
 
         """
@@ -25,10 +25,7 @@ class IsoNet:
 
         self.subsampling = subsampling
 
-
-
     def prepare(self, image, psf=np.ones((3, 3)) / 9, threshold=0.9):
-
         print('image size         =', image.shape)
         print('Z subsample factor =', self.subsampling)
 
@@ -47,7 +44,7 @@ class IsoNet:
                 patch_size=(128, 128),
                 n_patches_per_image=512,
                 transforms=[anisotropic_transform],
-                patch_filter=no_background_patches(threshold=threshold, percentile=100-0.1),
+                patch_filter=no_background_patches(threshold=threshold, percentile=100 - 0.1),
             )
 
         assert X.shape == Y.shape
@@ -58,9 +55,7 @@ class IsoNet:
         save_training_data(self.training_data_path, X, Y, XY_axes)
         print("Done saving training data.")
 
-
     def train(self, max_epochs=100):
-
         (X, Y), (X_val, Y_val), axes = load_training_data(self.training_data_path, validation_split=0.1, verbose=True)
 
         n_channel_in, n_channel_out = 1, 1
@@ -69,16 +64,13 @@ class IsoNet:
         print(config)
         vars(config)
 
-
         model = IsotropicCARE(config, 'my_model', basedir=self.model_path)
 
         history = model.train(X, Y, validation_data=(X_val, Y_val), epochs=max_epochs)
 
         print(sorted(list(history.history.keys())))
 
-
     def apply(self, image, batch_size=8):
-
         if self.model is None:
             print('Loading model.')
             self.model = IsotropicCARE(config=None, name='my_model', basedir=self.model_path)

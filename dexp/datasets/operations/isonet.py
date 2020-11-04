@@ -75,7 +75,7 @@ def dataset_isonet(dataset,
 
                 if sharpening:
                     print("Sharpening image...")
-                    from dexp.processing.restoration.functional import dehazing
+                    from dexp.processing.restoration import dehazing
                     array_tp = dehazing(array_tp, mode='hybrid', min=0, max=1024, margin_pad=False)
 
                 print("Applying IsoNet to image...")

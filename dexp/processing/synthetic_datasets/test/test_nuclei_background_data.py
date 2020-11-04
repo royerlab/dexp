@@ -9,6 +9,7 @@ def test_nuclei_background_data_numpy():
     backend = NumpyBackend()
     _test_nuclei_background_data(backend)
 
+
 def test_nuclei_background_data_cupy():
     try:
         backend = CupyBackend()
@@ -20,9 +21,9 @@ def test_nuclei_background_data_cupy():
 def _test_nuclei_background_data(backend, length_xy=128):
     with timeit("generate data"):
         image_gt, background, image = generate_nuclei_background_data(backend,
-                                                                     add_noise=True,
-                                                                     length_xy=length_xy,
-                                                                     length_z_factor=4)
+                                                                      add_noise=True,
+                                                                      length_xy=length_xy,
+                                                                      length_z_factor=4)
     assert image_gt.shape == background.shape
     assert image_gt.shape == image.shape
 
@@ -41,5 +42,3 @@ def _test_nuclei_background_data(backend, length_xy=128):
 
 test_nuclei_background_data_cupy()
 test_nuclei_background_data_numpy()
-
-

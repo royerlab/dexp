@@ -1,4 +1,3 @@
-import numpy
 from skimage.data import binary_blobs
 from skimage.util import random_noise
 
@@ -6,14 +5,13 @@ from dexp.processing.backends.backend import Backend
 from dexp.utils.timeit import timeit
 
 
-def generate_nuclei_background_data(backend:Backend,
-                                  length_xy=320,
-                                  length_z_factor=4,
-                                  add_noise=True,
-                                  background_stength=0.2,
-                                  background_scale=0.5,
-                                  independent_haze=False):
-
+def generate_nuclei_background_data(backend: Backend,
+                                    length_xy=320,
+                                    length_z_factor=4,
+                                    add_noise=True,
+                                    background_stength=0.2,
+                                    background_scale=0.5,
+                                    independent_haze=False):
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
@@ -33,13 +31,13 @@ def generate_nuclei_background_data(backend:Backend,
         background = background / xp.max(background)
 
     with timeit("generate two views via blending"):
-        image = image_gt + background_stength*background
+        image = image_gt + background_stength * background
 
     if length_z_factor != 1:
         with timeit("downscale along z"):
-            image_gt = sp.ndimage.zoom(image_gt, zoom=(1/length_z_factor, 1, 1), order=0)
-            background = sp.ndimage.zoom(background, zoom=(1/length_z_factor, 1, 1), order=0)
-            image = sp.ndimage.zoom(image, zoom=(1/length_z_factor, 1, 1), order=0)
+            image_gt = sp.ndimage.zoom(image_gt, zoom=(1 / length_z_factor, 1, 1), order=0)
+            background = sp.ndimage.zoom(background, zoom=(1 / length_z_factor, 1, 1), order=0)
+            image = sp.ndimage.zoom(image, zoom=(1 / length_z_factor, 1, 1), order=0)
 
     if add_noise:
         with timeit("add noise"):
@@ -49,7 +47,7 @@ def generate_nuclei_background_data(backend:Backend,
 
     with timeit("scale image intensities"):
         zero_level = xp.random.uniform(95, 10, size=image_gt.shape)
-        image = zero_level+300*image
+        image = zero_level + 300 * image
 
     return image_gt.astype('f4', copy=False), \
            background.astype('f4', copy=False), \

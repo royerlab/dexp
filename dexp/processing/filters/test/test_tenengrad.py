@@ -8,6 +8,7 @@ def test_tenengrad_numpy():
     backend = NumpyBackend()
     _tenengrad(backend)
 
+
 def test_tenengrad_cupy():
     try:
         backend = CupyBackend()
@@ -33,5 +34,3 @@ def _tenengrad(backend):
         viewer.add_image(image2, name='image2')
         viewer.add_image(tenengrad_image1, name='tenengrad_image1')
         viewer.add_image(tenengrad_image2, name='tenengrad_image2')
-
-

@@ -17,6 +17,9 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
         self.error = error
         self.integral = integral
 
+    def __str__(self):
+        return f"TranslationRegistrationModel(shift={self.shift_vector}, error={self.error}, integral={self.integral})"
+
     def get_shift_and_error(self):
         return self.shift_vector, self.error
 
@@ -36,27 +39,9 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
 
             else:
                 image_b = numpy.roll(image_b,
-                                    shift=integral_shift_vector,
-                                    axis=range(len(integral_shift_vector)))
+                                     shift=integral_shift_vector,
+                                     axis=range(len(integral_shift_vector)))
 
             return image_a, image_b
         else:
             raise NotImplementedError("Not implemented!")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

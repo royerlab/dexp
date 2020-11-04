@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Sequence, Any
+from typing import Any
 
 import numpy
 
@@ -47,7 +47,6 @@ class Backend(ABC):
         """
         pass
 
-
     @abstractmethod
     def get_xp_module(self, array=None) -> Any:
         """ Returns the numpy-like module for a given array
@@ -76,18 +75,3 @@ class Backend(ABC):
         scipy-like module
         """
         pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

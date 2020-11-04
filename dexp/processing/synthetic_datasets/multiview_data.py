@@ -8,15 +8,15 @@ from dexp.processing.backends.backend import Backend
 from dexp.utils.timeit import timeit
 
 
-def generate_fusion_test_data(backend:Backend,
+def generate_fusion_test_data(backend: Backend,
                               length_xy: Optional[int] = 320,
                               length_z_factor: Optional[int] = 4,
                               add_noise: Optional[bool] = True,
-                              shift: Optional[Tuple[int,...]] = None,
+                              shift: Optional[Tuple[int, ...]] = None,
                               volume_fraction: Optional[float] = 0.8,
                               amount_low: Optional[float] = 1,
-                              zero_level: Optional[float] = 95):
-
+                              zero_level: Optional[float] = 95,
+                              odd_dimension: Optional[float] = True):
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
@@ -35,7 +35,7 @@ def generate_fusion_test_data(backend:Backend,
         image_gt = image_gt / xp.max(image_gt)
         image_highq = image_gt.copy()
         image_lowq = image_gt.copy()
-        image_lowq = amount_low*sp.ndimage.gaussian_filter(image_lowq, sigma=7)
+        image_lowq = amount_low * sp.ndimage.gaussian_filter(image_lowq, sigma=7)
 
     with timeit("prepare blend maps"):
         blend_a = sp.ndimage.gaussian_filter(blend_a, sigma=2)
@@ -49,10 +49,16 @@ def generate_fusion_test_data(backend:Backend,
 
     if length_z_factor != 1:
         with timeit("downscale along z"):
-            image_gt = sp.ndimage.zoom(image_gt, zoom=(1/length_z_factor, 1, 1), order=0)
-            image_lowq = sp.ndimage.zoom(image_lowq, zoom=(1/length_z_factor, 1, 1), order=0)
-            image1 = sp.ndimage.zoom(image1, zoom=(1/length_z_factor, 1, 1), order=0)
-            image2 = sp.ndimage.zoom(image2, zoom=(1/length_z_factor, 1, 1), order=0)
+            image_gt = sp.ndimage.zoom(image_gt, zoom=(1 / length_z_factor, 1, 1), order=0)
+            image_lowq = sp.ndimage.zoom(image_lowq, zoom=(1 / length_z_factor, 1, 1), order=0)
+            image1 = sp.ndimage.zoom(image1, zoom=(1 / length_z_factor, 1, 1), order=0)
+            image2 = sp.ndimage.zoom(image2, zoom=(1 / length_z_factor, 1, 1), order=0)
+
+    if odd_dimension:
+        image_gt = xp.pad(image_gt, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
+        image_lowq = xp.pad(image_lowq, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
+        image1 = xp.pad(image1, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
+        image2 = xp.pad(image2, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
 
     if add_noise:
         with timeit("add noise"):
@@ -68,10 +74,10 @@ def generate_fusion_test_data(backend:Backend,
             image2 = sp.ndimage.shift(image2, shift=shift)
 
     with timeit("scale image intensities"):
-        image1 = zero_level+300*image1
-        image2 = zero_level+300*image2
-        image_gt = zero_level+300*image_gt
-        image_lowq= zero_level+300*image_lowq
+        image1 = zero_level + 300 * image1
+        image2 = zero_level + 300 * image2
+        image_gt = zero_level + 300 * image_gt
+        image_lowq = zero_level + 300 * image_lowq
 
     return image_gt.astype('f4', copy=False), \
            image_lowq.astype('f4', copy=False), \

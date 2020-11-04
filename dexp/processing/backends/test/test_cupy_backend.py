@@ -3,7 +3,6 @@ import pytest
 from skimage.data import binary_blobs
 
 from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
 def test_cupy_backend():
@@ -18,6 +17,3 @@ def test_cupy_backend():
         assert pytest.approx(array, rel=1e-5) == array_r
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
-
-
-

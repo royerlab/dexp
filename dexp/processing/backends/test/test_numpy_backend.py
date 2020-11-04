@@ -14,5 +14,3 @@ def test_numpy_backend():
     array_r = backend.to_numpy(array_b, numpy.float32)
 
     assert pytest.approx(array, rel=1e-5) == array_r
-
-

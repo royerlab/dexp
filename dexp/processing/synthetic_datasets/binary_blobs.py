@@ -1,5 +1,3 @@
-import scipy.ndimage
-
 from dexp.processing.backends.backend import Backend
 
 
@@ -58,7 +56,6 @@ def binary_blobs(backend: Backend,
     n_pts = max(int(1. / blob_size_fraction) ** n_dim, 1)
     points = (length * rs.rand(n_dim, n_pts)).astype(xp.int)
     mask[tuple(indices for indices in points)] = 1
-
 
     mask = sp.ndimage.gaussian_filter(mask, sigma=0.25 * length * blob_size_fraction)
     threshold = xp.percentile(mask, 100 * (1 - volume_fraction))

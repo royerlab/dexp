@@ -1,5 +1,4 @@
-from abc import abstractmethod
-from typing import Any, Union
+from typing import Any
 
 import numpy
 import torch
@@ -17,7 +16,7 @@ class PytorchBackend(Backend):
         self.device = device
 
     def close(self):
-        #Nothing to do
+        # Nothing to do
         pass
 
     def to_numpy(self, array, dtype=None, copy: bool = False) -> numpy.ndarray:
@@ -33,7 +32,7 @@ class PytorchBackend(Backend):
             return array.astype(dtype, copy=False)
 
     def to_backend(self, array, dtype=None, copy: bool = False) -> Any:
-        #TODO: handle better dtype conversion...
+        # TODO: handle better dtype conversion...
         if torch.is_tensor(array):
             if copy:
                 return array.detach().clone()
@@ -49,6 +48,3 @@ class PytorchBackend(Backend):
 
     def get_sp_module(self, array=None) -> Any:
         raise NotImplementedError("numpy-like module not defined for Pytorch backend")
-
-
-

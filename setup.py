@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='dexp',
     version='0.0.1',
-    packages=['dexp', 'dexp.cli', 'dexp.synthetic_datasets', 'dexp.synthetic_datasets.demo'],
+    packages=['dexp', 'dexp.cli'],
     url='',
     license='',
     author='royer',

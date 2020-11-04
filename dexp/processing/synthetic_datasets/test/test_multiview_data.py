@@ -8,6 +8,7 @@ def test_multiview_data_numpy():
     backend = NumpyBackend()
     _test_multiview_data(backend)
 
+
 def test_multiview_data_cupy():
     try:
         backend = CupyBackend()
@@ -39,5 +40,3 @@ def _test_multiview_data(backend, length_xy=128):
 
 test_multiview_data_cupy()
 test_multiview_data_numpy()
-
-

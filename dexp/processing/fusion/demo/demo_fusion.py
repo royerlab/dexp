@@ -1,48 +1,67 @@
-
-# You need to point to a tiff file with 4 views as first dim,
-# as produced for example by: dexp tiff -w -s [128:129] dataset.zarr -o /home/royer/Desktop/test_data/test_data.tiff
-import time
-
 import numpy
-#from aydin.it.llr_deconv import ImageTranslatorLearnedLRDeconv
-from napari import gui_qt, Viewer
-from tifffile import imread
 
-from dexp.processing.fusion import SimpleFusion
-
-
-filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'
-
-fusion = SimpleFusion(backend='cupy')
-start = time.time()
-
-print(f"Loading data...")
-array = imread(filepath)
-print(f"Done loading.")
-
-C0L0 = array[0]
-C0L1 = array[1]
-C1L0 = array[2]
-C1L1 = array[3]
-
-C1L0 = numpy.flip(C1L0, -1)
-C1L1 = numpy.flip(C1L1, -1)
-
-CxLx, shifts = fusion.fuse_2I2D(C0L0, C0L1, C1L0, C1L1, as_numpy=True)
-CxLx = CxLx.astype(numpy.float32)
-print(f"Shifts = {shifts}")
-
-#lr = ImageTranslatorLearnedLRDeconv(psf_kernel=psf_kernel, max_num_iterations=40)
-
-stop = time.time()
-print(f"Elapsed fusion time:  {stop-start} (includes loading)")
-
-with gui_qt():
-    viewer = Viewer()
-    viewer.add_image(C0L0, name='C0L0')
-    viewer.add_image(C0L1, name='C0L1')
-    viewer.add_image(C1L0, name='C1L0')
-    viewer.add_image(C1L1, name='C1L1')
-    viewer.add_image(CxLx, name='CxLx')
+from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.fusion.dct_fusion import fuse_dct_nd
+from dexp.processing.fusion.dft_fusion import fuse_dft_nd
+from dexp.processing.fusion.tg_fusion import fuse_tg_nd
+from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
+from dexp.utils.timeit import timeit
 
 
+def demo_fusion_numpy():
+    backend = NumpyBackend()
+    demo_fusion(backend)
+
+
+def demo_fusion_cupy():
+    try:
+        backend = CupyBackend()
+        demo_fusion(backend, include_dct=False, length_xy=512)
+    except (ModuleNotFoundError, NotImplementedError):
+        print("Cupy module not found! ignored!")
+
+
+def demo_fusion(backend, include_dct=True, length_xy=320):
+    with timeit("generate data"):
+        image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend, add_noise=True, length_xy=length_xy, length_z_factor=4)
+        image_gt = backend.to_numpy(image_gt)
+
+    with timeit("dct fusion"):
+        image_fused_dct = fuse_dct_nd(backend, image1, image2) if include_dct else numpy.zeros_like(image_gt)
+        image_fused_dct = backend.to_numpy(image_fused_dct)
+
+    error_dct = numpy.median(numpy.abs(image_gt - image_fused_dct))
+    print(f"error_dct={error_dct}")
+
+    with timeit("dft fusion"):
+        image_fused_dft = fuse_dft_nd(backend, image1, image2)
+        image_fused_dft = backend.to_numpy(image_fused_dft)
+    error_dft = numpy.median(numpy.abs(image_gt - image_fused_dft))
+    print(f"error_dft={error_dft}")
+
+    with timeit("tg fusion"):
+        image_fused_tg = fuse_tg_nd(backend, image1, image2)
+        image_fused_tg = backend.to_numpy(image_fused_tg)
+    error_tg = numpy.median(numpy.abs(image_gt - image_fused_tg))
+    print(f"error_tg={error_tg}")
+
+    from napari import Viewer, gui_qt
+    with gui_qt():
+        def _c(array):
+            return backend.to_numpy(array)
+
+        viewer = Viewer()
+        viewer.add_image(_c(image_gt), name='image_gt')
+        viewer.add_image(_c(image_lowq), name='image_lowq')
+        viewer.add_image(_c(blend_a), name='blend_a')
+        viewer.add_image(_c(blend_b), name='blend_b')
+        viewer.add_image(_c(image1), name='image1')
+        viewer.add_image(_c(image2), name='image2')
+        viewer.add_image(_c(image_fused_dct), name='image_fused_dct')
+        viewer.add_image(_c(image_fused_dft), name='image_fused_dft')
+        viewer.add_image(_c(image_fused_tg), name='image_fused_tg')
+
+
+demo_fusion_cupy()
+demo_fusion_numpy()

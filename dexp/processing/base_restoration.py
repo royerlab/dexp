@@ -15,13 +15,3 @@ class BaseRestoration(ABC):
     @abstractmethod
     def restore(self, image, asnumpy=True):
         pass
-
-
-
-
-
-
-
-
-
-

@@ -8,6 +8,7 @@ def test_translation_model_numpy():
     backend = NumpyBackend()
     _test_translation_model(backend)
 
+
 def test_translation_model_cupy():
     try:
         backend = CupyBackend()
@@ -15,8 +16,8 @@ def test_translation_model_cupy():
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
 
-def _test_translation_model(backend, length_xy=128):
 
+def _test_translation_model(backend, length_xy=128):
     xp = backend.get_xp_module()
 
     image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend,
@@ -32,18 +33,16 @@ def _test_translation_model(backend, length_xy=128):
 
     image1_reg, image2_reg = model.apply(backend, image1, image2, pad=False)
     dumb_fusion = xp.maximum(image1_reg, image2_reg)
-    average_error = xp.mean(xp.absolute(dumb_fusion-image_gt))
+    average_error = xp.mean(xp.absolute(dumb_fusion - image_gt))
     print(f"average_error = {average_error}")
 
-
     image1_reg_pad, image2_reg_pad = model.apply(backend, image1, image2, pad=True)
-    image1_reg_pad = image1_reg_pad[0:length_xy//2, 0:length_xy, 0:length_xy]
-    image2_reg_pad = image2_reg_pad[0:length_xy//2, 0:length_xy, 0:length_xy]
+    image1_reg_pad = image1_reg_pad[0:length_xy // 2, 0:length_xy, 0:length_xy]
+    image2_reg_pad = image2_reg_pad[0:length_xy // 2, 0:length_xy, 0:length_xy]
     dumb_fusion_pad = xp.maximum(image1_reg_pad, image2_reg_pad)
     image_gt_shifted = xp.roll(image_gt, shift=(1, 5, 0), axis=(0, 1, 2))
-    average_error_pad = xp.mean(xp.absolute(dumb_fusion_pad-image_gt_shifted))
+    average_error_pad = xp.mean(xp.absolute(dumb_fusion_pad - image_gt_shifted))
     print(f"average_error_pad = {average_error_pad}")
-
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -64,6 +63,6 @@ def _test_translation_model(backend, length_xy=128):
     assert average_error < 10
     assert average_error_pad < 11
 
+
 test_translation_model_cupy()
 test_translation_model_numpy()
-

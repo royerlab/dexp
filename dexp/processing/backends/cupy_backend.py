@@ -1,8 +1,6 @@
-from abc import abstractmethod
 from typing import Any
 
 import numpy
-
 
 from dexp.processing.backends.backend import Backend
 
@@ -18,12 +16,17 @@ class CupyBackend(Backend):
         cub.available = enable_cub
         cutensor.available = enable_cutensor
 
-        ## Leave this:
-        import cupyx.scipy.ndimage
+        from cupy.cuda import set_allocator, set_pinned_memory_allocator
+        # Disable memory pool for device memory (GPU)
+        set_allocator(None)
+        # Disable memory pool for pinned memory (CPU).
+        set_pinned_memory_allocator(None)
 
+        ## Important: Leave this, this is to make sure that the ndimage package works properly!
+        exec("import cupyx.scipy.ndimage")
 
     def close(self):
-        #Nothing to do
+        # Nothing to do
         pass
 
     def to_numpy(self, array, dtype=None, copy: bool = False) -> numpy.ndarray:
@@ -72,21 +75,3 @@ class CupyBackend(Backend):
         else:
             import cupyx
             return cupyx.scipy
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

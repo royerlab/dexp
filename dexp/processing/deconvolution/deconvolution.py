@@ -1,6 +1,5 @@
 import os
 
-
 from aydin.util.psf.simple_microscope_psf import SimpleMicroscopePSF
 
 from dexp.processing.base_restoration import BaseRestoration
@@ -20,14 +19,12 @@ class Deconvolution(BaseRestoration):
         psf_kernel = psf_xyz_array
         psf_kernel /= psf_kernel.sum()
         self.psf_kernel = psf_kernel
-        self.max_num_iterations=num_iterations
+        self.max_num_iterations = num_iterations
         self.max_correction = max_correction
         self.power = power
 
         self.deconvolver = None
         self.mode = method
-
-
 
     def calibrate(self, images):
 
@@ -41,9 +38,8 @@ class Deconvolution(BaseRestoration):
                                                               normaliser_type='minmax')
 
         if 'aydin' in self.mode:
-            batch_axis = (True,) + (False,)*(images.ndim-1)
+            batch_axis = (True,) + (False,) * (images.ndim - 1)
             self.deconvolver.train(images, batch_dims=batch_axis)
-
 
     def restore(self, image, asnumpy=True):
         if self.deconvolver is None:
@@ -55,7 +51,3 @@ class Deconvolution(BaseRestoration):
             deconvolved_image = self.deconvolver.deconvolve(image)
 
         return deconvolved_image
-
-
-
-

@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import Any
 
 import numpy
@@ -14,10 +13,9 @@ class NumpyBackend(Backend):
 
         """
         ## Leave this:
-        import scipy.ndimage
 
     def close(self):
-        #Nothing to do
+        # Nothing to do
         pass
 
     def to_numpy(self, array, dtype=None, copy: bool = False) -> numpy.ndarray:
@@ -41,18 +39,3 @@ class NumpyBackend(Backend):
 
     def get_sp_module(self, array=None) -> Any:
         return scipy
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
