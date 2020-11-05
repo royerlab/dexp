@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
@@ -10,13 +10,14 @@ from dexp.processing.utils.fit_shape import fit_shape
 def fuse_tg_nd(backend: Backend,
                image_a,
                image_b,
-               downscale: int = 2,
-               sharpness: float = 24,
-               tenenegrad_smoothing: int = 4,
-               blend_map_smoothing: int = 10,
-               bias_axis: Union[int, None] = None,
-               bias_strength: float = 0.05,
-               clip: bool = True):
+               downscale: Optional[int] = 2,
+               sharpness: Optional[float] = 24,
+               tenenegrad_smoothing: Optional[int] = 4,
+               blend_map_smoothing: Optional[int] = 10,
+               bias_axis: Optional[int] = None,
+               bias_exponent: Optional[float] = 3,
+               bias_strength: Optional[float] = 2,
+               clip: Optional[bool] = True):
     if not image_a.shape == image_b.shape:
         raise ValueError("Arrays must have the same shape")
 
@@ -69,6 +70,7 @@ def fuse_tg_nd(backend: Backend,
     if bias_axis is not None:
         length = t_image_a.shape[bias_axis]
         bias_vector = xp.linspace(-1, 1, num=length)
+        bias_vector = xp.sign(bias_vector)*xp.absolute(bias_vector)**bias_exponent
         new_shape = tuple(s if i == bias_axis else 1 for i, s in enumerate(t_image_a.shape))
         bias_vector = xp.reshape(bias_vector, newshape=new_shape)
         t_image_a -= bias_strength * bias_vector

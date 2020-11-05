@@ -1,4 +1,4 @@
-from typing import Any, Tuple, List
+from typing import Any, Tuple, List, Union, Sequence
 
 import numpy
 
@@ -8,12 +8,12 @@ from dexp.processing.registration.model.pairwise_reg_model import PairwiseRegist
 
 class TranslationRegistrationModel(PairwiseRegistrationModel):
 
-    def __init__(self, shift_vector: List[float], error: float = 0, integral: bool = False):
+    def __init__(self, shift_vector: Union[Sequence[float], numpy.ndarray], error: float = 0, integral: bool = False):
         """ Instanciates a Numpy-based Image Processing backend
 
         """
         super().__init__()
-        self.shift_vector = shift_vector
+        self.shift_vector = numpy.array(shift_vector)
         self.error = error
         self.integral = integral
 

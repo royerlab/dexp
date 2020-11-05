@@ -29,7 +29,7 @@ def _test_translation_model(backend, length_xy=128):
                                                                                        amount_low=0,
                                                                                        zero_level=0)
 
-    model = TranslationRegistrationModel(shift_vector=(-1, -5, 13))
+    model = TranslationRegistrationModel(shift_vector=(-1, -5, 13), integral=True)
 
     image1_reg, image2_reg = model.apply(backend, image1, image2, pad=False)
     dumb_fusion = xp.maximum(image1_reg, image2_reg)
@@ -41,6 +41,7 @@ def _test_translation_model(backend, length_xy=128):
     image2_reg_pad = image2_reg_pad[0:length_xy // 2, 0:length_xy, 0:length_xy]
     dumb_fusion_pad = xp.maximum(image1_reg_pad, image2_reg_pad)
     image_gt_shifted = xp.roll(image_gt, shift=(1, 5, 0), axis=(0, 1, 2))
+    image_gt_shifted = image_gt_shifted[0:length_xy // 2, 0:length_xy, 0:length_xy]
     average_error_pad = xp.mean(xp.absolute(dumb_fusion_pad - image_gt_shifted))
     print(f"average_error_pad = {average_error_pad}")
 

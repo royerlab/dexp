@@ -72,9 +72,9 @@ def simview_fuse_2I2D(backend: Backend, C0L0, C0L1, C1L0, C1L1, mode='tg', model
     return CxLx, model
 
 
-def fuse_lightsheets(backend: Backend, CxL0, CxL1, mode: str = 'tg', smoothing=12, bias_strength=0.02):
+def fuse_lightsheets(backend: Backend, CxL0, CxL1, mode: str = 'tg', smoothing=12, bias_strength=0.1):
     if mode == 'tg':
-        fused = fuse_tg_nd(backend, CxL0, CxL1, downscale=2, tenenegrad_smoothing=smoothing, bias_axis=2, bias_strength=bias_strength)
+        fused = fuse_tg_nd(backend, CxL0, CxL1, downscale=2, tenenegrad_smoothing=smoothing, bias_axis=2, bias_exponent=2, bias_strength=bias_strength)
     elif mode == 'dct':
         fused = fuse_dct_nd(backend, CxL0, CxL1)
     elif mode == 'dft':
@@ -83,9 +83,9 @@ def fuse_lightsheets(backend: Backend, CxL0, CxL1, mode: str = 'tg', smoothing=1
     return fused
 
 
-def fuse_cameras(backend: Backend, C0Lx, C1Lx, mode: str = 'tg', smoothing=12, bias_strength=0.02):
+def fuse_cameras(backend: Backend, C0Lx, C1Lx, mode: str = 'tg', smoothing=12, bias_strength=0.1):
     if mode == 'tg':
-        fused = fuse_tg_nd(backend, C0Lx, C1Lx, downscale=2, tenenegrad_smoothing=smoothing, bias_axis=0, bias_strength=bias_strength)
+        fused = fuse_tg_nd(backend, C0Lx, C1Lx, downscale=2, tenenegrad_smoothing=smoothing, bias_axis=0, bias_exponent=2, bias_strength=bias_strength)
     elif mode == 'dct':
         fused = fuse_dct_nd(backend, C0Lx, C1Lx)
     elif mode == 'dft':
@@ -95,14 +95,24 @@ def fuse_cameras(backend: Backend, C0Lx, C1Lx, mode: str = 'tg', smoothing=12, b
 
 
 def register_stacks(backend: Backend, C0Lx, C1Lx, mode='maxproj', integral=True, model=None):
+
+    sp = backend.get_sp_module()
     C0Lx = backend.to_backend(C0Lx)
     C1Lx = backend.to_backend(C1Lx)
 
     if model is None:
+
+        depth = C0Lx.shape[0]
+        crop = depth//4
+        C0Lx_c = C0Lx[crop:-crop]
+        C1Lx_c = C1Lx[crop:-crop]
+
         if mode == 'maxproj':
             model = register_translation_maxproj_nd(backend, C0Lx, C1Lx)
         elif mode == 'full':
-            model = register_translation_nd(backend, C0Lx, C1Lx)
+            model = register_translation_nd(backend, C0Lx_c, C1Lx_c)
+            # model.shift_vector*=2
+
 
     model.integral = integral
     C0Lx_reg, C1Lx_reg = model.apply(backend, C0Lx, C1Lx)

@@ -16,7 +16,8 @@ def generate_fusion_test_data(backend: Backend,
                               volume_fraction: Optional[float] = 0.8,
                               amount_low: Optional[float] = 1,
                               zero_level: Optional[float] = 95,
-                              odd_dimension: Optional[float] = True):
+                              odd_dimension: Optional[float] = True,
+                              z_overlap: Optional[float] = None):
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
@@ -43,6 +44,15 @@ def generate_fusion_test_data(backend: Backend,
         blend_b = sp.ndimage.gaussian_filter(blend_b, sigma=2)
         blend_b = blend_b / numpy.max(blend_b)
 
+    if z_overlap is not None:
+        with timeit("add z bias to blend maps"):
+            length = blend_a.shape[0]
+            bias_vector = xp.linspace(0, 1, num=length)
+            new_shape = tuple(s if i == 0 else 1 for i, s in enumerate(blend_a.shape))
+            bias_vector = xp.reshape(bias_vector, newshape=new_shape)
+            blend_a *= (1-bias_vector)**z_overlap
+            blend_b *= (bias_vector)**z_overlap
+
     with timeit("generate two views via blending"):
         image1 = image_highq * blend_a + image_lowq * blend_b
         image2 = image_highq * blend_b + image_lowq * blend_a
@@ -51,12 +61,16 @@ def generate_fusion_test_data(backend: Backend,
         with timeit("downscale along z"):
             image_gt = sp.ndimage.zoom(image_gt, zoom=(1 / length_z_factor, 1, 1), order=0)
             image_lowq = sp.ndimage.zoom(image_lowq, zoom=(1 / length_z_factor, 1, 1), order=0)
+            blend_a = sp.ndimage.zoom(blend_a, zoom=(1 / length_z_factor, 1, 1), order=0)
+            blend_b = sp.ndimage.zoom(blend_b, zoom=(1 / length_z_factor, 1, 1), order=0)
             image1 = sp.ndimage.zoom(image1, zoom=(1 / length_z_factor, 1, 1), order=0)
             image2 = sp.ndimage.zoom(image2, zoom=(1 / length_z_factor, 1, 1), order=0)
 
     if odd_dimension:
         image_gt = xp.pad(image_gt, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
         image_lowq = xp.pad(image_lowq, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
+        blend_a = xp.pad(blend_a, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
+        blend_b = xp.pad(blend_b, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
         image1 = xp.pad(image1, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
         image2 = xp.pad(image2, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
 

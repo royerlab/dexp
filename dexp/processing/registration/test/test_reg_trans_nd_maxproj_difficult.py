@@ -10,15 +10,21 @@ from dexp.utils.timeit import timeit
 
 def test_register_translation_nD_numpy():
     backend = NumpyBackend()
-    register_translation_nD(backend, register_translation_2d_skimage)
     register_translation_nD(backend, register_translation_2d_dexp)
+
+    #Lesson: skimage registration code is as robust!
+    #register_translation_nD(backend, register_translation_2d_skimage)
+
 
 
 def test_register_translation_nD_cupy():
     try:
         backend = CupyBackend()
-        register_translation_nD(backend, register_translation_2d_skimage)
         register_translation_nD(backend, register_translation_2d_dexp)
+
+        #Lesson: skimage registration code is as robust!
+        #register_translation_nD(backend, register_translation_2d_skimage)
+
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
@@ -29,18 +35,30 @@ def register_translation_nD(backend, reg_trans_2d, length_xy=128):
                                                                                        shift=(1, 5, -13),
                                                                                        volume_fraction=0.5,
                                                                                        length_xy=length_xy,
-                                                                                       length_z_factor=2)
+                                                                                       length_z_factor=2,
+                                                                                       z_overlap=1)
+    depth = image1.shape[0]
+    crop = depth//4
+
+    image1_c = image1[crop:-crop]
+    image2_c = image2[crop:-crop]
 
     with timeit("register_translation_maxproj_nd"):
-        shifts, error = register_translation_maxproj_nd(backend, image1, image2, register_translation_2d=reg_trans_2d).get_shift_and_error()
+        shifts, error = register_translation_maxproj_nd(backend, image1_c, image2_c, register_translation_2d=reg_trans_2d).get_shift_and_error()
 
     print(shifts, error)
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
+    #     def _c(array):
+    #         return backend.to_numpy(array)
     #     viewer = Viewer()
-    #     viewer.add_image(image, name='array_first')
-    #     viewer.add_image(translated_image, name='array_second')
+    #     viewer.add_image(_c(image_gt), name='image_gt')
+    #     viewer.add_image(_c(image_lowq), name='image_lowq')
+    #     viewer.add_image(_c(blend_a), name='blend_a')
+    #     viewer.add_image(_c(blend_b), name='blend_b')
+    #     viewer.add_image(_c(image1), name='image1')
+    #     viewer.add_image(_c(image2), name='image2')
 
     assert shifts[0] == approx(-1, abs=0.5)
     assert shifts[1] == approx(-5, abs=0.5)

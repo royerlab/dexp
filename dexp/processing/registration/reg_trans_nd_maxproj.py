@@ -3,10 +3,10 @@ from numpy.linalg import norm
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
-from dexp.processing.registration.reg_trans_2d import register_translation_2d_skimage
+from dexp.processing.registration.reg_trans_2d import register_translation_2d_dexp
 
 
-def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register_translation_2d=register_translation_2d_skimage, gamma=4):
+def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register_translation_2d=register_translation_2d_dexp, gamma=2):
     if image_a.ndim != image_b.ndim:
         raise ValueError("Images must have the same number of dimensions")
 
@@ -35,33 +35,37 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
         shifts_p1 = numpy.asarray([shifts_p1[0], 0, shifts_p1[1]])
         shifts_p2 = numpy.asarray([shifts_p2[0], shifts_p2[1], 0])
 
+        print(shifts_p0)
+        print(shifts_p1)
+        print(shifts_p2)
+
         shifts = (shifts_p0 + shifts_p1 + shifts_p2) / 2
         error = norm([error_p0, error_p1, error_p2])
 
-        from napari import Viewer, gui_qt
-        with gui_qt():
-            def _c(array):
-                return backend.to_numpy(array)
-
-            viewer = Viewer()
-            viewer.add_image(_c(iap0), name='iap0')
-            viewer.add_image(_c(ibp0), name='ibp0')
-            viewer.add_image(_c(iap1), name='iap1')
-            viewer.add_image(_c(ibp1), name='ibp1')
-            viewer.add_image(_c(iap2), name='iap2')
-            viewer.add_image(_c(ibp2), name='ibp2')
+        # from napari import Viewer, gui_qt
+        # with gui_qt():
+        #     def _c(array):
+        #         return backend.to_numpy(array)
+        #
+        #     viewer = Viewer()
+        #     viewer.add_image(_c(iap0), name='iap0')
+        #     viewer.add_image(_c(ibp0), name='ibp0')
+        #     viewer.add_image(_c(iap1), name='iap1')
+        #     viewer.add_image(_c(ibp1), name='ibp1')
+        #     viewer.add_image(_c(iap2), name='iap2')
+        #     viewer.add_image(_c(ibp2), name='ibp2')
 
     return TranslationRegistrationModel(shift_vector=shifts, error=error)
 
 
-def _normalised_projection(backend: Backend, image, axis, dtype=None, gamma=3, quantile=2):
+def _normalised_projection(backend: Backend, image, axis, dtype=None, gamma=3, quantile=1):
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
     image = backend.to_backend(image)
     projection = xp.max(image, axis=axis)
     projection = projection.astype(dtype, copy=False)
     smoothed_projection = projection.copy()
-    smoothed_projection = sp.ndimage.median_filter(smoothed_projection, size=3)
+    #smoothed_projection = sp.ndimage.gaussian_filter(smoothed_projection, sigma=1)
     min_value = xp.percentile(smoothed_projection, q=quantile)
     max_value = xp.percentile(smoothed_projection, q=100 - quantile)
     # from napari import Viewer, gui_qt
