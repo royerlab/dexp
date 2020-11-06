@@ -19,14 +19,14 @@ class Backend(ABC):
         pass
 
     @abstractmethod
-    def to_numpy(self, array, dtype=None, copy: bool = False) -> numpy.ndarray:
+    def to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         """ Converts backend array to numpy. If array is already a numpy array it is returned unchanged.
 
         Parameters
         ----------
         array : backend array to be converted
         dtype : coerce array to given dtype
-        copy : forces the return array to be a copy
+        force_copy : forces the return array to be a copy
 
         Returns
         -------
@@ -36,14 +36,14 @@ class Backend(ABC):
         pass
 
     @abstractmethod
-    def to_backend(self, array, dtype=None, copy: bool = False) -> Any:
+    def to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
         """ Converts numpy array to backend array, if already backend array, then it is returned unchanged
 
         Parameters
         ----------
         array : numpy array to be converted
         dtype : coerce array to given dtype
-        copy : forces the return array to be a copy
+        force_copy : forces the return array to be a copy
         """
         pass
 

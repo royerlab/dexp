@@ -54,7 +54,7 @@ class DCTFusion(SimpleFusion):
 
     def fuse_lightsheets(self, CxL0, CxL1, as_numpy=True):
 
-        fused = super().fuse_lightsheets(CxL0, CxL1, as_numpy=False)
+        fused = super().fuse_illumination_views(CxL0, CxL1, as_numpy=False)
         fused = self._cb(fused)
 
         CxL0 = self._cb(CxL0)
@@ -87,7 +87,7 @@ class DCTFusion(SimpleFusion):
 
     def fuse_cameras(self, C0Lx, C1Lx, as_numpy=True):
 
-        fused = super().fuse_cameras(C0Lx, C1Lx, as_numpy=False)
+        fused = super().fuse_detection_views(C0Lx, C1Lx, as_numpy=False)
         fused = self._cb(fused)
 
         C0Lx = self._cb(C0Lx)

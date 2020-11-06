@@ -29,30 +29,30 @@ class CupyBackend(Backend):
         # Nothing to do
         pass
 
-    def to_numpy(self, array, dtype=None, copy: bool = False) -> numpy.ndarray:
+    def to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         import cupy
         if cupy.get_array_module(array) == cupy:
             array = cupy.asnumpy(array)
             if dtype:
-                return array.astype(dtype, copy=copy)
-            elif copy:
+                return array.astype(dtype, copy=force_copy)
+            elif force_copy:
                 return array.copy()
             else:
                 return array
         else:
             if dtype:
-                return array.astype(dtype, copy=copy)
-            elif copy:
+                return array.astype(dtype, copy=force_copy)
+            elif force_copy:
                 return array.copy()
             else:
                 return array
 
-    def to_backend(self, array, dtype=None, copy: bool = False) -> Any:
+    def to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
         import cupy
         if cupy.get_array_module(array) == cupy:
             if dtype:
-                return array.astype(dtype, copy=copy)
-            elif copy:
+                return array.astype(dtype, copy=force_copy)
+            elif force_copy:
                 return array.copy()
             else:
                 return array

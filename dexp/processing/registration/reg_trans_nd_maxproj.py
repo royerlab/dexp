@@ -65,7 +65,7 @@ def _normalised_projection(backend: Backend, image, axis, dtype=None, gamma=3, q
     projection = xp.max(image, axis=axis)
     projection = projection.astype(dtype, copy=False)
     smoothed_projection = projection.copy()
-    #smoothed_projection = sp.ndimage.gaussian_filter(smoothed_projection, sigma=1)
+    # smoothed_projection = sp.ndimage.gaussian_filter(smoothed_projection, sigma=1)
     min_value = xp.percentile(smoothed_projection, q=quantile)
     max_value = xp.percentile(smoothed_projection, q=100 - quantile)
     # from napari import Viewer, gui_qt

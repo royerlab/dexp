@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import Optional
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
@@ -70,7 +70,7 @@ def fuse_tg_nd(backend: Backend,
     if bias_axis is not None:
         length = t_image_a.shape[bias_axis]
         bias_vector = xp.linspace(-1, 1, num=length)
-        bias_vector = xp.sign(bias_vector)*xp.absolute(bias_vector)**bias_exponent
+        bias_vector = xp.sign(bias_vector) * xp.absolute(bias_vector) ** bias_exponent
         new_shape = tuple(s if i == bias_axis else 1 for i, s in enumerate(t_image_a.shape))
         bias_vector = xp.reshape(bias_vector, newshape=new_shape)
         t_image_a -= bias_strength * bias_vector

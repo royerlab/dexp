@@ -1,4 +1,4 @@
-from typing import Any, Tuple, List, Union, Sequence
+from typing import Any, Tuple, Union, Sequence
 
 import numpy
 

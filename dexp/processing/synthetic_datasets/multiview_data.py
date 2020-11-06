@@ -50,8 +50,8 @@ def generate_fusion_test_data(backend: Backend,
             bias_vector = xp.linspace(0, 1, num=length)
             new_shape = tuple(s if i == 0 else 1 for i, s in enumerate(blend_a.shape))
             bias_vector = xp.reshape(bias_vector, newshape=new_shape)
-            blend_a *= (1-bias_vector)**z_overlap
-            blend_b *= (bias_vector)**z_overlap
+            blend_a *= (1 - bias_vector) ** z_overlap
+            blend_b *= (bias_vector) ** z_overlap
 
     with timeit("generate two views via blending"):
         image1 = image_highq * blend_a + image_lowq * blend_b

@@ -45,6 +45,3 @@ def register_translation_nD(backend, reg_trans_2d, length_xy=128):
     assert shifts[0] == approx(-1, abs=0.5)
     assert shifts[1] == approx(-5, abs=0.5)
     assert shifts[2] == approx(13, abs=0.5)
-
-
-

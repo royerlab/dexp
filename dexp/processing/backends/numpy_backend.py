@@ -12,24 +12,25 @@ class NumpyBackend(Backend):
         """ Instanciates a Numpy-based Image Processing backend
 
         """
-        ## Leave this:
+        ## Important: Leave this, this is to make sure that the ndimage package works properly!
+        exec("import scipy.ndimage")
 
     def close(self):
         # Nothing to do
         pass
 
-    def to_numpy(self, array, dtype=None, copy: bool = False) -> numpy.ndarray:
+    def to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         if dtype:
-            return array.astype(dtype, copy=copy)
-        elif copy:
+            return array.astype(dtype, copy=force_copy)
+        elif force_copy:
             return array.copy()
         else:
             return array
 
-    def to_backend(self, array, dtype=None, copy: bool = False) -> Any:
+    def to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
         if dtype:
-            return array.astype(dtype, copy=copy)
-        elif copy:
+            return array.astype(dtype, copy=force_copy)
+        elif force_copy:
             return array.copy()
         else:
             return array

@@ -1,6 +1,9 @@
+import gc
+
 import numpy
 
 from dexp.processing.backends.backend import Backend
+from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
 def lipschitz_continuity_correction(backend: Backend,
@@ -9,6 +12,8 @@ def lipschitz_continuity_correction(backend: Backend,
                                     correction_percentile: float = 0.1,
                                     lipschitz: float = 0.1,
                                     max_proportion_corrected: float = 1,
+                                    decimation: int = 8,
+                                    internal_dtype=numpy.float16
                                     ):
     """
     'Lipshitz continuity correction'
@@ -30,8 +35,11 @@ def lipschitz_continuity_correction(backend: Backend,
     """
     xp = backend.get_xp_module()
 
+    if type(backend) is NumpyBackend:
+        internal_dtype = numpy.float32
+
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=numpy.float32, copy=True)
+    image = backend.to_backend(image, dtype=internal_dtype, force_copy=True)
 
     total_number_of_corrections = 0
 
@@ -39,9 +47,10 @@ def lipschitz_continuity_correction(backend: Backend,
         print(f"Iteration {i}")
         # TODO: it is slow to recompute the median filter at each iteration,
         # could be done only once but that's less accurate..
-        median, error = _compute_error(backend, image, lipschitz)
+        median, error = _compute_error(backend, image, decimation, lipschitz, internal_dtype)
+        gc.collect()
         threshold = xp.percentile(
-            error, q=100 * (1 - correction_percentile)
+            error.ravel()[::decimation], q=100 * (1 - correction_percentile)
         )
 
         mask = error > threshold
@@ -66,14 +75,17 @@ def lipschitz_continuity_correction(backend: Backend,
 
         total_number_of_corrections += num_corrections
 
+        gc.collect()
+
     array = image.astype(original_dtype, copy=False)
 
     return array
 
 
-def _compute_error(backend: Backend, array, lipschitz: float):
+def _compute_error(backend: Backend, array, decimation: int, lipschitz: float, dtype=numpy.float16):
     sp = backend.get_sp_module()
     xp = backend.get_xp_module()
+    array = backend.to_backend(array, dtype=dtype)
     # we compute the error map:
     median = sp.ndimage.filters.median_filter(array, size=3)
     error = median.copy()

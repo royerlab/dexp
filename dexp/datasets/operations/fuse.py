@@ -71,7 +71,7 @@ def dataset_fuse(dataset,
             shifts = None
 
         print(f'Fusing...')
-        array, shifts = fusion.simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1, shifts=shifts, zero_level=zero_level, as_numpy=True)
+        array, shifts = fusion.simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1, shifts=shifts, dark_denoise_threshold=zero_level, as_numpy=True)
 
         if not load_shifts:
             for shift in shifts:

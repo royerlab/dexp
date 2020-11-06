@@ -11,6 +11,9 @@ def axis_aligned_pattern_correction(backend: Backend,
                                     axis_combinations: List[Tuple[int]] = None,
                                     percentile: float = 1,
                                     sigma: float = 0.5,
+                                    decimation: int = 4,
+                                    internal_dtype=numpy.float32,
+                                    robust_statistics: bool = True
                                     ):
     """
     Axis aligned pattern correction
@@ -35,13 +38,12 @@ def axis_aligned_pattern_correction(backend: Backend,
     sp = backend.get_sp_module()
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=numpy.float32, copy=True)
+    new_array = backend.to_backend(image, dtype=internal_dtype, force_copy=True)
 
-    new_array = image.astype(dtype=numpy.float32, copy=True)
-
-    overall_value = xp.percentile(
-        new_array, q=percentile, keepdims=True
+    overall_value = numpy.percentile(
+        image.ravel()[::decimation], q=percentile, keepdims=True
     )
+    overall_value = backend.to_backend(overall_value, dtype=internal_dtype)
 
     axis_combinations = (
         _all_axis_combinations(image.ndim)
@@ -51,10 +53,16 @@ def axis_aligned_pattern_correction(backend: Backend,
 
     for axis_combination in axis_combinations:
         print(f"Supressing variations across hyperplane: {axis_combination}")
-        value = xp.percentile(
-            new_array, q=percentile, axis=axis_combination, keepdims=True
-        )
-        value = sp.ndimage.filters.gaussian_filter(value, sigma=sigma)
+        if robust_statistics:
+            value = xp.percentile(
+                new_array, q=percentile, axis=axis_combination, keepdims=True
+            )
+        else:
+            value = xp.mean(
+                new_array, axis=axis_combination, keepdims=True
+            )
+        if sigma > 0:
+            value = sp.ndimage.filters.gaussian_filter(value, sigma=sigma)
 
         new_array += overall_value - value
 
