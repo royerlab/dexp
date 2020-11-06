@@ -53,11 +53,11 @@ def simview_fuse(backend, length_xy=320):
             return backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 800), scale=(4, 1, 1), blending='additive')
-        viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 800), scale=(4, 1, 1), blending='additive')
-        viewer.add_image(_c(C1L0), name='C1L0', contrast_limits=(0, 800), scale=(4, 1, 1), blending='additive')
-        viewer.add_image(_c(C1L1), name='C1L1', contrast_limits=(0, 800), scale=(4, 1, 1), blending='additive')
-        viewer.add_image(_c(CxLx), name='CxLx', contrast_limits=(0, 800), scale=(4, 1, 1), blending='additive', colormap='viridis')
+        viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1500), scale=(4, 1, 1), blending='additive')
+        viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive')
+        viewer.add_image(_c(C1L0), name='C1L0', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive')
+        viewer.add_image(_c(C1L1), name='C1L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive')
+        viewer.add_image(_c(CxLx), name='CxLx', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', colormap='viridis')
 
 
 # demo_simview_fuse_numpy()
