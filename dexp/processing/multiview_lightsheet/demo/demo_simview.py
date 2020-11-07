@@ -20,13 +20,13 @@ def demo_simview_fuse_numpy():
 
 def demo_simview_fuse_cupy():
     try:
-        backend = CupyBackend()
+        backend = CupyBackend(enable_memory_pool=False)
         simview_fuse(backend)
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
 
 
-def simview_fuse(backend, length_xy=320):
+def simview_fuse(backend):
     start = time.time()
 
     print(f"Loading data...")
@@ -38,6 +38,7 @@ def simview_fuse(backend, length_xy=320):
     C1L0 = array[2]
     C1L1 = array[3]
 
+    # we assume that the stacks have the same and correct relative orientations:
     C1L0 = numpy.flip(C1L0, -1)
     C1L1 = numpy.flip(C1L1, -1)
 

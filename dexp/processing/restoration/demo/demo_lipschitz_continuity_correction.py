@@ -32,7 +32,6 @@ def demo_lipschitz_correction(backend: Backend):
     median = median_filter(image, size=3)
 
     import napari
-
     with napari.gui_qt():
         def _c(array):
             return backend.to_numpy(array)

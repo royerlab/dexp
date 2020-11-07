@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from typing import Any
 
 import numpy
@@ -10,6 +11,10 @@ class Backend(ABC):
         """ Instanciates an Image Processing backend
 
         """
+
+    @contextmanager
+    def compute_context(self):
+        yield
 
     @abstractmethod
     def close(self):

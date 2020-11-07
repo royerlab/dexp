@@ -6,7 +6,37 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 
 
-def register_translation_nd(backend: Backend, image_a, image_b, max_range_ratio=0.5, fine_window_radius=4, decimate=16, percentile=99.9, dtype=numpy.float32, log=False) -> TranslationRegistrationModel:
+def register_translation_nd(backend: Backend,
+                            image_a,
+                            image_b,
+                            max_range_ratio: float = 0.5,
+                            fine_window_radius: int = 4,
+                            decimate: int = 16,
+                            quantile: float = 0.999,
+                            internal_dtype=numpy.float32,
+                            log: bool = False) -> TranslationRegistrationModel:
+    """
+    Registers two nD images using just a translation-only model.
+    This uses a full nD robust phase correlation based approach.
+
+
+    Parameters
+    ----------
+    backend : backend for computation
+    image_a : First image to register
+    image_b : Second image to register
+    max_range_ratio : backend for computation
+    fine_window_radius : Window of which to refine translation estimate
+    decimate : How much to decimate when computing floor level
+    quantile : Quantile to use for robust min and max
+    internal_dtype : internal dtype for computation
+    log : output logging information, or not.
+
+    Returns
+    -------
+    Translation-only registration model
+
+    """
     image_a = backend.to_backend(image_a)
     image_b = backend.to_backend(image_b)
 
@@ -14,7 +44,7 @@ def register_translation_nd(backend: Backend, image_a, image_b, max_range_ratio=
     sp = backend.get_sp_module()
 
     # We compute the phase correlation:
-    raw_correlation = _phase_correlation(backend, image_a, image_b, dtype)
+    raw_correlation = _phase_correlation(backend, image_a, image_b, internal_dtype)
     correlation = raw_correlation
 
     # max range is computed from max_range_ratio:
@@ -25,7 +55,7 @@ def register_translation_nd(backend: Backend, image_a, image_b, max_range_ratio=
     if log:
         print(f"max_ranges={max_ranges}")
     empty_region = correlation[tuple(slice(r, s - r) for r, s in zip(max_ranges, correlation.shape))].copy()
-    noise_floor_level = xp.percentile(empty_region.ravel()[::decimate].astype(numpy.float32), q=percentile)
+    noise_floor_level = xp.percentile(empty_region.ravel()[::decimate].astype(numpy.float32), q=100 * quantile)
     if log:
         print(f"noise_floor_level={noise_floor_level}")
 
@@ -36,7 +66,7 @@ def register_translation_nd(backend: Backend, image_a, image_b, max_range_ratio=
     correlation = xp.roll(correlation, shift=max_range, axis=tuple(range(image_a.ndim)))
     correlation = correlation[(slice(0, 2 * max_range),) * image_a.ndim]
 
-    # denoise cropped corelation image:
+    # denoise cropped correlation image:
     # correlation = gaussian_filter(correlation, sigma=sigma, mode='wrap')
 
     # We use the max as quickly computed proxy for the real center:
@@ -123,12 +153,12 @@ def _normalised_projection(backend: Backend, image, axis, gamma=3):
     return normalised_image
 
 
-def _phase_correlation(backend: Backend, image_a, image_b, dtype=numpy.float32):
+def _phase_correlation(backend: Backend, image_a, image_b, internal_dtype=numpy.float32):
     xp = backend.get_xp_module(image_a)
     G_a = xp.fft.fftn(image_a).astype(numpy.complex64, copy=False)
     G_b = xp.fft.fftn(image_b).astype(numpy.complex64, copy=False)
     conj_b = xp.conj(G_b)
     R = G_a * conj_b
     R /= xp.absolute(R)
-    r = xp.fft.ifftn(R).real.astype(dtype, copy=False)
+    r = xp.fft.ifftn(R).real.astype(internal_dtype, copy=False)
     return r

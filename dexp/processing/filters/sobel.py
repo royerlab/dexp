@@ -1,0 +1,66 @@
+import numpy
+
+from dexp.processing.backends.backend import Backend
+from dexp.processing.backends.numpy_backend import NumpyBackend
+
+
+def sobel_magnitude_filter(backend: Backend,
+                           image,
+                           normalise_input: bool = True,
+                           internal_dtype=numpy.float16):
+    """
+    Computes the Sobel magnitude filter response for a given image.
+
+    The Sobel operator, sometimes called the Sobel–Feldman operator or Sobel filter,
+    is used in image processing and computer vision, particularly within edge detection
+    algorithms where it creates an image emphasising edges. It is named after Irwin Sobel
+    and Gary Feldman, colleagues at the Stanford Artificial Intelligence Laboratory (SAIL).
+    Sobel and Feldman presented the idea of an "Isotropic 3x3 Image Gradient Operator" at
+    a talk at SAIL in 1968.[1] Technically, it is a discrete differentiation operator,
+    computing an approximation of the gradient of the image intensity function.
+    At each point in the image, the result of the Sobel–Feldman operator is either the
+    corresponding gradient vector or the norm of this vector. The Sobel–Feldman operator
+    is based on convolving the image with a small, separable, and integer-valued filter
+    in the horizontal and vertical directions and is therefore relatively inexpensive in
+    terms of computations. On the other hand, the gradient approximation that it produces
+    is relatively crude, in particular for high-frequency variations in the image.
+
+    (Source: wikipedia, https://en.wikipedia.org/wiki/Sobel_operator)
+
+    Parameters
+    ----------
+    backend : Backend to use
+    image : image to apply filter on
+    normalise_input : True to normalise input image between 0 and 1 before applying filter
+    internal_dtype : dtype fro internal computation.
+
+    Returns
+    -------
+    Filtered image
+
+    """
+    xp = backend.get_xp_module(image)
+    sp = backend.get_sp_module(image)
+    ndim = image.ndim
+
+    if type(backend) is NumpyBackend:
+        internal_dtype = numpy.float32
+
+    original_dtype = image.dtype
+    image = backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input)
+
+    if normalise_input:
+        min_value = xp.min(image)
+        max_value = xp.max(image)
+        image -= min_value
+        image *= 1 / (max_value - min_value)
+
+    sobel_image = xp.zeros_like(image)
+
+    for i in range(ndim):
+        sobel_image += sp.ndimage.sobel(image, axis=i) ** 2
+
+    sobel_image = xp.sqrt(sobel_image, out=sobel_image)
+    sobel_image = sobel_image.astype(dtype=original_dtype, copy=False)
+
+    return sobel_image

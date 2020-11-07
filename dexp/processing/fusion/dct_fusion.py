@@ -7,6 +7,23 @@ def fuse_dct_nd(backend: Backend,
                 image_b,
                 cutoff: float = 0,
                 clip: bool = True):
+    """
+    Fuses two images in DCT domain by picking coefficients with maximal magnitude.
+
+    Parameters
+    ----------
+    backend : Backend to use
+    image_a : First image to fuse
+    image_b : Second image to fuse
+    cutoff : frequency cutoff
+    clip : C;lip fused image to the min and max voxel values of the original images
+    -- i.e. the fused image must remain within the bounds of the original images.
+
+    Returns
+    -------
+    Fused image.
+
+    """
     if not image_a.shape == image_b.shape:
         raise ValueError("Arrays must have the same shape")
 

@@ -1,5 +1,3 @@
-from napari import gui_qt, Viewer
-
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.restoration.dehazing import dehaze
@@ -42,6 +40,7 @@ def demo_dehaze_data(backend, length_xy=320):
 
     print(f"percent_removed = {percent_removed}")
 
+    from napari import gui_qt, Viewer
     with gui_qt():
         def _c(array):
             return backend.to_numpy(array)

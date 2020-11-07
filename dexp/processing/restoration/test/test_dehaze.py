@@ -32,6 +32,10 @@ def _test_dehaze(backend, length_xy=128):
     with timeit('dehaze_new'):
         dehazed = dehaze(backend, image, size=25)
 
+    assert dehazed is not image
+    assert dehazed.shape == image.shape
+    assert dehazed.dtype == image.dtype
+
     # compute [ercentage of haze removed:
     background_voxels_image = (1 - image_gt) * image
     background_voxels_dehazed = (1 - image_gt) * dehazed
@@ -45,6 +49,17 @@ def _test_dehaze(backend, length_xy=128):
     non_background_voxels_dehazed = image_gt * dehazed
     average_error = xp.mean(xp.absolute(non_background_voxels_image - non_background_voxels_dehazed))
     print(f"average_error = {average_error}")
+
+    # from napari import gui_qt, Viewer
+    # with gui_qt():
+    #     def _c(array):
+    #         return backend.to_numpy(array)
+    #
+    #     viewer = Viewer()
+    #     viewer.add_image(_c(image_gt), name='image_gt')
+    #     viewer.add_image(_c(background), name='background')
+    #     viewer.add_image(_c(image), name='image')
+    #     viewer.add_image(_c(dehazed), name='dehazed')
 
     assert percent_removed > 0.92
     assert percent_removed < 12

@@ -44,6 +44,10 @@ def _test_aap_correction(backend, length_xy=128):
         corrected = axis_aligned_pattern_correction(backend, noisy, sigma=0)
         corrected = backend.to_numpy(corrected)
 
+    assert corrected is not noisy
+    assert corrected.shape == noisy.shape
+    assert corrected.dtype == noisy.dtype
+
     average_error = numpy.mean(numpy.absolute(image - corrected))
     print(f"average_error = {average_error}")
     assert average_error < 0.007

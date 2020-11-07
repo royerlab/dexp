@@ -20,7 +20,7 @@ def demo_clean_dark_regions_cupy():
         print("Cupy module not found! ignored!")
 
 
-def demo_clean_dark_regions_data(backend, length_xy=320):
+def demo_clean_dark_regions_data(backend, length_xy=256):
     xp = backend.get_xp_module()
 
     with timeit("generate data"):
@@ -28,19 +28,15 @@ def demo_clean_dark_regions_data(backend, length_xy=320):
                                                                       add_noise=True,
                                                                       length_xy=length_xy,
                                                                       length_z_factor=4,
-                                                                      independent_haze=True)
+                                                                      independent_haze=False,
+                                                                      background_stength=0.01)
+
+    # remove zero level
+    image = xp.clip(image - 95, 0, None)
+    image_gt = xp.clip(image_gt - 95, 0, None)
 
     with timeit('dehaze_new'):
-        dehazed = clean_dark_regions(backend, image, size=25, threshold=200)
-
-    background_voxels_image = (1 - image_gt) * image
-    background_voxels_dehazed = (1 - image_gt) * dehazed
-    total_haze = xp.sum(background_voxels_image)
-    total_remaining_haze = xp.sum(background_voxels_dehazed)
-
-    percent_removed = (total_haze - total_remaining_haze) / total_haze
-
-    print(f"percent_removed = {percent_removed}")
+        dehazed = clean_dark_regions(backend, image, size=5, threshold=100)
 
     with gui_qt():
         def _c(array):

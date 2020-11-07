@@ -25,12 +25,19 @@ def lipschitz_continuity_correction(backend: Backend,
 
     Parameters
     ----------
+
     backend : backend to use (numpy, cupy, ...)
     image : image to correct
     num_iterations : number of iterations
     correction_percentile : percentile of pixels to correct per iteration
     lipschitz : lipschitz continuity constant
     max_proportion_corrected : max proportion of pixels to correct overall
+    decimation : decimation for speeding up percentile computation
+    internal_dtype : internal dtype
+
+    Returns
+    -------
+    Lipschitz corrected image
 
     """
     xp = backend.get_xp_module()

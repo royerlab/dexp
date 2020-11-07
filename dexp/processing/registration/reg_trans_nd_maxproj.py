@@ -7,6 +7,25 @@ from dexp.processing.registration.reg_trans_2d import register_translation_2d_de
 
 
 def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register_translation_2d=register_translation_2d_dexp, gamma=2):
+    """
+    Registers two nD (n=2 or 3) images using just a translation-only model.
+    This method uses max projections along 2 or 3 axis and then performs phase correlation.
+
+    Parameters
+    ----------
+    backend : backend for computation
+    image_a : First image to register
+    image_b : Second image to register
+    register_translation_2d : 2d registration method to use
+    gamma : gamma correstion on max projections as a preprocessing before phase correlation.
+
+
+    Returns
+    -------
+    Translation-only registration model
+
+    """
+
     if image_a.ndim != image_b.ndim:
         raise ValueError("Images must have the same number of dimensions")
 
@@ -35,9 +54,9 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
         shifts_p1 = numpy.asarray([shifts_p1[0], 0, shifts_p1[1]])
         shifts_p2 = numpy.asarray([shifts_p2[0], shifts_p2[1], 0])
 
-        print(shifts_p0)
-        print(shifts_p1)
-        print(shifts_p2)
+        # print(shifts_p0)
+        # print(shifts_p1)
+        # print(shifts_p2)
 
         shifts = (shifts_p0 + shifts_p1 + shifts_p2) / 2
         error = norm([error_p0, error_p1, error_p2])

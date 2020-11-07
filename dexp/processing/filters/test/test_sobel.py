@@ -1,38 +1,34 @@
-import numpy
-
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.fusion.tg_fusion import fuse_tg_nd
+from dexp.processing.filters.sobel import sobel_magnitude_filter
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
-from dexp.utils.timeit import timeit
 
 
-def test_tg_fusion_numpy():
+def test_sobel_numpy():
     backend = NumpyBackend()
-    tg_fusion(backend)
+    _sobel(backend)
 
 
-def test_tg_fusion_cupy():
+def test_sobel_cupy():
     try:
         backend = CupyBackend()
-        tg_fusion(backend)
+        _sobel(backend)
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def tg_fusion(backend, length_xy=128):
+def _sobel(backend, length_xy=128):
     image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend,
-                                                                                       add_noise=False,
                                                                                        length_xy=length_xy,
-                                                                                       length_z_factor=4)
-    with timeit("dcf fusion + data transfer"):
-        image_fused = fuse_tg_nd(backend, image1, image2)
-        image_fused = backend.to_numpy(image_fused)
+                                                                                       add_noise=False)
 
-    image_gt = backend.to_numpy(image_gt)
-    error = numpy.median(numpy.abs(image_gt - image_fused))
-    print(f"error={error}")
-    assert error < 23
+    tenengrad_image1 = sobel_magnitude_filter(backend, image1)
+    tenengrad_image2 = sobel_magnitude_filter(backend, image2)
+
+    assert tenengrad_image1.shape == image1.shape
+    assert tenengrad_image2.shape == image2.shape
+    assert tenengrad_image1.dtype == image2.dtype
+    assert tenengrad_image2.dtype == image2.dtype
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -43,4 +39,5 @@ def tg_fusion(backend, length_xy=128):
     #     viewer.add_image(blend_b, name='blend_b')
     #     viewer.add_image(image1, name='image1')
     #     viewer.add_image(image2, name='image2')
-    #     viewer.add_image(image_fused, name='image_fused')
+    #     viewer.add_image(tenengrad_image1, name='tenengrad_image1')
+    #     viewer.add_image(tenengrad_image2, name='tenengrad_image2')

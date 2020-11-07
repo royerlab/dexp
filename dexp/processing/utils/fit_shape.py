@@ -1,7 +1,21 @@
 from dexp.processing.backends.backend import Backend
 
 
-def fit_shape(backend: Backend, array, shape):
+def fit_to_shape(backend: Backend, array, shape):
+    """
+    Pads or crops an array to attain a certain shape
+
+    Parameters
+    ----------
+    backend : backend to use
+    array : array to pad
+    shape : shape to attain by cropping or padding each dimension
+
+    Returns
+    -------
+    Array of requested shape
+
+    """
     length_diff = tuple(u - v for u, v in zip(shape, array.shape))
 
     if any(x < 0 for x in length_diff):

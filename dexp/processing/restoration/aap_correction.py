@@ -4,6 +4,7 @@ from typing import List, Tuple, Any
 import numpy
 
 from dexp.processing.backends.backend import Backend
+from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
 def axis_aligned_pattern_correction(backend: Backend,
@@ -12,8 +13,8 @@ def axis_aligned_pattern_correction(backend: Backend,
                                     percentile: float = 1,
                                     sigma: float = 0.5,
                                     decimation: int = 4,
-                                    internal_dtype=numpy.float32,
-                                    robust_statistics: bool = True
+                                    robust_statistics: bool = True,
+                                    internal_dtype=numpy.float16
                                     ):
     """
     Axis aligned pattern correction
@@ -37,7 +38,11 @@ def axis_aligned_pattern_correction(backend: Backend,
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
+    if type(backend) is NumpyBackend:
+        internal_dtype = numpy.float32
+
     original_dtype = image.dtype
+
     new_array = backend.to_backend(image, dtype=internal_dtype, force_copy=True)
 
     overall_value = numpy.percentile(
@@ -57,14 +62,17 @@ def axis_aligned_pattern_correction(backend: Backend,
             value = xp.percentile(
                 new_array, q=percentile, axis=axis_combination, keepdims=True
             )
+            value = value.astype(dtype=internal_dtype, copy=False)
         else:
             value = xp.mean(
-                new_array, axis=axis_combination, keepdims=True
+                new_array, axis=axis_combination, keepdims=True, dtype=internal_dtype
             )
+
         if sigma > 0:
             value = sp.ndimage.filters.gaussian_filter(value, sigma=sigma)
 
-        new_array += overall_value - value
+        new_array += overall_value
+        new_array -= value
 
     new_array = new_array.astype(original_dtype, copy=False)
 

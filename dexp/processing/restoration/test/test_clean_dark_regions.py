@@ -27,14 +27,23 @@ def _test_clean_dark_regions(backend, length_xy=128):
                                                                       add_noise=True,
                                                                       length_xy=length_xy,
                                                                       length_z_factor=4,
-                                                                      independent_haze=True)
+                                                                      independent_haze=False,
+                                                                      background_stength=0.05)
+
+    # remove zero level
+    image -= 95
+    image_gt -= 95
 
     with timeit('clean_dark_regions'):
-        dehazed = clean_dark_regions(backend, image, size=25, threshold=70)
+        cleaned = clean_dark_regions(backend, image, size=3, threshold=100)
+
+    assert cleaned is not image
+    assert cleaned.shape == image.shape
+    assert cleaned.dtype == image.dtype
 
     # compute [ercentage of haze removed:
     background_voxels_image = (1 - image_gt) * image
-    background_voxels_dehazed = (1 - image_gt) * dehazed
+    background_voxels_dehazed = (1 - image_gt) * cleaned
     total_haze = xp.sum(background_voxels_image)
     total_remaining_haze = xp.sum(background_voxels_dehazed)
     percent_removed = (total_haze - total_remaining_haze) / total_haze
@@ -42,9 +51,9 @@ def _test_clean_dark_regions(backend, length_xy=128):
 
     # compute error on non-background voxels
     non_background_voxels_image = image_gt * image
-    non_background_voxels_dehazed = image_gt * dehazed
+    non_background_voxels_dehazed = image_gt * cleaned
     average_error = xp.mean(xp.absolute(non_background_voxels_image - non_background_voxels_dehazed))
     print(f"average_error = {average_error}")
 
-    assert percent_removed > 0.92
-    assert percent_removed < 12
+    assert percent_removed > 0.1
+    assert percent_removed < 3000
