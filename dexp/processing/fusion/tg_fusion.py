@@ -80,8 +80,8 @@ def fuse_tg_nd(backend: Backend,
     # gc.collect()
 
     # Compute Tenengrad filter:
-    t_image_a = sobel_magnitude_filter(backend, d_image_a)
-    t_image_b = sobel_magnitude_filter(backend, d_image_b)
+    t_image_a = sobel_magnitude_filter(backend, d_image_a, normalise_input=False, in_place=True)
+    t_image_b = sobel_magnitude_filter(backend, d_image_b, normalise_input=False, in_place=True)
     del d_image_a, d_image_b
     # gc.collect()
 

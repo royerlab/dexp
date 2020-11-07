@@ -7,6 +7,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 def sobel_magnitude_filter(backend: Backend,
                            image,
                            normalise_input: bool = True,
+                           in_place: bool = False,
                            internal_dtype=numpy.float16):
     """
     Computes the Sobel magnitude filter response for a given image.
@@ -47,7 +48,7 @@ def sobel_magnitude_filter(backend: Backend,
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input)
+    image = backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input and not in_place)
 
     if normalise_input:
         min_value = xp.min(image)

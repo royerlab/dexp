@@ -65,7 +65,7 @@ def equalise_intensity(backend: Backend,
 
     nb_values = ratios.size
     if nb_values < 128:
-        raise ValueError("Too few ratio values to compute correction ratio! Relax percentile or reduction! ")
+        raise ValueError(f"Too few ratio values ({nb_values}) to compute correction ratio! Relax percentile or reduction! ")
 
     correction_ratio = xp.percentile(ratios.astype(internal_dtype, copy=False), q=50)
     inverse_correction_ratio = 1 / correction_ratio
