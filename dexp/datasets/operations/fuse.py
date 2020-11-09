@@ -1,17 +1,25 @@
 import numpy
 
+from dexp.processing.multiview_lightsheet.simview_microscope import simview_fuse_2I2D
+from dexp.processing.registration.model.model_factory import from_json
 
-def dataset_fuse(dataset,
-         path,
-         slicing,
-         store,
-         compression,
-         compression_level,
-         overwrite,
-         workers,
-         zero_level,
-         load_shifts,
-         check):
+
+def dataset_fuse(backend,
+                 dataset,
+                 path,
+                 slicing,
+                 store,
+                 compression,
+                 compression_level,
+                 overwrite,
+                 workers,
+                 zero_level,
+                 fusion,
+                 fusion_bias_strength,
+                 dehaze_size,
+                 dark_denoise_threshold,
+                 load_shifts,
+                 check):
 
     print(f"getting Dask arrays for all channels to fuse...")
     array_C0L0 = dataset.get_array('C0L0', per_z_slice=False, wrap_with_dask=True)
@@ -41,12 +49,11 @@ def dataset_fuse(dataset,
                                           codec=compression,
                                           clevel=compression_level)
 
-    from dexp.processing.fusion import SimpleFusion
-    fusion = SimpleFusion()
 
-    shifts_file = open("registration_shifts.txt", "r" if load_shifts else 'w')
+
+    registration_models_file = open("registration_models.txt", "r" if load_shifts else 'w')
     if load_shifts:
-        print(f"Loading registration shifts from existing file! ({shifts_file.name})")
+        print(f"Loading registration shifts from existing file! ({registration_models_file.name})")
 
     def process(tp):
         print(f"Writing time point: {tp} ")
@@ -59,26 +66,43 @@ def dataset_fuse(dataset,
         C1L0 = numpy.flip(C1L0, -1)
         C1L1 = numpy.flip(C1L1, -1)
 
+        model = None
         if load_shifts:
             try:
-                line = shifts_file.readline().strip()
-                shifts = tuple(float(shift) for shift in line.split('\t'))
-                print(f"loaded shifts: {shifts} ")
+                line = registration_models_file.readline().strip()
+                model = from_json(line)
+                print(f"loaded model: {line} ")
             except ValueError:
-                print(f"Cannot read shift from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
+                print(f"Cannot read model from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
 
-        else:
-            shifts = None
+        # def simview_fuse_2I2D(backend: Backend,
+        #                       C0L0, C0L1, C1L0, C1L1,
+        #                       zero_level: float = 120,
+        #                       fusion='tg',
+        #                       bias_exponent: int = 2,
+        #                       bias_strength: float = 0.1,
+        #                       registration_model: PairwiseRegistrationModel = None,
+        #                       dehaze_size: int = 65,
+        #                       dark_denoise_threshold: int = 80,
+        #                       dark_denoise_size: int = 9,
+        #                       butterworth_filter_cutoff: float = 1,
+        #                       internal_dtype=numpy.float16):
 
         print(f'Fusing...')
-        array, shifts = fusion.simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1, shifts=shifts, dark_denoise_threshold=zero_level, as_numpy=True)
+        array, model = simview_fuse_2I2D(backend, C0L0, C0L1, C1L0, C1L1,
+                                         registration_model=model,
+                                         zero_level=zero_level,
+                                         fusion=fusion,
+                                         fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
+                                         fusion_bias_strength=fusion_bias_strength,
+                                         dehaze_size=dehaze_size,
+                                         dark_denoise_threshold=dark_denoise_threshold)
 
         if not load_shifts:
-            for shift in shifts:
-                shifts_file.write(f"{shift}\t")
-            shifts_file.write(f"\n")
+            json_text = model.to_json()
+            registration_models_file.write(json_text+'\n')
 
-        array = array.astype(dest_array.dtype, copy=False)
+        array = backend.to_numpy(dtype=dest_array.dtype, copy=False)
 
         print(f'Writing array of dtype: {array.dtype}')
         dest_array[tp] = array
@@ -89,7 +113,7 @@ def dataset_fuse(dataset,
     for tp in range(0, shape[0]):
         process(tp)
 
-    shifts_file.close()
+    registration_models_file.close()
 
     print(dest_dataset.info())
     if check:

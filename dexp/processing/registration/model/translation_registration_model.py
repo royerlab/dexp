@@ -1,3 +1,4 @@
+import json
 from typing import Any, Tuple, Union, Sequence
 
 import numpy
@@ -13,12 +14,15 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
 
         """
         super().__init__()
-        self.shift_vector = numpy.array(shift_vector)
+        self.shift_vector = list(shift_vector)
         self.error = error
         self.integral = integral
 
     def __str__(self):
         return f"TranslationRegistrationModel(shift={self.shift_vector}, error={self.error}, integral={self.integral})"
+
+    def to_json(self) -> str:
+        return json.dumps({'translation': self.shift_vector, 'integral': self.integral})
 
     def get_shift_and_error(self):
         return self.shift_vector, self.error

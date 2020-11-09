@@ -16,6 +16,8 @@ class PairwiseRegistrationModel(ABC):
     def __str__(self):
         pass
 
+
+
     @abstractmethod
     def apply(self, backend: Backend, image_a, image_b, pad: bool = False) -> numpy.ndarray:
         """ Applies this pairwise registration model to the two given images.
@@ -34,3 +36,4 @@ class PairwiseRegistrationModel(ABC):
 
         """
         raise NotImplementedError("Not implemented")
+

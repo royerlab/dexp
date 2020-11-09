@@ -22,7 +22,7 @@ def fuse_tg_nd(backend: Backend,
                clip: Optional[bool] = True,
                internal_dtype=numpy.float16):
     """
-    Fuses two images by picking regions from one or the otehr image based on the local image quality
+    Fuses two images by picking regions from one or the other image based on the local image quality
     measured by using the magnitude of the Sobel gradient -- similarly as in the Tenengrad focus metric.
     A smooth blend map is computed that blends the two images based on local image quality.
 
