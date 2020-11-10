@@ -3,8 +3,9 @@
 
 
 conda config --add channels conda-forge
-conda install -y -c ocl-icd-system
-conda install -y -c conda-forge dask dask-image zarr  pyopencl tifffile scikit-image numba numcodecs
+conda install -y -c conda-forge ocl-icd-system
+conda install -y -c conda-forge numpy scipy pyopencl tifffile scikit-image numba numcodecs
+conda install -y -c conda-forge dask dask-image dask-distributed zarr
 conda install -y -c conda-forge cudatoolkit
 conda install -y -c pytorch pytorch torchvision torch-dct
 
@@ -12,7 +13,6 @@ conda install -y -c pytorch pytorch torchvision torch-dct
 #pip install cupy-cuda111
 pip install cupy-cuda111 -f https://github.com/cupy/cupy/releases/tag/v9.0.0a1
 
-pip install scikit-image --upgrade
 pip install numba --upgrade
 pip install torch-dct --upgrade
 pip install napari[all] --upgrade

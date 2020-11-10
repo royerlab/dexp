@@ -48,7 +48,7 @@ def dataset_deconv(dataset,
                                               codec =compression,
                                               clevel=compression_level)
 
-        from dexp.processing.restoration import Deconvolution
+        from dexp.processing.deconvolution.old.deconvolution import Deconvolution
         deconvolution = Deconvolution(method=method,
                                       num_iterations=num_iterations,
                                       max_correction=max_correction,

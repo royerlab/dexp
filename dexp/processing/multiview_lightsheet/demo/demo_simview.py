@@ -61,5 +61,5 @@ def simview_fuse(backend):
         viewer.add_image(_c(CxLx), name='CxLx', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', colormap='viridis')
 
 
-demo_simview_fuse_numpy()
-# demo_simview_fuse_cupy()
+#demo_simview_fuse_numpy()
+demo_simview_fuse_cupy()

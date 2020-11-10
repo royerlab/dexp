@@ -55,7 +55,7 @@ def equalise_intensity(backend: Backend,
     mask1 = strided_image1 >= highvalue1
     mask2 = strided_image2 >= highvalue2
 
-    mask = mask1 * mask2
+    mask = xp.logical_and(mask1, mask2)
 
     highvalues1 = strided_image1[mask]
     highvalues2 = strided_image2[mask]

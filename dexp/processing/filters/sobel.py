@@ -6,6 +6,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 
 def sobel_magnitude_filter(backend: Backend,
                            image,
+                           exponent: int = 2,
                            normalise_input: bool = True,
                            in_place: bool = False,
                            internal_dtype=numpy.float16):
@@ -32,6 +33,7 @@ def sobel_magnitude_filter(backend: Backend,
     ----------
     backend : Backend to use
     image : image to apply filter on
+    exponent : Exponent to use for the magnitude (norm) of the gradient, 2 for L2, and 1 for L1...
     normalise_input : True to normalise input image between 0 and 1 before applying filter
     internal_dtype : dtype fro internal computation.
 
@@ -59,9 +61,14 @@ def sobel_magnitude_filter(backend: Backend,
     sobel_image = xp.zeros_like(image)
 
     for i in range(ndim):
-        sobel_image += sp.ndimage.sobel(image, axis=i) ** 2
+        sobel_one_axis = xp.absolute(sp.ndimage.sobel(image, axis=i))
+        sobel_image += sobel_one_axis ** exponent
 
-    sobel_image = xp.sqrt(sobel_image, out=sobel_image)
+    if exponent == 1:
+        pass
+    elif exponent == 2:
+        sobel_image = xp.sqrt(sobel_image, out=sobel_image)
+
     sobel_image = sobel_image.astype(dtype=original_dtype, copy=False)
 
     return sobel_image

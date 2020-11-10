@@ -1,4 +1,5 @@
 import os
+import shutil
 from multiprocessing.pool import ThreadPool
 from os.path import isfile, isdir, exists
 from typing import Tuple, Sequence, Any, Union
@@ -10,6 +11,7 @@ import zarr
 from dask.array import from_zarr
 from numcodecs import blosc
 from zarr import ZipStore, DirectoryStore, open_group, convenience, CopyError, Blosc, Array, Group
+from zarr.errors import ContainsGroupError
 
 from dexp.datasets.base_dataset import BaseDataset
 import multiprocessing
@@ -29,7 +31,7 @@ class ZDataset(BaseDataset):
 
         Parameters
         ----------
-        path : path to zarr styorage (directory or zip).
+        path : path to zarr storage (directory or zip).
         mode : Access mode:
             'r' means read only (must exist);
             'r+' means read/write (must exist);
@@ -53,6 +55,15 @@ class ZDataset(BaseDataset):
         self._root_group = None
         self._arrays = {}
 
+        if mode == 'w-':
+            raise ValueError(f"ERROR -- Storage '{path}' already exists, add option '-w' to force overwrite!")
+        elif mode == 'w':
+            print(f"Deleting '{path}' for overwrite!")
+            if isdir(path):
+                shutil.rmtree(path, ignore_errors=True)
+            elif isfile(path):
+                os.remove(path)
+
         print(f"Initialising Zarr storage: '{path}'")
         if exists(path):
             print(f"Path exists, opening zarr storage...")
@@ -60,11 +71,12 @@ class ZDataset(BaseDataset):
                 print(f"Opening as ZIP store")
                 self._store = zarr.storage.ZipStore(path)
             elif isdir(path) and (path.endswith('.zarr') or path.endswith('.zarr/') or store == 'dir'):
-
                 # We need to figure out if this is a directory or nested directory store:
-                group = zarr.convenience.open(path, mode=mode)
+
+                group = open_group(path, mode='r')
                 if 'storage_type' in group.attrs:
                     storage_type = group.attrs['storage_type']
+                    print(f"storage_type={storage_type} ")
                     if storage_type=='dir':
                         print(f"Opening as Directory store")
                         self._store = zarr.storage.DirectoryStore(path)
@@ -75,7 +87,8 @@ class ZDataset(BaseDataset):
                     print(f"Opening as Directory store")
                     self._store = zarr.storage.DirectoryStore(path)
 
-            self._root_group = zarr.convenience.open(self._store, mode=mode)
+            print(f"Opening with mode: {mode}")
+            self._root_group = open_group(self._store, mode=mode)
             print(self._root_group.tree())
             self._initialise_existing(path)
         else:

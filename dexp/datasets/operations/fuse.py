@@ -1,3 +1,6 @@
+import shutil
+from os.path import exists
+
 import numpy
 
 from dexp.processing.multiview_lightsheet.simview_microscope import simview_fuse_2I2D
@@ -37,6 +40,7 @@ def dataset_fuse(backend,
     # shape and dtype of views to fuse:
     shape = array_C0L0.shape
     dtype = array_C0L0.dtype
+
 
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
@@ -102,7 +106,7 @@ def dataset_fuse(backend,
             json_text = model.to_json()
             registration_models_file.write(json_text+'\n')
 
-        array = backend.to_numpy(dtype=dest_array.dtype, copy=False)
+        array = backend.to_numpy(array, dtype=dest_array.dtype, force_copy=False)
 
         print(f'Writing array of dtype: {array.dtype}')
         dest_array[tp] = array

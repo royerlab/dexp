@@ -3,7 +3,10 @@
 
 
 conda config --add channels conda-forge
-conda install -y -c conda-forge cudatoolkit dask dask-image zarr ocl-icd-system pyopencl tifffile scikit-image numba numcodecs
+conda install -y -c conda-forge ocl-icd-system
+conda install -y -c conda-forge numpy scipy pyopencl tifffile scikit-image numba numcodecs
+conda install -y -c conda-forge dask dask-image zarr
+conda install -y -c conda-forge cudatoolkit
 conda install -y -c pytorch pytorch torchvision torch-dct
 
 

@@ -1,0 +1,48 @@
+import numpy
+from skimage.util import random_noise
+
+from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
+from dexp.processing.utils.blend_images import blend_images
+from dexp.processing.utils.element_wise_affine import element_wise_affine
+
+
+def test_element_wise_affine_numpy():
+    backend = NumpyBackend()
+    _test_element_wise_affine(backend)
+
+
+def test_element_wise_affine_cupy():
+    try:
+        backend = CupyBackend()
+        _test_element_wise_affine(backend)
+    except ModuleNotFoundError:
+        print("Cupy module not found! Test passes nevertheless!")
+
+
+def _test_element_wise_affine(backend, length_xy=128):
+
+    xp = backend.get_xp_module()
+
+    _, _, _, _, image, _ = generate_fusion_test_data(backend,
+                                                     add_noise=False,
+                                                     length_xy=length_xy,
+                                                     length_z_factor=4)
+
+    transformed = element_wise_affine(backend, image, 2, 0.3)
+
+    transformed = backend.to_numpy(transformed)
+    image = backend.to_numpy(image)
+    error = numpy.median(numpy.abs(image*2 + 0.3 - transformed))
+    print(f"error={error}")
+    assert error < 22
+
+    # from napari import Viewer, gui_qt
+    # with gui_qt():
+    #     viewer = Viewer()
+    #     viewer.add_image(image_gt, name='image_gt')
+    #     viewer.add_image(image1, name='image1')
+    #     viewer.add_image(image2, name='image2')
+    #     viewer.add_image(blend_a, name='blend_a')
+    #     viewer.add_image(blended, name='blended')

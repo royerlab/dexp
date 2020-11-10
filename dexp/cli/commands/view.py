@@ -1,6 +1,7 @@
 import click
 import dask
 import numpy
+from napari._qt.qthreading import thread_worker
 
 from dexp.cli.main import _get_dataset_from_path, _parse_slicing
 
@@ -18,7 +19,6 @@ from dexp.cli.main import _get_dataset_from_path, _parse_slicing
 def view(input_path, channels=None, slicing=None, volume=False, aspect=None, colormap='viridis', render=None, windowsize=1536, clim=None):
 
     from napari import Viewer, gui_qt
-    from napari._qt.threading import thread_worker
 
     input_dataset = _get_dataset_from_path(input_path)
 
@@ -81,7 +81,7 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
                                      rendering='attenuated_mip')
 
             if not aspect is None:
-                layer.scale[-3] = aspect
+                layer.scale = (1, aspect, 1, 1)
                 print(f"Setting aspect ratio to {aspect} (layer.scale={layer.scale})")
 
             #For some reason spome parameters refuse to be set, this solves it:
@@ -102,20 +102,3 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
 
                 backend = parameters['backend'] if 'backend' in parameters else 'naparimovie'
 
-                if backend == 'naparimovie':
-                    from naparimovie import Movie
-
-                    script = parameters['script'] if 'script' in parameters else 'script.txt'
-                    steps = int(parameters['steps']) if 'steps' in parameters else 60
-                    res = int(parameters['res']) if 'res' in parameters else 1024
-                    fps = int(parameters['fps']) if 'fps' in parameters else 60
-                    name = parameters['name'] if 'name' in parameters else 'movie.mp4'
-
-                    print(f"Movie Parameters provided: {parameters}")
-                    print(f"Movie script: {script}, steps={steps}, res={res}, fps={fps}, name={name}")
-
-                    #time.sleep(1)
-                    movie = Movie(myviewer=viewer)
-                    movie.inter_steps = steps
-                    movie.create_state_dict_from_script(script)
-                    movie.make_movie(name=name, resolution=res, fps=fps, show=False)

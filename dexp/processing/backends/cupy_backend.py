@@ -12,7 +12,8 @@ class CupyBackend(Backend):
                  device=0,
                  enable_memory_pool: bool = True,
                  enable_cub: bool = True,
-                 enable_cutensor: bool = True):
+                 enable_cutensor: bool = True,
+                 enable_fft_planning: bool = True):
         """
         Instantiates a Numpy-based Image Processing backend
 
@@ -21,6 +22,7 @@ class CupyBackend(Backend):
         device : CUDA device to use for allocation and compute
         enable_cub : enables CUB accelerator
         enable_cutensor : enables cuTensor accelerator
+        enable_fft_planning : enables FFT planning
         """
 
         super().__init__()
@@ -35,6 +37,10 @@ class CupyBackend(Backend):
             set_allocator(None)
             # Disable memory pool for pinned memory (CPU).
             set_pinned_memory_allocator(None)
+
+        if not enable_fft_planning:
+            import cupy
+            cupy.fft.config.enable_nd_planning = False
 
         ## Important: Leave this, this is to make sure that the ndimage package works properly!
         exec("import cupyx.scipy.ndimage")
