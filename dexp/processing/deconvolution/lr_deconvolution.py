@@ -3,19 +3,22 @@ import numpy
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
+from dexp.processing.utils.element_wise_affine import element_wise_affine
 
 
 def lucy_richardson_deconvolution(backend: Backend,
-                                   image,
-                                   psf,
-                                   max_num_iterations: int = 50,
-                                   max_correction: float=8,
-                                   power: int = 1,
-                                   back_projection='tpsf',
-                                   padding=0,
-                                   padding_mode=None,
-                                   convolve_method = fft_convolve,
-                                   internal_dtype=numpy.float16):
+                                  image,
+                                  psf,
+                                  num_iterations: int = 50,
+                                  max_correction: float = 8,
+                                  power: float = 1.0,
+                                  back_projection='tpsf',
+                                  padding: int = 0,
+                                  padding_mode: str = 'edge',
+                                  normalise_input: bool = True,
+                                  clip_output: bool = True,
+                                  convolve_method=fft_convolve,
+                                  internal_dtype=numpy.float16):
     """
     Decponvolves an nD image given a point-spread-function.
 
@@ -24,9 +27,15 @@ def lucy_richardson_deconvolution(backend: Backend,
     backend : backend to use
     image : image to deconvolve
     psf : point-spread-function (must have the same number of dimensions as image!)
-    max_number_iterations : max number of iterations
-    power : power to elevate relative blur to
+    num_iterations : number of iterations
+    max_correction : Lucy-Richardson correction will remain clamped within [1/mc, mc] (before back projection)
+    power : power to elevate coorection (before back projection)
     back_projection : back projection operator to use.
+    padding : padding (see numpy/cupy pad function)
+    padding_mode : padding mode (see numpy/cupy pad function)
+    normalise_input : This deconvolution code assumes values within [0, 1], by default input images are normalised to that range, but if already normalised, then normalisation can be ommited.
+    convolve_method : convolution method to use
+    clip_output : By default the output is clipped to the input image range.
     internal_dtype : dtype to use internally for computation.
 
     Returns
@@ -39,48 +48,41 @@ def lucy_richardson_deconvolution(backend: Backend,
     sp = backend.get_sp_module()
 
     if image.ndim != psf.ndim:
-        raise ValueError("Two images must have same number of dimensions!")
+        raise ValueError("The image and PSF must have same number of dimensions!")
 
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=True)
-    psf = backend.to_backend(psf, dtype=internal_dtype, force_copy=True)
+    image = backend.to_backend(image, dtype=internal_dtype)
+    psf = backend.to_backend(psf, dtype=internal_dtype)
 
-    back_projector = xp.flip(psf)
+    if back_projection == 'tpsf':
+        back_projector = xp.flip(psf)
+    else:
+        raise ValueError(f"back projection mode: {back_projection} not supported.")
 
-    #TODO: option?
-    min_value = xp.min(image)
-    max_value = xp.max(image)
-    image -= min_value
-    image *= 1 / (max_value - min_value)
-    image = xp.clip(0, None, out=image)
+    if normalise_input:
+        min_value = xp.min(image)
+        max_value = xp.max(image)
+        alpha = (1 / (max_value - min_value)).astype(internal_dtype)
+        image = element_wise_affine(backend, image, alpha, -min_value)
+        image = xp.clip(image, 0, 1, out=image)
+
+    if padding > 0:
+        image = numpy.pad(image, pad_width=padding, mode=padding_mode)
 
     result = xp.full(
-        image.shape, float(xp.mean(image))
+        image.shape,
+        float(xp.mean(image)),
+        dtype=internal_dtype
     )
 
-    psf_shape = psf.shape
-    pad_width = tuple(
-        (max(padding, (s - 1) // 2), max(padding, (s - 1) // 2))
-        for s in psf_shape
-    )
-
-    for i in range(max_num_iterations):
-
-        if padding > 0:
-            padded_candidate_deconvolved_image = xp.pad(
-                result,
-                pad_width=pad_width,
-                mode=padding_mode,
-            )
-        else:
-            padded_candidate_deconvolved_image = result
+    for i in range(num_iterations):
 
         convolved = convolve_method(
             backend,
-            padded_candidate_deconvolved_image,
+            result,
             psf,
             mode='valid' if padding else 'same',
         )
@@ -100,11 +102,6 @@ def lucy_richardson_deconvolution(backend: Backend,
         if power != 1.0:
             relative_blur **= power
 
-        if padding:
-            relative_blur = numpy.pad(
-                relative_blur, pad_width=pad_width, mode=padding_mode
-            )
-
         multiplicative_correction = convolve_method(
             backend,
             relative_blur,
@@ -114,11 +111,20 @@ def lucy_richardson_deconvolution(backend: Backend,
 
         result *= multiplicative_correction
 
-    result[result > 1] = 1
-    result[result < 0] = 0
+    del multiplicative_correction, relative_blur, back_projector, convolved, psf
 
-    result *= (max_value - min_value)
-    result += min_value
+    if clip_output:
+        if normalise_input:
+            result = xp.clip(result, 0, 1, out=result)
+        else:
+            result = xp.clip(result, xp.min(image), xp.max(image), out=result)
+
+    if normalise_input:
+        result = element_wise_affine(backend, result, (max_value - min_value), min_value)
+
+    if padding > 0:
+        slicing = (slice(padding, -padding),) * result.ndim
+        result = result[slicing]
 
     result = result.astype(original_dtype, copy=False)
 

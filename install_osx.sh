@@ -19,5 +19,6 @@ pip install napari[all] --upgrade
 pip install click cachey numexpr joblib --upgrade
 pip install spimagine --upgrade
 pip install pytest --upgrade
+pip install graphviz
 
 pip install -e .

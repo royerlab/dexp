@@ -2,7 +2,7 @@ from time import time
 
 import click
 
-from dexp.cli.main import _get_dataset_from_path, _default_store
+from dexp.cli.main import _get_dataset_from_path
 
 
 @click.command()

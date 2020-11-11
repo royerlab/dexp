@@ -17,7 +17,6 @@ from dexp.cli.main import _get_dataset_from_path, _parse_slicing
 @click.option('--windowsize', '-ws', type=int, default=1536, help='Sets the napari window size. i.e. -ws 400 sets the window to 400x400', show_default=True)
 @click.option('--clim', '-cl', type=str, default=None, help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]', show_default=True)
 def view(input_path, channels=None, slicing=None, volume=False, aspect=None, colormap='viridis', render=None, windowsize=1536, clim=None):
-
     from napari import Viewer, gui_qt
 
     input_dataset = _get_dataset_from_path(input_path)
@@ -42,7 +41,7 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
     with gui_qt():
         viewer = Viewer(title=f"DEXP | viewing with napari: {input_path} ", ndisplay=3 if volume else 2)
 
-        viewer.window.resize(windowsize+256, windowsize)
+        viewer.window.resize(windowsize + 256, windowsize)
 
         for channel in selected_channels:
             print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
@@ -64,13 +63,12 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
                 contrast_limits = [max(0, min_value - 32), max_value + 32]
             else:
                 print(f"provided min and max for contrast limits: {clim}")
-                min_value, max_value = ( float(strvalue) for strvalue in clim.split(','))
+                min_value, max_value = (float(strvalue) for strvalue in clim.split(','))
                 contrast_limits = [min_value, max_value]
-
 
             # flip x for second camera:
             if 'C1' in channel:
-                array = dask.array.flip(array,-1)
+                array = dask.array.flip(array, -1)
 
             layer = viewer.add_image(array,
                                      name=channel,
@@ -84,21 +82,18 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
                 layer.scale = (1, aspect, 1, 1)
                 print(f"Setting aspect ratio to {aspect} (layer.scale={layer.scale})")
 
-            #For some reason spome parameters refuse to be set, this solves it:
+            # For some reason spome parameters refuse to be set, this solves it:
             @thread_worker
             def workaround_for_recalcitrant_parameters():
                 print("Setting 3D rendering parameters")
-                layer.attenuation=0.02
-                layer.rendering='attenuated_mip'
+                layer.attenuation = 0.02
+                layer.rendering = 'attenuated_mip'
 
             worker = workaround_for_recalcitrant_parameters()
             worker.start()
 
-
             if render is not None:
-
                 render = render.strip()
                 parameters = dict(item.split("=") for item in render.split(",")) if render != 'defaults' else dict()
 
                 backend = parameters['backend'] if 'backend' in parameters else 'naparimovie'
-

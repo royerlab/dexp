@@ -1,5 +1,4 @@
 import numpy
-import scipy
 from numpy.linalg import norm
 from scipy.ndimage import convolve
 from skimage.data import camera
@@ -8,8 +7,6 @@ from skimage.util import random_noise
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.filters.sobel import sobel_magnitude_filter
-from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 
 
 def test_fft_convolve_numpy():
@@ -30,7 +27,7 @@ def _test_fft_convolve(backend):
     noisy = random_noise(image, mode="gaussian", var=0.005, seed=0, clip=False)
     noisy = random_noise(noisy, mode="s&p", amount=0.03, seed=0, clip=False)
 
-    psf = numpy.asarray([[1,1,1],[1,0,1],[1,1,1]]).astype(numpy.float32)
+    psf = numpy.asarray([[1, 1, 1], [1, 0, 1], [1, 1, 1]]).astype(numpy.float32)
 
     result = fft_convolve(backend, image, psf)
     reference_result = convolve(image, psf)

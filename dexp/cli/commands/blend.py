@@ -16,13 +16,12 @@ from scipy import special
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, set to -1 for maximum number of workers', show_default=True)  #
 def blend(input_paths, output_path, blending, overwrite, workers):
-
     if workers <= 0:
-        workers = os.cpu_count()//2
+        workers = os.cpu_count() // 2
 
     if output_path is None:
-        basename = '_'.join([os.path.basename(os.path.normpath(p)).replace('frames_','') for p in input_paths])
-        output_path = 'frames_'+basename
+        basename = '_'.join([os.path.basename(os.path.normpath(p)).replace('frames_', '') for p in input_paths])
+        output_path = 'frames_' + basename
 
     os.makedirs(output_path, exist_ok=True)
 
@@ -59,12 +58,12 @@ def blend(input_paths, output_path, blending, overwrite, workers):
                         if blending == 'max':
                             print(f"Blending using max mode.")
                             blended_image_array = numpy.maximum(blended_image_array, image_array)
-                        elif blending == 'add' or  blending == 'addclip':
+                        elif blending == 'add' or blending == 'addclip':
                             print(f"Blending using add mode (clipped).")
-                            blended_image_array = numpy.clip(blended_image_array+image_array, 0, 255)
+                            blended_image_array = numpy.clip(blended_image_array + image_array, 0, 255)
                         elif blending == 'adderf':
                             print(f"Blending using add mode (erf saturation).")
-                            blended_image_array = 255*special.erf(blended_image_array+image_array/255)
+                            blended_image_array = 255 * special.erf(blended_image_array + image_array / 255)
 
                 print(f"Writing file: {pngfile} in folder: {output_path}")
                 imageio.imwrite(join(output_path, pngfile), blended_image_array.astype(original_dtype))

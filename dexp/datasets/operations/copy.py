@@ -2,17 +2,16 @@ import os
 
 
 def dataset_copy(dataset,
-         path,
-         channels,
-         slicing,
-         store,
-         compression,
-         compression_level,
-         overwrite,
-         project,
-         workers,
-         check):
-
+                 path,
+                 channels,
+                 slicing,
+                 store,
+                 compression,
+                 compression_level,
+                 overwrite,
+                 project,
+                 workers,
+                 check):
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(path, mode, store)
@@ -42,9 +41,8 @@ def dataset_copy(dataset,
                                               shape=shape,
                                               dtype=array.dtype,
                                               chunks=chunks,
-                                              codec =compression,
+                                              codec=compression,
                                               clevel=compression_level)
-
 
         def process(tp):
             try:
@@ -62,11 +60,10 @@ def dataset_copy(dataset,
                 print(error)
                 print(f"Error occurred while copying time point {tp} !")
 
-
         from joblib import Parallel, delayed
 
         if workers is None:
-            workers = os.cpu_count()//2
+            workers = os.cpu_count() // 2
 
         print(f"Number of workers: {workers}")
 

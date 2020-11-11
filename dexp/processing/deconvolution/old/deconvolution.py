@@ -7,7 +7,7 @@ from dexp.processing.base_restoration import BaseRestoration
 os.environ["PYOPENCL"] = "0"
 
 
-class Deconvolution(BaseRestoration):
+class DecoXXnvolution(BaseRestoration):
 
     def __init__(self, method='aydin', num_iterations=15, max_correction=8, power=1.5, dxy=0.485, dz=4 * 0.485, xy_size=17, z_size=31):
         """

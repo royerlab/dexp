@@ -1,10 +1,8 @@
 import numpy
-from skimage.util import random_noise
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
-from dexp.processing.utils.blend_images import blend_images
 from dexp.processing.utils.element_wise_affine import element_wise_affine
 
 
@@ -22,7 +20,6 @@ def test_element_wise_affine_cupy():
 
 
 def _test_element_wise_affine(backend, length_xy=128):
-
     xp = backend.get_xp_module()
 
     _, _, _, _, image, _ = generate_fusion_test_data(backend,
@@ -34,7 +31,7 @@ def _test_element_wise_affine(backend, length_xy=128):
 
     transformed = backend.to_numpy(transformed)
     image = backend.to_numpy(image)
-    error = numpy.median(numpy.abs(image*2 + 0.3 - transformed))
+    error = numpy.median(numpy.abs(image * 2 + 0.3 - transformed))
     print(f"error={error}")
     assert error < 22
 

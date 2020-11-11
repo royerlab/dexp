@@ -4,15 +4,15 @@ from numpy import linspace, dot
 from dexp.volumerender.transform_matrices import mat4_translate, mat4_scale, mat4_perspective, mat4_rotation
 from dexp.volumerender.volumerender import VolumeRenderer
 
-rend = VolumeRenderer((400,400))
+rend = VolumeRenderer((400, 400))
 
-Nx,Ny,Nz = 200,150,50
-d = linspace(0,10000,Nx*Ny*Nz).reshape([Nz,Ny,Nx])
+Nx, Ny, Nz = 200, 150, 50
+d = linspace(0, 10000, Nx * Ny * Nz).reshape([Nz, Ny, Nx])
 
 rend.set_data(d)
-rend.set_units([1.,1.,.1])
-rend.set_projection(mat4_perspective(60,1.,1,10))
-rend.set_modelView(dot(mat4_translate(0,0,-1),dot(mat4_rotation(1),mat4_scale(.7,.7,.7))))
+rend.set_units([1., 1., .1])
+rend.set_projection(mat4_perspective(60, 1., 1, 10))
+rend.set_modelView(dot(mat4_translate(0, 0, -1), dot(mat4_rotation(1), mat4_scale(.7, .7, .7))))
 
 rend.render()
 

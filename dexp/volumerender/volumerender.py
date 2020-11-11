@@ -25,10 +25,7 @@ author: Martin Weigert
 email: mweigert@mpi-cbg.de
 """
 
-
-
 import logging
-
 
 from six.moves import zip
 
@@ -101,11 +98,11 @@ class VolumeRenderer:
                 print(e)
                 print("could not find any OpenCL device ... sorry")
 
-        self.memMax = .7*get_device().get_info("MAX_MEM_ALLOC_SIZE")
+        self.memMax = .7 * get_device().get_info("MAX_MEM_ALLOC_SIZE")
 
         # self.memMax = 2.*get_device().get_info("MAX_MEM_ALLOC_SIZE")
 
-        self.rebuild_program(interpolation = interpolation)
+        self.rebuild_program(interpolation=interpolation)
 
         self.invMBuf = OCLArray.empty(16, dtype=np.float32)
 
@@ -135,8 +132,7 @@ class VolumeRenderer:
         self.set_modelView()
         self.set_projection()
 
-
-    def rebuild_program(self, interpolation = "linear"):
+    def rebuild_program(self, interpolation="linear"):
         build_options_basic = ["-I", "%s" % absPath("kernels/"),
                                "-D", "maxSteps=%s" % self.__DEFAULTMAXSTEPS__,
 
@@ -153,12 +149,12 @@ class VolumeRenderer:
 
         try:
             self.proc = OCLProgram(absPath("kernels/all_render_kernels.cl"),
-                               build_options=
-                               build_options_basic+
-                               ["-cl-finite-math-only",
-                                "-cl-fast-relaxed-math",
-                                "-cl-unsafe-math-optimizations",
-                                "-cl-mad-enable"])
+                                   build_options=
+                                   build_options_basic +
+                                   ["-cl-finite-math-only",
+                                    "-cl-fast-relaxed-math",
+                                    "-cl-unsafe-math-optimizations",
+                                    "-cl-mad-enable"])
         except Exception as e:
             logger.debug(str(e))
             self.proc = OCLProgram(absPath("kernels/all_render_kernels.cl"),
@@ -176,7 +172,7 @@ class VolumeRenderer:
         if dtype in self.dtypes:
             self.dtype = dtype
         else:
-            raise NotImplementedError("data type should be either %s not %s"%(self.dtypes, dtype))
+            raise NotImplementedError("data type should be either %s not %s" % (self.dtypes, dtype))
 
         self.reset_buffer()
 
@@ -204,11 +200,11 @@ class VolumeRenderer:
         else returns None (no downsampling)
         """
         # Nstep = int(np.ceil(np.sqrt(1.*data.nbytes/self.memMax)))
-        Nstep = int(np.ceil((1.*data.nbytes/self.memMax)**(1./3)))
+        Nstep = int(np.ceil((1. * data.nbytes / self.memMax) ** (1. / 3)))
 
         slices = [slice(0, d, Nstep) for d in data.shape]
-        if Nstep>1:
-            logger.info("downsample image by factor of  %s"%Nstep)
+        if Nstep > 1:
+            logger.info("downsample image by factor of  %s" % Nstep)
             return slices
         else:
             return None
@@ -238,13 +234,13 @@ class VolumeRenderer:
         logger.debug("set_data")
 
         if not autoConvert and not data.dtype in self.dtypes:
-            raise NotImplementedError("data type should be either %s not %s"%(self.dtypes, data.dtype))
+            raise NotImplementedError("data type should be either %s not %s" % (self.dtypes, data.dtype))
 
         if data.dtype.type in self.dtypes:
             self.set_dtype(data.dtype.type)
             _data = data
         else:
-            print("converting type from %s to %s"%(data.dtype.type, self.dtype))
+            print("converting type from %s to %s" % (data.dtype.type, self.dtype))
             _data = data.astype(self.dtype, copy=False)
 
         self.dataSlices = self._get_downsampled_data_slices(_data)
@@ -256,7 +252,7 @@ class VolumeRenderer:
 
         t = time()
         self.update_data(_data, copyData=copyData)
-        logger.debug("update data: %s ms"%(1000.*(time()-t)))
+        logger.debug("update data: %s ms" % (1000. * (time() - t)))
         self.update_matrices()
 
     def set_shape(self, dataShape):
@@ -290,7 +286,7 @@ class VolumeRenderer:
             else:
                 self._data = data
 
-        if self._data.dtype!=self.dtype:
+        if self._data.dtype != self.dtype:
             self._data = self._data.astype(self.dtype, copy=False)
 
         self.dataImg.write_array(self._data)
@@ -306,7 +302,7 @@ class VolumeRenderer:
         self.update_matrices()
 
     def set_modelView(self, modelView=mat4_identity()):
-        self.modelView = 1.*modelView
+        self.modelView = 1. * modelView
         self.update_matrices()
 
     def update_matrices(self):
@@ -323,13 +319,13 @@ class VolumeRenderer:
         dx, dy, dz = self.stackUnits
 
         # mScale =  scaleMat(1.,1.*dx*Nx/dy/Ny,1.*dx*Nx/dz/Nz)
-        maxDim = max(d*N for d, N in zip([dx, dy, dz], [Nx, Ny, Nz]))
-        return mat4_scale(1.*dx*Nx/maxDim, 1.*dy*Ny/maxDim, 1.*dz*Nz/maxDim)
+        maxDim = max(d * N for d, N in zip([dx, dy, dz], [Nx, Ny, Nz]))
+        return mat4_scale(1. * dx * Nx / maxDim, 1. * dy * Ny / maxDim, 1. * dz * Nz / maxDim)
 
     def _render_max_project(self, dtype=np.float32, numParts=1, currentPart=0):
         if dtype in [np.uint16, np.uint8]:
             method = "max_project_short"
-        elif dtype==np.float32:
+        elif dtype == np.float32:
 
             method = "max_project_float"
         else:
@@ -400,7 +396,7 @@ class VolumeRenderer:
                              np.float32(self.boxBounds[3]),
                              np.float32(self.boxBounds[4]),
                              np.float32(self.boxBounds[5]),
-                             np.float32(self.maxVal/2),
+                             np.float32(self.maxVal / 2),
                              np.float32(self.gamma),
                              self.invPBuf.data,
                              self.invMBuf.data,
@@ -432,7 +428,7 @@ class VolumeRenderer:
                              np.float32(self.boxBounds[3]),
                              np.float32(self.boxBounds[4]),
                              np.float32(self.boxBounds[5]),
-                             np.float32(self.maxVal/2),
+                             np.float32(self.maxVal / 2),
                              np.float32(self.gamma),
                              self.invPBuf.data,
                              self.invMBuf.data,
@@ -512,9 +508,8 @@ class VolumeRenderer:
             print("no modelView provided and set_modelView() not called before!")
             return
 
-        if method=="max_project":
+        if method == "max_project":
             self._render_max_project(self.dtype, numParts, currentPart)
 
-        if method=="iso_surface":
+        if method == "iso_surface":
             self._render_isosurface()
-

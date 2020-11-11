@@ -9,42 +9,38 @@ from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels import gaussian_kernel_2d
 
 
-def demo_lr_deconvolution_numpy():
+def test_lr_deconvolution_numpy():
     backend = NumpyBackend()
-    _demo_lr_deconvolution(backend)
+    _test_lr_deconvolution(backend)
 
 
-def demo_lr_deconvolution_cupy():
+def test_lr_deconvolution_cupy():
     try:
         backend = CupyBackend()
-        _demo_lr_deconvolution(backend)
+        _test_lr_deconvolution(backend)
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _demo_lr_deconvolution(backend):
+def _test_lr_deconvolution(backend):
+    xp = backend.get_xp_module()
+
     image = camera().astype(numpy.float32) / 255
     noisy = random_noise(image, mode="gaussian", var=0.005, seed=0, clip=False)
     noisy = random_noise(noisy, mode="s&p", amount=0.03, seed=0, clip=False)
 
-    psf = gaussian_kernel_2d(backend, 9, 2, numpy.float32)
+    psf = gaussian_kernel_2d(backend, 9, 2, dtype=numpy.float32)
+
+    image = backend.to_backend(image)
+    noisy = backend.to_backend(noisy)
+    psf = backend.to_backend(psf)
 
     blurry = fft_convolve(backend, image, psf)
 
     deconvolved = lucy_richardson_deconvolution(backend, blurry, psf, padding=16)
 
-    from napari import Viewer, gui_qt
-    with gui_qt():
-        def _c(array):
-            return backend.to_numpy(array)
+    error = xp.linalg.norm(deconvolved - image, ord=1) / image.size
 
-        viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(noisy), name='noisy')
-        viewer.add_image(_c(psf), name='psf')
-        viewer.add_image(_c(blurry), name='result')
-        viewer.add_image(_c(deconvolved), name='deconvolved')
+    print(f"Error = {error}")
 
-
-demo_lr_deconvolution_cupy()
-demo_lr_deconvolution_numpy()
+    assert error < 0.001

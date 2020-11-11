@@ -1,14 +1,11 @@
-import shutil
-from os.path import exists
-
 import numpy
 
-from dexp.processing.multiview_lightsheet.simview_microscope import simview_fuse_2I2D
+from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.multiview_lightsheet.simview_fusion import simview_fuse_2I2D
 from dexp.processing.registration.model.model_factory import from_json
 
 
-def dataset_fuse(backend,
-                 dataset,
+def dataset_fuse(dataset,
                  path,
                  slicing,
                  store,
@@ -23,7 +20,6 @@ def dataset_fuse(backend,
                  dark_denoise_threshold,
                  load_shifts,
                  check):
-
     print(f"getting Dask arrays for all channels to fuse...")
     array_C0L0 = dataset.get_array('C0L0', per_z_slice=False, wrap_with_dask=True)
     array_C0L1 = dataset.get_array('C0L1', per_z_slice=False, wrap_with_dask=True)
@@ -41,7 +37,6 @@ def dataset_fuse(backend,
     shape = array_C0L0.shape
     dtype = array_C0L0.dtype
 
-
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(path, mode, store)
@@ -53,14 +48,14 @@ def dataset_fuse(backend,
                                           codec=compression,
                                           clevel=compression_level)
 
-
-
     registration_models_file = open("registration_models.txt", "r" if load_shifts else 'w')
     if load_shifts:
         print(f"Loading registration shifts from existing file! ({registration_models_file.name})")
 
     def process(tp):
         print(f"Writing time point: {tp} ")
+
+        backend = CupyBackend(0)
 
         C0L0 = array_C0L0[tp].compute()
         C0L1 = array_C0L1[tp].compute()
@@ -79,19 +74,6 @@ def dataset_fuse(backend,
             except ValueError:
                 print(f"Cannot read model from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
 
-        # def simview_fuse_2I2D(backend: Backend,
-        #                       C0L0, C0L1, C1L0, C1L1,
-        #                       zero_level: float = 120,
-        #                       fusion='tg',
-        #                       bias_exponent: int = 2,
-        #                       bias_strength: float = 0.1,
-        #                       registration_model: PairwiseRegistrationModel = None,
-        #                       dehaze_size: int = 65,
-        #                       dark_denoise_threshold: int = 80,
-        #                       dark_denoise_size: int = 9,
-        #                       butterworth_filter_cutoff: float = 1,
-        #                       internal_dtype=numpy.float16):
-
         print(f'Fusing...')
         array, model = simview_fuse_2I2D(backend, C0L0, C0L1, C1L0, C1L1,
                                          registration_model=model,
@@ -104,7 +86,7 @@ def dataset_fuse(backend,
 
         if not load_shifts:
             json_text = model.to_json()
-            registration_models_file.write(json_text+'\n')
+            registration_models_file.write(json_text + '\n')
 
         array = backend.to_numpy(array, dtype=dest_array.dtype, force_copy=False)
 

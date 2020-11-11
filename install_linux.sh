@@ -5,8 +5,9 @@
 conda config --add channels conda-forge
 conda install -y -c conda-forge ocl-icd-system
 conda install -y -c conda-forge numpy scipy pyopencl tifffile scikit-image numba numcodecs
-conda install -y -c conda-forge dask dask-image zarr
+conda install -y -c conda-forge dask dask-image zarr distributed
 conda install -y -c conda-forge cudatoolkit
+conda install -y -c rapidsai dask-cuda
 conda install -y -c pytorch pytorch torchvision torch-dct
 
 
@@ -19,5 +20,6 @@ pip install napari[all] --upgrade
 pip install click cachey numexpr joblib --upgrade
 pip install spimagine --upgrade
 pip install pytest --upgrade
+pip install graphviz
 
 pip install -e .

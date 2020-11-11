@@ -32,6 +32,9 @@ class PytorchBackend(Backend):
             return array.astype(dtype, copy=False)
 
     def to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
+
+        array = self.to_numpy(array)
+
         # TODO: handle better dtype conversion...
         if torch.is_tensor(array):
             if force_copy:

@@ -19,7 +19,6 @@ from dexp.cli.main import _get_dataset_from_path, _parse_slicing
 @click.option('--clim', '-cl', type=str, default='0,1024', help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]')
 @click.option('--options', '-opt', type=str, default=None, help='Render options, e.g: \'gamma=1.2,box=True\'. Important: no white spaces!!! Complete list with defaults will be displayed on first run')
 def render(input_path, output_path, channels=None, slicing=None, overwrite=False, aspect=None, colormap='viridis', rendersize=1536, clim=None, options=None):
-
     input_dataset = _get_dataset_from_path(input_path)
 
     if channels is None:
@@ -50,13 +49,12 @@ def render(input_path, output_path, channels=None, slicing=None, overwrite=False
         if clim is None:
             print(f"Computing min and max from first stack...")
             first_stack = numpy.array(input_dataset.get_stack(channel, 0, per_z_slice=False))
-            min_value = max(0, first_stack.min()- 100)
-            max_value = first_stack.max()+100
+            min_value = max(0, first_stack.min() - 100)
+            max_value = first_stack.max() + 100
             print(f"min={min_value} and max={max_value}.")
         else:
             print(f"provided min and max for contrast limits: {clim}")
-            min_value, max_value = ( float(strvalue) for strvalue in clim.split(','))
-
+            min_value, max_value = (float(strvalue) for strvalue in clim.split(','))
 
         print(f"Provided rendering options: {options}")
         options = dict(item.split("=") for item in options.split(",")) if options is not None else dict()
@@ -71,8 +69,8 @@ def render(input_path, output_path, channels=None, slicing=None, overwrite=False
         cut = str(options['cut']) if 'cut' in options else 'nocut'
         cutpos = float(options['cutpos']) if 'cutpos' in options else 0
         cutspeed = float(options['cutspeed']) if 'cutspeed' in options else 0
-        irot  = options['irot'] if 'irot' in options else ''
-        raxis  = options['raxis'] if 'raxis' in options else 'y'
+        irot = options['irot'] if 'irot' in options else ''
+        raxis = options['raxis'] if 'raxis' in options else 'y'
         rstart = float(options['rstart']) if 'rstart' in options else 0
         rspeed = float(options['rspeed']) if 'rspeed' in options else 0.15
         tstart = int(options['tstart']) if 'tstart' in options else 0
@@ -122,20 +120,19 @@ def render(input_path, output_path, channels=None, slicing=None, overwrite=False
         datamodel = DataModel(NumpyData(array[0].compute()))
         print("Creating Spimagine window... (you can minimise but don't close!)")
         win = volshow(datamodel, stackUnits=(1., 1., aspect), autoscale=False, show_window=True)
-        win.resize(rendersize+32, rendersize+32)
+        win.resize(rendersize + 32, rendersize + 32)
         win.showMinimized()
-
 
         for i in range(0, nbframes, skip):
             print(f"______________________________________________________________________________")
             print(f"Frame     : {i}")
 
-            tp = tstart+int(tspeed * i)
+            tp = tstart + int(tspeed * i)
             if tp >= nbtp:
                 break
             print(f"Time point: {tp}")
 
-            angle = rstart+rspeed*i
+            angle = rstart + rspeed * i
             print(f"Angle     : {angle}")
 
             effcutpos = cutpos + cutspeed
@@ -150,19 +147,19 @@ def render(input_path, output_path, channels=None, slicing=None, overwrite=False
                 if norm:
                     print("Computing percentile...")
                     rmax = numpy.percentile(stack[::8].astype(numpy.float32), q=99.99).astype(numpy.float32)
-                    #rmax = numpy.max(stack[::8]).astype(numpy.float32)
+                    # rmax = numpy.max(stack[::8]).astype(numpy.float32)
                     print(f"rmax={rmax}")
 
                     print("Normalising...")
                     norm_max_value = normrange
                     norm_min_value = 64.0
-                    #stack = norm_min_value+stack*((norm_max_value-norm_min_value)/rmax)
-                    stack = stack*numpy.array((norm_max_value-norm_min_value)/rmax, dtype=numpy.float32)
+                    # stack = norm_min_value+stack*((norm_max_value-norm_min_value)/rmax)
+                    stack = stack * numpy.array((norm_max_value - norm_min_value) / rmax, dtype=numpy.float32)
                     stack += numpy.array(norm_min_value, dtype=dtype)
                     stack = stack.astype(dtype)
 
-                #print("Opening spimagine...")
-                #win = volshow(stack, stackUnits=(1., 1., aspect), autoscale=False, show_window=True)
+                # print("Opening spimagine...")
+                # win = volshow(stack, stackUnits=(1., 1., aspect), autoscale=False, show_window=True)
 
                 print("Loading stack into Spimagine...")
                 datamodel.setContainer(NumpyData(stack))
@@ -185,57 +182,52 @@ def render(input_path, output_path, channels=None, slicing=None, overwrite=False
                 win.transform.setAlphaPow(alpha)
                 win.transform.setBox(box)
 
-
-                if cut=='left':
+                if cut == 'left':
                     win.transform.setBounds(effcutpos, 1, -1, 1, -1, 1)
-                elif cut=='right':
+                elif cut == 'right':
                     win.transform.setBounds(-1, effcutpos, -1, 1, -1, 1)
-                elif cut=='top':
+                elif cut == 'top':
                     win.transform.setBounds(-1, 1, effcutpos, 1, -1, 1)
-                elif cut=='bottom':
+                elif cut == 'bottom':
                     win.transform.setBounds(-1, 1, -1, effcutpos, -1, 1)
-                elif cut=='front':
+                elif cut == 'front':
                     win.transform.setBounds(-1, 1, -1, 1, effcutpos, 1)
-                elif cut=='back':
+                elif cut == 'back':
                     win.transform.setBounds(-1, 1, -1, 1, -1, effcutpos)
-                elif cut=='centerx':
-                    win.transform.setBounds(-0.25-effcutpos, 0.25+effcutpos, -1, 1, -1, 1)
-                elif cut=='centery':
-                    win.transform.setBounds(-1, 1, -0.25-effcutpos, 0.25+effcutpos, -1, 1)
-                elif cut=='centerz':
-                    win.transform.setBounds(-1, 1, -1, 1, -0.25-effcutpos, 0.25+effcutpos)
-                elif cut=='none':
+                elif cut == 'centerx':
+                    win.transform.setBounds(-0.25 - effcutpos, 0.25 + effcutpos, -1, 1, -1, 1)
+                elif cut == 'centery':
+                    win.transform.setBounds(-1, 1, -0.25 - effcutpos, 0.25 + effcutpos, -1, 1)
+                elif cut == 'centerz':
+                    win.transform.setBounds(-1, 1, -1, 1, -0.25 - effcutpos, 0.25 + effcutpos)
+                elif cut == 'none':
                     win.transform.setBounds(-1, 1, -1, 1, -1, 1)
-
 
                 win.transform.setRotation(0, 1, 0, 0)
 
                 for character in irot:
                     if character == 'x':
                         print(f"Rotating along x axis by 45 deg (prev quatRot={win.transform.quatRot})")
-                        win.transform.addRotation(0.5* math.pi / 4, 1, 0, 0)
+                        win.transform.addRotation(0.5 * math.pi / 4, 1, 0, 0)
                     elif character == 'y':
                         print(f"Rotating along y axis by 45 deg (prev quatRot={win.transform.quatRot})")
-                        win.transform.addRotation(0.5*math.pi / 4, 0, 1, 0)
+                        win.transform.addRotation(0.5 * math.pi / 4, 0, 1, 0)
                     elif character == 'z':
                         print(f"Rotating along z axis by 45 deg (prev quatRot={win.transform.quatRot})")
-                        win.transform.addRotation(0.5*math.pi / 4, 0, 0, 1)
+                        win.transform.addRotation(0.5 * math.pi / 4, 0, 0, 1)
                 print(f"Rotation after initial axis rotation: {win.transform.quatRot}")
 
                 if 'x' in raxis:
                     print(f"Rotating along x axis by {angle} deg (prev quatRot={win.transform.quatRot})")
-                    win.transform.addRotation(0.5*angle * (math.pi / 180), 1, 0, 0)
+                    win.transform.addRotation(0.5 * angle * (math.pi / 180), 1, 0, 0)
                 if 'y' in raxis:
                     print(f"Rotating along y axis by {angle} deg (prev quatRot={win.transform.quatRot})")
-                    win.transform.addRotation(0.5*angle * (math.pi / 180), 0, 1, 0)
+                    win.transform.addRotation(0.5 * angle * (math.pi / 180), 0, 1, 0)
                 if 'z' in raxis:
                     print(f"Rotating along z axis by {angle} deg (prev quatRot={win.transform.quatRot})")
-                    win.transform.addRotation(0.5*angle * (math.pi / 180), 0, 0, 1)
+                    win.transform.addRotation(0.5 * angle * (math.pi / 180), 0, 0, 1)
 
                 print(f"Final rotation: {win.transform.quatRot}")
-
-
-
 
                 print(f"Saving frame: {filename}")
                 win.saveFrame(filename)

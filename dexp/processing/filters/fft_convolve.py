@@ -1,4 +1,3 @@
-
 import numpy
 
 from dexp.processing.backends.backend import Backend
@@ -7,8 +6,9 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 
 def fft_convolve(backend: Backend,
                  image1, image2,
+                 mode: str = None,
                  in_place: bool = True,
-                 internal_dtype = numpy.float16):
+                 internal_dtype=numpy.float16):
     """
     Fast FFT based convolution.
 
@@ -17,6 +17,7 @@ def fft_convolve(backend: Backend,
     backend : Backend to use for computation
     image1 : First image
     image2 : Second image
+    mode : Not supported!
     in_place : If true then the two input images might be modified and reused for the result.
 
     Returns

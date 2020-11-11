@@ -1,7 +1,6 @@
 import cupy
-from cupyx.scipy.ndimage import convolve
-
 from aydin.it.deconvolution.lr_deconv import ImageTranslatorLRDeconv
+from cupyx.scipy.ndimage import convolve
 
 
 class ImageTranslatorLRDeconvCupy(ImageTranslatorLRDeconv):

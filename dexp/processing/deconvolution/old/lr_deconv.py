@@ -2,10 +2,8 @@ import math
 from abc import abstractmethod
 
 import numpy
-from numpy.fft import ifftshift, ifftn, fftshift
-
 from aydin.it.deconvolution.base_deconv import ImageTranslatorDeconvBase
-from aydin.util.log.log import lprint, lsection
+from aydin.util.log.log import lprint
 from aydin.util.offcore.offcore import offcore_array
 
 
@@ -20,14 +18,14 @@ class ImageTranslatorLRDeconv(ImageTranslatorDeconvBase):
     """
 
     def __init__(
-        self,
-        *args,
-        max_num_iterations=50,
-        max_correction=8,
-        power=1,
-        back_projection='tpsf',
-        no_fft=False,
-        **kwargs,
+            self,
+            *args,
+            max_num_iterations=50,
+            max_correction=8,
+            power=1,
+            back_projection='tpsf',
+            no_fft=False,
+            **kwargs,
     ):
         """
         Constructs a Lucy Richardson deconvolution image translator.
@@ -140,9 +138,9 @@ class ImageTranslatorLRDeconv(ImageTranslatorDeconvBase):
 
                     relative_blur[
                         relative_blur > self.max_correction
-                    ] = self.max_correction
+                        ] = self.max_correction
                     relative_blur[relative_blur < 1 / self.max_correction] = (
-                        1 / self.max_correction
+                            1 / self.max_correction
                     )
 
                     if self.power != 1.0:

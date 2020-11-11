@@ -9,7 +9,7 @@ from dexp.datasets.operations.isonet import dataset_isonet
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
-@click.option('--slicing', '-s', default=None , help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
+@click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
 @click.option('--store', '-st', default=_default_store, help='Store: ‘dir’, ‘zip’', show_default=True)
 @click.option('--codec', '-z', default=_default_codec, help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ', show_default=True)  #
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
@@ -35,17 +35,17 @@ def isonet(input_path, output_path, slicing, store, codec, clevel, overwrite, co
     print(f"Saving dataset to: {output_path} with zarr format... ")
     time_start = time()
     dataset_isonet(input_dataset,
-           output_path,
-           slicing=slicing,
-           store=store,
-           compression=codec,
-           compression_level=clevel,
-           overwrite=overwrite,
-           context=context,
-           mode=mode,
-           max_epochs=max_epochs,
-           check=check
-           )
+                   output_path,
+                   slicing=slicing,
+                   store=store,
+                   compression=codec,
+                   compression_level=clevel,
+                   overwrite=overwrite,
+                   context=context,
+                   mode=mode,
+                   max_epochs=max_epochs,
+                   check=check
+                   )
 
     time_stop = time()
     print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")

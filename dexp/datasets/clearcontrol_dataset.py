@@ -38,7 +38,7 @@ class CCDataset(BaseDataset):
                     self._index_files[channel] = join(folder, file)
 
         # print(self._channels)
-        #print(self._index_files)
+        # print(self._index_files)
 
         self._nb_time_points = {}
         self._times_sec = {}
@@ -122,7 +122,7 @@ class CCDataset(BaseDataset):
             return numpy.zeros(shape[1:], dtype=uint16)
 
     def close(self):
-        #Nothing to do...
+        # Nothing to do...
         pass
 
     def channels(self):
@@ -130,12 +130,12 @@ class CCDataset(BaseDataset):
 
     def shape(self, channel: str, time_point: int = 0) -> Sequence[int]:
         if (channel, time_point) in self._shapes:
-            return (self._nb_time_points[channel],)+self._shapes[(channel, time_point)]
+            return (self._nb_time_points[channel],) + self._shapes[(channel, time_point)]
         else:
             return ()
 
     def chunks(self, channel: str) -> Sequence[int]:
-        return (1,)*len(self.shape())
+        return (1,) * len(self.shape())
 
     def tree(self) -> str:
         tree_str = f"CC dataset at: {self.folder}"
@@ -152,8 +152,7 @@ class CCDataset(BaseDataset):
         else:
             return self.tree()
 
-
-    def get_array(self, channel: str, per_z_slice:bool = True, wrap_with_dask: bool = False):
+    def get_array(self, channel: str, per_z_slice: bool = True, wrap_with_dask: bool = False):
 
         if False:
             # For some reason this is slower, should have been faster!:
@@ -204,9 +203,5 @@ class CCDataset(BaseDataset):
         return stack
 
     def check_integrity(self) -> bool:
-        #TODO: actually implement!
+        # TODO: actually implement!
         return True
-
-
-
-

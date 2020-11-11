@@ -40,15 +40,15 @@ class BaseDataset(ABC):
         pass
 
     @abstractmethod
-    def shape(self, channel:str) -> Sequence[int]:
+    def shape(self, channel: str) -> Sequence[int]:
         pass
 
     @abstractmethod
-    def chunks(self, channel:str) -> Sequence[int]:
+    def chunks(self, channel: str) -> Sequence[int]:
         pass
 
     @abstractmethod
-    def dtype(self, channel:str):
+    def dtype(self, channel: str):
         pass
 
     @abstractmethod
@@ -56,33 +56,17 @@ class BaseDataset(ABC):
         pass
 
     @abstractmethod
-    def info(self, channel:str =None) -> str:
+    def info(self, channel: str = None) -> str:
         pass
 
     @abstractmethod
-    def get_array(self, channel:str, per_z_slice:bool = False, wrap_with_dask: bool = False):
+    def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False):
         pass
 
     @abstractmethod
-    def get_stack(self, channel:str, time_point:int , per_z_slice:bool = False):
+    def get_stack(self, channel: str, time_point: int, per_z_slice: bool = False):
         pass
 
     @abstractmethod
     def check_integrity(self) -> bool:
         pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

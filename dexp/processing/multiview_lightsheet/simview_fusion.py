@@ -22,7 +22,7 @@ def simview_fuse_2I2D(backend: Backend,
                       zero_level: float = 120,
                       fusion='tg',
                       fusion_bias_exponent: int = 2,
-                      fusion_bias_strength:float = 0.1,
+                      fusion_bias_strength: float = 0.1,
                       registration_model: PairwiseRegistrationModel = None,
                       dehaze_size: int = 65,
                       dark_denoise_threshold: int = 80,
@@ -137,12 +137,12 @@ def simview_fuse_2I2D(backend: Backend,
             del C1Lx
             gc.collect()
 
-        if dehaze_size>0:
+        if dehaze_size > 0:
             with timeit(f"Dehaze CxLx ..."):
                 CxLx = dehaze(backend, CxLx, size=dehaze_size, minimal_zero_level=0)
                 gc.collect()
 
-        if dark_denoise_threshold>0:
+        if dark_denoise_threshold > 0:
             with timeit(f"Denoise dark regions of CxLx..."):
                 CxLx = clean_dark_regions(backend, CxLx, size=dark_denoise_size,
                                           threshold=dark_denoise_threshold)

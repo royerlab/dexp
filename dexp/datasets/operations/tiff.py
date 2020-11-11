@@ -9,15 +9,14 @@ from dexp.utils.timeit import timeit
 
 
 def dataset_tiff(dataset,
-         path,
-         channels,
-         slicing,
-         overwrite,
-         project,
-         one_file_per_first_dim,
-         clevel,
-         workers):
-
+                 path,
+                 channels,
+                 slicing,
+                 overwrite,
+                 project,
+                 one_file_per_first_dim,
+                 clevel,
+                 workers):
     selected_channels = dataset._selected_channels(channels)
 
     print(f"getting Dask arrays for channels {selected_channels}")
@@ -32,7 +31,6 @@ def dataset_tiff(dataset,
         # project is the axis for projection, but here we are not considering the T dimension anymore...
         print(f"Projecting along axis {project}")
         arrays = list([array.max(axis=project) for array in arrays])
-
 
     if one_file_per_first_dim:
         print(f"Saving one TIFF file for each tp (or Z if already sliced) to: {path}.")
@@ -72,4 +70,3 @@ def dataset_tiff(dataset,
                     stack = stack.compute()
                     tif.save(stack)
                     tp += 1
-

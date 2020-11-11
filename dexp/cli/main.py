@@ -12,6 +12,7 @@ _default_store = 'dir'
 _default_clevel = 3
 _default_codec = 'zstd'
 
+
 def _get_dataset_from_path(input_path):
     if exists(join(input_path, 'stacks')):
         input_dataset = CCDataset(input_path)
@@ -19,12 +20,14 @@ def _get_dataset_from_path(input_path):
         input_dataset = ZDataset(input_path)
     return input_dataset
 
+
 def _get_folder_name_without_end_slash(input_path):
     if input_path.endswith('/') or input_path.endswith('\\'):
         input_path = input_path[:-1]
     return input_path
 
-def _parse_slicing(slicing:str):
+
+def _parse_slicing(slicing: str):
     if slicing is not None:
         print(f"Slicing: {slicing}")
         dummy = s_[1, 2]
@@ -41,6 +44,7 @@ def cli():
     print("")
     pass
 
+
 from dexp.cli.commands.check import check
 from dexp.cli.commands.copy import copy
 from dexp.cli.commands.add import add
@@ -55,7 +59,6 @@ from dexp.cli.commands.blend import blend
 from dexp.cli.commands.stack import stack
 from dexp.cli.commands.mp4 import mp4
 
-
 cli.add_command(check)
 cli.add_command(copy)
 cli.add_command(add)
@@ -69,31 +72,3 @@ cli.add_command(render)
 cli.add_command(blend)
 cli.add_command(stack)
 cli.add_command(mp4)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

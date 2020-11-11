@@ -1,26 +1,26 @@
 import numpy
 from skimage.transform import downscale_local_mean
+
 from dexp.utils.timeit import timeit
 
 
 def dataset_isonet(dataset,
-           path,
-           channel,
-           slicing,
-           store,
-           compression,
-           compression_level,
-           overwrite,
-           context,
-           mode,
-           dxy,
-           dz,
-           binning,
-           sharpening,
-           training_tp_index,
-           max_epochs,
-           check):
-
+                   path,
+                   channel,
+                   slicing,
+                   store,
+                   compression,
+                   compression_level,
+                   overwrite,
+                   context,
+                   mode,
+                   dxy,
+                   dz,
+                   binning,
+                   sharpening,
+                   training_tp_index,
+                   max_epochs,
+                   check):
     if channel is None:
         channel = 'fused'
 
@@ -46,7 +46,6 @@ def dataset_isonet(dataset,
     print(f"PSF (along xy): {psf}")
     from dexp.processing.isonet import IsoNet
     isonet = IsoNet(context, subsampling=subsampling)
-
 
     if 'p' in mode:
         training_array_tp = array[training_tp_index].compute()
@@ -84,7 +83,7 @@ def dataset_isonet(dataset,
                 print(f'Result: image of shape: {array_tp.shape}, dtype: {array_tp.dtype} ')
 
                 if zarr_array is None:
-                    shape = (array.shape[0],)+array_tp.shape
+                    shape = (array.shape[0],) + array_tp.shape
                     print(f"Creating Zarr array of shape: {shape} ")
                     zarr_array = dest_dataset.add_channel(name=channel,
                                                           shape=shape,

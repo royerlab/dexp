@@ -1,10 +1,8 @@
 import tempfile
 from os.path import join
-from time import time
 
 import napari
-from napari import Viewer, gui_qt
-from numpy import s_
+from napari import Viewer
 from skimage.data import binary_blobs
 from skimage.filters import gaussian
 
@@ -15,7 +13,7 @@ def demo():
     with tempfile.TemporaryDirectory() as tmpdir:
         print('created temporary directory', tmpdir)
 
-        zdataset = ZDataset(path=join(tmpdir,'test.zarr'),
+        zdataset = ZDataset(path=join(tmpdir, 'test.zarr'),
                             mode='w',
                             store='dir')
 
@@ -51,15 +49,12 @@ def demo():
             viewer.add_image(array1, name='array_first')
             viewer.add_image(array2, name='array_second')
 
-
-
         zdataset.close()
         del zdataset
         del array1
         del array2
 
-
-        zdataset_read = ZDataset(path=join(tmpdir,'test.zarr'),
+        zdataset_read = ZDataset(path=join(tmpdir, 'test.zarr'),
                                  mode='r')
 
         array1 = zdataset_read.get_array('first')
@@ -67,7 +62,6 @@ def demo():
 
         print(array1.info)
         print(array2.info)
-
 
         with napari.gui_qt():
             viewer = Viewer()

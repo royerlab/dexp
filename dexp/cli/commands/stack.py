@@ -14,13 +14,12 @@ import numpy
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, set to -1 for maximum number of workers', show_default=True)  #
 def stack(input_paths, output_path, orientation, overwrite, workers):
-
-    if workers <=0 :
-        workers = os.cpu_count()//2
+    if workers <= 0:
+        workers = os.cpu_count() // 2
 
     if output_path is None:
-        basename = '_'.join([os.path.basename(os.path.normpath(p)).replace('frames_','') for p in input_paths])
-        output_path = 'frames_'+basename
+        basename = '_'.join([os.path.basename(os.path.normpath(p)).replace('frames_', '') for p in input_paths])
+        output_path = 'frames_' + basename
 
     os.makedirs(output_path, exist_ok=True)
 

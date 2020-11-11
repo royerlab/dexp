@@ -73,6 +73,5 @@ def _test_translation_model(backend, length_xy=128):
     assert new_model.integral == model.integral
 
 
-
 test_translation_model_cupy()
 test_translation_model_numpy()
