@@ -1,6 +1,6 @@
 import numpy
 
-from dexp.optics.psf.standard_psfs import SimpleMicroscopePSF, nikon16x08na, olympus20x10na
+from dexp.optics.psf.standard_psfs import nikon16x08na
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
@@ -35,14 +35,14 @@ def _demo_lr_deconvolution(backend, length_xy=128):
                                                                       add_offset=False)
 
     psf = nikon16x08na()
-    #psf = olympus20x10na()
+    # psf = olympus20x10na()
     psf = psf.astype(dtype=numpy.float16)
     image = image.astype(dtype=numpy.float16)
 
     blurry = fft_convolve(backend, image, psf)
     blurry = blurry - blurry.min()
     blurry = blurry / blurry.max()
-    noisy  = blurry
+    noisy = blurry
     noisy = noisy + 0.1 * xp.random.uniform(size=blurry.shape)
 
     iterations = 50
@@ -63,7 +63,7 @@ def _demo_lr_deconvolution(backend, length_xy=128):
         return lucy_richardson_deconvolution(backend, image, psf, num_iterations=iterations, padding=16, power=2, blind_spot=3)
 
     with timeit("lucy_richardson_deconvolution (scatter-gather)"):
-        deconvolved_blind_spot_power_sg = scatter_gather(backend, f, noisy, chunks=length_xy//4, margins=17, to_numpy=True)
+        deconvolved_blind_spot_power_sg = scatter_gather(backend, f, noisy, chunks=length_xy // 4, margins=17, to_numpy=True)
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -83,4 +83,4 @@ def _demo_lr_deconvolution(backend, length_xy=128):
 
 
 demo_lr_deconvolution_cupy()
-# demo_lr_deconvolution_numpy()
+demo_lr_deconvolution_numpy()

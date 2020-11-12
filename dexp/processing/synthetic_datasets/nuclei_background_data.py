@@ -33,7 +33,7 @@ def generate_nuclei_background_data(backend: Backend,
             background = background / xp.max(background)
 
     with timeit("generate two views via blending"):
-        if background_stength>0:
+        if background_stength > 0:
             image = image_gt + background_stength * background
         else:
             image = image_gt
@@ -51,7 +51,7 @@ def generate_nuclei_background_data(backend: Backend,
             image = backend.to_backend(image)
 
     with timeit("scale image intensities"):
-        zero_level = (1 if add_offset else 0)*xp.random.uniform(95, 10, size=image_gt.shape)
+        zero_level = (1 if add_offset else 0) * xp.random.uniform(95, 10, size=image_gt.shape)
         image = zero_level + 300 * image
 
     return image_gt.astype('f4', copy=False), \

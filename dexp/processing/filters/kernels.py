@@ -1,6 +1,7 @@
 import numpy
 
 from dexp.processing.backends.backend import Backend
+from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
 def gaussian_kernel_2d(backend: Backend, size: int = 5, sigma: float = 1.0, dtype=numpy.float16):
@@ -26,7 +27,7 @@ def gaussian_kernel_2d(backend: Backend, size: int = 5, sigma: float = 1.0, dtyp
     return kernel
 
 
-def gaussian_kernel_nd(backend: Backend, ndim:int = 3, size: int = 5, sigma: float = 1.0, dtype=numpy.float16):
+def gaussian_kernel_nd(backend: Backend, ndim: int = 3, size: int = 5, sigma: float = 1.0, dtype=numpy.float16):
     """
     Computes a nD Gaussian kernel
     Parameters
@@ -44,7 +45,10 @@ def gaussian_kernel_nd(backend: Backend, ndim:int = 3, size: int = 5, sigma: flo
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
-    kernel = xp.zeros(shape=(size,)*ndim, dtype=dtype)
+    if type(backend) is NumpyBackend:
+        dtype = numpy.float32
+
+    kernel = xp.zeros(shape=(size,) * ndim, dtype=dtype)
     kernel[(slice(size // 2, size // 2 + 1, None),) * ndim] = 1
     kernel = sp.ndimage.gaussian_filter(kernel, sigma=sigma)
 

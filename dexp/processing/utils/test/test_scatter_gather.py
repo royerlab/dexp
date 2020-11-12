@@ -1,4 +1,3 @@
-import cupy
 import numpy
 
 from dexp.processing.backends.cupy_backend import CupyBackend
@@ -32,7 +31,7 @@ def _test_scatter_gather(backend, ndim=3, length_xy=128, splits=4, filter_size=7
     try:
         with timeit("f"):
             result_ref = backend.to_numpy(f(backend.to_backend(image)))
-    except cupy.cuda.memory.OutOfMemoryError:
+    except:
         print("Can't run this, not enough GPU memory!")
         result_ref = 0 * image
 

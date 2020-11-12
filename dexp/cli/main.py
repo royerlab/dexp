@@ -1,4 +1,3 @@
-
 from os.path import join, exists
 
 import click
@@ -15,11 +14,15 @@ _default_codec = 'zstd'
 
 import sys
 import logging
+
+
 def log_uncaught_exceptions(exception_type, exception, tb):
     import traceback
     logging.critical(''.join(traceback.format_tb(tb)))
     logging.critical('{0}: {1}'.format(exception_type, exception))
+
 sys.excepthook = log_uncaught_exceptions
+
 
 
 def _get_dataset_from_path(input_path):

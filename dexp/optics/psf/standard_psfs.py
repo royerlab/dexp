@@ -3,7 +3,7 @@ import numpy
 from dexp.optics.psf.microscope_psf import MicroscopePSF
 
 
-def nikon16x08na(xy_size = 17, z_size=17, dxy=0.485, dz=2, wvl=0.561):
+def nikon16x08na(xy_size=17, z_size=17, dxy=0.485, dz=2, wvl=0.561):
     return generate_psf(dxy=dxy,
                         dz=dz,
                         xy_size=xy_size,
@@ -15,7 +15,8 @@ def nikon16x08na(xy_size = 17, z_size=17, dxy=0.485, dz=2, wvl=0.561):
                         tl=165.0 * 1.0e+3,
                         wvl=wvl)
 
-def olympus20x10na(xy_size = 17, z_size=17, dxy=0.439, dz=1.5, wvl=0.561):
+
+def olympus20x10na(xy_size=17, z_size=17, dxy=0.439, dz=1.5, wvl=0.561):
     return generate_psf(dxy=dxy,
                         dz=dz,
                         xy_size=xy_size,
@@ -26,7 +27,6 @@ def olympus20x10na(xy_size = 17, z_size=17, dxy=0.439, dz=1.5, wvl=0.561):
                         wd=2000,
                         tl=133.0 * 1.0e+3,
                         wvl=wvl)
-
 
 
 def generate_psf(dxy, dz, xy_size, z_size, M=16, NA=0.8, n=1.33, wd=3000, tl=133.0 * 1.0e+3, wvl=561.):

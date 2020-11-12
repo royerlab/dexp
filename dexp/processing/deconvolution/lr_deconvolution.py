@@ -4,7 +4,6 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels import gaussian_kernel_nd
-from dexp.processing.utils.element_wise_affine import element_wise_affine
 from dexp.processing.utils.nan_to_num import nan_to_zero
 from dexp.processing.utils.normalise import normalise
 
@@ -21,6 +20,7 @@ def lucy_richardson_deconvolution(backend: Backend,
                                   normalise_input: bool = True,
                                   clip_output: bool = True,
                                   blind_spot: int = 0,
+                                  blind_spot_mode: str = 'median',
                                   convolve_method=fft_convolve,
                                   internal_dtype=numpy.float16):
     """
@@ -38,7 +38,8 @@ def lucy_richardson_deconvolution(backend: Backend,
     padding : padding (see numpy/cupy pad function)
     padding_mode : padding mode (see numpy/cupy pad function)
     normalise_input : This deconvolution code assumes values within [0, 1], by default input images are normalised to that range, but if already normalised, then normalisation can be ommited.
-    blind_spot : If zero, blind-spot is disabled. If blind_spot>0 it si active and the integer represents the blind-spot kernel support. A value of 3 or 5 are good and help reduce the impact of noise on deconvolution.
+    blind_spot : If zero, blind-spot is disabled. If blind_spot>0 it is active and the integer represents the blind-spot kernel support. A value of 3 or 5 are good and help reduce the impact of noise on deconvolution.
+    blind_spot_mode : blind spot mode, can be 'mean' or 'median'
     convolve_method : convolution method to use
     clip_output : By default the output is clipped to the input image range.
     internal_dtype : dtype to use internally for computation.
@@ -63,20 +64,22 @@ def lucy_richardson_deconvolution(backend: Backend,
     psf = backend.to_backend(psf, dtype=internal_dtype)
 
     if blind_spot > 0:
-        if 2*(blind_spot//2) == blind_spot:
+        if 2 * (blind_spot // 2) == blind_spot:
             raise ValueError(f"Blind spot size must be an odd integer, blind_spot={blind_spot} is not!")
-        full_kernel = xp.ones(shape=(blind_spot,)*image.ndim, dtype=internal_dtype)
+        full_kernel = xp.ones(shape=(blind_spot,) * image.ndim, dtype=internal_dtype)
         # some experiments suggests that a uniform donut filter works better
         full_kernel = gaussian_kernel_nd(backend, ndim=image.ndim, size=blind_spot, sigma=1)
         full_kernel = full_kernel / full_kernel.sum()
         donut_kernel = full_kernel.copy()
-        donut_kernel[(slice(blind_spot//2, blind_spot//2+1, None),)*image.ndim] = 0
+        donut_kernel[(slice(blind_spot // 2, blind_spot // 2 + 1, None),) * image.ndim] = 0
         donut_kernel = donut_kernel / donut_kernel.sum()
-        #psf_original = psf.copy()
+        # psf_original = psf.copy()
         psf = sp.ndimage.convolve(psf, donut_kernel)
         psf = psf / psf.sum()
-        image = fft_convolve(backend, image, donut_kernel)
-
+        if blind_spot_mode == 'median':
+            image = sp.ndimage.filters.median_filter(image, size=blind_spot)
+        elif blind_spot_mode == 'mean':
+            image = sp.ndimage.convolve(backend, image, donut_kernel)
 
         # from napari import Viewer, gui_qt
         # with gui_qt():
@@ -90,7 +93,6 @@ def lucy_richardson_deconvolution(backend: Backend,
         #     viewer.add_image(_c(psf), name='psf')
         #     viewer.add_image(_c(sp.ndimage.convolve(psf, full_kernel)), name='psf_for_backproj')
         #     viewer.add_image(_c(back_projector), name='psf')
-
 
     if back_projection == 'tpsf':
         back_projector = xp.flip(psf.copy())
@@ -131,8 +133,11 @@ def lucy_richardson_deconvolution(backend: Backend,
         relative_blur = image / convolved
 
         # replace Nans with zeros:
-        #zeros = convolved == 0 #relative_blur[zeros] = 0
+        # zeros = convolved == 0 #relative_blur[zeros] = 0
         relative_blur = nan_to_zero(backend, relative_blur, copy=False)
+
+        if power != 1.0:
+            relative_blur **= power
 
         relative_blur[
             relative_blur > max_correction
@@ -141,8 +146,8 @@ def lucy_richardson_deconvolution(backend: Backend,
                 1 / max_correction
         )
 
-        if power != 1.0:
-            relative_blur **= power
+        #if power != 1.0:
+        #    relative_blur **= power
 
         multiplicative_correction = convolve_method(
             backend,
@@ -150,6 +155,8 @@ def lucy_richardson_deconvolution(backend: Backend,
             back_projector,
             mode='valid' if padding else 'same',
         )
+
+
 
         result *= multiplicative_correction
 

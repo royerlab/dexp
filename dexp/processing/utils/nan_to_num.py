@@ -1,5 +1,3 @@
-import numpy
-
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -28,4 +26,3 @@ def nan_to_zero(backend: Backend, array, copy=True):
     elif type(backend) is CupyBackend:
         import cupy
         return cupy.nan_to_num(array)
-

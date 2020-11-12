@@ -2,15 +2,13 @@
 # as produced for example by: dexp tiff -w -s [128:129] dataset.zarr -o /home/royer/Desktop/test_data/test_data.tiff
 import time
 
-import numpy
 from napari import gui_qt, Viewer
 from tifffile import imread
 
-from dexp.optics.psf.standard_psfs import SimpleMicroscopePSF, nikon16x08na
+from dexp.optics.psf.standard_psfs import nikon16x08na
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
-from dexp.processing.multiview_lightsheet.simview_fusion import simview_fuse_2I2D
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
 from dexp.processing.utils.scatter_gather import scatter_gather
@@ -44,15 +42,13 @@ def simview_deconv(backend):
     with timeit(f"Dehaze view ..."):
         view_dehazed = dehaze(backend, view, size=65, minimal_zero_level=0)
 
-
     with timeit(f"Denoise dark regions of CxLx..."):
         dark_denoise_threshold: int = 80
         dark_denoise_size: int = 9
         view_dehazed_darkdenoised = clean_dark_regions(backend,
-                                  view_dehazed,
-                                  size=dark_denoise_size,
-                                  threshold=dark_denoise_threshold)
-
+                                                       view_dehazed,
+                                                       size=dark_denoise_size,
+                                                       threshold=dark_denoise_threshold)
 
     psf = nikon16x08na()
 
@@ -66,9 +62,7 @@ def simview_deconv(backend):
                                              blind_spot=3)
 
     with timeit("lucy_richardson_deconvolution"):
-
         view_dehazed_darkdenoised_deconvolved = scatter_gather(backend, f, view_dehazed_darkdenoised, chunks=512, margins=17, to_numpy=True)
-
 
     with gui_qt():
         def _c(array):

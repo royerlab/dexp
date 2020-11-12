@@ -1,7 +1,5 @@
 from typing import Tuple, Union
 
-import numpy
-
 from dexp.processing.backends.backend import Backend
 from dexp.processing.utils.nd_slice import nd_split_slices, remove_margin_slice
 

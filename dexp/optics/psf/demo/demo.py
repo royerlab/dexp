@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from pprint import pprint
 
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
 
@@ -10,7 +9,6 @@ def demo_standard_psfs():
     """
     nikon16x08na_psf = nikon16x08na()
     olympus20x10na_psf = olympus20x10na()
-
 
     import napari
 

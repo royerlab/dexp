@@ -62,10 +62,10 @@ def dataset_deconv(dataset,
         #                                   z_size=z_size)
         # psf_kernel /= psf_kernel.sum()
 
-        psf_kwargs = {'dxy':dxy * (2 if downscalexy2 else 1),
-                      'dz':dz,
-                      'xy_size':xy_size,
-                      'z_size':z_size}
+        psf_kwargs = {'dxy': dxy * (2 if downscalexy2 else 1),
+                      'dz': dz,
+                      'xy_size': xy_size,
+                      'z_size': z_size}
 
         if objective == 'nikon16x08na':
             psf_kernel = nikon16x08na(**psf_kwargs)
@@ -93,7 +93,7 @@ def dataset_deconv(dataset,
                                                              blind_spot=blind_spot)
 
                     with timeit("lucy_richardson_deconvolution"):
-                        tp_array = scatter_gather(backend, f, tp_array, chunks=chunksize, margins=max(xy_size, z_size)//2)
+                        tp_array = scatter_gather(backend, f, tp_array, chunks=chunksize, margins=max(xy_size, z_size) // 2)
                 else:
                     raise ValueError(f"Unknown deconvolution mode: {method}")
 

@@ -1,8 +1,6 @@
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.kernels import gaussian_kernel_nd
-from dexp.processing.filters.sobel import sobel_magnitude_filter
-from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 
 
 def demo_kernels_numpy():
@@ -19,7 +17,6 @@ def demo_kernels_cupy():
 
 
 def _demo_kernels(backend):
-
     gaussian_kernel = gaussian_kernel_nd(backend, size=5, sigma=1)
 
     from napari import Viewer, gui_qt
@@ -29,7 +26,6 @@ def _demo_kernels(backend):
 
         viewer = Viewer()
         viewer.add_image(_c(gaussian_kernel), name='gaussian_kernel')
-
 
 
 demo_kernels_cupy()

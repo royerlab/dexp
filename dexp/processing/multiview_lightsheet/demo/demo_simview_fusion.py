@@ -6,13 +6,9 @@ import numpy
 from napari import gui_qt, Viewer
 from tifffile import imread
 
-from dexp.optics.psf.standard_psfs import SimpleMicroscopePSF
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.multiview_lightsheet.simview_fusion import simview_fuse_2I2D
-from dexp.processing.utils.scatter_gather import scatter_gather
-from dexp.utils.timeit import timeit
 
 filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'
 
@@ -47,12 +43,11 @@ def simview_fusion(backend):
     C1L1 = numpy.flip(C1L1, -1)
 
     CxLx, shifts = simview_fuse_2I2D(backend, C0L0, C0L1, C1L0, C1L1)
-    #CxLx = CxLx.astype(numpy.float32)
+    # CxLx = CxLx.astype(numpy.float32)
     print(f"Shifts = {shifts}")
 
     stop = time.time()
     print(f"Elapsed fusion time:  {stop - start} (includes loading)")
-
 
     CxLx = backend.to_numpy(CxLx)
     #
@@ -74,7 +69,6 @@ def simview_fusion(backend):
     #
     # with timeit("lucy_richardson_deconvolution"):
     #     CxLx_deconvolved = scatter_gather(backend, f, CxLx, chunks=512, margins=17//2, to_numpy=True)
-
 
     with gui_qt():
         def _c(array):

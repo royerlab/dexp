@@ -26,14 +26,26 @@ def _demo_lr_deconvolution(backend):
     image = camera().astype(numpy.float32) / 255
     psf = gaussian_kernel_2d(NumpyBackend(), 9, 2, numpy.float32)
     blurry = fft_convolve(NumpyBackend(), image, psf)
-    blurry = blurry-blurry.min()
-    blurry = blurry/blurry.max()
+    blurry = blurry - blurry.min()
+    blurry = blurry / blurry.max()
     noisy = random_noise(blurry, mode="gaussian", var=0.001, seed=0, clip=False)
-    #noisy = random_noise(noisy, mode="s&p", amount=0.001, seed=0, clip=False)
+    noisy = random_noise(noisy, mode="s&p", amount=0.001, seed=0, clip=False)
 
-    deconvolved = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=120, padding=16)
-    deconvolved_power = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=120, padding=16, power=1.5)
-    deconvolved_blind_spot = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=120, padding=16, blind_spot=5)
+    iterations = 60
+
+    deconvolved = lucy_richardson_deconvolution(backend, noisy, psf,
+                                                num_iterations=iterations,
+                                                padding=16)
+    deconvolved_power = lucy_richardson_deconvolution(backend, noisy, psf,
+                                                      num_iterations=iterations,
+                                                      padding=16,
+                                                      power=1,
+                                                      blind_spot=3)
+    deconvolved_blind_spot = lucy_richardson_deconvolution(backend, noisy, psf,
+                                                           num_iterations=iterations,
+                                                           padding=16,
+                                                           power=1.5,
+                                                           blind_spot=3)
 
     from napari import Viewer, gui_qt
     with gui_qt():
