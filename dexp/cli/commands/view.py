@@ -79,7 +79,7 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
                                      rendering='attenuated_mip')
 
             if not aspect is None:
-                layer.scale = (1, aspect, 1, 1)
+                layer.scale = (1, aspect, 1, 1) if array.ndim==4 else (aspect, 1, 1)
                 print(f"Setting aspect ratio to {aspect} (layer.scale={layer.scale})")
 
             # For some reason spome parameters refuse to be set, this solves it:

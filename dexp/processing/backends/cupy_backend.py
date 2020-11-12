@@ -12,7 +12,7 @@ class CupyBackend(Backend):
 
     def __init__(self,
                  device=0,
-                 enable_memory_pool: bool = True,
+                 enable_memory_pool: bool = False,
                  enable_cub: bool = True,
                  enable_cutensor: bool = True,
                  enable_fft_planning: bool = True,
@@ -24,9 +24,8 @@ class CupyBackend(Backend):
 
         Parameters
         ----------
-
-
         device : CUDA device to use for allocation and compute
+        enable_memory_pool : Enables cupy memory pool. By default disabled, when enabled cupy tends to return out-of-memory exceptions when handling large arrays.
         enable_cub : enables CUB accelerator
         enable_cutensor : enables cuTensor accelerator
         enable_fft_planning : enables FFT planning

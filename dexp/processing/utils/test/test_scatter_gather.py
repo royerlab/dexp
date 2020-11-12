@@ -46,11 +46,11 @@ def _test_scatter_gather(backend, ndim=3, length_xy=128, splits=4, filter_size=7
     error = numpy.linalg.norm(result.ravel() - result_ref.ravel(), ord=1) / result_ref.size
     print(f"Error = {error}")
 
-    from napari import Viewer, gui_qt
-    with gui_qt():
-        viewer = Viewer()
-        viewer.add_image(image, name='image')
-        viewer.add_image(result_ref, name='result_ref')
-        viewer.add_image(result, name='result')
+    # from napari import Viewer, gui_qt
+    # with gui_qt():
+    #     viewer = Viewer()
+    #     viewer.add_image(image, name='image')
+    #     viewer.add_image(result_ref, name='result_ref')
+    #     viewer.add_image(result, name='result')
 
     assert error < 0.0001

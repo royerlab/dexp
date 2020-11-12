@@ -1,6 +1,11 @@
 # Run this to create a new env:
 #conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; ./install_linux.sh
 
+# To install cuTensor, type:
+#sudo add-apt-repository "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+#sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+#sudo apt update
+#sudo apt -y install libcutensor1 libcutensor-dev libcutensor-doc
 
 conda config --add channels conda-forge
 conda install -y -c conda-forge ocl-icd-system

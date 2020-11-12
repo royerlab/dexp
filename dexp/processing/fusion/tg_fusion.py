@@ -6,6 +6,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.sobel import sobel_magnitude_filter
 from dexp.processing.utils.blend_images import blend_images
+from dexp.processing.utils.element_wise_affine import element_wise_affine
 from dexp.processing.utils.fit_shape import fit_to_shape
 
 
@@ -96,18 +97,20 @@ def fuse_tg_nd(backend: Backend,
     # gc.collect()
 
     # Normalise:
+
     t_min_value = min(xp.min(t_image_a), xp.min(t_image_b))
     t_max_value = max(xp.max(t_image_a), xp.max(t_image_b))
-    t_image_a -= t_min_value
-    t_image_b -= t_min_value
-    t_image_a /= (t_max_value - t_min_value)
-    t_image_b /= (t_max_value - t_min_value)
+    alpha = (1 / (t_max_value - t_min_value)).astype(internal_dtype)
+    beta = (-t_min_value / (t_max_value - t_min_value)).astype(internal_dtype)
+    t_image_a = element_wise_affine(backend, t_image_a, alpha, beta, out=t_image_a)
+    t_image_b = element_wise_affine(backend, t_image_b, alpha, beta, out=t_image_b)
+    del t_min_value, t_max_value
 
     # Add bias:
     if bias_axis is not None:
         length = t_image_a.shape[bias_axis]
         bias_vector = xp.linspace(-1, 1, num=length)
-        bias_vector = xp.sign(bias_vector) * xp.absolute(bias_vector) ** bias_exponent
+        bias_vector = xp.sign(bias_vector) * (xp.absolute(bias_vector) ** bias_exponent)
         new_shape = tuple(s if i == bias_axis else 1 for i, s in enumerate(t_image_a.shape))
         bias_vector = xp.reshape(bias_vector, newshape=new_shape)
         t_image_a -= bias_strength * bias_vector
@@ -115,17 +118,21 @@ def fuse_tg_nd(backend: Backend,
         del bias_vector
 
     # compute the absolute difference and sign:
-    diff = t_image_a - t_image_b
-    del t_image_a, t_image_b, t_min_value, t_max_value
+    diff = t_image_a
+    diff -= t_image_b
+    del t_image_b
     # gc.collect()
-    abs_diff = xp.absolute(diff) ** (1 / sharpness)
     sgn_diff = xp.sign(diff)
+    abs_diff = xp.absolute(diff, out=diff)
+    abs_diff **= 1 / sharpness
     del diff
     # gc.collect()
 
     # compute blending map:
-    blend_map = 0.5 + 0.5 * sgn_diff * abs_diff
-    del sgn_diff, abs_diff
+    blend_map = abs_diff
+    blend_map *= sgn_diff
+    blend_map = element_wise_affine(backend, blend_map, 0.5, 0.5, out=blend_map)
+    del sgn_diff
     # gc.collect()
 
     # Upscale blending map back to original size:

@@ -30,7 +30,7 @@ def element_wise_affine(backend: Backend, array, alpha, beta, out=None):
         a = array
         u = alpha
         v = beta
-        return numexpr.evaluate("u*a+v", out=out)
+        return numexpr.evaluate("u*a+v", casting='same_kind', out=out)
 
     elif type(backend) is CupyBackend:
         import cupy

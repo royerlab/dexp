@@ -208,8 +208,8 @@ def register_views(backend: Backend, C0Lx, C1Lx, mode='maxproj', integral=True, 
     C0Lx = backend.to_backend(C0Lx)
     C1Lx = backend.to_backend(C1Lx)
 
+    # we need to register if we don't have already a provided model:
     if model is None:
-
         depth = C0Lx.shape[0]
         crop = int(depth * crop_factor_along_z)
         C0Lx_c = C0Lx[crop:-crop]
@@ -220,7 +220,8 @@ def register_views(backend: Backend, C0Lx, C1Lx, mode='maxproj', integral=True, 
         elif mode == 'full':
             model = register_translation_nd(backend, C0Lx_c, C1Lx_c)
 
-    model.integral = integral
+        model.integral = integral
+
     C0Lx_reg, C1Lx_reg = model.apply(backend, C0Lx, C1Lx)
 
     return C0Lx_reg, C1Lx_reg, model

@@ -24,14 +24,16 @@ def demo_lr_deconvolution_cupy():
 
 def _demo_lr_deconvolution(backend):
     image = camera().astype(numpy.float32) / 255
-    noisy = random_noise(image, mode="gaussian", var=0.005, seed=0, clip=False)
-    noisy = random_noise(noisy, mode="s&p", amount=0.03, seed=0, clip=False)
+    psf = gaussian_kernel_2d(NumpyBackend(), 9, 2, numpy.float32)
+    blurry = fft_convolve(NumpyBackend(), image, psf)
+    blurry = blurry-blurry.min()
+    blurry = blurry/blurry.max()
+    noisy = random_noise(blurry, mode="gaussian", var=0.001, seed=0, clip=False)
+    #noisy = random_noise(noisy, mode="s&p", amount=0.001, seed=0, clip=False)
 
-    psf = gaussian_kernel_2d(backend, 9, 2, numpy.float32)
-
-    blurry = fft_convolve(backend, image, psf)
-
-    deconvolved = lucy_richardson_deconvolution(backend, blurry, psf, padding=16)
+    deconvolved = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=120, padding=16)
+    deconvolved_power = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=120, padding=16, power=1.5)
+    deconvolved_blind_spot = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=120, padding=16, blind_spot=5)
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -40,10 +42,12 @@ def _demo_lr_deconvolution(backend):
 
         viewer = Viewer()
         viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(noisy), name='noisy')
+        viewer.add_image(_c(blurry), name='blurry')
         viewer.add_image(_c(psf), name='psf')
-        viewer.add_image(_c(blurry), name='result')
+        viewer.add_image(_c(noisy), name='noisy')
         viewer.add_image(_c(deconvolved), name='deconvolved')
+        viewer.add_image(_c(deconvolved_power), name='deconvolved_power')
+        viewer.add_image(_c(deconvolved_blind_spot), name='deconvolved_blind_spot')
 
 
 demo_lr_deconvolution_cupy()

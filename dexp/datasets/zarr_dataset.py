@@ -61,7 +61,7 @@ class ZDataset(BaseDataset):
             elif isfile(path):
                 os.remove(path)
 
-        print(f"Initialising Zarr storage: '{path}'")
+        print(f"Initialising Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
         if exists(path):
             print(f"Path exists, opening zarr storage...")
             if isfile(path) and (path.endswith('.zarr.zip') or store == 'zip'):
@@ -120,7 +120,7 @@ class ZDataset(BaseDataset):
             except Exception as e:
                 raise ValueError(f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect: {path}")
         else:
-            raise ValueError(f"Invalid read/write mode for storage {path}")
+            raise ValueError(f"Invalid read/write mode or invalid path: {path} (check path!)")
 
     def _initialise_existing(self, path: str):
         self._channels = [channel for channel, _ in self._root_group.groups()]
@@ -277,9 +277,7 @@ class ZDataset(BaseDataset):
 
         """
 
-        mode = 'w' + ('' if overwrite else '-')
-
-        zdataset = ZDataset(path, mode, store)
+        zdataset = ZDataset(path, 'a', store)
         root = zdataset._root_group
 
         print(f"Existing channels: {zdataset.channels()}")

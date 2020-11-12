@@ -11,7 +11,8 @@ def generate_nuclei_background_data(backend: Backend,
                                     add_noise=True,
                                     background_stength=0.2,
                                     background_scale=0.5,
-                                    independent_haze=False):
+                                    independent_haze=False,
+                                    add_offset=True):
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
@@ -27,11 +28,15 @@ def generate_nuclei_background_data(backend: Backend,
         background = backend.to_backend(background)
 
     with timeit("prepare high/low image pair"):
-        background = sp.ndimage.gaussian_filter(background, sigma=15)
-        background = background / xp.max(background)
+        if background_stength > 0:
+            background = sp.ndimage.gaussian_filter(background, sigma=15)
+            background = background / xp.max(background)
 
     with timeit("generate two views via blending"):
-        image = image_gt + background_stength * background
+        if background_stength>0:
+            image = image_gt + background_stength * background
+        else:
+            image = image_gt
 
     if length_z_factor != 1:
         with timeit("downscale along z"):
@@ -46,7 +51,7 @@ def generate_nuclei_background_data(backend: Backend,
             image = backend.to_backend(image)
 
     with timeit("scale image intensities"):
-        zero_level = xp.random.uniform(95, 10, size=image_gt.shape)
+        zero_level = (1 if add_offset else 0)*xp.random.uniform(95, 10, size=image_gt.shape)
         image = zero_level + 300 * image
 
     return image_gt.astype('f4', copy=False), \

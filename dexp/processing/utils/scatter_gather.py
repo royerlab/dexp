@@ -42,7 +42,7 @@ def scatter_gather(backend: Backend,
         margins = (margins,) * image.ndim
 
     if to_numpy:
-        result = numpy.empty_like(image)
+        result = backend.to_numpy(image, force_copy=True)
     else:
         result = backend.get_xp_module(image).empty_like(image)
 

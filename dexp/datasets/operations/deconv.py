@@ -1,6 +1,6 @@
 from skimage.transform import downscale_local_mean
 
-from dexp.optics.psf.simple_microscope_psf import SimpleMicroscopePSF
+from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.utils.scatter_gather import scatter_gather
@@ -21,6 +21,8 @@ def dataset_deconv(dataset,
                    num_iterations,
                    max_correction,
                    power,
+                   blind_spot,
+                   objective,
                    dxy,
                    dz,
                    xy_size,
@@ -53,16 +55,26 @@ def dataset_deconv(dataset,
                                               codec=compression,
                                               clevel=compression_level)
 
-        psf = SimpleMicroscopePSF()
-        psf_kernel = psf.generate_xyz_psf(dxy=dxy * (2 if downscalexy2 else 1),
-                                          dz=dz,
-                                          xy_size=xy_size,
-                                          z_size=z_size)
-        psf_kernel /= psf_kernel.sum()
+        # psf = SimpleMicroscopePSF()
+        # psf_kernel = psf.generate_xyz_psf(dxy=dxy * (2 if downscalexy2 else 1),
+        #                                   dz=dz,
+        #                                   xy_size=xy_size,
+        #                                   z_size=z_size)
+        # psf_kernel /= psf_kernel.sum()
+
+        psf_kwargs = {'dxy':dxy * (2 if downscalexy2 else 1),
+                      'dz':dz,
+                      'xy_size':xy_size,
+                      'z_size':z_size}
+
+        if objective == 'nikon16x08na':
+            psf_kernel = nikon16x08na(**psf_kwargs)
+        elif objective == 'olympus20x10na':
+            psf_kernel = olympus20x10na(**psf_kwargs)
 
         def process(tp):
 
-            backend = CupyBackend(0)
+            backend = CupyBackend(0, enable_memory_pool=False)
 
             try:
                 print(f"Starting to process time point: {tp} ...")
@@ -77,7 +89,8 @@ def dataset_deconv(dataset,
                                                              psf=psf_kernel,
                                                              num_iterations=num_iterations,
                                                              max_correction=max_correction,
-                                                             power=power)
+                                                             power=power,
+                                                             blind_spot=blind_spot)
 
                     with timeit("lucy_richardson_deconvolution"):
                         tp_array = scatter_gather(backend, f, tp_array, chunks=chunksize, margins=max(xy_size, z_size)//2)

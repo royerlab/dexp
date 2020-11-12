@@ -22,13 +22,16 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--maxcorrection', '-mc', type=int, default=2, help='Max correction in folds per iteration. Noisy synthetic_datasets benefit from mc=2 (recommended), for noiseless synthetic_datasets you can push to mc=8 or even more.',
               show_default=True)
 @click.option('--power', '-pw', type=float, default=1.5, help='Correction exponent, default for standard LR is 1, set to 1.5 for acceleration.', show_default=True)
+@click.option('--blindspot', '-bs', type=int, default=3, help='Blindspot based noise reduction. Provide size of kernel to use, must be an odd number: 3(recommended), 5, 7. 0 means no blindspot. ', show_default=True)
+@click.option('--objective', '-obj', type=str, default='nikon16x08na', help='Microscope objective to use for computing psf, can be: nikon16x08na, olympus20x10na', show_default=True)
 @click.option('--dxy', '-dxy', type=float, default=0.485, help='Voxel size along x and y in microns', show_default=True)
 @click.option('--dz', '-dz', type=float, default=4 * 0.485, help='Voxel size along z in microns', show_default=True)
 @click.option('--xysize', '-sxy', type=int, default=17, help='Voxel size along xy in microns', show_default=True)
-@click.option('--zsize', '-sz', type=int, default=31, help='Voxel size along z in microns', show_default=True)
+@click.option('--zsize', '-sz', type=int, default=17, help='Voxel size along z in microns', show_default=True)
 @click.option('--downscalexy2', '-d', is_flag=False, help='Downscales along x and y for faster deconvolution (but worse quality of course)', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
-def deconv(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, workers, chunksize, method, iterations, maxcorrection, power, dxy, dz, xysize, zsize, downscalexy2, check):
+def deconv(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, workers, chunksize,
+           method, iterations, maxcorrection, power, blindspot, objective, dxy, dz, xysize, zsize, downscalexy2, check):
     input_dataset = _get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -63,6 +66,8 @@ def deconv(input_path, output_path, channels, slicing, store, codec, clevel, ove
                    num_iterations=iterations,
                    max_correction=maxcorrection,
                    power=power,
+                   blind_spot=blindspot,
+                   objective=objective,
                    dxy=dxy,
                    dz=dz,
                    xy_size=xysize,

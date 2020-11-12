@@ -1,28 +1,23 @@
 #!/usr/bin/env python
-"""
-Test focal scan G-L PSF.
-"""
 from pprint import pprint
 
-from dexp.optics.psf.simple_microscope_psf import SimpleMicroscopePSF
+from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
 
 
-def demo_xyz():
+def demo_standard_psfs():
     """
     Particle scan, focus offset.
     """
-    psf = SimpleMicroscopePSF()
-    pprint(psf.parameters)
+    nikon16x08na_psf = nikon16x08na()
+    olympus20x10na_psf = olympus20x10na()
 
-    psf_xyz_array = psf.generate_xyz_psf(dxy=0.406, dz=0.406, xy_size=17, z_size=17)
-
-    print(psf_xyz_array.shape)
 
     import napari
 
     with napari.gui_qt():
         viewer = napari.Viewer()
-        viewer.add_image(psf_xyz_array, name='fast_rz')
+        viewer.add_image(nikon16x08na_psf, name='nikon16x08na_psf')
+        viewer.add_image(olympus20x10na_psf, name='olympus20x10na_psf')
 
 
-demo_xyz()
+demo_standard_psfs()

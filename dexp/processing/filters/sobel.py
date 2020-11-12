@@ -3,6 +3,7 @@ import numpy
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.utils.element_wise_affine import element_wise_affine
+from dexp.processing.utils.normalise import normalise
 
 
 def sobel_magnitude_filter(backend: Backend,
@@ -54,10 +55,9 @@ def sobel_magnitude_filter(backend: Backend,
     image = backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input and not in_place)
 
     if normalise_input:
-        min_value = xp.min(image)
-        max_value = xp.max(image)
-        alpha = (1 / (max_value - min_value)).astype(internal_dtype)
-        image = element_wise_affine(backend, image, alpha, -min_value)
+        image, denorm_fun = normalise(backend, image, out=image)
+    else:
+        denorm_fun = None
 
     sobel_image = xp.zeros_like(image)
 
