@@ -7,7 +7,6 @@ from typing import Tuple, Sequence, Any, Union
 
 import dask
 import zarr
-from dask.array import from_zarr
 from numcodecs import blosc
 from zarr import open_group, convenience, CopyError, Blosc, Group
 
@@ -296,5 +295,5 @@ class ZDataset(BaseDataset):
 
                 print(f"Fast copying channel {channel} renamed to {new_name} of shape {array.shape} and dtype {array.dtype} ")
                 convenience.copy(source_array, dest_group, if_exists='replace' if overwrite else 'raise')
-            except CopyError:
+            except CopyError | NotImplementedError:
                 print(f"Channel already exists, set option '-w' to force overwriting! ")

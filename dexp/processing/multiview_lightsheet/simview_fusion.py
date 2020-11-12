@@ -20,6 +20,7 @@ from dexp.utils.timeit import timeit
 def simview_fuse_2I2D(backend: Backend,
                       C0L0, C0L1, C1L0, C1L1,
                       zero_level: float = 120,
+                      clip_too_high: int = 2048,
                       fusion='tg',
                       fusion_bias_exponent: int = 2,
                       fusion_bias_strength: float = 0.1,
@@ -43,6 +44,8 @@ def simview_fuse_2I2D(backend: Backend,
     typically for sCMOS cameras the floor is at around 100 (this is to avoid negative values
     due to electronic noise!). Substracting a bit more than that is a good idea, hence the
     default of 120.
+
+    clip_too_high : clips very high intensities, to avoid loss of precision when converting an internal format such as float16
 
     fusion : Fusion mode, can be 'tg', 'dct', 'dft'
 
@@ -94,6 +97,12 @@ def simview_fuse_2I2D(backend: Backend,
             C0L1 = backend.to_backend(C0L1, dtype=internal_dtype, force_copy=False)
             gc.collect()
 
+        if clip_too_high > 0:
+            with timeit(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
+                C0L0 = xp.clip(C0L0, a_min=0, a_max=clip_too_high, out=C0L0)
+                C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
+                gc.collect()
+
         with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
             C0L0, C0L1, ratio = equalise_intensity(backend, C0L0, C0L1, zero_level=zero_level)
             gc.collect()
@@ -109,6 +118,12 @@ def simview_fuse_2I2D(backend: Backend,
             C1L0 = backend.to_backend(C1L0, dtype=internal_dtype, force_copy=False)
             C1L1 = backend.to_backend(C1L1, dtype=internal_dtype, force_copy=False)
             gc.collect()
+
+        if clip_too_high > 0:
+            with timeit(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
+                C1L0 = xp.clip(C1L0, a_min=0, a_max=clip_too_high, out=C1L0)
+                C1L1 = xp.clip(C1L1, a_min=0, a_max=clip_too_high, out=C1L1)
+                gc.collect()
 
         with timeit(f"Equalise intensity of C1L0 relative to C1L1 ..."):
             C1L0, C1L1, ratio = equalise_intensity(backend, C1L0, C1L1, zero_level=zero_level)

@@ -77,7 +77,7 @@ def dehaze(backend: Backend,
     #     def _c(array):
     #         return backend.to_numpy(array)
     #     viewer = Viewer()
-    #     viewer.add_image(_c(original_image), name='original_image')
+    #     viewer.add_image(_c(image), name='original_image')
     #     viewer.add_image(_c(image_zero_level), name='image_zero_level')
     #     viewer.add_image(_c(image), name='dehazed')
 

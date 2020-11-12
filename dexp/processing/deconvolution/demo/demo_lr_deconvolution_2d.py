@@ -36,15 +36,10 @@ def _demo_lr_deconvolution(backend):
     deconvolved = lucy_richardson_deconvolution(backend, noisy, psf,
                                                 num_iterations=iterations,
                                                 padding=16)
-    deconvolved_power = lucy_richardson_deconvolution(backend, noisy, psf,
-                                                      num_iterations=iterations,
-                                                      padding=16,
-                                                      power=1,
-                                                      blind_spot=3)
     deconvolved_blind_spot = lucy_richardson_deconvolution(backend, noisy, psf,
                                                            num_iterations=iterations,
                                                            padding=16,
-                                                           power=1.5,
+                                                           power=1,
                                                            blind_spot=3)
 
     from napari import Viewer, gui_qt
@@ -58,7 +53,6 @@ def _demo_lr_deconvolution(backend):
         viewer.add_image(_c(psf), name='psf')
         viewer.add_image(_c(noisy), name='noisy')
         viewer.add_image(_c(deconvolved), name='deconvolved')
-        viewer.add_image(_c(deconvolved_power), name='deconvolved_power')
         viewer.add_image(_c(deconvolved_blind_spot), name='deconvolved_blind_spot')
 
 

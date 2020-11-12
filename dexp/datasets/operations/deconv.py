@@ -83,17 +83,21 @@ def dataset_deconv(dataset,
                     tp_array = downscale_local_mean(tp_array, factors=(1, 2, 2)).astype(tp_array.dtype)
 
                 if method == 'lr':
+                    min_value = tp_array.min()
+                    max_value = tp_array.max()
+
                     def f(image):
                         return lucy_richardson_deconvolution(backend,
                                                              image=image,
                                                              psf=psf_kernel,
                                                              num_iterations=num_iterations,
                                                              max_correction=max_correction,
+                                                             normalise_minmax=(min_value, max_value),
                                                              power=power,
                                                              blind_spot=blind_spot)
 
                     with timeit("lucy_richardson_deconvolution"):
-                        tp_array = scatter_gather(backend, f, tp_array, chunks=chunksize, margins=max(xy_size, z_size) // 2)
+                        tp_array = scatter_gather(backend, f, tp_array, chunks=chunksize, margins=max(xy_size, z_size))
                 else:
                     raise ValueError(f"Unknown deconvolution mode: {method}")
 

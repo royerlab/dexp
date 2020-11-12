@@ -1,5 +1,5 @@
 # Run this to create a new env:
-#conda config --add channels anaconda; conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; ./install_linux.sh
+#conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; ./install_linux.sh
 
 # To install cuTensor, type:
 #sudo add-apt-repository "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
@@ -7,8 +7,8 @@
 #sudo apt update
 #sudo apt -y install libcutensor1 libcutensor-dev libcutensor-doc
 
-#conda config --add channels conda-forge
-conda install -y -c anaconda numpy libblas=*=*mkl
+conda config --add channels anaconda
+conda install -y -c anaconda numpy #"libblas=*=*mkl"
 conda install -y -c anaconda scipy
 conda install -y -c anaconda numba
 conda install -y -c anaconda numcodecs
@@ -24,15 +24,14 @@ conda install -y -c anaconda dask-image
 conda install -y -c anaconda distributed
 conda install -y -c anaconda zarr
 conda install -y -c anaconda cudatoolkit
-conda install -y -c rapidsai dask-cuda
+#conda install -y -c rapidsai dask-cuda
 #conda install -y -c conda-forge ocl-icd-system
-conda install -y -c conda-forge pyopencl
 #conda install -y -c pytorch pytorch torchvision torch-dct
-
 
 #pip install cupy-cuda111
 pip install cupy-cuda111 -f https://github.com/cupy/cupy/releases/tag/v9.0.0a1
 
+pip install pyopencl --upgrade
 pip install torch-dct --upgrade
 pip install napari[all] --upgrade
 pip install cachey --upgrade

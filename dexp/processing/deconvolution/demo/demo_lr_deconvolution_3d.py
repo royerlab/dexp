@@ -57,13 +57,13 @@ def _demo_lr_deconvolution(backend, length_xy=128):
         deconvolved_blind_spot = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=iterations, padding=16, blind_spot=3)
 
     with timeit("deconvolved_blind_spot_power"):
-        deconvolved_blind_spot_power = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=iterations, padding=16, power=2, blind_spot=3)
+        deconvolved_blind_spot_power = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=iterations, padding=16, power=1.2, blind_spot=3)
 
     def f(image):
-        return lucy_richardson_deconvolution(backend, image, psf, num_iterations=iterations, padding=16, power=2, blind_spot=3)
+        return lucy_richardson_deconvolution(backend, image, psf, num_iterations=iterations, padding=16, power=1.2, blind_spot=3)
 
     with timeit("lucy_richardson_deconvolution (scatter-gather)"):
-        deconvolved_blind_spot_power_sg = scatter_gather(backend, f, noisy, chunks=length_xy // 4, margins=17, to_numpy=True)
+        deconvolved_blind_spot_power_sg = scatter_gather(backend, f, noisy, chunks=length_xy // 2, margins=17, to_numpy=True)
 
     from napari import Viewer, gui_qt
     with gui_qt():

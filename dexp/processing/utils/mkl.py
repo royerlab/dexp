@@ -1,4 +1,5 @@
-import os, ctypes
+import ctypes
+import os
 
 
 def set_mkl_threads():

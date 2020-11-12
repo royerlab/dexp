@@ -54,7 +54,7 @@ def sobel_magnitude_filter(backend: Backend,
     image = backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input and not in_place)
 
     if normalise_input:
-        image, denorm_fun = normalise(backend, image, out=image)
+        image, denorm_fun = normalise(backend, image, out=image, dtype=internal_dtype)
     else:
         denorm_fun = None
 

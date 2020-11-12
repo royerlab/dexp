@@ -1,6 +1,5 @@
 # You need to point to a tiff file with 4 views as first dim,
 # as produced for example by: dexp tiff -w -s [128:129] dataset.zarr -o /home/royer/Desktop/test_data/test_data.tiff
-import time
 
 from napari import gui_qt, Viewer
 from tifffile import imread
@@ -31,13 +30,16 @@ def demo_simview_deconv_cupy():
 
 
 def simview_deconv(backend):
-    start = time.time()
+    xp = backend.get_xp_module()
 
     print(f"Loading data...")
     array = imread(filepath)
     print(f"Done loading.")
 
-    view = array[0]
+    view = array[0, :, :, :]
+
+    with timeit(f"Clip view ..."):
+        view = xp.clip(view, a_min=0, a_max=2048, out=view)
 
     with timeit(f"Dehaze view ..."):
         view_dehazed = dehaze(backend, view, size=65, minimal_zero_level=0)
@@ -50,15 +52,22 @@ def simview_deconv(backend):
                                                        size=dark_denoise_size,
                                                        threshold=dark_denoise_threshold)
 
+    min_value = view_dehazed_darkdenoised.min()
+    max_value = view_dehazed_darkdenoised.max()
+
+    print(f"min={min_value}, max={max_value}")
+
     psf = nikon16x08na()
 
     def f(image):
         return lucy_richardson_deconvolution(backend,
                                              image=image,
-                                             psf=psf_kernel,
-                                             num_iterations=15,
-                                             max_correction=2,
-                                             power=2,
+                                             psf=psf,
+                                             normalise_input=True,
+                                             normalise_minmax=(min_value, max_value),
+                                             num_iterations=20,
+                                             max_correction=16,
+                                             power=1.0,
                                              blind_spot=3)
 
     with timeit("lucy_richardson_deconvolution"):
@@ -69,10 +78,10 @@ def simview_deconv(backend):
             return backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(view), name='view', contrast_limits=(0, 2000), scale=(4, 1, 1))
-        viewer.add_image(_c(view_dehazed), name='view_dehazed', contrast_limits=(0, 2000), scale=(4, 1, 1))
-        viewer.add_image(_c(view_dehazed_darkdenoised), name='view_dehazed_darkdenoised', contrast_limits=(0, 2000), scale=(4, 1, 1))
-        viewer.add_image(_c(view_dehazed_darkdenoised_deconvolved), name='view_deconvolved', contrast_limits=(0, 2000), scale=(4, 1, 1))
+        viewer.add_image(_c(view), name='view', contrast_limits=(0, 1000), scale=(4, 1, 1))
+        viewer.add_image(_c(view_dehazed), name='view_dehazed', contrast_limits=(0, 1000), scale=(4, 1, 1))
+        viewer.add_image(_c(view_dehazed_darkdenoised), name='view_dehazed_darkdenoised', contrast_limits=(0, 1000), scale=(4, 1, 1))
+        viewer.add_image(_c(view_dehazed_darkdenoised_deconvolved), name='view_deconvolved', contrast_limits=(0, 1000), scale=(4, 1, 1))
 
 
 # demo_simview_fuse_numpy()

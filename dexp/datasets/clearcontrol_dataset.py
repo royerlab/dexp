@@ -8,7 +8,6 @@ import numcodecs
 import numpy
 from cachey import Cache
 from dask import array, delayed
-from numcodecs.blosc import Blosc
 from numpy import uint16, frombuffer
 
 from dexp.datasets.base_dataset import BaseDataset

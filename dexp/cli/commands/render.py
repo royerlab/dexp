@@ -1,5 +1,6 @@
 import math
-from os.path import exists
+import os
+from os.path import exists, join
 
 import click
 import numpy
@@ -38,7 +39,7 @@ def render(input_path, output_path, channels=None, slicing=None, overwrite=False
         print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
         print(input_dataset.info(channel))
 
-        array = input_dataset.get_array(channel)
+        array = input_dataset.get_array(channel, wrap_with_dask=True)
         dtype = array.dtype
 
         if slicing:
