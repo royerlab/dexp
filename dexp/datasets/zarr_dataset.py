@@ -13,7 +13,7 @@ from zarr import open_group, convenience, CopyError, Blosc, Group
 from dexp.datasets.base_dataset import BaseDataset
 
 # Configure multithreading for Dask:
-nb_threads = multiprocessing.cpu_count() // 2 - 1
+nb_threads = max(1, multiprocessing.cpu_count() // 2)
 dask.config.set(scheduler='threads')
 dask.config.set(pool=ThreadPool(nb_threads))
 
