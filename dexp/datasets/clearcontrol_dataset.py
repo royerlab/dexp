@@ -136,6 +136,9 @@ class CCDataset(BaseDataset):
     def chunks(self, channel: str) -> Sequence[int]:
         return (1,) * len(self.shape())
 
+    def dtype(self, channel: str):
+        return numpy.uint16
+
     def tree(self) -> str:
         tree_str = f"CC dataset at: {self.folder}"
         tree_str += "\n\n"
