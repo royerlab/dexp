@@ -5,12 +5,15 @@ from numpy import s_
 
 from dexp.datasets.clearcontrol_dataset import CCDataset
 from dexp.datasets.zarr_dataset import ZDataset
+from dexp.processing.utils.mkl_util import set_mkl_threads
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 _default_store = 'dir'
 _default_clevel = 3
 _default_codec = 'zstd'
+
+set_mkl_threads()
 
 import sys
 

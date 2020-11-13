@@ -5,7 +5,7 @@ import numpy
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.utils.nan_to_num import nan_to_zero
+from dexp.processing.utils.nan_to_zero import nan_to_zero
 from dexp.processing.utils.normalise import normalise
 
 
@@ -133,7 +133,7 @@ def lucy_richardson_deconvolution(backend: Backend,
             backend,
             result,
             psf,
-            mode='valid' if padding else 'same',
+            mode='wrap',
         )
 
         relative_blur = image / convolved
@@ -157,7 +157,7 @@ def lucy_richardson_deconvolution(backend: Backend,
             backend,
             relative_blur,
             back_projector,
-            mode='valid' if padding else 'same',
+            mode='wrap',
         )
 
         result *= multiplicative_correction

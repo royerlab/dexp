@@ -52,4 +52,6 @@ def gaussian_kernel_nd(backend: Backend, ndim: int = 3, size: int = 5, sigma: fl
     kernel[(slice(size // 2, size // 2 + 1, None),) * ndim] = 1
     kernel = sp.ndimage.gaussian_filter(kernel, sigma=sigma)
 
+    kernel /= xp.sum(kernel)
+
     return kernel

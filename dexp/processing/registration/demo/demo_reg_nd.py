@@ -28,11 +28,11 @@ def register_translation_nD(backend, length_xy=320):
                                                                                        length_z_factor=2)
 
     with timeit("register_translation_nd"):
-        shifts, error = register_translation_nd(backend, image1, image2)
+        shifts, error = register_translation_nd(backend, image1, image2).get_shift_and_error()
         print(f"shifts: {shifts}, error: {error}")
 
     with timeit("register_translation_maxproj_nd"):
-        shifts_maxproj, error_maxproj = register_translation_maxproj_nd(backend, image1, image2)
+        shifts_maxproj, error_maxproj = register_translation_maxproj_nd(backend, image1, image2).get_shift_and_error()
         print(f"shifts: {shifts_maxproj}, error: {error_maxproj}")
 
     from napari import Viewer, gui_qt

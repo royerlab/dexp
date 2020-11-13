@@ -14,7 +14,7 @@ def test_scatter_gather_numpy():
 def test_scatter_gather_cupy():
     try:
         backend = CupyBackend()
-        _test_scatter_gather(backend, length_xy=768, splits=4, filter_size=7)
+        _test_scatter_gather(backend, length_xy=512, splits=4, filter_size=7)
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 

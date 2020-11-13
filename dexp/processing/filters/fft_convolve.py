@@ -6,7 +6,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 
 def fft_convolve(backend: Backend,
                  image1, image2,
-                 mode: str = None,
+                 mode: str = 'reflect',
                  in_place: bool = True,
                  internal_dtype=numpy.float16):
     """
@@ -44,6 +44,10 @@ def fft_convolve(backend: Backend,
     image1 = backend.to_backend(image1, dtype=internal_dtype, force_copy=False)
     image2 = backend.to_backend(image2, dtype=internal_dtype, force_copy=False)
 
+    if mode != 'wrap':
+        pad_width = tuple((tuple((s // 2, s // 2)) for s in image2.shape))
+        image1 = xp.pad(image1, pad_width=pad_width, mode=mode)
+
     s1 = numpy.asarray(image1.shape)
     s2 = numpy.asarray(image2.shape)
 
@@ -69,6 +73,10 @@ def fft_convolve(backend: Backend,
     myslice = [slice(startind[k], endind[k]) for k in range(len(endind))]
 
     result = result[tuple(myslice)]
+
+    if mode != 'wrap':
+        slicing = tuple(slice(s // 2, -(s // 2)) for s in image2.shape)
+        result = result[slicing]
 
     result = result.astype(dtype=original_dtype, copy=False)
 

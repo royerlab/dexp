@@ -85,7 +85,7 @@ def generate_fusion_test_data(backend: Backend,
 
     if shift is not None:
         with timeit("Shift second view relative to first"):
-            image2 = sp.ndimage.shift(image2, shift=shift)
+            image2 = sp.ndimage.shift(image2, shift=shift, order=1)
 
     with timeit("scale image intensities"):
         image1 = zero_level + 300 * image1

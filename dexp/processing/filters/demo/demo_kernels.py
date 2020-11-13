@@ -17,7 +17,7 @@ def demo_kernels_cupy():
 
 
 def _demo_kernels(backend):
-    gaussian_kernel = gaussian_kernel_nd(backend, size=5, sigma=1)
+    gaussian_kernel = gaussian_kernel_nd(backend, ndim=4, size=17, sigma=2)
 
     from napari import Viewer, gui_qt
     with gui_qt():

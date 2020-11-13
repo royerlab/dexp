@@ -14,7 +14,7 @@ def test_fft_convolve_numpy():
     _test_fft_convolve(backend)
 
 
-def demo_fft_convolve_cupy():
+def test_fft_convolve_cupy():
     try:
         backend = CupyBackend()
         _test_fft_convolve(backend)
@@ -37,7 +37,7 @@ def _test_fft_convolve(backend):
 
     error = norm(reference_result - result, ord=1) / image.size
     print(error)
-    assert error < 0.01
+    assert error < 1e-4
     #
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -49,7 +49,3 @@ def _test_fft_convolve(backend):
     #     viewer.add_image(_c(noisy), name='noisy')
     #     viewer.add_image(_c(psf), name='psf')
     #     viewer.add_image(_c(result), name='result')
-
-
-demo_fft_convolve_cupy()
-test_fft_convolve_numpy()

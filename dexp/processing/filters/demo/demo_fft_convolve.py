@@ -1,5 +1,4 @@
 import numpy
-from numpy.linalg import norm
 from scipy.ndimage import convolve
 from skimage.data import camera
 from skimage.util import random_noise
@@ -35,10 +34,6 @@ def _demo_fft_convolve(backend):
     result = backend.to_numpy(result)
     reference_result = backend.to_numpy(reference_result)
 
-    error = norm(reference_result - result, ord=1) / image.size
-    print(error)
-    assert error < 0.01
-
     from napari import Viewer, gui_qt
     with gui_qt():
         def _c(array):
@@ -48,6 +43,7 @@ def _demo_fft_convolve(backend):
         viewer.add_image(_c(image), name='image')
         viewer.add_image(_c(noisy), name='noisy')
         viewer.add_image(_c(psf), name='psf')
+        viewer.add_image(_c(reference_result), name='reference_result')
         viewer.add_image(_c(result), name='result')
 
 
