@@ -32,7 +32,7 @@ conda install -y -c anaconda zarr
 #pip install cupy-cuda111 -f https://github.com/cupy/cupy/releases/tag/v9.0.0a1
 
 pip install pyopencl --upgrade
-pip install torch-dct --upgrade
+#pip install torch-dct --upgrade
 pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install spimagine --upgrade

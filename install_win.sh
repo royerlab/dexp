@@ -33,7 +33,7 @@ pip install cupy-cuda111
 
 pip install pybind11 mako --upgrade
 pip install ./wheels/pyopencl-2019.1.2+cl12-cp37-cp37m-win_amd64.whl
-pip install torch-dct --upgrade
+#pip install torch-dct --upgrade
 pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install spimagine --upgrade
