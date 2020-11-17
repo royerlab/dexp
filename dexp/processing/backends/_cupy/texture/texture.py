@@ -4,7 +4,13 @@ import numpy
 import cupy
 
 
-def create_cuda_texture(shape:Tuple[int,...], num_channels:int = 1, sampling_mode='linear', address_mode='clamp', dtype=numpy.float16):
+def create_cuda_texture(shape:Tuple[int,...],
+                        num_channels:int = 1,
+                        normalised_values: bool = False,
+                        normalised_coords: bool = False,
+                        sampling_mode: str ='linear',
+                        address_mode: str ='clamp',
+                        dtype=numpy.float16):
 
     if not  1<=len(shape)<=3:
         raise ValueError(f"Invalid number of dimensions ({len(shape)}), must be 1, 2 or 3 (shape={shape}) ")
@@ -12,14 +18,13 @@ def create_cuda_texture(shape:Tuple[int,...], num_channels:int = 1, sampling_mod
     if not  1<=num_channels<=4:
         raise ValueError(f"Invalid number of channels ({num_channels}), must be 1, 2., 3 or 4")
 
+    dtype = numpy.dtype(dtype)
 
-
-
-    nbits = 8*dtype.nbytes
+    nbits = 8*dtype.itemsize
     channels = (nbits,)*num_channels+(0,)*(4-num_channels)
-    if 'f' in dtype.type:
+    if 'f' in dtype.kind:
         channel_type = cupy.cuda.runtime.cudaChannelFormatKindFloat
-    elif 'i' in dtype.type:
+    elif 'i' in dtype.kind:
         channel_type = cupy.cuda.runtime.cudaChannelFormatKindInt
 
     format_descriptor = cupy.cuda.texture.ChannelFormatDescriptor(*channels, channel_type)
@@ -34,7 +39,9 @@ def create_cuda_texture(shape:Tuple[int,...], num_channels:int = 1, sampling_mod
     elif address_mode == 'wrap':
         address_mode = cupy.cuda.runtime.cudaAddressModeWrap
     elif address_mode == 'mirror':
-        address_mode = cupy.cuda.runtime.cudaAddressModeWrap
+        address_mode = cupy.cuda.runtime.cudaAddressModeMirror
+    else:
+        raise ValueError(f"Address mode '{address_mode}' not supported")
 
     address_mode = (address_mode,) * len(shape)
 
@@ -45,12 +52,20 @@ def create_cuda_texture(shape:Tuple[int,...], num_channels:int = 1, sampling_mod
     else:
         raise ValueError(f"Sampling mode '{sampling_mode}' not supported")
 
-    texture_descriptor = cupy.cuda.texture.TextureDescriptor(address_mode,
-                                                             filter_mode,
-                                                             cupy.cuda.runtime.cudaReadModeElementType)
+    if normalised_values:
+        read_mode = cupy.cuda.runtime.cudaReadModeNormalizedFloat
+    else:
+        read_mode = cupy.cuda.runtime.cudaReadModeElementType
 
+    texture_descriptor = cupy.cuda.texture.TextureDescriptor(addressModes=address_mode,
+                                                             filterMode=filter_mode,
+                                                             readMode=read_mode,
+                                                             sRGB=None,
+                                                             borderColors=None,
+                                                             normalizedCoords=normalised_coords,
+                                                             maxAnisotropy=None)
 
     texture_object = cupy.cuda.texture.TextureObject(ressource_descriptor,
-                                             texture_descriptor)
+                                                     texture_descriptor)
 
     return texture_object, cuda_array

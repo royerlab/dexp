@@ -88,6 +88,7 @@ def simview_fuse_2I2D(backend: Backend,
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32
 
+
     with timeit("SimView 2I2D fusion"):
 
         original_dtype = C0L0.dtype
@@ -104,7 +105,7 @@ def simview_fuse_2I2D(backend: Backend,
                 gc.collect()
 
         with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
-            C0L0, C0L1, ratio = equalise_intensity(backend, C0L0, C0L1, zero_level=zero_level)
+            C0L0, C0L1, ratio = equalise_intensity(backend, C0L0, C0L1, zero_level=zero_level, copy=False)
             gc.collect()
             print(f"Equalisation ratio: {ratio}")
 
@@ -126,7 +127,7 @@ def simview_fuse_2I2D(backend: Backend,
                 gc.collect()
 
         with timeit(f"Equalise intensity of C1L0 relative to C1L1 ..."):
-            C1L0, C1L1, ratio = equalise_intensity(backend, C1L0, C1L1, zero_level=zero_level)
+            C1L0, C1L1, ratio = equalise_intensity(backend, C1L0, C1L1, zero_level=zero_level, copy=False)
             gc.collect()
             print(f"Equalisation ratio: {ratio}")
 
@@ -137,7 +138,7 @@ def simview_fuse_2I2D(backend: Backend,
             gc.collect()
 
         with timeit(f"Equalise intensity of C0lx relative to C1Lx ..."):
-            C0lx, C1Lx, ratio = equalise_intensity(backend, C0lx, C1Lx, zero_level=0)
+            C0lx, C1Lx, ratio = equalise_intensity(backend, C0lx, C1Lx, zero_level=0, copy=False)
             gc.collect()
             print(f"Equalisation ratio: {ratio}")
 

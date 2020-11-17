@@ -27,7 +27,7 @@ def lucy_richardson_deconvolution(backend: Backend,
                                   convolve_method=fft_convolve,
                                   internal_dtype=numpy.float16):
     """
-    Decponvolves an nD image given a point-spread-function.
+    Deconvolves an nD image given a point-spread-function.
 
     Parameters
     ----------
