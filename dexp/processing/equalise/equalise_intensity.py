@@ -60,7 +60,16 @@ def equalise_intensity(backend: Backend,
     highvalues1 = strided_image1[mask]
     highvalues2 = strided_image2[mask]
 
-    ratios = (highvalues1 - lowvalue1) / (highvalues2 - lowvalue2)
+    # compute ratios:
+    range1 = highvalues1 - lowvalue1
+    range2 = highvalues2 - lowvalue2
+    ratios = (range1 / range2)
+
+    # keep only valid ratios:
+    valid = xp.logical_and(range1!=0, range2!=0)
+    ratios = ratios[valid]
+
+    # Free memory:
     del mask, mask1, mask2, highvalues1, highvalues2, strided_image1, strided_image2
 
     nb_values = ratios.size
