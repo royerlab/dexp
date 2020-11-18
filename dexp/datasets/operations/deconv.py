@@ -28,6 +28,7 @@ def dataset_deconv(dataset,
                    xy_size,
                    z_size,
                    downscalexy2,
+                   device,
                    check):
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
@@ -74,7 +75,7 @@ def dataset_deconv(dataset,
 
         def process(tp):
 
-            backend = CupyBackend(0, enable_memory_pool=False)
+            backend = CupyBackend(device, enable_memory_pool=False)
 
             try:
                 print(f"Starting to process time point: {tp} ...")

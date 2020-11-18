@@ -19,6 +19,7 @@ def dataset_fuse(dataset,
                  dehaze_size,
                  dark_denoise_threshold,
                  load_shifts,
+                 device,
                  check):
     print(f"getting Dask arrays for all channels to fuse...")
     array_C0L0 = dataset.get_array('C0L0', per_z_slice=False, wrap_with_dask=True)
@@ -55,7 +56,7 @@ def dataset_fuse(dataset,
     def process(tp):
         print(f"Writing time point: {tp} ")
 
-        backend = CupyBackend(0)
+        backend = CupyBackend(device, enable_memory_pool=False)
 
         C0L0 = array_C0L0[tp].compute()
         C0L1 = array_C0L1[tp].compute()

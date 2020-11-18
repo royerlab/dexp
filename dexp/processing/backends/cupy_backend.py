@@ -9,7 +9,7 @@ from dexp.processing.backends.backend import Backend
 
 print("Available CUDA GPUs:")
 for gpu in nvgpu.gpu_info():
-    print(f"GPU:'{gpu['type']}', id:{gpu['index']}, total memory:{gpu['mem_total']//(1024*1024)}MB ({gpu['mem_used_percent']}%) ")
+    print(f"GPU:'{gpu['type']}', id:{gpu['index']}, total memory:{gpu['mem_total']}MB ({gpu['mem_used_percent']}%) ")
 
 
 class CupyBackend(Backend):

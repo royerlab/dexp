@@ -24,6 +24,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--dark_denoise_threshold', '-ddt', type=int, default=32, help='Threshold for denoises the dark pixels of the image -- helps increase compression ratio. Set to zero to deactivate.', show_default=True)  #
 
 @click.option('--loadshifts', '-ls', is_flag=True, help='Turn on to load the registration parameters (i.e translation shifts) from another run', show_default=True)  #
+@click.option('--device', '-d', type=int, default=0, help='Sets the CUDA device id', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def fuse(input_path,
          output_path,
@@ -39,6 +40,7 @@ def fuse(input_path,
          dehaze_size,
          dark_denoise_threshold,
          loadshifts,
+         device,
          check):
     input_dataset = _get_dataset_from_path(input_path)
 
@@ -70,7 +72,8 @@ def fuse(input_path,
                  dehaze_size=dehaze_size,
                  dark_denoise_threshold=dark_denoise_threshold,
                  load_shifts=loadshifts,
-                 check=check
+                 device=device,
+                 check=check,
                  )
     time_stop = time()
     print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
