@@ -37,6 +37,7 @@ pip install ./wheels/pyopencl-2019.1.2+cl12-cp37-cp37m-win_amd64.whl
 pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install spimagine --upgrade
+pip install -U nvgpu
 
 pip install -e .
 

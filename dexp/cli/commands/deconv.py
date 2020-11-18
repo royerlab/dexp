@@ -29,9 +29,11 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--xysize', '-sxy', type=int, default=17, help='Voxel size along xy in microns', show_default=True)
 @click.option('--zsize', '-sz', type=int, default=17, help='Voxel size along z in microns', show_default=True)
 @click.option('--downscalexy2', '-d', is_flag=False, help='Downscales along x and y for faster deconvolution (but worse quality of course)', show_default=True)  #
+@click.option('--device', '-d', type=int, default=0, help='Sets the CUDA device id', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def deconv(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, workers, chunksize,
-           method, iterations, maxcorrection, power, blindspot, objective, dxy, dz, xysize, zsize, downscalexy2, check):
+           method, iterations, maxcorrection, power, blindspot, objective, dxy, dz, xysize, zsize, downscalexy2,
+           device, check):
     input_dataset = _get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -73,6 +75,7 @@ def deconv(input_path, output_path, channels, slicing, store, codec, clevel, ove
                    xy_size=xysize,
                    z_size=zsize,
                    downscalexy2=downscalexy2,
+                   device=device,
                    check=check
                    )
 

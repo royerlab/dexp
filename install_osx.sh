@@ -36,5 +36,6 @@ pip install pyopencl --upgrade
 pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install spimagine --upgrade
+pip install -U nvgpu
 
 pip install -e .

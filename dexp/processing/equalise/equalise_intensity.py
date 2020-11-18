@@ -10,6 +10,7 @@ def equalise_intensity(backend: Backend,
                        zero_level=90,
                        quantile=0.99,
                        max_voxels=1e6,
+                       copy: bool = True,
                        internal_dtype=numpy.float16):
     """
     Equalise intensity between two images
@@ -22,6 +23,7 @@ def equalise_intensity(backend: Backend,
     zero_level : zero level -- removes this value if that's the minimal voxel value expected for both images
     quantile : quantile for computinmg the robust min and max values in image
     max_voxels : maximal number of voxels to use to compute min and max values.
+    copy : Set to True to force copy of images.
     internal_dtype : dtype to use internally for computation.
 
     Returns
@@ -36,8 +38,8 @@ def equalise_intensity(backend: Backend,
         internal_dtype = numpy.float32
 
     original_dtype = image1.dtype
-    image1 = backend.to_backend(image1, dtype=internal_dtype, force_copy=True)
-    image2 = backend.to_backend(image2, dtype=internal_dtype, force_copy=True)
+    image1 = backend.to_backend(image1, dtype=internal_dtype, force_copy=copy)
+    image2 = backend.to_backend(image2, dtype=internal_dtype, force_copy=copy)
 
     xp = backend.get_xp_module()
 
