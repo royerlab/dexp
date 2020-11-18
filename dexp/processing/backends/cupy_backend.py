@@ -11,7 +11,7 @@ class CupyBackend(Backend):
     _dexp_dask_client = None
 
     def __init__(self,
-                 device=0,
+                 device_id=0,
                  enable_memory_pool: bool = False,
                  enable_cub: bool = True,
                  enable_cutensor: bool = True,
@@ -24,7 +24,7 @@ class CupyBackend(Backend):
 
         Parameters
         ----------
-        device : CUDA device to use for allocation and compute
+        device_id : CUDA device id to use for allocation and compute
         enable_memory_pool : Enables cupy memory pool. By default disabled, when enabled cupy tends to return out-of-memory exceptions when handling large arrays.
         enable_cub : enables CUB accelerator
         enable_cutensor : enables cuTensor accelerator
@@ -34,7 +34,19 @@ class CupyBackend(Backend):
         """
 
         super().__init__()
-        self.device = device
+        self.device_id = device_id
+
+        import cupy
+        self.cupy_device = cupy.cuda.Device(self.device_id)
+        self.cupy_device.use()
+        free_mem = self.cupy_device.mem_info[0]
+        total_mem = self.cupy_device.mem_info[0]
+        percent = (100*free_mem)//total_mem
+        print(f"Using CUDA device id:{self.device_id} "
+              f"with {free_mem//(1024*1024)} MB ({percent}%) free memory out of {free_mem//(1024*1024)} MB, "
+              f"compute:{self.cupy_device.compute_capability}, pci-bus-id:'{self.cupy_device.pci_bus_id}'")
+
+
         from cupy.cuda import cub, cutensor
         cub.available = enable_cub
         cutensor.available = enable_cutensor
@@ -63,7 +75,7 @@ class CupyBackend(Backend):
     @contextmanager
     def compute_context(self):
         import cupy
-        with cupy.cuda.Device(self.device):
+        with cupy.cuda.Device(self.device_id):
             yield
 
     def close(self):
@@ -94,7 +106,7 @@ class CupyBackend(Backend):
                 return array
         else:
             array = self.to_numpy(array)
-            with cupy.cuda.Device(self.device):
+            with cupy.cuda.Device(self.device_id):
                 return cupy.asarray(array, dtype=dtype)
 
     def get_xp_module(self, array=None) -> Any:
