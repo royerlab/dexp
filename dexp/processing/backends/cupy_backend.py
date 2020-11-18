@@ -1,14 +1,22 @@
 from contextlib import contextmanager
+from pprint import pprint
 from typing import Any
 
 import numpy
+import nvgpu
 
 from dexp.processing.backends.backend import Backend
+
+print("Available CUDA GPUs:")
+for gpu in nvgpu.gpu_info():
+    print(f"GPU:'{gpu['type']}', id:{gpu['index']}, total memory:{gpu['mem_total']//(1024*1024)}MB ({gpu['mem_used_percent']}%) ")
 
 
 class CupyBackend(Backend):
     _dexp_cuda_cluster = None
     _dexp_dask_client = None
+
+
 
     def __init__(self,
                  device_id=0,
