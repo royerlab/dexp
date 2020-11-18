@@ -4,13 +4,15 @@ import numpy
 import cupy
 
 
-def create_cuda_texture(shape:Tuple[int,...],
+def create_cuda_texture(array,
+                        shape:Tuple[int,...]=None,
                         num_channels:int = 1,
                         normalised_values: bool = False,
                         normalised_coords: bool = False,
                         sampling_mode: str ='linear',
                         address_mode: str ='clamp',
-                        dtype=numpy.float16):
+                        dtype=None):
+
 
     if not  1<=len(shape)<=3:
         raise ValueError(f"Invalid number of dimensions ({len(shape)}), must be 1, 2 or 3 (shape={shape}) ")
@@ -18,7 +20,13 @@ def create_cuda_texture(shape:Tuple[int,...],
     if not  1<=num_channels<=4:
         raise ValueError(f"Invalid number of channels ({num_channels}), must be 1, 2., 3 or 4")
 
+    if dtype is None:
+        dtype=array.dtype
+
     dtype = numpy.dtype(dtype)
+
+    if array.dtype != dtype:
+        array = array.astype(dtype, copy=False)
 
     nbits = 8*dtype.itemsize
     channels = (nbits,)*num_channels+(0,)*(4-num_channels)
@@ -68,4 +76,6 @@ def create_cuda_texture(shape:Tuple[int,...],
     texture_object = cupy.cuda.texture.TextureObject(ressource_descriptor,
                                                      texture_descriptor)
 
-    return texture_object, cuda_array
+    cuda_array.copy_from(array)
+
+    return texture_object

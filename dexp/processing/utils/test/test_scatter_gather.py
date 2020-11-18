@@ -2,7 +2,7 @@ import numpy
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.utils.scatter_gather import scatter_gather
+from dexp.processing.utils.scatter_gather import scatter_gather_i2i
 from dexp.utils.timeit import timeit
 
 
@@ -36,7 +36,7 @@ def _test_scatter_gather(backend, ndim=3, length_xy=128, splits=4, filter_size=7
         result_ref = 0 * image
 
     with timeit("scatter_gather(f)"):
-        result = scatter_gather(backend, f, image, chunks=(length_xy // splits,) * ndim, margins=filter_size // 2)
+        result = scatter_gather_i2i(backend, f, image, chunks=(length_xy // splits,) * ndim, margins=filter_size // 2)
 
     image = backend.to_numpy(image)
     result_ref = backend.to_numpy(result_ref)

@@ -10,7 +10,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
-from dexp.processing.utils.scatter_gather import scatter_gather
+from dexp.processing.utils.scatter_gather import scatter_gather_i2i
 from dexp.utils.timeit import timeit
 
 filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'
@@ -68,10 +68,12 @@ def simview_deconv(backend):
                                              num_iterations=20,
                                              max_correction=16,
                                              power=1.0,
-                                             blind_spot=3)
+                                             blind_spot=3,
+                                             blind_spot_mode='median+uniform',
+                                             blind_spot_axis_exclusion=(0,))
 
     with timeit("lucy_richardson_deconvolution"):
-        view_dehazed_darkdenoised_deconvolved = scatter_gather(backend, f, view_dehazed_darkdenoised, chunks=512, margins=17, to_numpy=True)
+        view_dehazed_darkdenoised_deconvolved = scatter_gather_i2i(backend, f, view_dehazed_darkdenoised, chunks=512, margins=17, to_numpy=True)
 
     with gui_qt():
         def _c(array):

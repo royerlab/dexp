@@ -29,8 +29,8 @@ def _equalise_intensity(backend: Backend, length=128):
     image_1 = gaussian(image_1, sigma=1)
     image_2 = image_1.copy() * ratio_gt
 
-    image_1 = 95 + random_noise(image_1, mode='gaussian', var=0.2, clip=False)
-    image_2 = 95 + random_noise(image_2, mode='gaussian', var=0.2, clip=False)
+    image_1 = 95 + random_noise(image_1, mode='gaussian', var=0.5, clip=False)
+    image_2 = 95 + random_noise(image_2, mode='gaussian', var=0.5, clip=False)
 
     # from napari import Viewer
     # with napari.gui_qt():

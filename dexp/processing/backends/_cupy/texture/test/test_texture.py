@@ -30,19 +30,20 @@ def test_cupy_texture_4channels():
         width = 3
         height = 5
 
-        # set up a texture object
-
-        texobj, arr2 = create_cuda_texture(shape=(width, height),
-                                           num_channels=4,
-                                           sampling_mode='nearest',
-                                           dtype=cupy.float32)
-
         # allocate input/output arrays
         tex_data = cupy.arange(width * height * 4, dtype=cupy.float32).reshape(height, width * 4)
+
+        # set up a texture object
+        texobj = create_cuda_texture(tex_data,
+                                     shape=(width, height),
+                                     num_channels=4,
+                                     sampling_mode='nearest',
+                                     dtype=cupy.float32)
+
+
         real_output = cupy.zeros_like(tex_data)
-        expected_output = cupy.zeros_like(tex_data)
-        arr2.copy_from(tex_data)
-        arr2.copy_to(expected_output)
+        expected_output = tex_data.copy()
+
 
         # get the kernel, which copies from texture memory
         kernel = cupy.RawKernel(source, 'copyKernel')

@@ -1,10 +1,11 @@
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
+from dexp.processing.filters.kernels import gaussian_kernel_nd
 from dexp.processing.utils.nan_to_zero import nan_to_zero
 from dexp.processing.utils.normalise import normalise
 
@@ -22,8 +23,8 @@ def lucy_richardson_deconvolution(backend: Backend,
                                   normalise_minmax: Tuple[float, float] = None,
                                   clip_output: bool = True,
                                   blind_spot: int = 0,
-                                  blind_spot_mode: str = 'median',
-                                  blind_spot_noz: bool = True,
+                                  blind_spot_mode: str = 'median+uniform',
+                                  blind_spot_axis_exclusion: Union[str, Tuple[int, ...]] = None,
                                   convolve_method=fft_convolve,
                                   internal_dtype=numpy.float16):
     """
@@ -44,7 +45,8 @@ def lucy_richardson_deconvolution(backend: Backend,
     normalise_minmax : Use the given tuple (min, max) for normalisation
     blind_spot : If zero, blind-spot is disabled. If blind_spot>0 it is active and the integer represents the blind-spot kernel support. A value of 3 or 5 are good and help reduce the impact of noise on deconvolution.
     blind_spot_mode : blind-spot mode, can be 'mean' or 'median'
-    blind_spot_noz : Set to True so that blind-spot kernel does not extend in z, good when sampling in z is less than xy. Z axis assumed to be first axis (0).
+    blind_spot_axis_exclusion : if None no axis is excluded from the blind-spot support kernel, otherwise if a tuple of ints is provided, these refer to the
+    then the support kernel is clipped along these axis. For example for a 3D stack where the sampling along z (first axis) is poor, use: (0,) so that blind-spot kernel does not extend in z.
     convolve_method : convolution method to use
     clip_output : By default the output is clipped to the input image range.
     internal_dtype : dtype to use internally for computation.
@@ -71,15 +73,23 @@ def lucy_richardson_deconvolution(backend: Backend,
     if blind_spot > 0:
         if 2 * (blind_spot // 2) == blind_spot:
             raise ValueError(f"Blind spot size must be an odd integer, blind_spot={blind_spot} is not!")
-        full_kernel = xp.ones(shape=(blind_spot,) * image.ndim, dtype=internal_dtype)
-        # some experiments suggests that a uniform donut filter works better
-        # full_kernel = gaussian_kernel_nd(backend, ndim=image.ndim, size=blind_spot, sigma=1)
-        if blind_spot_noz:
+
+        if 'gaussian' in blind_spot_mode:
+            full_kernel = gaussian_kernel_nd(backend, ndim=image.ndim, size=blind_spot, sigma=max(1, blind_spot // 2))
+        else:
+            full_kernel = xp.ones(shape=(blind_spot,) * image.ndim, dtype=internal_dtype)
+
+        if blind_spot_axis_exclusion is not None:
             c = blind_spot // 2
-            slicing_zn = (slice(0, c, None),) + (slice(None, None, None),) * (image.ndim - 1)
-            slicing_zp = (slice(c + 1, blind_spot, None),) + (slice(None, None, None),) * (image.ndim - 1)
-            full_kernel[slicing_zn] = 0
-            full_kernel[slicing_zp] = 0
+
+            slicing_n = [slice(None, None, None), ] * image.ndim
+            slicing_p = [slice(None, None, None), ] * image.ndim
+            for axis in blind_spot_axis_exclusion:
+                slicing_n[axis] = slice(0, c, None)
+                slicing_p[axis] = slice(c + 1, blind_spot, None)
+
+            full_kernel[slicing_n] = 0
+            full_kernel[slicing_p] = 0
 
         full_kernel = full_kernel / full_kernel.sum()
         donut_kernel = full_kernel.copy()
@@ -89,9 +99,9 @@ def lucy_richardson_deconvolution(backend: Backend,
         psf = sp.ndimage.convolve(psf, donut_kernel)
         psf = psf / psf.sum()
 
-        if blind_spot_mode == 'median':
-            image = sp.ndimage.filters.median_filter(image, footprint=full_kernel)
-        elif blind_spot_mode == 'mean':
+        if 'median' in blind_spot_mode:
+            image = sp.ndimage.filters.median_filter(image, footprint=donut_kernel)
+        elif 'mean' in blind_spot_mode:
             image = sp.ndimage.convolve(image, donut_kernel)
 
         # from napari import Viewer, gui_qt

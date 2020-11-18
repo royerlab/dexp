@@ -3,7 +3,7 @@ from skimage.transform import downscale_local_mean
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
-from dexp.processing.utils.scatter_gather import scatter_gather
+from dexp.processing.utils.scatter_gather import scatter_gather_i2i
 from dexp.utils.timeit import timeit
 
 
@@ -95,10 +95,13 @@ def dataset_deconv(dataset,
                                                              max_correction=max_correction,
                                                              normalise_minmax=(min_value, max_value),
                                                              power=power,
-                                                             blind_spot=blind_spot)
+                                                             blind_spot=blind_spot,
+                                                             blind_spot_mode='median+uniform',
+                                                             blind_spot_axis_exclusion=(0,)
+                                                             )
 
                     with timeit("lucy_richardson_deconvolution"):
-                        tp_array = scatter_gather(backend, f, tp_array, chunks=chunksize, margins=max(xy_size, z_size))
+                        tp_array = scatter_gather_i2i(backend, f, tp_array, chunks=chunksize, margins=max(xy_size, z_size))
                 else:
                     raise ValueError(f"Unknown deconvolution mode: {method}")
 

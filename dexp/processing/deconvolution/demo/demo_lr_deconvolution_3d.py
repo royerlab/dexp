@@ -6,7 +6,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
-from dexp.processing.utils.scatter_gather import scatter_gather
+from dexp.processing.utils.scatter_gather import scatter_gather_i2i
 from dexp.utils.timeit import timeit
 
 
@@ -63,7 +63,7 @@ def _demo_lr_deconvolution(backend, length_xy=128):
         return lucy_richardson_deconvolution(backend, image, psf, num_iterations=iterations, padding=16, power=1.2, blind_spot=3)
 
     with timeit("lucy_richardson_deconvolution (scatter-gather)"):
-        deconvolved_blind_spot_power_sg = scatter_gather(backend, f, noisy, chunks=length_xy // 2, margins=17, to_numpy=True)
+        deconvolved_blind_spot_power_sg = scatter_gather_i2i(backend, f, noisy, chunks=length_xy // 2, margins=17, to_numpy=True)
 
     from napari import Viewer, gui_qt
     with gui_qt():

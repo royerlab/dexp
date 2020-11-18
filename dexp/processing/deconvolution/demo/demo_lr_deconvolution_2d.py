@@ -29,9 +29,9 @@ def _demo_lr_deconvolution(backend):
     blurry = blurry - blurry.min()
     blurry = blurry / blurry.max()
     noisy = random_noise(blurry, mode="gaussian", var=0.001, seed=0, clip=False)
-    noisy = random_noise(noisy, mode="s&p", amount=0.001, seed=0, clip=False)
+    noisy = random_noise(noisy, mode="s&p", amount=0.01, seed=0, clip=False)
 
-    iterations = 60
+    iterations = 50
 
     deconvolved = lucy_richardson_deconvolution(backend, noisy, psf,
                                                 num_iterations=iterations,
@@ -40,7 +40,8 @@ def _demo_lr_deconvolution(backend):
                                                            num_iterations=iterations,
                                                            padding=16,
                                                            power=1,
-                                                           blind_spot=3)
+                                                           blind_spot=3,
+                                                           blind_spot_mode='gaussian+median')
 
     from napari import Viewer, gui_qt
     with gui_qt():

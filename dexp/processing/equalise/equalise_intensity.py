@@ -8,7 +8,8 @@ def equalise_intensity(backend: Backend,
                        image1,
                        image2,
                        zero_level=90,
-                       quantile=0.99,
+                       quantile_low=0.01,
+                       quantile_high=0.99,
                        max_voxels=1e6,
                        copy: bool = True,
                        internal_dtype=numpy.float16):
@@ -21,7 +22,7 @@ def equalise_intensity(backend: Backend,
     image1 : first image to equalise
     image2 : second image to equalise
     zero_level : zero level -- removes this value if that's the minimal voxel value expected for both images
-    quantile : quantile for computinmg the robust min and max values in image
+    quantile_low, quantile_high : quantile for computing the robust min and max values in image
     max_voxels : maximal number of voxels to use to compute min and max values.
     copy : Set to True to force copy of images.
     internal_dtype : dtype to use internally for computation.
@@ -48,11 +49,11 @@ def equalise_intensity(backend: Backend,
     strided_image1 = image1.ravel()[::reduction].astype(numpy.float32, copy=False)
     strided_image2 = image2.ravel()[::reduction].astype(numpy.float32, copy=False)
 
-    highvalue1 = xp.percentile(strided_image1, q=quantile * 100)
-    highvalue2 = xp.percentile(strided_image2, q=quantile * 100)
+    highvalue1 = xp.percentile(strided_image1, q=quantile_high * 100)
+    highvalue2 = xp.percentile(strided_image2, q=quantile_high * 100)
 
-    lowvalue1 = xp.percentile(strided_image1, q=(1 - quantile) * 100)
-    lowvalue2 = xp.percentile(strided_image2, q=(1 - quantile) * 100)
+    lowvalue1 = xp.percentile(strided_image1, q=quantile_low * 100)
+    lowvalue2 = xp.percentile(strided_image2, q=quantile_low * 100)
 
     mask1 = strided_image1 >= highvalue1
     mask2 = strided_image2 >= highvalue2
@@ -68,7 +69,7 @@ def equalise_intensity(backend: Backend,
     ratios = (range1 / range2)
 
     # keep only valid ratios:
-    valid = xp.logical_and(range1!=0, range2!=0)
+    valid = xp.logical_and(range1 != 0, range2 != 0)
     ratios = ratios[valid]
 
     # Free memory:
