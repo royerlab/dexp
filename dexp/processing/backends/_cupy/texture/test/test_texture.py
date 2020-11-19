@@ -1,6 +1,6 @@
 import cupy
 
-from dexp.processing.backends._cupy.texture import create_cuda_texture
+from dexp.processing.backends._cupy.texture.texture import create_cuda_texture
 
 
 def test_cupy_texture_4channels():
@@ -35,7 +35,7 @@ def test_cupy_texture_4channels():
 
         # set up a texture object
         texobj = create_cuda_texture(tex_data,
-                                     shape=(width, height),
+                                     texture_shape=(width, height),
                                      num_channels=4,
                                      sampling_mode='nearest',
                                      dtype=cupy.float32)
@@ -90,22 +90,21 @@ def test_cupy_texture_1channel_normcoord():
         width = 3
         height = 5
 
-        # set up a texture object
-
-        texture_object, cuda_array = create_cuda_texture(shape=(width, height),
-                                                         num_channels=1,
-                                                         normalised_coords=True,
-                                                         sampling_mode='linear',
-                                                         dtype=cupy.float32)
-
         # allocate input/output arrays
-        tex_data = cupy.arange(width * height, dtype=cupy.float32)
-        tex_data = tex_data.reshape(height, width)
+        tex_data = cupy.arange(width * height, dtype=cupy.float32).reshape(height, width)
+
+        # set up a texture object
+        texobj = create_cuda_texture(tex_data,
+                                     texture_shape=(width, height),
+                                     num_channels=1,
+                                     normalised_coords=True,
+                                     sampling_mode='linear',
+                                     dtype=cupy.float32)
 
         real_output = cupy.zeros_like(tex_data)
-        expected_output = cupy.zeros_like(tex_data)
-        cuda_array.copy_from(tex_data)
-        cuda_array.copy_to(expected_output)
+        expected_output = tex_data.copy()
+
+
 
         # get the kernel, which copies from texture memory
         kernel = cupy.RawKernel(source, 'texture_1channel_normcoord_kernel')
@@ -115,7 +114,7 @@ def test_cupy_texture_1channel_normcoord():
         block_y = 4
         grid_x = (width + block_x - 1) // block_x
         grid_y = (height + block_y - 1) // block_y
-        kernel((grid_x, grid_y), (block_x, block_y), (real_output, texture_object, width, height))
+        kernel((grid_x, grid_y), (block_x, block_y), (real_output, texobj, width, height))
 
         # test outcome
         assert cupy.allclose(real_output, expected_output)
@@ -149,20 +148,21 @@ def test_cupy_texture_1channel():
         width = 3
         height = 5
 
-        # set up a texture object
-
-        texobj, arr2 = create_cuda_texture(shape=(width, height),
-                                           num_channels=1,
-                                           sampling_mode='linear',
-                                           dtype=cupy.float32)
 
         # allocate input/output arrays
-        tex_data = cupy.zeros(width * height, dtype=cupy.float32).reshape(height, width)
+        tex_data = cupy.arange(width * height, dtype=cupy.float32).reshape(height, width)
         tex_data[1, 2] = 1
+
+        # set up a texture object
+        texobj = create_cuda_texture(tex_data,
+                                     texture_shape=(width, height),
+                                     num_channels=1,
+                                     sampling_mode='linear',
+                                     dtype=cupy.float32)
+
         real_output = cupy.zeros_like(tex_data)
-        expected_output = cupy.zeros_like(tex_data)
-        arr2.copy_from(tex_data)
-        arr2.copy_to(expected_output)
+        expected_output = tex_data.copy()
+
 
         # get the kernel, which copies from texture memory
         kernel = cupy.RawKernel(source, 'copyKernel')

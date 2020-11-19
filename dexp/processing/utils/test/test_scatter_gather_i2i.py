@@ -2,24 +2,24 @@ import numpy
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.utils.scatter_gather import scatter_gather_i2i
+from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.timeit import timeit
 
 
-def test_scatter_gather_numpy():
+def test_scatter_gather_i2i_numpy():
     backend = NumpyBackend()
-    _test_scatter_gather(backend)
+    _test_scatter_gather_i2i(backend)
 
 
-def test_scatter_gather_cupy():
+def test_scatter_gather_i2i_cupy():
     try:
         backend = CupyBackend()
-        _test_scatter_gather(backend, length_xy=512, splits=4, filter_size=7)
+        _test_scatter_gather_i2i(backend, length_xy=512, splits=4, filter_size=7)
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _test_scatter_gather(backend, ndim=3, length_xy=128, splits=4, filter_size=7):
+def _test_scatter_gather_i2i(backend, ndim=3, length_xy=128, splits=4, filter_size=7):
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
@@ -33,7 +33,7 @@ def _test_scatter_gather(backend, ndim=3, length_xy=128, splits=4, filter_size=7
             result_ref = backend.to_numpy(f(backend.to_backend(image)))
     except:
         print("Can't run this, not enough GPU memory!")
-        result_ref = 0 * image
+        result_ref = 0 * image + 17
 
     with timeit("scatter_gather(f)"):
         result = scatter_gather_i2i(backend, f, image, chunks=(length_xy // splits,) * ndim, margins=filter_size // 2)

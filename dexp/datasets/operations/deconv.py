@@ -3,7 +3,7 @@ from skimage.transform import downscale_local_mean
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
-from dexp.processing.utils.scatter_gather import scatter_gather_i2i
+from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.timeit import timeit
 
 

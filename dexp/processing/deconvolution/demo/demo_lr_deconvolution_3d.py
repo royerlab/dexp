@@ -6,7 +6,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
-from dexp.processing.utils.scatter_gather import scatter_gather_i2i
+from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.timeit import timeit
 
 
