@@ -9,8 +9,18 @@ from dexp.processing.registration.model.pairwise_reg_model import PairwiseRegist
 
 class TranslationRegistrationModel(PairwiseRegistrationModel):
 
-    def __init__(self, shift_vector: Union[Sequence[float], numpy.ndarray], error: float = 0, integral: bool = False):
-        """ Instanciates a Numpy-based Image Processing backend
+    def __init__(self,
+                 shift_vector: Union[Sequence[float], numpy.ndarray],
+                 error: float = 0,
+                 integral: bool = False):
+
+        """ Instantiates a translation registration model
+
+        Parameters
+        ----------
+        shift_vector : Relative shift between two images
+        error : registration error
+        integral : True if shifts are snapped to integer values, False otherwise
 
         """
         super().__init__()
@@ -22,7 +32,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
         return f"TranslationRegistrationModel(shift={self.shift_vector}, error={self.error}, integral={self.integral})"
 
     def to_json(self) -> str:
-        return json.dumps({'translation': self.shift_vector, 'integral': self.integral})
+        return json.dumps({'type': 'translation', 'translation': self.shift_vector, 'integral': self.integral})
 
     def get_shift_and_error(self):
         return self.shift_vector, self.error

@@ -6,20 +6,32 @@ import numpy
 
 def create_cuda_texture(array,
                         shape: Tuple[int, ...] = None,
+                        texture_shape: Tuple[int, ...]=None,
                         num_channels: int = 1,
                         normalised_values: bool = False,
                         normalised_coords: bool = False,
                         sampling_mode: str = 'linear',
                         address_mode: str = 'clamp',
                         dtype=None):
-    if not 1 <= len(shape) <= 3:
-        raise ValueError(f"Invalid number of dimensions ({len(shape)}), must be 1, 2 or 3 (shape={shape}) ")
 
-    if not 1 <= num_channels <= 4:
-        raise ValueError(f"Invalid number of channels ({num_channels}), must be 1, 2., 3 or 4")
+    if texture_shape is None:
+        if num_channels > 1:
+            texture_shape = array.shape[0:-1]
+        else:
+            texture_shape = array.shape
 
     if dtype is None:
-        dtype = array.dtype
+        dtype=array.dtype
+
+    if not (1 <= len(texture_shape) <= 3):
+        raise ValueError(f"Invalid number of dimensions ({len(texture_shape)}), must be 1, 2 or 3 (shape={texture_shape}) ")
+
+    if not (num_channels == 1 or num_channels == 2 or num_channels == 4):
+        raise ValueError(f"Invalid number of channels ({num_channels}), must be 1, 2., 3 or 4")
+
+    if array.size != numpy.prod(texture_shape)*num_channels:
+        raise ValueError(f"Texture shape {texture_shape}, num of channels ({num_channels}), and array size ({array.size}) are mismatched!")
+
 
     dtype = numpy.dtype(dtype)
 
@@ -31,12 +43,16 @@ def create_cuda_texture(array,
     if 'f' in dtype.kind:
         channel_type = cupy.cuda.runtime.cudaChannelFormatKindFloat
     elif 'i' in dtype.kind:
-        channel_type = cupy.cuda.runtime.cudaChannelFormatKindInt
+        channel_type = cupy.cuda.runtime.cudaChannelFormatKindSigned
+    elif 'u' in dtype.kind:
+        channel_type = cupy.cuda.runtime.cudaChannelFormatKindUnsigned
+    else:
+        raise ValueError(f"Dtype '{address_mode}' is not supported")
 
     format_descriptor = cupy.cuda.texture.ChannelFormatDescriptor(*channels, channel_type)
 
-    cuda_array = cupy.cuda.texture.CUDAarray(format_descriptor, *shape)
-    ressource_descriptor = cupy.cuda.texture.ResourceDescriptor(cupy.cuda.runtime.cudaResourceTypeArray, cuArr=cuda_array)
+    cuda_array = cupy.cuda.texture.CUDAarray(format_descriptor, *(texture_shape[::-1]))
+    ressource_descriptor  = cupy.cuda.texture.ResourceDescriptor(cupy.cuda.runtime.cudaResourceTypeArray, cuArr=cuda_array)
 
     if address_mode == 'clamp':
         address_mode = cupy.cuda.runtime.cudaAddressModeClamp
@@ -47,16 +63,16 @@ def create_cuda_texture(array,
     elif address_mode == 'mirror':
         address_mode = cupy.cuda.runtime.cudaAddressModeMirror
     else:
-        raise ValueError(f"Address mode '{address_mode}' not supported")
+        raise ValueError(f"Address mode '{address_mode}' is not supported")
 
-    address_mode = (address_mode,) * len(shape)
+    address_mode = (address_mode,) * len(texture_shape)
 
     if sampling_mode == 'nearest':
         filter_mode = cupy.cuda.runtime.cudaFilterModePoint
     elif sampling_mode == 'linear':
         filter_mode = cupy.cuda.runtime.cudaFilterModeLinear
     else:
-        raise ValueError(f"Sampling mode '{sampling_mode}' not supported")
+        raise ValueError(f"Sampling mode '{sampling_mode}' is not supported")
 
     if normalised_values:
         read_mode = cupy.cuda.runtime.cudaReadModeNormalizedFloat
@@ -74,6 +90,12 @@ def create_cuda_texture(array,
     texture_object = cupy.cuda.texture.TextureObject(ressource_descriptor,
                                                      texture_descriptor)
 
+    # 'copy_from' from CUDAArray requires that the num of channels be multiplied to the last axis of the array (see cupy docs!)
+    if num_channels > 1:
+        array_shape_for_copy = texture_shape[:-1]+(texture_shape[-1]*num_channels,)
+    else:
+        array_shape_for_copy = texture_shape
+    array = cupy.reshape(array, newshape=array_shape_for_copy)
     cuda_array.copy_from(array)
 
     return texture_object

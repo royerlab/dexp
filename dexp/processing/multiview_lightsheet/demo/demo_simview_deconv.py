@@ -10,7 +10,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
-from dexp.processing.utils.scatter_gather import scatter_gather_i2i
+from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.timeit import timeit
 
 filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'

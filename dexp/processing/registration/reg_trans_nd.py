@@ -91,13 +91,6 @@ def register_translation_nd(backend: Backend,
     ]
     # print(f"cropped_correlation.shape = {cropped_correlation.shape}")
 
-    # with gui_qt():
-    #     viewer = Viewer()
-    #     viewer.add_image(self._cn(a), name='a')
-    #     viewer.add_image(self._cn(b), name='b')
-    #     viewer.add_image(self._cn(raw_correlation), name='raw_correlation')
-    #     viewer.add_image(self._cn(correlation), name='correlation')
-    #     viewer.add_image(self._cn(cropped_correlation), name='cropped_correlation')
 
     # We compute the signed rough shift
     signed_rough_shift = xp.array(rough_shift) - max_range
@@ -119,6 +112,21 @@ def register_translation_nd(backend: Backend,
 
     # print(f"shift = {shift}")
 
+    # from napari import gui_qt, Viewer
+    # with gui_qt():
+    #     def _c(array):
+    #         return backend.to_numpy(array)
+    #     viewer = Viewer()
+    #     viewer.add_image(_c(image_a), name='image_a')
+    #     viewer.add_image(_c(image_b), name='image_b')
+    #     viewer.add_image(_c(raw_correlation), name='raw_correlation')
+    #     viewer.add_image(_c(correlation), name='correlation')
+    #     viewer.add_image(_c(cropped_correlation), name='cropped_correlation')
+    #     viewer.grid_view(3,3,1)
+
+    #if log:
+
+
     return TranslationRegistrationModel(shift_vector=shift, error=0)
 
 
@@ -136,13 +144,18 @@ def _center_of_mass(backend: Backend, image):
 
         normalizer = xp.sum(image)
 
-        grids = numpy.ogrid[[slice(0, i) for i in image.shape]]
-        grids = list([backend.to_backend(grid) for grid in grids])
+        if abs(normalizer) > 0:
+            grids = numpy.ogrid[[slice(0, i) for i in image.shape]]
+            grids = list([backend.to_backend(grid) for grid in grids])
 
-        results = list([xp.sum(image * grids[dir].astype(float)) / normalizer
-                        for dir in range(image.ndim)])
+            results = list([xp.sum(image * grids[dir].astype(float)) / normalizer
+                            for dir in range(image.ndim)])
 
-        return tuple(float(f) for f in results)
+            return tuple(float(f) for f in results)
+        else:
+            return tuple(s/2 for s in image.shape)
+
+
 
 
 def _normalised_projection(backend: Backend, image, axis, gamma=3):
@@ -150,7 +163,11 @@ def _normalised_projection(backend: Backend, image, axis, gamma=3):
     projection = xp.max(image, axis=axis)
     min_value = xp.min(projection)
     max_value = xp.max(projection)
-    normalised_image = ((projection - min_value) / (max_value - min_value)) ** gamma
+    range_value = (max_value - min_value)
+    if abs(range_value)>0:
+        normalised_image = ((projection - min_value) / range_value) ** gamma
+    else:
+        normalised_image = 0
     return normalised_image
 
 

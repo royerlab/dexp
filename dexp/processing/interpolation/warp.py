@@ -1,4 +1,5 @@
 import numpy
+from scipy.ndimage import zoom
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -7,6 +8,8 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 def warp(backend: Backend,
          image,
          vector_field,
+         vector_field_zoom: float = 2,
+         vector_field_zoom_order: int = 2,
          internal_dtype=None):
     """
     Applies a warp transform (piece wise linear or constant) to an image based on a vector field.
@@ -26,7 +29,7 @@ def warp(backend: Backend,
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
-    if image.ndim + 1 == vector_field.ndim:
+    if not ( image.ndim+1 == vector_field.ndim or (image.ndim == 1 and vector_field.ndim == 1) ):
         raise ValueError("Vector field must have one additional dimension")
 
     if internal_dtype is None:
@@ -37,34 +40,30 @@ def warp(backend: Backend,
 
     original_dtype = image.dtype
     image = backend.to_backend(image, dtype=internal_dtype)
+
+    if vector_field_zoom != 1:
+        vector_field = backend.to_numpy(vector_field, dtype=internal_dtype)
+        vector_field = zoom(vector_field, zoom=(vector_field_zoom,)*image.ndim+(1,), order=vector_field_zoom_order)
     vector_field = backend.to_backend(vector_field, dtype=internal_dtype)
 
     ## something happens here:
     from dexp.processing.backends.cupy_backend import CupyBackend
     if type(backend) is NumpyBackend:
-        raise NotImplemented("Warping not yet implemented for the Numpy backend.")
+        raise NotImplementedError("Warping not yet implemented for the Numpy backend.")
     elif type(backend) is CupyBackend:
-        from dexp.processing.interpolation._cupy.warp import _warp_1d_cupy, _warp_2d_cupy, _warp_3d_cupy
-        params = (backend, image, vector_field, internal_dtype)
+        params = (backend, image, vector_field)
         if image.ndim == 1:
+            from dexp.processing.interpolation._cupy.warp_1d import _warp_1d_cupy
             result = _warp_1d_cupy(*params)
-        elif image.ndim == 2:
+        if image.ndim == 2:
+            from dexp.processing.interpolation._cupy.warp_2d import _warp_2d_cupy
             result = _warp_2d_cupy(*params)
-        elif image.ndim == 3:
+        if image.ndim == 3:
+            from dexp.processing.interpolation._cupy.warp_3d import _warp_3d_cupy
             result = _warp_3d_cupy(*params)
         else:
             raise NotImplemented("Warping for ndim>3 not implemented.")
 
     result = result.astype(original_dtype, copy=False)
-
-    # from napari import Viewer
-    # import napari
-    # with napari.gui_qt():
-    #     def _c(array):
-    #         return backend.to_numpy(array)
-    #
-    #     viewer = Viewer()
-    #     viewer.add_image(_c(image1), name='image_1')
-    #     viewer.add_image(_c(image1), name='image_2')
 
     return result

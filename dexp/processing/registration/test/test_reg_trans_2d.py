@@ -6,7 +6,7 @@ from skimage.util import random_noise
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.reg_trans_2d import register_translation_2d_skimage
+from dexp.processing.registration.reg_trans_nd import register_translation_nd
 
 
 def test_register_translation_2d_numpy():
@@ -30,7 +30,7 @@ def register_translation_2d(backend):
     image = random_noise(image, mode='speckle', var=0.5)
     translated_image = random_noise(translated_image, mode='speckle', var=0.5)
 
-    shifts, error = register_translation_2d_skimage(backend, image, translated_image).get_shift_and_error()
+    shifts, error = register_translation_nd(backend, image, translated_image).get_shift_and_error()
 
     # from napari import Viewer, gui_qt
     # with gui_qt():

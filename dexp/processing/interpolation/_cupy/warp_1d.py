@@ -1,0 +1,73 @@
+import cupy
+
+from dexp.processing.backends._cupy.texture.texture import create_cuda_texture
+from dexp.processing.backends.backend import Backend
+
+
+def _warp_1d_cupy(backend: Backend,
+                  image,
+                  vector_field,
+                  block_size: int = 128):
+    xp = backend.get_xp_module()
+    source = r'''
+                extern "C"{
+                __global__ void warp_1d(float* warped_image,
+                                        cudaTextureObject_t input_image,
+                                        cudaTextureObject_t vector_field,
+                                        int width)
+                {
+                    unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+
+                    if (x < width)
+                    {
+                        // coordinates in coord-normalised vector_field texture:
+                        float u = float(x)/width;
+
+                        // Obtain linearly interpolated vector at (u,):
+                        float vector = tex1D<float>(vector_field, u);
+
+                        // Obtain the shifted coordinates of the source voxel: 
+                        float sx = float(x) + vector;
+
+                        // Sample source image for voxel value:
+                        float value = tex1D<float>(input_image, sx);
+
+                        //printf("(%f, %f)=%f\n", sx, sy, value);
+
+                        // Store interpolated value:
+                        warped_image[x] = value;
+ 
+                    }
+                }
+                }
+                '''
+
+    if image.ndim != 1 or vector_field.ndim != 1:
+        raise ValueError("image or vector field has wrong number of dimensions!")
+
+    # set up textures:
+    input_image_tex = create_cuda_texture(image,
+                                          num_channels=1,
+                                          normalised_coords=False,
+                                          sampling_mode='linear')
+
+    vector_field_tex = create_cuda_texture(vector_field,
+                                           num_channels=1,
+                                           normalised_coords=True,
+                                           sampling_mode='linear')
+
+    # Set up resulting image:
+    warped_image = xp.empty_like(image)
+
+    # get the kernel, which copies from texture memory
+    warp_1d_kernel = cupy.RawKernel(source, 'warp_1d')
+
+    # launch kernel
+    width, = image.shape
+
+    grid_x = (width + block_size - 1) // block_size
+    warp_1d_kernel((grid_x,),
+                   (block_size,),
+                   (warped_image, input_image_tex, vector_field_tex, width))
+
+    return warped_image

@@ -8,6 +8,7 @@ from dexp.utils.timeit import timeit
 def generate_nuclei_background_data(backend: Backend,
                                     length_xy=320,
                                     length_z_factor=4,
+                                    zoom=1,
                                     add_noise=True,
                                     background_stength=0.2,
                                     background_scale=0.5,
@@ -38,11 +39,11 @@ def generate_nuclei_background_data(backend: Backend,
         else:
             image = image_gt
 
-    if length_z_factor != 1:
+    if length_z_factor != 1 or zoom != 1:
         with timeit("downscale along z"):
-            image_gt = sp.ndimage.zoom(image_gt, zoom=(1 / length_z_factor, 1, 1), order=0)
-            background = sp.ndimage.zoom(background, zoom=(1 / length_z_factor, 1, 1), order=0)
-            image = sp.ndimage.zoom(image, zoom=(1 / length_z_factor, 1, 1), order=0)
+            image_gt = sp.ndimage.zoom(image_gt, zoom=(zoom / length_z_factor, zoom, zoom), order=0)
+            background = sp.ndimage.zoom(background, zoom=(zoom / length_z_factor, zoom, zoom), order=0)
+            image = sp.ndimage.zoom(image, zoom=(zoom / length_z_factor, zoom, zoom), order=0)
 
     if add_noise:
         with timeit("add noise"):
