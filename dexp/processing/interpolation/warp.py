@@ -1,19 +1,13 @@
-
-
-from typing import Tuple
-
 import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.utils.nan_to_zero import nan_to_zero
-from dexp.processing.utils.normalise import normalise
+
 
 def warp(backend: Backend,
          image,
          vector_field,
-         internal_dtype=numpy.float16):
+         internal_dtype=None):
     """
     Applies a warp transform (piece wise linear or constant) to an image based on a vector field.
 
@@ -32,8 +26,11 @@ def warp(backend: Backend,
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
-    if image.ndim+1 == vector_field.ndim:
+    if image.ndim + 1 == vector_field.ndim:
         raise ValueError("Vector field must have one additional dimension")
+
+    if internal_dtype is None:
+        internal_dtype = image.dtype
 
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32
@@ -51,10 +48,12 @@ def warp(backend: Backend,
         params = (backend, image, vector_field, internal_dtype)
         if image.ndim == 1:
             result = _warp_1d_cupy(*params)
-        if image.ndim == 2:
+        elif image.ndim == 2:
             result = _warp_2d_cupy(*params)
-        if image.ndim == 3:
+        elif image.ndim == 3:
             result = _warp_3d_cupy(*params)
+        else:
+            raise NotImplemented("Warping for ndim>3 not implemented.")
 
     result = result.astype(original_dtype, copy=False)
 

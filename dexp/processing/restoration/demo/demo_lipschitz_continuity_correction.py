@@ -27,7 +27,7 @@ def demo_lipschitz_correction(backend: Backend):
     image = random_noise(image, mode="gaussian", var=0.005, seed=0, clip=False)
     image = random_noise(image, mode="s&p", amount=0.03, seed=0, clip=False)
 
-    corrected = lipschitz_continuity_correction(backend, image, lipschitz=0.15)
+    corrected = lipschitz_continuity_correction(backend, image, lipschitz=0.15, in_place=False)
 
     median = median_filter(image, size=3)
 

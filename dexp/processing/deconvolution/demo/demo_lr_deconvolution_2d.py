@@ -36,12 +36,28 @@ def _demo_lr_deconvolution(backend):
     deconvolved = lucy_richardson_deconvolution(backend, noisy, psf,
                                                 num_iterations=iterations,
                                                 padding=16)
+
     deconvolved_blind_spot = lucy_richardson_deconvolution(backend, noisy, psf,
                                                            num_iterations=iterations,
                                                            padding=16,
                                                            power=1,
                                                            blind_spot=3,
                                                            blind_spot_mode='gaussian+median')
+
+    deconvolved_power = lucy_richardson_deconvolution(backend, noisy, psf,
+                                                      num_iterations=iterations,
+                                                      padding=16,
+                                                      power=2,
+                                                      blind_spot=3,
+                                                      blind_spot_mode='gaussian+median'
+                                                      )
+
+    deconvolved_median = lucy_richardson_deconvolution(backend, noisy, psf,
+                                                       num_iterations=iterations,
+                                                       padding=16,
+                                                       power=1,
+                                                       median_filter_size=3
+                                                       )
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -55,6 +71,8 @@ def _demo_lr_deconvolution(backend):
         viewer.add_image(_c(noisy), name='noisy')
         viewer.add_image(_c(deconvolved), name='deconvolved')
         viewer.add_image(_c(deconvolved_blind_spot), name='deconvolved_blind_spot')
+        viewer.add_image(_c(deconvolved_power), name='deconvolved_power')
+        viewer.add_image(_c(deconvolved_median), name='deconvolved_median')
 
 
 demo_lr_deconvolution_cupy()

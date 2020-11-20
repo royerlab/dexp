@@ -6,7 +6,11 @@ from dexp.processing.registration.model.translation_registration_model import Tr
 from dexp.processing.registration.reg_trans_2d import register_translation_2d_dexp
 
 
-def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register_translation_2d=register_translation_2d_dexp, gamma=2):
+def register_translation_maxproj_nd(backend: Backend,
+                                    image_a, image_b,
+                                    register_translation_2d=register_translation_2d_dexp,
+                                    gamma=2,
+                                    internal_dtype=None):
     """
     Registers two nD (n=2 or 3) images using just a translation-only model.
     This method uses max projections along 2 or 3 axis and then performs phase correlation.
@@ -18,6 +22,7 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
     image_b : Second image to register
     register_translation_2d : 2d registration method to use
     gamma : gamma correstion on max projections as a preprocessing before phase correlation.
+    internal_dtype : internal dtype for computation
 
 
     Returns
@@ -35,7 +40,9 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
     image_b = backend.to_backend(image_b)
 
     if image_a.ndim == 2:
-        shifts, error = register_translation_2d(backend, image_a, image_b)
+        shifts, error = register_translation_2d(backend,
+                                                image_a, image_b,
+                                                internal_dtype)
 
     elif image_a.ndim == 3:
         iap0 = _normalised_projection(backend, image_a, axis=0, dtype=xp.float32, gamma=gamma)
@@ -46,9 +53,9 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
         ibp1 = _normalised_projection(backend, image_b, axis=1, dtype=xp.float32, gamma=gamma)
         ibp2 = _normalised_projection(backend, image_b, axis=2, dtype=xp.float32, gamma=gamma)
 
-        shifts_p0, error_p0 = register_translation_2d(backend, iap0, ibp0).get_shift_and_error()
-        shifts_p1, error_p1 = register_translation_2d(backend, iap1, ibp1).get_shift_and_error()
-        shifts_p2, error_p2 = register_translation_2d(backend, iap2, ibp2).get_shift_and_error()
+        shifts_p0, error_p0 = register_translation_2d(backend, iap0, ibp0, internal_dtype=internal_dtype).get_shift_and_error()
+        shifts_p1, error_p1 = register_translation_2d(backend, iap1, ibp1, internal_dtype=internal_dtype).get_shift_and_error()
+        shifts_p2, error_p2 = register_translation_2d(backend, iap2, ibp2, internal_dtype=internal_dtype).get_shift_and_error()
 
         shifts_p0 = numpy.asarray([0, shifts_p0[0], shifts_p0[1]])
         shifts_p1 = numpy.asarray([shifts_p1[0], 0, shifts_p1[1]])

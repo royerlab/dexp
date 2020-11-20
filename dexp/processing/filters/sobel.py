@@ -9,8 +9,8 @@ def sobel_magnitude_filter(backend: Backend,
                            image,
                            exponent: int = 2,
                            normalise_input: bool = True,
-                           in_place: bool = False,
-                           internal_dtype=numpy.float16):
+                           in_place_normalisation: bool = False,
+                           internal_dtype=None):
     """
     Computes the Sobel magnitude filter response for a given image.
 
@@ -36,7 +36,8 @@ def sobel_magnitude_filter(backend: Backend,
     image : image to apply filter on
     exponent : Exponent to use for the magnitude (norm) of the gradient, 2 for L2, and 1 for L1...
     normalise_input : True to normalise input image between 0 and 1 before applying filter
-    internal_dtype : dtype fro internal computation.
+    in_place_normalisation : If True then input image can be modified during normalisation.
+    internal_dtype : dtype for internal computation.
 
     Returns
     -------
@@ -47,16 +48,17 @@ def sobel_magnitude_filter(backend: Backend,
     sp = backend.get_sp_module(image)
     ndim = image.ndim
 
+    if internal_dtype is None:
+        internal_dtype = image.dtype
+
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input and not in_place)
+    image = backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input and not in_place_normalisation)
 
     if normalise_input:
-        image, denorm_fun = normalise(backend, image, out=image, dtype=internal_dtype)
-    else:
-        denorm_fun = None
+        image, _ = normalise(backend, image, out=image, dtype=internal_dtype)
 
     sobel_image = xp.zeros_like(image)
 

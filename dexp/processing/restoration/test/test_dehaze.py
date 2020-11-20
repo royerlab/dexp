@@ -30,7 +30,7 @@ def _test_dehaze(backend, length_xy=128):
                                                                       independent_haze=True)
 
     with timeit('dehaze_new'):
-        dehazed = dehaze(backend, image, size=25)
+        dehazed = dehaze(backend, image, size=25, in_place=False)
 
     assert dehazed is not image
     assert dehazed.shape == image.shape

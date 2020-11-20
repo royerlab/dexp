@@ -10,7 +10,8 @@ def dehaze(backend: Backend,
            size: int = 21,
            downscale: int = 4,
            minimal_zero_level: float = 0,
-           internal_dtype=numpy.float16
+           in_place: bool = True,
+           internal_dtype=None
            ):
     """
     Dehazes an image by means of a non-linear low-pass rejection filter.
@@ -22,6 +23,7 @@ def dehaze(backend: Backend,
     size : filter size
     downscale : downscale factor for speeding up computation of the haze map.
     minimal_zero_level : minimal zero level to substract
+    in_place : True if the input image may be modified in-place.
     internal_dtype : internal dtype for computation
 
     Returns
@@ -32,11 +34,14 @@ def dehaze(backend: Backend,
     sp = backend.get_sp_module()
     xp = backend.get_xp_module()
 
+    if internal_dtype is None:
+        internal_dtype = image.dtype
+
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=True)
+    image = backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
     # original_image = image.copy()
 
     minimal_zero_level = backend.to_backend(numpy.asarray(minimal_zero_level), dtype=internal_dtype)
@@ -67,7 +72,10 @@ def dehaze(backend: Backend,
         image_zero_level = xp.maximum(image_zero_level, minimal_zero_level)
 
     # remove zero level:
-    image = xp.maximum(image - image_zero_level, 0, out=image)
+    image -= image_zero_level
+
+    # clip:
+    image = xp.maximum(image, 0, out=image)
 
     # convert back to original dtype
     image = image.astype(dtype=original_dtype, copy=False)

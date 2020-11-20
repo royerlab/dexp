@@ -3,6 +3,7 @@ import math
 import numpy
 
 from dexp.processing.backends.backend import Backend
+from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 
 
@@ -13,8 +14,7 @@ def register_translation_nd(backend: Backend,
                             fine_window_radius: int = 4,
                             decimate: int = 16,
                             quantile: float = 0.999,
-                            internal_dtype=numpy.float32,
-                            log: bool = False) -> TranslationRegistrationModel:
+                            internal_dtype=None) -> TranslationRegistrationModel:
     """
     Registers two nD images using just a translation-only model.
     This uses a full nD robust phase correlation based approach.
@@ -30,18 +30,26 @@ def register_translation_nd(backend: Backend,
     decimate : How much to decimate when computing floor level
     quantile : Quantile to use for robust min and max
     internal_dtype : internal dtype for computation
-    log : output logging information, or not.
 
     Returns
     -------
     Translation-only registration model
 
     """
-    image_a = backend.to_backend(image_a)
-    image_b = backend.to_backend(image_b)
-
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
+
+    if not image_a.dtype == image_b.dtype:
+        raise ValueError("Arrays must have the same dtype")
+
+    if internal_dtype is None:
+        internal_dtype = image_a.dtype
+
+    if type(backend) is NumpyBackend:
+        internal_dtype = xp.float32
+
+    image_a = backend.to_backend(image_a, dtype=internal_dtype)
+    image_b = backend.to_backend(image_b, dtype=internal_dtype)
 
     # We compute the phase correlation:
     raw_correlation = _phase_correlation(backend, image_a, image_b, internal_dtype)
@@ -52,12 +60,10 @@ def register_translation_nd(backend: Backend,
 
     # We estimate the noise floor of the correlation:
     max_ranges = tuple(max(0, min(max_range, s - 2 * max_range)) for s in correlation.shape)
-    if log:
-        print(f"max_ranges={max_ranges}")
+    # print(f"max_ranges={max_ranges}")
     empty_region = correlation[tuple(slice(r, s - r) for r, s in zip(max_ranges, correlation.shape))].copy()
     noise_floor_level = xp.percentile(empty_region.ravel()[::decimate].astype(numpy.float32), q=100 * quantile)
-    if log:
-        print(f"noise_floor_level={noise_floor_level}")
+    # print(f"noise_floor_level={noise_floor_level}")
 
     # we use that floor to clip anything below:
     correlation = correlation.clip(noise_floor_level, math.inf) - noise_floor_level
@@ -74,8 +80,7 @@ def register_translation_nd(backend: Backend,
         xp.argmax(correlation, axis=None), correlation.shape
     )
 
-    if log:
-        print(f"rough_shift= {rough_shift}")
+    # print(f"rough_shift= {rough_shift}")
 
     # We crop further to facilitate center-of-mass estimation:
     cropped_correlation = correlation[
@@ -84,8 +89,7 @@ def register_translation_nd(backend: Backend,
             for s, d in zip(rough_shift, correlation.shape)
         )
     ]
-    if log:
-        print(f"cropped_correlation.shape = {cropped_correlation.shape}")
+    # print(f"cropped_correlation.shape = {cropped_correlation.shape}")
 
     # with gui_qt():
     #     viewer = Viewer()
@@ -98,8 +102,7 @@ def register_translation_nd(backend: Backend,
     # We compute the signed rough shift
     signed_rough_shift = xp.array(rough_shift) - max_range
     signed_rough_shift = backend.to_numpy(signed_rough_shift)
-    if log:
-        print(f"signed_rough_shift= {signed_rough_shift}")
+    # print(f"signed_rough_shift= {signed_rough_shift}")
     cropped_correlation = backend.to_numpy(cropped_correlation)
 
     # We compute the center of mass:
@@ -109,14 +112,12 @@ def register_translation_nd(backend: Backend,
             - fine_window_radius
     )
     signed_com_shift = backend.to_numpy(signed_com_shift)
-    if log:
-        print(f"signed_com_shift= {signed_com_shift}")
+    # print(f"signed_com_shift= {signed_com_shift}")
 
     # The final shift is the sum of the rough sight plus the fine center of mass shift:
     shift = list(signed_rough_shift + signed_com_shift)
 
-    if log:
-        print(f"shift = {shift}")
+    # print(f"shift = {shift}")
 
     return TranslationRegistrationModel(shift_vector=shift, error=0)
 

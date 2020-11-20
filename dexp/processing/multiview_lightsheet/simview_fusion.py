@@ -88,7 +88,6 @@ def simview_fuse_2I2D(backend: Backend,
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32
 
-
     with timeit("SimView 2I2D fusion"):
 
         original_dtype = C0L0.dtype
@@ -195,7 +194,7 @@ def fuse_illumination_views(backend: Backend,
                             bias_exponent: int = 2,
                             bias_strength: float = 0.1):
     if mode == 'tg':
-        fused = fuse_tg_nd(backend, CxL0, CxL1, downscale=2, tenenegrad_smoothing=smoothing, bias_axis=2, bias_exponent=bias_exponent, bias_strength=bias_strength)
+        fused = fuse_tg_nd(backend, CxL0, CxL1, downscale=2, tenengrad_smoothing=smoothing, bias_axis=2, bias_exponent=bias_exponent, bias_strength=bias_strength)
     elif mode == 'dct':
         fused = fuse_dct_nd(backend, CxL0, CxL1)
     elif mode == 'dft':
@@ -211,7 +210,7 @@ def fuse_detection_views(backend: Backend,
                          bias_exponent: int = 2,
                          bias_strength: float = 0.1):
     if mode == 'tg':
-        fused = fuse_tg_nd(backend, C0Lx, C1Lx, downscale=2, tenenegrad_smoothing=smoothing, bias_axis=0, bias_exponent=bias_exponent, bias_strength=bias_strength)
+        fused = fuse_tg_nd(backend, C0Lx, C1Lx, downscale=2, tenengrad_smoothing=smoothing, bias_axis=0, bias_exponent=bias_exponent, bias_strength=bias_strength)
     elif mode == 'dct':
         fused = fuse_dct_nd(backend, C0Lx, C1Lx)
     elif mode == 'dft':

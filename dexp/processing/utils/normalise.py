@@ -7,11 +7,18 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.utils.element_wise_affine import element_wise_affine
 
 
-def normalise(backend: Backend, image, low=0., high=1., minmax: Tuple[float, float] = None, clip: bool = True, out=None, dtype=numpy.float16):
+def normalise(backend: Backend,
+              image,
+              low: float = 0.,
+              high: float = 1.,
+              minmax: Tuple[float, float] = None,
+              clip: bool = True,
+              out=None,
+              dtype=numpy.float16):
     xp = backend.get_xp_module()
 
     if type(backend) is NumpyBackend:
-        internal_dtype = numpy.float32
+        dtype = numpy.float32
 
     image = backend.to_backend(image, dtype=dtype)
 

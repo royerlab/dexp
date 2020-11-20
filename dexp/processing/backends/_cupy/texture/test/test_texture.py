@@ -40,10 +40,8 @@ def test_cupy_texture_4channels():
                                      sampling_mode='nearest',
                                      dtype=cupy.float32)
 
-
         real_output = cupy.zeros_like(tex_data)
         expected_output = tex_data.copy()
-
 
         # get the kernel, which copies from texture memory
         kernel = cupy.RawKernel(source, 'copyKernel')

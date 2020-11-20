@@ -1,3 +1,4 @@
+import math
 from typing import Tuple, Union
 
 import numpy
@@ -26,7 +27,7 @@ def lucy_richardson_deconvolution(backend: Backend,
                                   blind_spot_mode: str = 'median+uniform',
                                   blind_spot_axis_exclusion: Union[str, Tuple[int, ...]] = None,
                                   convolve_method=fft_convolve,
-                                  internal_dtype=numpy.float16):
+                                  internal_dtype=None):
     """
     Deconvolves an nD image given a point-spread-function.
 
@@ -62,6 +63,9 @@ def lucy_richardson_deconvolution(backend: Backend,
 
     if image.ndim != psf.ndim:
         raise ValueError("The image and PSF must have same number of dimensions!")
+
+    if internal_dtype is None:
+        internal_dtype = image.dtype
 
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32
@@ -160,15 +164,15 @@ def lucy_richardson_deconvolution(backend: Backend,
                 1 / max_correction
         )
 
-        if power != 1.0:
-            relative_blur **= power
-
         multiplicative_correction = convolve_method(
             backend,
             relative_blur,
             back_projector,
             mode='wrap',
         )
+
+        if power != 1.0:
+            multiplicative_correction **= (1 + (power - 1) / (math.sqrt(1 + i)))
 
         result *= multiplicative_correction
 

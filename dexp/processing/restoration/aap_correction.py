@@ -10,11 +10,12 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 def axis_aligned_pattern_correction(backend: Backend,
                                     image,
                                     axis_combinations: List[Tuple[int]] = None,
-                                    percentile: float = 1,
-                                    sigma: float = 0.5,
+                                    quantile: float = 0.99,
+                                    sigma: float = 0,
                                     decimation: int = 4,
                                     robust_statistics: bool = True,
-                                    internal_dtype=numpy.float16
+                                    in_place: bool = True,
+                                    internal_dtype=None
                                     ):
     """
     Axis aligned pattern correction
@@ -33,22 +34,26 @@ def axis_aligned_pattern_correction(backend: Backend,
     axis_combinations : List of tuples of axis in the order of correction
     percentile : percentile value used for stabilisation
     sigma : sigma used for Gaussian filtering the computed percentile values.
+    in_place : True if the input image may be modified in-place.
+    internal_dtype : internal dtype for computation
     """
 
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
+
+    if internal_dtype is None:
+        internal_dtype = image.dtype
 
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
 
-    new_array = backend.to_backend(image, dtype=internal_dtype, force_copy=True)
+    image = backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
 
-    overall_value = numpy.percentile(
-        image.ravel()[::decimation], q=percentile, keepdims=True
+    overall_value = xp.percentile(
+        image.ravel()[::decimation], q=100 * quantile, keepdims=True
     )
-    overall_value = backend.to_backend(overall_value, dtype=internal_dtype)
 
     axis_combinations = (
         _all_axis_combinations(image.ndim)
@@ -60,23 +65,23 @@ def axis_aligned_pattern_correction(backend: Backend,
         print(f"Supressing variations across hyperplane: {axis_combination}")
         if robust_statistics:
             value = xp.percentile(
-                new_array, q=percentile, axis=axis_combination, keepdims=True
+                image, q=100 * quantile, axis=axis_combination, keepdims=True
             )
             value = value.astype(dtype=internal_dtype, copy=False)
         else:
             value = xp.mean(
-                new_array, axis=axis_combination, keepdims=True, dtype=internal_dtype
+                image, axis=axis_combination, keepdims=True, dtype=internal_dtype
             )
 
         if sigma > 0:
-            value = sp.ndimage.filters.gaussian_filter(value, sigma=sigma)
+            value -= sp.ndimage.filters.gaussian_filter(value, sigma=sigma)
 
-        new_array += overall_value
-        new_array -= value
+        image += overall_value
+        image -= value
 
-    new_array = new_array.astype(original_dtype, copy=False)
+    image = image.astype(original_dtype, copy=False)
 
-    return new_array
+    return image
 
 
 def _axis_combinations(ndim: int, n: int) -> List[Tuple[Any, ...]]:

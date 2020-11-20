@@ -13,7 +13,8 @@ def lipschitz_continuity_correction(backend: Backend,
                                     lipschitz: float = 0.1,
                                     max_proportion_corrected: float = 1,
                                     decimation: int = 8,
-                                    internal_dtype=numpy.float16
+                                    in_place: bool = True,
+                                    internal_dtype=None
                                     ):
     """
     'Lipshitz continuity correction'
@@ -33,6 +34,7 @@ def lipschitz_continuity_correction(backend: Backend,
     lipschitz : lipschitz continuity constant
     max_proportion_corrected : max proportion of pixels to correct overall
     decimation : decimation for speeding up percentile computation
+    in_place : True if the input image may be modified in-place.
     internal_dtype : internal dtype
 
     Returns
@@ -42,11 +44,14 @@ def lipschitz_continuity_correction(backend: Backend,
     """
     xp = backend.get_xp_module()
 
+    if internal_dtype is None:
+        internal_dtype = image.dtype
+
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=True)
+    image = backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
 
     total_number_of_corrections = 0
 

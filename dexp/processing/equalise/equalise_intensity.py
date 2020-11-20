@@ -12,7 +12,7 @@ def equalise_intensity(backend: Backend,
                        quantile_high=0.99,
                        max_voxels=1e6,
                        copy: bool = True,
-                       internal_dtype=numpy.float16):
+                       internal_dtype=None):
     """
     Equalise intensity between two images
 
@@ -34,6 +34,9 @@ def equalise_intensity(backend: Backend,
     """
     if image1.dtype != image2.dtype:
         raise ValueError("Two images must have same dtype!")
+
+    if internal_dtype is None:
+        internal_dtype = image1.dtype
 
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32

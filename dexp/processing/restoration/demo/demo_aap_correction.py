@@ -36,7 +36,11 @@ def demo_aap_correction(backend: Backend, length_xy=128, level=0.3):
     image += level * axis_aligned_noise
     # image = random_noise(image, mode="s&p", amount=0.03, seed=0, clip=False)
 
-    corrected = axis_aligned_pattern_correction(backend, image)
+    corrected = axis_aligned_pattern_correction(backend,
+                                                image,
+                                                axis_combinations=[(0,), (1,), (2,)],
+                                                sigma=4,
+                                                in_place=False)
 
     import napari
 

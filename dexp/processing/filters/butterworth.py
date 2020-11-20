@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy
 
 from dexp.processing.backends.backend import Backend
@@ -56,7 +58,13 @@ def butterworth_kernel(backend: Backend, filter_shape, cutoffs, n=3):
     return kernel.astype(numpy.float32)
 
 
-def butterworth_filter(backend: Backend, image, filter_shape=None, cutoffs=None, n=3, mode='reflect', internal_dtype=numpy.float16):
+def butterworth_filter(backend: Backend,
+                       image,
+                       filter_shape=None,
+                       cutoffs: Tuple[float, ...] = None,
+                       n: int = 3,
+                       mode: str = 'reflect',
+                       internal_dtype=None):
     """
     Applies a Butterworth filter to an image.
     The Butterworth filter is a type of signal processing filter designed to have a frequency response
@@ -80,6 +88,9 @@ def butterworth_filter(backend: Backend, image, filter_shape=None, cutoffs=None,
 
     """
     sp = backend.get_sp_module()
+
+    if internal_dtype is None:
+        internal_dtype = image.dtype
 
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32

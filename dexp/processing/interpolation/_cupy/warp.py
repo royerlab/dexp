@@ -64,10 +64,10 @@ def _warp_2d_cupy(backend: Backend,
                                           sampling_mode='linear')
 
     vector_field_tex = create_cuda_texture(vector_field,
-                                          shape=image.shape,
-                                          num_channels=2,
-                                          normalised_coords=True,
-                                          sampling_mode='linear')
+                                           shape=image.shape,
+                                           num_channels=2,
+                                           normalised_coords=True,
+                                           sampling_mode='linear')
 
     # Set up resulting image:
     warped_image = xp.empty_like(image)
@@ -81,11 +81,10 @@ def _warp_2d_cupy(backend: Backend,
     grid_x = (width + block_size - 1) // block_size
     grid_y = (height + block_size - 1) // block_size
     warp_2d_kernel((grid_x, grid_y),
-                   (block_size,)*2,
+                   (block_size,) * 2,
                    (warped_image, input_image_tex, vector_field_tex, width, height))
 
     return warped_image
-
 
 
 def _warp_3d_cupy(backend: Backend,

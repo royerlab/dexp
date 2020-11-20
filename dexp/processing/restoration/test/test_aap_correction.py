@@ -41,7 +41,7 @@ def _test_aap_correction(backend, length_xy=128):
     noisy = add_patterned_noise(image, length_xy)
 
     with timeit("generate data"):
-        corrected = axis_aligned_pattern_correction(backend, noisy, sigma=0)
+        corrected = axis_aligned_pattern_correction(backend, noisy, in_place=False)
         corrected = backend.to_numpy(corrected)
 
     assert corrected is not noisy

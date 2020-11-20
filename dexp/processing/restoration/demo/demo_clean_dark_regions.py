@@ -36,7 +36,7 @@ def demo_clean_dark_regions_data(backend, length_xy=256):
     image_gt = xp.clip(image_gt - 95, 0, None)
 
     with timeit('dehaze_new'):
-        dehazed = clean_dark_regions(backend, image, size=5, threshold=100)
+        dehazed = clean_dark_regions(backend, image, size=5, threshold=100, in_place=False)
 
     with gui_qt():
         def _c(array):

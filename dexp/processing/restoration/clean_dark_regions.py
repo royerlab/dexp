@@ -10,7 +10,8 @@ def clean_dark_regions(backend: Backend,
                        threshold: float = 32,
                        mode: str = 'gaussian',
                        sigma: float = 1,
-                       internal_dtype=numpy.float16
+                       in_place: bool = True,
+                       internal_dtype=None
                        ):
     """
     Clean Dark Regions
@@ -26,6 +27,7 @@ def clean_dark_regions(backend: Backend,
     threshold : threshold for 'dark' voxel values.
     mode : cleaning approach: 'min', 'gaussian', and 'median'
     sigma : sigma value for gaussian filtering case.
+    in_place : True if the input image may be modified in-place.
     internal_dtype : internal dtype for computation
 
     Returns
@@ -37,11 +39,14 @@ def clean_dark_regions(backend: Backend,
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
+    if internal_dtype is None:
+        internal_dtype = image.dtype
+
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=True)
+    image = backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
 
     if mode == 'min':
         filtered = sp.ndimage.filters.minimum_filter(image, size=3)
@@ -53,8 +58,8 @@ def clean_dark_regions(backend: Backend,
         raise ValueError('Unknown mode')
 
     mask = sp.ndimage.filters.maximum_filter(filtered, size=size) < threshold
-    num_corrections = xp.sum(mask)
-    proportion = num_corrections / image.size
+    # num_corrections = xp.sum(mask)
+    # proportion = num_corrections / image.size
 
     image[mask] = filtered[mask]
 

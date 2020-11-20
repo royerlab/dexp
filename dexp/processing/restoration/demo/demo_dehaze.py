@@ -29,7 +29,7 @@ def demo_dehaze_data(backend, length_xy=320):
                                                                       independent_haze=True)
 
     with timeit('dehaze'):
-        dehazed = dehaze(backend, image, size=25)
+        dehazed = dehaze(backend, image, size=25, in_place=False)
 
     background_voxels_image = (1 - image_gt) * image
     background_voxels_dehazed = (1 - image_gt) * dehazed

@@ -35,7 +35,7 @@ def _test_clean_dark_regions(backend, length_xy=128):
     image_gt -= 95
 
     with timeit('clean_dark_regions'):
-        cleaned = clean_dark_regions(backend, image, size=3, threshold=100)
+        cleaned = clean_dark_regions(backend, image, size=3, threshold=100, in_place=False)
 
     assert cleaned is not image
     assert cleaned.shape == image.shape

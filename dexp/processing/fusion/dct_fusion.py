@@ -6,7 +6,8 @@ def fuse_dct_nd(backend: Backend,
                 image_a,
                 image_b,
                 cutoff: float = 0,
-                clip: bool = True):
+                clip: bool = True,
+                internal_dtype=None):
     """
     Fuses two images in DCT domain by picking coefficients with maximal magnitude.
 
@@ -24,17 +25,29 @@ def fuse_dct_nd(backend: Backend,
     Fused image.
 
     """
+
+    xp = backend.get_xp_module()
+    sp = backend.get_sp_module()
+
     if not image_a.shape == image_b.shape:
         raise ValueError("Arrays must have the same shape")
+
+    if not image_a.dtype == image_b.dtype:
+        raise ValueError("Arrays must have the same dtype")
 
     if not isinstance(backend, NumpyBackend):
         raise NotImplementedError("DCT not yet implemented in Cupy")
 
-    image_a = backend.to_backend(image_a)
-    image_b = backend.to_backend(image_b)
+    if internal_dtype is None:
+        internal_dtype = image_a.dtype
 
-    xp = backend.get_xp_module(image_a)
-    sp = backend.get_sp_module(image_a)
+    if type(backend) is NumpyBackend:
+        internal_dtype = xp.float32
+
+    original_dtype = image_a.dtype
+
+    image_a = backend.to_backend(image_a, dtype=internal_dtype)
+    image_b = backend.to_backend(image_b, dtype=internal_dtype)
 
     min_a, max_a = xp.min(image_a), xp.max(image_a)
     min_b, max_b = xp.min(image_b), xp.max(image_b)
@@ -64,5 +77,8 @@ def fuse_dct_nd(backend: Backend,
 
     if clip:
         image_fused = xp.clip(image_fused, min_value, max_value, out=image_fused)
+
+    # Adjust type:
+    image_fused = image_fused.astype(original_dtype, copy=False)
 
     return image_fused

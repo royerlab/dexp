@@ -1,5 +1,4 @@
 from contextlib import contextmanager
-from pprint import pprint
 from typing import Any
 
 import numpy
@@ -15,12 +14,9 @@ except:
     pass
 
 
-
 class CupyBackend(Backend):
     _dexp_cuda_cluster = None
     _dexp_dask_client = None
-
-
 
     def __init__(self,
                  device_id=0,
@@ -53,11 +49,10 @@ class CupyBackend(Backend):
         self.cupy_device.use()
         free_mem = self.cupy_device.mem_info[0]
         total_mem = self.cupy_device.mem_info[0]
-        percent = (100*free_mem)//total_mem
+        percent = (100 * free_mem) // total_mem
         print(f"Using CUDA device id:{self.device_id} "
-              f"with {free_mem//(1024*1024)} MB ({percent}%) free memory out of {free_mem//(1024*1024)} MB, "
+              f"with {free_mem // (1024 * 1024)} MB ({percent}%) free memory out of {free_mem // (1024 * 1024)} MB, "
               f"compute:{self.cupy_device.compute_capability}, pci-bus-id:'{self.cupy_device.pci_bus_id}'")
-
 
         from cupy.cuda import cub, cutensor
         cub.available = enable_cub

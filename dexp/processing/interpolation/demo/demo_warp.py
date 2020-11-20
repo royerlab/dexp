@@ -1,12 +1,8 @@
 import numpy
 from skimage.data import camera
-from skimage.util import random_noise
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
-from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.filters.kernels import gaussian_kernel_2d
 from dexp.processing.interpolation.warp import warp
 
 
@@ -26,9 +22,9 @@ def demo_warp_cupy():
 def _demo_warp(backend):
     image = camera().astype(numpy.float32) / 255
 
-    vector_field = numpy.asarray([[[10,10],[-5,2],[+10,5]],
-                                  [[5,-5],[0,0],[-10,2]],
-                                  [[5,-1],[1,-5],[-10,-10]]])
+    vector_field = numpy.asarray([[[10, 10], [-5, 2], [+10, 5]],
+                                  [[5, -5], [0, 0], [-10, 2]],
+                                  [[5, -1], [1, -5], [-10, -10]]])
 
     warped = warp(backend, image, vector_field)
 

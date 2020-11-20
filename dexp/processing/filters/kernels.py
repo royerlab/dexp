@@ -4,7 +4,10 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def gaussian_kernel_2d(backend: Backend, size: int = 5, sigma: float = 1.0, dtype=numpy.float16):
+def gaussian_kernel_2d(backend: Backend,
+                       size: int = 5,
+                       sigma: float = 1.0,
+                       dtype=numpy.float16):
     """
     Computes a 2D Gaussian kernel
     Parameters
@@ -12,6 +15,7 @@ def gaussian_kernel_2d(backend: Backend, size: int = 5, sigma: float = 1.0, dtyp
     backend : Backend to use for computation
     size : size in pixels
     sigma : Gaussian sigma
+    dtype : dtype for kernel
 
     Returns
     -------
@@ -27,7 +31,11 @@ def gaussian_kernel_2d(backend: Backend, size: int = 5, sigma: float = 1.0, dtyp
     return kernel
 
 
-def gaussian_kernel_nd(backend: Backend, ndim: int = 3, size: int = 5, sigma: float = 1.0, dtype=numpy.float16):
+def gaussian_kernel_nd(backend: Backend,
+                       ndim: int = 3,
+                       size: int = 5,
+                       sigma: float = 1.0,
+                       dtype=numpy.float16):
     """
     Computes a nD Gaussian kernel
     Parameters
@@ -36,6 +44,7 @@ def gaussian_kernel_nd(backend: Backend, ndim: int = 3, size: int = 5, sigma: fl
     ndim : number of dimensions
     size : size in pixels
     sigma : Gaussian sigma
+    dtype : dtype for kernel
 
     Returns
     -------

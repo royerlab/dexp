@@ -89,6 +89,7 @@ def scatter_gather_i2i(backend: Backend,
 
     return result
 
+
 def scatter_gather_i2v(backend: Backend,
                        function,
                        image,
@@ -135,7 +136,7 @@ def scatter_gather_i2v(backend: Backend,
     chunk_slices_no_margins = list(nd_split_slices(shape, chunks=chunks))
 
     # We compute the shape at the chunk level:
-    chunk_shape = tuple(math.ceil(s/c) for s, c in zip(shape,chunks))
+    chunk_shape = tuple(math.ceil(s / c) for s, c in zip(shape, chunks))
 
     # Zipping together slices with and without margins:
     slices = zip(chunk_slices, chunk_slices_no_margins)
@@ -150,7 +151,7 @@ def scatter_gather_i2v(backend: Backend,
             result = backend.to_numpy(result, dtype=image.dtype)
         else:
             result = backend.to_backend(result, dtype=image.dtype)
-        result = xp.reshape(result, newshape=(1,)*image.ndim + result.shape)
+        result = xp.reshape(result, newshape=(1,) * image.ndim + result.shape)
     else:
         result_list = []
         for chunk_slice, chunk_slice_no_margins in slices:
@@ -165,11 +166,9 @@ def scatter_gather_i2v(backend: Backend,
 
         rxp = backend.get_xp_module(result_list[0])
         result = rxp.stack(result_list)
-        result = rxp.reshape(result, newshape=chunk_shape+result_list[0].shape)
+        result = rxp.reshape(result, newshape=chunk_shape + result_list[0].shape)
 
     return result
-
-
 
 # Dask turned out not too work great here, HUGE overhead compared to the light approach above.
 # def scatter_gather_dask(backend: Backend,
