@@ -24,38 +24,50 @@ def _test_scatter_gather_i2v(backend, ndim=3, length_xy=128, splits=4, filter_si
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
-    image = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
+    image1 = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
+    image2 = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
 
-    def f(x):
-        return xp.asarray([x.min(), x.max()])
+    def f(x, y):
+        return (xp.asarray([x.min(), x.max()]), xp.asarray([y.max(), y.mean(), y.min()]))
 
     try:
         with timeit("f"):
-            result_ref = backend.to_numpy(f(backend.to_backend(image)))
+            result_ref_1, result_ref_2 = backend.to_numpy(f(backend.to_backend(image1), backend.to_backend(image2)))
     except:
         print("Can't run this, not enough GPU memory!")
-        result_ref = 0 * image + 17
+        result_ref_1 = 0
+        result_ref_2 = 0
 
     with timeit("scatter_gather(f)"):
         chunks = (length_xy // splits,) * ndim
-        result = scatter_gather_i2v(backend, f, image, chunks=chunks, margins=8)
+        result1, result2 = scatter_gather_i2v(backend, f, (image1, image2), chunks=chunks, margins=8)
 
-    print(result)
+    print(result1.shape)
+    print(result2.shape)
 
-    assert result.ndim == ndim+1
+    assert result1.ndim == ndim+1
+    assert result2.ndim == ndim+1
 
-    mean = result.mean(axis=tuple(a for a in range(ndim)))
+    assert result1.shape[-1] == 2
+    assert result2.shape[-1] == 3
 
-    result -= mean
-
-    result = backend.to_numpy(result)
-
-    error = numpy.linalg.norm(result.ravel(), ord=1) / result.size
+    mean = result1.mean(axis=tuple(a for a in range(ndim)))
+    result1 -= mean
+    result1 = backend.to_numpy(result1)
+    error = numpy.linalg.norm(result1.ravel(), ord=1) / result1.size
     print(f"Error = {error}")
+    assert error < 0.001
+
+    mean = result2.mean(axis=tuple(a for a in range(ndim)))
+    result2 -= mean
+    result2 = backend.to_numpy(result2)
+    error = numpy.linalg.norm(result2.ravel(), ord=1) / result2.size
+    print(f"Error = {error}")
+    assert error < 0.001
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
     #     viewer = Viewer()
     #     viewer.add_image(result, name='result', rgb=False)
     #
-    assert error < 0.0001
+

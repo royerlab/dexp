@@ -10,7 +10,7 @@ def sobel_magnitude_filter(backend: Backend,
                            exponent: int = 2,
                            normalise_input: bool = True,
                            in_place: bool = False,
-                           internal_dtype=numpy.float16):
+                           internal_dtype=None):
     """
     Computes the Sobel magnitude filter response for a given image.
 
@@ -46,6 +46,9 @@ def sobel_magnitude_filter(backend: Backend,
     xp = backend.get_xp_module(image)
     sp = backend.get_sp_module(image)
     ndim = image.ndim
+
+    if internal_dtype is None:
+        internal_dtype = image.dtype
 
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32

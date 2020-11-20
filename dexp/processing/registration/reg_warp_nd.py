@@ -1,11 +1,10 @@
-import math
 from typing import Union, Tuple
 
 import numpy
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
+from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
 
 
@@ -14,12 +13,8 @@ def register_warp_nd(backend: Backend,
                     image_b,
                     chunks: Union[int, Tuple[int, ...]],
                     margins: Union[int, Tuple[int, ...]] = None,
-                    max_range_ratio: float = 0.5,
-                    fine_window_radius: int = 4,
-                    decimate: int = 16,
-                    quantile: float = 0.999,
-                    internal_dtype=numpy.float32,
-                    log: bool = False) -> TranslationRegistrationModel:
+                    registration_method = register_translation_maxproj_nd,
+                    **kwargs) -> WarpRegistrationModel:
     """
     Registers two nD images using warp model (piece-wise translation model).
 
@@ -47,19 +42,18 @@ def register_warp_nd(backend: Backend,
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
-    def f(x,y):
-        #TODO: register x and y and return the shift vector
-        return 0
+    def f(x, y):
+        model = registration_method(backend, x, y, **kwargs)
+        shift, error = model.get_shift_and_error()
+        print(f"shift found: {shift}")
+        return xp.asarray(shift), xp.asarray(error)
 
-    result = scatter_gather_i2v(backend,
+    vector_field, confidence  = scatter_gather_i2v(backend,
                                 f,
                                 (image_a, image_b),
                                 chunks=chunks,
                                 margins=margins)
 
-    #TODO: maybe give the possibility to return a tupple of arrays instead of a single array? so that confidence can be returned?
-    vector_field=0
-    confidence=0
 
     return WarpRegistrationModel(vector_field=vector_field, confidence=confidence)
 

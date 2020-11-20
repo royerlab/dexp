@@ -25,6 +25,7 @@ def demo_warp_2d_cupy():
 
 def _demo_warp_2d(backend, grid_size=8):
     image = camera().astype(numpy.float32) / 255
+    image = image[0:377, :]
 
     vector_field = numpy.random.uniform(low=-15, high=+15, size=(grid_size,)*2+(2,))
 

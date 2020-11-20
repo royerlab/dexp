@@ -31,13 +31,15 @@ def _demo_warp_3d(backend, length_xy=256, grid_size=8):
                                                       length_z_factor=1,
                                                       zoom=2)
 
+    image = image[0:502, 0:500, 0:507]
+
     vector_field = numpy.random.uniform(low=-15, high=+15, size=(grid_size,)*3+(3,))
 
     with timeit("warp"):
-        warped = warp(backend, image, vector_field)
+        warped = warp(backend, image, vector_field, vector_field_zoom=1)
 
     with timeit("dewarp"):
-        dewarp = warp(backend, warped, -vector_field)
+        dewarp = warp(backend, warped, -vector_field, vector_field_zoom=1)
 
     from napari import Viewer, gui_qt
     with gui_qt():

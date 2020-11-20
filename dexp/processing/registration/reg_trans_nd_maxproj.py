@@ -2,6 +2,7 @@ import numpy
 from numpy.linalg import norm
 
 from dexp.processing.backends.backend import Backend
+from dexp.processing.filters.sobel import sobel_magnitude_filter
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.registration.reg_trans_2d import register_translation_2d_dexp
 
@@ -35,16 +36,18 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
     image_b = backend.to_backend(image_b)
 
     if image_a.ndim == 2:
-        shifts, error = register_translation_2d(backend, image_a, image_b)
+        image_a = _preprocess_image(backend, image_a, gamma=gamma, dtype=xp.float32)
+        image_b = _preprocess_image(backend, image_b, gamma=gamma, dtype=xp.float32)
+        shifts, error = register_translation_2d(backend, image_a, image_b).get_shift_and_error()
 
     elif image_a.ndim == 3:
-        iap0 = _normalised_projection(backend, image_a, axis=0, dtype=xp.float32, gamma=gamma)
-        iap1 = _normalised_projection(backend, image_a, axis=1, dtype=xp.float32, gamma=gamma)
-        iap2 = _normalised_projection(backend, image_a, axis=2, dtype=xp.float32, gamma=gamma)
+        iap0 = _project_preprocess_image(backend, image_a, axis=0, dtype=xp.float32, gamma=gamma)
+        iap1 = _project_preprocess_image(backend, image_a, axis=1, dtype=xp.float32, gamma=gamma)
+        iap2 = _project_preprocess_image(backend, image_a, axis=2, dtype=xp.float32, gamma=gamma)
 
-        ibp0 = _normalised_projection(backend, image_b, axis=0, dtype=xp.float32, gamma=gamma)
-        ibp1 = _normalised_projection(backend, image_b, axis=1, dtype=xp.float32, gamma=gamma)
-        ibp2 = _normalised_projection(backend, image_b, axis=2, dtype=xp.float32, gamma=gamma)
+        ibp0 = _project_preprocess_image(backend, image_b, axis=0, dtype=xp.float32, gamma=gamma)
+        ibp1 = _project_preprocess_image(backend, image_b, axis=1, dtype=xp.float32, gamma=gamma)
+        ibp2 = _project_preprocess_image(backend, image_b, axis=2, dtype=xp.float32, gamma=gamma)
 
         shifts_p0, error_p0 = register_translation_2d(backend, iap0, ibp0).get_shift_and_error()
         shifts_p1, error_p1 = register_translation_2d(backend, iap1, ibp1).get_shift_and_error()
@@ -77,27 +80,75 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
     return TranslationRegistrationModel(shift_vector=shifts, error=error)
 
 
-def _normalised_projection(backend: Backend, image, axis, dtype=None, gamma=3, quantile=1):
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
-    image = backend.to_backend(image)
-    projection = xp.max(image, axis=axis)
-    projection = projection.astype(dtype, copy=False)
-    smoothed_projection = projection.copy()
-    # smoothed_projection = sp.ndimage.gaussian_filter(smoothed_projection, sigma=1)
-    min_value = xp.percentile(smoothed_projection, q=quantile)
-    max_value = xp.percentile(smoothed_projection, q=100 - quantile)
+def _project_preprocess_image(backend: Backend,
+                              image,
+                              axis: int,
+                              smoothing: float = 0.5,
+                              percentile: int = 1,
+                              edge_filter: bool = True,
+                              gamma: float = 3,
+                              dtype=None):
+    image_projected = _project_image(backend, image, axis=axis)
+    image_projected_processed = _preprocess_image(backend,
+                              image_projected,
+                              smoothing=smoothing,
+                              percentile=percentile,
+                              edge_filter=edge_filter,
+                              gamma=gamma,
+                              dtype=dtype)
+
     # from napari import Viewer, gui_qt
     # with gui_qt():
     #     def _c(array):
     #         return backend.to_numpy(array)
     #     viewer = Viewer()
     #     viewer.add_image(_c(image), name='image')
-    #     viewer.add_image(_c(smoothed_projection), name='smoothed_projection')
-    #     viewer.add_image(_c(projection), name='projection')
+    #     viewer.add_image(_c(image_projected), name='image_projected')
+    #     viewer.add_image(_c(image_projected_processed), name='image_projected_processed')
 
-    projection -= min_value
-    projection *= 1 / (max_value - min_value)
-    projection = xp.clip(projection, 0, 1, out=projection)
-    projection **= gamma
+    return image_projected_processed
+
+
+def _project_image(backend: Backend, image, axis: int):
+    xp = backend.get_xp_module()
+    sp = backend.get_sp_module()
+    image = backend.to_backend(image)
+    projection = xp.max(image, axis=axis)
     return projection
+
+def _preprocess_image(backend: Backend,
+                      image,
+                      smoothing: float = 0.5,
+                      percentile: int = 1,
+                      edge_filter: bool = True,
+                      gamma: float = 3,
+                      dtype=None):
+    xp = backend.get_xp_module()
+    sp = backend.get_sp_module()
+    processed_image = backend.to_backend(image, dtype=dtype)
+
+    if smoothing > 0:
+        processed_image = sp.ndimage.gaussian_filter(processed_image, sigma=smoothing)
+
+    min_value = xp.percentile(processed_image, q=percentile)
+    max_value = xp.percentile(processed_image, q=100 - percentile)
+    processed_image -= min_value
+    processed_image *= 1 / (max_value - min_value)
+    processed_image = xp.clip(processed_image, 0, 1, out=processed_image)
+
+    if edge_filter:
+        processed_image = sobel_magnitude_filter(backend, processed_image, exponent=1, in_place=True, normalise_input=False)
+
+    processed_image **= gamma
+
+    # from napari import Viewer, gui_qt
+    # with gui_qt():
+    #     def _c(array):
+    #         return backend.to_numpy(array)
+    #     viewer = Viewer()
+    #     viewer.add_image(_c(image), name='image')
+    #     viewer.add_image(_c(processed_image), name='processed_image')
+
+    return processed_image
+
+

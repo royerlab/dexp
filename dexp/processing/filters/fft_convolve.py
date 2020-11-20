@@ -8,7 +8,7 @@ def fft_convolve(backend: Backend,
                  image1, image2,
                  mode: str = 'reflect',
                  in_place: bool = True,
-                 internal_dtype=numpy.float16):
+                 internal_dtype=None):
     """
     Fast FFT based convolution.
 
@@ -36,6 +36,9 @@ def fft_convolve(backend: Backend,
         return xp.asarray([])
     elif image1.dtype != image2.dtype:
         raise ValueError("Two images must have same dtype!")
+
+    if internal_dtype is None:
+        internal_dtype = image1.dtype
 
     if type(backend) is NumpyBackend:
         internal_dtype = numpy.float32

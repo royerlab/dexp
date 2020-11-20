@@ -49,7 +49,7 @@ def create_cuda_texture(array,
 
     format_descriptor = cupy.cuda.texture.ChannelFormatDescriptor(*channels, channel_type)
 
-    cuda_array = cupy.cuda.texture.CUDAarray(format_descriptor, *texture_shape)
+    cuda_array = cupy.cuda.texture.CUDAarray(format_descriptor, *(texture_shape[::-1]))
     ressource_descriptor  = cupy.cuda.texture.ResourceDescriptor(cupy.cuda.runtime.cudaResourceTypeArray, cuArr=cuda_array)
 
     if address_mode=='clamp':

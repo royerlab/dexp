@@ -51,13 +51,15 @@ def warp(backend: Backend,
     if type(backend) is NumpyBackend:
         raise NotImplementedError("Warping not yet implemented for the Numpy backend.")
     elif type(backend) is CupyBackend:
-        from dexp.processing.interpolation._cupy.warp import _warp_1d_cupy, _warp_2d_cupy, _warp_3d_cupy
         params = (backend, image, vector_field, internal_dtype)
         if image.ndim == 1:
+            from dexp.processing.interpolation._cupy.warp_1d import _warp_1d_cupy
             result = _warp_1d_cupy(*params)
         if image.ndim == 2:
+            from dexp.processing.interpolation._cupy.warp_2d import _warp_2d_cupy
             result = _warp_2d_cupy(*params)
         if image.ndim == 3:
+            from dexp.processing.interpolation._cupy.warp_3d import _warp_3d_cupy
             result = _warp_3d_cupy(*params)
 
     result = result.astype(original_dtype, copy=False)
