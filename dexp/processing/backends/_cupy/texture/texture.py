@@ -89,7 +89,7 @@ def create_cuda_texture(array,
                                                      texture_descriptor)
 
     # 'copy_from' from CUDAArray requires that the num of channels be multiplied to the last axis of the array (see cupy docs!)
-    if num_channels>1:
+    if num_channels > 1:
         array_shape_for_copy = texture_shape[:-1]+(texture_shape[-1]*num_channels,)
     else:
         array_shape_for_copy = texture_shape

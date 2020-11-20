@@ -7,9 +7,9 @@ from dexp.processing.backends.backend import Backend
 def _warp_3d_cupy(backend: Backend,
                   image,
                   vector_field,
-                  internal_dtype=cupy.float16,
                   block_size: int = 8):
     xp = backend.get_xp_module()
+
     source = r'''
                 extern "C"{
                 __global__ void warp_3d(float* warped_image,
@@ -29,11 +29,12 @@ def _warp_3d_cupy(backend: Backend,
                         float u = float(x)/width;
                         float v = float(y)/height;
                         float w = float(z)/depth;
+                        //printf("(%f,%f,%f)\n", u, v, w);
 
                         // Obtain linearly interpolated vector at (u,v,w):
                         float4 vector = tex3D<float4>(vector_field, u, v, w);
-
-                        //printf("(%f, %f)=%f\n", sx, sy,  value);
+                        
+                        //printf("(%f,%f,%f,%f)\n", vector.x, vector.y, vector.z, vector.w);
 
                         // Obtain the shifted coordinates of the source voxel: 
                         float sx = float(x) + vector.x;
@@ -43,8 +44,10 @@ def _warp_3d_cupy(backend: Backend,
                         // Sample source image for voxel value:
                         float value = tex3D<float>(input_image, sx, sy, sz);
 
+                        //printf("(%f, %f, %f)=%f\n", sx, sy, sz, value);
+
                         // Store interpolated value:
-                        warped_image[z*width*depth + y*width + x] = value;
+                        warped_image[z*width*height + y*width + x] = value;
 
                         //TODO: supersampling would help in regions for which warping misses voxels in the source image,
                         //better: adaptive supersampling would automatically use the vector field divergence to determine where

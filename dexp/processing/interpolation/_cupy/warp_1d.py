@@ -7,7 +7,6 @@ from dexp.processing.backends.backend import Backend
 def _warp_1d_cupy(backend: Backend,
                   image,
                   vector_field,
-                  internal_dtype=cupy.float16,
                   block_size: int = 128):
     xp = backend.get_xp_module()
     source = r'''
