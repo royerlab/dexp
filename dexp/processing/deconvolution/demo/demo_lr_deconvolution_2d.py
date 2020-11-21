@@ -31,7 +31,17 @@ def _demo_lr_deconvolution(backend):
     noisy = random_noise(blurry, mode="gaussian", var=0.01, seed=0, clip=False)
     noisy = random_noise(noisy, mode="s&p", amount=0.01, seed=0, clip=False)
 
-    iterations = 50
+    iterations = 200
+
+    deconvolved_no_noise = lucy_richardson_deconvolution(backend, blurry, psf,
+                                                         num_iterations=iterations,
+                                                         padding=16)
+
+    deconvolved_no_noise_power = lucy_richardson_deconvolution(backend, blurry, psf,
+                                                               num_iterations=iterations,
+                                                               padding=16,
+                                                               power=3,
+                                                               )
 
     deconvolved = lucy_richardson_deconvolution(backend, noisy, psf,
                                                 num_iterations=iterations,
@@ -44,21 +54,6 @@ def _demo_lr_deconvolution(backend):
                                                            blind_spot=3,
                                                            blind_spot_mode='gaussian+median')
 
-    deconvolved_power = lucy_richardson_deconvolution(backend, noisy, psf,
-                                                      num_iterations=iterations,
-                                                      padding=16,
-                                                      power=2,
-                                                      blind_spot=3,
-                                                      blind_spot_mode='gaussian+median'
-                                                      )
-
-    deconvolved_median = lucy_richardson_deconvolution(backend, noisy, psf,
-                                                       num_iterations=iterations,
-                                                       padding=16,
-                                                       power=1,
-                                                       median_filter_size=3
-                                                       )
-
     from napari import Viewer, gui_qt
     with gui_qt():
         def _c(array):
@@ -69,10 +64,10 @@ def _demo_lr_deconvolution(backend):
         viewer.add_image(_c(blurry), name='blurry')
         viewer.add_image(_c(psf), name='psf')
         viewer.add_image(_c(noisy), name='noisy')
+        viewer.add_image(_c(deconvolved_no_noise), name='deconvolved_no_noise')
+        viewer.add_image(_c(deconvolved_no_noise_power), name='deconvolved_no_noise_power')
         viewer.add_image(_c(deconvolved), name='deconvolved')
         viewer.add_image(_c(deconvolved_blind_spot), name='deconvolved_blind_spot')
-        viewer.add_image(_c(deconvolved_power), name='deconvolved_power')
-        viewer.add_image(_c(deconvolved_median), name='deconvolved_median')
 
 
 demo_lr_deconvolution_cupy()

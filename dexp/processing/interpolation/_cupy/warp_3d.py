@@ -36,10 +36,11 @@ def _warp_3d_cupy(backend: Backend,
                         
                         //printf("(%f,%f,%f,%f)\n", vector.x, vector.y, vector.z, vector.w);
 
-                        // Obtain the shifted coordinates of the source voxel: 
-                        float sx = float(x) + vector.x;
+                        // Obtain the shifted coordinates of the source voxel, 
+                        // flip axis order to match numpy order:
+                        float sx = float(x) + vector.z;
                         float sy = float(y) + vector.y;
-                        float sz = float(z) + vector.z;
+                        float sz = float(z) + vector.y;
 
                         // Sample source image for voxel value:
                         float value = tex3D<float>(input_image, sx, sy, sz);

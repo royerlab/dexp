@@ -7,7 +7,7 @@ import nvgpu
 from dexp.processing.backends.backend import Backend
 
 try:
-    if len(nvgpu.gpu_info())>0:
+    if len(nvgpu.gpu_info()) > 0:
         print("Available CUDA GPUs:")
         for gpu in nvgpu.gpu_info():
             print(f"GPU:'{gpu['type']}', id:{gpu['index']}, total memory:{gpu['mem_total']}MB ({gpu['mem_used_percent']}%) ")

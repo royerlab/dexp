@@ -1,7 +1,5 @@
 from typing import Union, Tuple
 
-import numpy
-
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
 from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
@@ -9,12 +7,12 @@ from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
 
 
 def register_warp_nd(backend: Backend,
-                    image_a,
-                    image_b,
-                    chunks: Union[int, Tuple[int, ...]],
-                    margins: Union[int, Tuple[int, ...]] = None,
-                    registration_method = register_translation_maxproj_nd,
-                    **kwargs) -> WarpRegistrationModel:
+                     image_a,
+                     image_b,
+                     chunks: Union[int, Tuple[int, ...]],
+                     margins: Union[int, Tuple[int, ...]] = None,
+                     registration_method=register_translation_maxproj_nd,
+                     **kwargs) -> WarpRegistrationModel:
     """
     Registers two nD images using warp model (piece-wise translation model).
 
@@ -48,12 +46,10 @@ def register_warp_nd(backend: Backend,
         print(f"shift found: {shift}")
         return xp.asarray(shift), xp.asarray(error)
 
-    vector_field, confidence  = scatter_gather_i2v(backend,
-                                f,
-                                (image_a, image_b),
-                                chunks=chunks,
-                                margins=margins)
-
+    vector_field, confidence = scatter_gather_i2v(backend,
+                                                  f,
+                                                  (image_a, image_b),
+                                                  chunks=chunks,
+                                                  margins=margins)
 
     return WarpRegistrationModel(vector_field=vector_field, confidence=confidence)
-

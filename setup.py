@@ -15,17 +15,17 @@ setup(
     ],
 
     install_requires=[
-#        'tensorflow-gpu',
-#        'click',
-#        'cachey',
-#        'napari',
-#        'dask',
-#        'zarr',
-#        'keras',
-#        'dtcwt',
-#        'cupy-cuda100',
-#        'gputools',
-#        'numexpr'
+        #        'tensorflow-gpu',
+        #        'click',
+        #        'cachey',
+        #        'napari',
+        #        'dask',
+        #        'zarr',
+        #        'keras',
+        #        'dtcwt',
+        #        'cupy-cuda100',
+        #        'gputools',
+        #        'numexpr'
     ],
 
     entry_points='''

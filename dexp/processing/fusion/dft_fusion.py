@@ -74,6 +74,8 @@ def fuse_dft_nd(backend: Backend,
 
     image_fused = itranform(image_fused_dft)
 
+    image_fused = xp.real(image_fused)
+
     if clip:
         image_fused = xp.clip(image_fused, min_value, max_value, out=image_fused)
 

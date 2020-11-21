@@ -1,7 +1,6 @@
 from pprint import pprint
 
 import numpy
-from skimage.data import camera
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -26,7 +25,6 @@ def demo_warp_1d_cupy():
 
 
 def _demo_warp_1d(backend):
-
     image = numpy.random.uniform(low=0, high=1, size=(128,)).astype(dtype=numpy.float32)
 
     vector_field = numpy.random.uniform(low=-15, high=+15, size=(8,))
@@ -40,11 +38,11 @@ def _demo_warp_1d(backend):
     warped = backend.to_numpy(warped)
     dewarped = backend.to_numpy(dewarped)
 
-    pprint(warped-image)
-    pprint(dewarped-image)
+    pprint(warped - image)
+    pprint(dewarped - image)
 
-    pprint(numpy.max(numpy.absolute(warped-image)))
-    pprint(numpy.max(numpy.absolute(dewarped-image)))
+    pprint(numpy.max(numpy.absolute(warped - image)))
+    pprint(numpy.max(numpy.absolute(dewarped - image)))
 
 
 demo_warp_1d_cupy()

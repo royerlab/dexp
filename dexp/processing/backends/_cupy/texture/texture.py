@@ -6,14 +6,13 @@ import numpy
 
 def create_cuda_texture(array,
                         shape: Tuple[int, ...] = None,
-                        texture_shape: Tuple[int, ...]=None,
+                        texture_shape: Tuple[int, ...] = None,
                         num_channels: int = 1,
                         normalised_values: bool = False,
                         normalised_coords: bool = False,
                         sampling_mode: str = 'linear',
                         address_mode: str = 'clamp',
                         dtype=None):
-
     if texture_shape is None:
         if num_channels > 1:
             texture_shape = array.shape[0:-1]
@@ -21,7 +20,7 @@ def create_cuda_texture(array,
             texture_shape = array.shape
 
     if dtype is None:
-        dtype=array.dtype
+        dtype = array.dtype
 
     if not (1 <= len(texture_shape) <= 3):
         raise ValueError(f"Invalid number of dimensions ({len(texture_shape)}), must be 1, 2 or 3 (shape={texture_shape}) ")
@@ -29,9 +28,8 @@ def create_cuda_texture(array,
     if not (num_channels == 1 or num_channels == 2 or num_channels == 4):
         raise ValueError(f"Invalid number of channels ({num_channels}), must be 1, 2., 3 or 4")
 
-    if array.size != numpy.prod(texture_shape)*num_channels:
+    if array.size != numpy.prod(texture_shape) * num_channels:
         raise ValueError(f"Texture shape {texture_shape}, num of channels ({num_channels}), and array size ({array.size}) are mismatched!")
-
 
     dtype = numpy.dtype(dtype)
 
@@ -52,7 +50,7 @@ def create_cuda_texture(array,
     format_descriptor = cupy.cuda.texture.ChannelFormatDescriptor(*channels, channel_type)
 
     cuda_array = cupy.cuda.texture.CUDAarray(format_descriptor, *(texture_shape[::-1]))
-    ressource_descriptor  = cupy.cuda.texture.ResourceDescriptor(cupy.cuda.runtime.cudaResourceTypeArray, cuArr=cuda_array)
+    ressource_descriptor = cupy.cuda.texture.ResourceDescriptor(cupy.cuda.runtime.cudaResourceTypeArray, cuArr=cuda_array)
 
     if address_mode == 'clamp':
         address_mode = cupy.cuda.runtime.cudaAddressModeClamp
@@ -92,10 +90,15 @@ def create_cuda_texture(array,
 
     # 'copy_from' from CUDAArray requires that the num of channels be multiplied to the last axis of the array (see cupy docs!)
     if num_channels > 1:
-        array_shape_for_copy = texture_shape[:-1]+(texture_shape[-1]*num_channels,)
+        array_shape_for_copy = texture_shape[:-1] + (texture_shape[-1] * num_channels,)
     else:
         array_shape_for_copy = texture_shape
     array = cupy.reshape(array, newshape=array_shape_for_copy)
+
+    if not array.flags.owndata or not not array.flags.c_contiguous:
+        # the array must be contiguous, we check if this is a derived array,
+        # if yes we must unfortunately copy the data...
+        array = array.copy()
     cuda_array.copy_from(array)
 
     return texture_object

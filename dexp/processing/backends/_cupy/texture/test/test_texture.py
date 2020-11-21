@@ -102,8 +102,6 @@ def test_cupy_texture_1channel_normcoord():
         real_output = cupy.zeros_like(tex_data)
         expected_output = tex_data.copy()
 
-
-
         # get the kernel, which copies from texture memory
         kernel = cupy.RawKernel(source, 'texture_1channel_normcoord_kernel')
 
@@ -146,7 +144,6 @@ def test_cupy_texture_1channel():
         width = 3
         height = 5
 
-
         # allocate input/output arrays
         tex_data = cupy.arange(width * height, dtype=cupy.float32).reshape(height, width)
         tex_data[1, 2] = 1
@@ -160,7 +157,6 @@ def test_cupy_texture_1channel():
 
         real_output = cupy.zeros_like(tex_data)
         expected_output = tex_data.copy()
-
 
         # get the kernel, which copies from texture memory
         kernel = cupy.RawKernel(source, 'copyKernel')

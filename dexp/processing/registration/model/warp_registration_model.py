@@ -1,7 +1,5 @@
 import json
-from typing import Any, Tuple, Union, Sequence
-
-import numpy
+from typing import Any, Tuple
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.interpolation.warp import warp
@@ -27,9 +25,7 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         return json.dumps({'type': 'warp', 'vector_field': self.vector_field, 'confidence_shape': self.confidence})
 
     def apply(self, backend: Backend, image_a, image_b, pad: bool = False) -> Tuple[Any, Any]:
-
         image_b_warped = warp(image=image_b,
                               vector_field=self.vector_field)
 
         return image_a, image_b_warped
-

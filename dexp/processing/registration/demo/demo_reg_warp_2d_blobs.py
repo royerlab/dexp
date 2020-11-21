@@ -1,5 +1,6 @@
 import numpy
-from skimage.data import camera
+from scipy.ndimage import gaussian_filter
+from skimage.data import binary_blobs
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -21,14 +22,15 @@ def demo_register_warp_2D_cupy():
         print("Cupy module not found! demo ignored")
 
 
-def register_warp_2D(backend, warp_grid_size=4, reg_grid_size=8):
-    image = camera().astype(numpy.float32) / 255
+def register_warp_2D(backend, length_xy=512, warp_grid_size=4, reg_grid_size=8):
+    image = binary_blobs(length=length_xy, seed=1, n_dim=2, blob_size_fraction=0.01, volume_fraction=0.05)
+    image = image.astype(numpy.float32)
+    image = gaussian_filter(image, sigma=4)
 
-    magnitude = 20
-
+    magnitude = 10
     vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 2 + (2,))
-    vector_field[:, :, 0] = 10
-    vector_field[:, :, 1] = -3
+    # vector_field[:, :, 0] = 10
+    # vector_field[:, :, 1] = -3
 
     print(f"vector field applied: {vector_field}")
 

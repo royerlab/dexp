@@ -5,9 +5,6 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.reg_trans_nd import register_translation_nd
-from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
-from dexp.processing.registration.test.test_reg_trans_2d import register_translation_2d
-from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 from dexp.utils.timeit import timeit
 
 
@@ -27,8 +24,7 @@ def demo_register_translation_2D_cupy():
 def register_translation_2D(backend, length_xy=320):
     image1 = camera().astype(numpy.float32) / 255
     magnitude = 35
-    vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(1,)*2+(2,))
-    vector_field[0,0,1]=0
+    vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(1,) * 2 + (2,))
 
     print(f"vector field applied: {vector_field}")
 
@@ -41,8 +37,8 @@ def register_translation_2D(backend, length_xy=320):
         shifts = numpy.asarray(shifts)
         vector_field_found = shifts[numpy.newaxis, numpy.newaxis, ...]
 
-    with timeit("shift"):
-        registered = warp(backend, image2, vector_field_found)
+    with timeit("shift back"):
+        registered = warp(backend, image2, -vector_field_found)
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -53,7 +49,6 @@ def register_translation_2D(backend, length_xy=320):
         viewer.add_image(_c(image1), name='image1', colormap='bop orange', blending='additive')
         viewer.add_image(_c(image2), name='image2', colormap='bop blue', blending='additive')
         viewer.add_image(_c(registered), name='registered', colormap='bop purple', blending='additive')
-
 
 
 demo_register_translation_2D_cupy()

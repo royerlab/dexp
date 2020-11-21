@@ -1,4 +1,3 @@
-import math
 from typing import Tuple, Union
 
 import numpy
@@ -88,7 +87,6 @@ def scatter_gather_i2i(backend: Backend,
             result[chunk_slice_no_margins] = image_chunk
 
     return result
-
 
 # Dask turned out not too work great here, HUGE overhead compared to the light approach above.
 # def scatter_gather_dask(backend: Backend,

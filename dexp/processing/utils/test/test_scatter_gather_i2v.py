@@ -2,7 +2,6 @@ import numpy
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
 from dexp.utils.timeit import timeit
 
@@ -45,8 +44,8 @@ def _test_scatter_gather_i2v(backend, ndim=3, length_xy=128, splits=4, filter_si
     print(result1.shape)
     print(result2.shape)
 
-    assert result1.ndim == ndim+1
-    assert result2.ndim == ndim+1
+    assert result1.ndim == ndim + 1
+    assert result2.ndim == ndim + 1
 
     assert result1.shape[-1] == 2
     assert result2.shape[-1] == 3
@@ -70,4 +69,3 @@ def _test_scatter_gather_i2v(backend, ndim=3, length_xy=128, splits=4, filter_si
     #     viewer = Viewer()
     #     viewer.add_image(result, name='result', rgb=False)
     #
-

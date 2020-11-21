@@ -95,12 +95,12 @@ def _project_preprocess_image(backend: Backend,
                               dtype=None):
     image_projected = _project_image(backend, image, axis=axis)
     image_projected_processed = _preprocess_image(backend,
-                              image_projected,
-                              smoothing=smoothing,
-                              percentile=percentile,
-                              edge_filter=edge_filter,
-                              gamma=gamma,
-                              dtype=dtype)
+                                                  image_projected,
+                                                  smoothing=smoothing,
+                                                  percentile=percentile,
+                                                  edge_filter=edge_filter,
+                                                  gamma=gamma,
+                                                  dtype=dtype)
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -120,6 +120,7 @@ def _project_image(backend: Backend, image, axis: int):
     image = backend.to_backend(image)
     projection = xp.max(image, axis=axis)
     return projection
+
 
 def _preprocess_image(backend: Backend,
                       image,
@@ -142,7 +143,11 @@ def _preprocess_image(backend: Backend,
     processed_image = xp.clip(processed_image, 0, 1, out=processed_image)
 
     if edge_filter:
-        processed_image = sobel_magnitude_filter(backend, processed_image, exponent=1, in_place=True, normalise_input=False)
+        processed_image = sobel_magnitude_filter(backend,
+                                                 processed_image,
+                                                 exponent=1,
+                                                 in_place_normalisation=True,
+                                                 normalise_input=False)
 
     processed_image **= gamma
 
@@ -155,5 +160,3 @@ def _preprocess_image(backend: Backend,
     #     viewer.add_image(_c(processed_image), name='processed_image')
 
     return processed_image
-
-

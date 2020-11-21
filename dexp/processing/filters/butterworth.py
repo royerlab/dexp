@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy
 
@@ -61,7 +61,7 @@ def butterworth_kernel(backend: Backend, filter_shape, cutoffs, n=3):
 def butterworth_filter(backend: Backend,
                        image,
                        filter_shape=None,
-                       cutoffs: Tuple[float, ...] = None,
+                       cutoffs: Union[float, Tuple[float, ...]] = None,
                        n: int = 3,
                        mode: str = 'reflect',
                        internal_dtype=None):
@@ -77,7 +77,7 @@ def butterworth_filter(backend: Backend,
     backend : Backedn to use for computation
     image : image to apply filter to
     filter_shape : filter shape
-    cutoffs : Cutoffs in normalise k-space.
+    cutoffs : Cutoffs in normalise k-space. Can be a single value for all axis or a tuple. Default is 0.5
     n : order
     mode : mode for convolution
     internal_dtype : internal dtype used for computation

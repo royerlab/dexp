@@ -30,8 +30,9 @@ def _warp_2d_cupy(backend: Backend,
                         float2 vector = tex2D<float2>(vector_field, u, v);
                         
                         // Obtain the shifted coordinates of the source voxel: 
-                        float sx = float(x) + vector.x;
-                        float sy = float(y) + vector.y;
+                        // flip axis order to match numpy order
+                        float sx = float(x) + vector.y;
+                        float sy = float(y) + vector.x;
                         
                         // Sample source image for voxel value:
                         float value = tex2D<float>(input_image, sx, sy);

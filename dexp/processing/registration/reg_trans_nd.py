@@ -91,7 +91,6 @@ def register_translation_nd(backend: Backend,
     ]
     # print(f"cropped_correlation.shape = {cropped_correlation.shape}")
 
-
     # We compute the signed rough shift
     signed_rough_shift = xp.array(rough_shift) - max_range
     signed_rough_shift = backend.to_numpy(signed_rough_shift)
@@ -110,10 +109,9 @@ def register_translation_nd(backend: Backend,
     # The final shift is the sum of the rough sight plus the fine center of mass shift:
     shift = list(signed_rough_shift + signed_com_shift)
 
-    # print(f"shift = {shift}")
-
     # from napari import gui_qt, Viewer
     # with gui_qt():
+    #     print(f"shift = {shift}")
     #     def _c(array):
     #         return backend.to_numpy(array)
     #     viewer = Viewer()
@@ -123,9 +121,6 @@ def register_translation_nd(backend: Backend,
     #     viewer.add_image(_c(correlation), name='correlation')
     #     viewer.add_image(_c(cropped_correlation), name='cropped_correlation')
     #     viewer.grid_view(3,3,1)
-
-    #if log:
-
 
     return TranslationRegistrationModel(shift_vector=shift, error=0)
 
@@ -153,9 +148,7 @@ def _center_of_mass(backend: Backend, image):
 
             return tuple(float(f) for f in results)
         else:
-            return tuple(s/2 for s in image.shape)
-
-
+            return tuple(s / 2 for s in image.shape)
 
 
 def _normalised_projection(backend: Backend, image, axis, gamma=3):
@@ -164,7 +157,7 @@ def _normalised_projection(backend: Backend, image, axis, gamma=3):
     min_value = xp.min(projection)
     max_value = xp.max(projection)
     range_value = (max_value - min_value)
-    if abs(range_value)>0:
+    if abs(range_value) > 0:
         normalised_image = ((projection - min_value) / range_value) ** gamma
     else:
         normalised_image = 0

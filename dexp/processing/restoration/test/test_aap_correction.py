@@ -48,13 +48,13 @@ def _test_aap_correction(backend, length_xy=128):
     assert corrected.shape == noisy.shape
     assert corrected.dtype == noisy.dtype
 
-    average_error = numpy.mean(numpy.absolute(image - corrected))
-    print(f"average_error = {average_error}")
-    assert average_error < 0.007
-
     # import napari
     # with napari.gui_qt():
     #     viewer = napari.Viewer()
     #     viewer.add_image(image, name='image')
     #     viewer.add_image(noisy, name='noisy')
     #     viewer.add_image(corrected, name='corrected')
+
+    average_error = numpy.mean(numpy.absolute(image - corrected))
+    print(f"average_error = {average_error}")
+    assert average_error < 0.07

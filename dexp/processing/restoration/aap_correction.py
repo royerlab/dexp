@@ -10,9 +10,9 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 def axis_aligned_pattern_correction(backend: Backend,
                                     image,
                                     axis_combinations: List[Tuple[int]] = None,
-                                    quantile: float = 0.99,
+                                    quantile: float = 0.5,
                                     sigma: float = 0,
-                                    decimation: int = 4,
+                                    decimation: int = 8,
                                     robust_statistics: bool = True,
                                     in_place: bool = True,
                                     internal_dtype=None
@@ -51,10 +51,6 @@ def axis_aligned_pattern_correction(backend: Backend,
 
     image = backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
 
-    overall_value = xp.percentile(
-        image.ravel()[::decimation], q=100 * quantile, keepdims=True
-    )
-
     axis_combinations = (
         _all_axis_combinations(image.ndim)
         if axis_combinations is None
@@ -63,6 +59,11 @@ def axis_aligned_pattern_correction(backend: Backend,
 
     for axis_combination in axis_combinations:
         print(f"Supressing variations across hyperplane: {axis_combination}")
+
+        overall_value = xp.percentile(
+            image.ravel()[::decimation], q=100 * quantile, keepdims=True
+        )
+
         if robust_statistics:
             value = xp.percentile(
                 image, q=100 * quantile, axis=axis_combination, keepdims=True

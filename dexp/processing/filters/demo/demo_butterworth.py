@@ -25,7 +25,7 @@ def _demo_butterworth(backend):
     noisy = random_noise(image.copy(), mode="gaussian", var=0.005, seed=0, clip=False)
     # noisy = random_noise(noisy, mode="s&p", amount=0.03, seed=0, clip=False)
 
-    filtered = butterworth_filter(backend, noisy)
+    filtered = butterworth_filter(backend, noisy, cutoffs=0.3)
 
     from napari import Viewer, gui_qt
     with gui_qt():

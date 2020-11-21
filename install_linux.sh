@@ -26,7 +26,7 @@ conda install -y -c anaconda zarr
 #conda install -y -c anaconda cudatoolkit
 #conda install -y -c rapidsai dask-cuda
 #conda install -y -c conda-forge ocl-icd-system
-#conda install -y -c pytorch pytorch torchvision torch-dct
+conda install pytorch torchvision torchaudio cudatoolkit=11.0 torch-dct -c pytorch
 
 #pip install cupy-cuda111
 pip install cupy-cuda111 -f https://github.com/cupy/cupy/releases/tag/v9.0.0a1
