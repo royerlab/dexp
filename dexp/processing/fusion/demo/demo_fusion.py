@@ -22,7 +22,7 @@ def demo_fusion_cupy():
         print("Cupy module not found! ignored!")
 
 
-def demo_fusion(backend, include_dct=True, length_xy=320):
+def demo_fusion(backend, include_dct=True, length_xy=120):
     with timeit("generate data"):
         image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend, add_noise=True, length_xy=length_xy, length_z_factor=4)
         image_gt = backend.to_numpy(image_gt)
@@ -63,5 +63,5 @@ def demo_fusion(backend, include_dct=True, length_xy=320):
         viewer.add_image(_c(image_fused_tg), name='image_fused_tg')
 
 
-demo_fusion_cupy()
+#demo_fusion_cupy()
 demo_fusion_numpy()

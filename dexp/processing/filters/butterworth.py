@@ -1,66 +1,13 @@
 from typing import Tuple, Union
-
 import numpy
-
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-
-
-def butterworth_kernel(backend: Backend, filter_shape, cutoffs, n=3):
-    """
-
-    Parameters
-    ----------
-    backend : Backend to use
-    filter_shape : filter shape
-    cutoffs : Cutoffs in normalise k-space.
-    n : order
-
-    Returns
-    -------
-    Normalised butterworth filter kernel.
-
-    """
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
-
-    ndim = len(filter_shape)
-
-    if ndim == 2:
-
-        ly, lx = filter_shape
-        cy, cx = cutoffs
-
-        x = xp.linspace(-0.5, 0.5, lx)
-        y = xp.linspace(-0.5, 0.5, ly)
-
-        # An array with every pixel = radius relative to center
-        radius = xp.sqrt(((x / cx) ** 2)[xp.newaxis, xp.newaxis, :] + ((y / cy) ** 2)[xp.newaxis, :, xp.newaxis])
-
-    elif ndim == 3:
-        lz, ly, lx = filter_shape
-        cz, cy, cx = cutoffs
-
-        x = xp.linspace(-0.5, 0.5, lx)
-        y = xp.linspace(-0.5, 0.5, ly)
-        z = xp.linspace(-0.5, 0.5, lz)
-
-        # An array with every pixel = radius relative to center
-        radius = xp.sqrt(((x / cx) ** 2)[xp.newaxis, xp.newaxis, :] + ((y / cy) ** 2)[xp.newaxis, :, xp.newaxis] + ((z / cz) ** 2)[:, xp.newaxis, xp.newaxis])
-
-    filter = 1 / (1.0 + radius ** (2 * n))
-
-    kernel = sp.fft.fftshift(xp.real(sp.fft.ifftn(sp.fft.ifftshift(filter))))
-
-    kernel = kernel / kernel.sum()
-    kernel = xp.squeeze(kernel)
-
-    return kernel.astype(numpy.float32)
+from dexp.processing.filters.kernels.butterworth import butterworth_kernel
 
 
 def butterworth_filter(backend: Backend,
                        image,
-                       filter_shape=None,
+                       shape=None,
                        cutoffs: Union[float, Tuple[float, ...]] = None,
                        n: int = 3,
                        mode: str = 'reflect',
@@ -76,7 +23,7 @@ def butterworth_filter(backend: Backend,
     ----------
     backend : Backedn to use for computation
     image : image to apply filter to
-    filter_shape : filter shape
+    shape : filter shape
     cutoffs : Cutoffs in normalise k-space. Can be a single value for all axis or a tuple. Default is 0.5
     n : order
     mode : mode for convolution
@@ -98,17 +45,17 @@ def butterworth_filter(backend: Backend,
     original_dtype = image.dtype
     image = backend.to_backend(image, dtype=internal_dtype)
 
-    if filter_shape is None:
-        filter_shape = (11,) * image.ndim
-    elif type(filter_shape) is int and image.ndim > 1:
-        filter_shape = (filter_shape,) * image.ndim
+    if shape is None:
+        shape = (11,) * image.ndim
+    elif type(shape) is int and image.ndim > 1:
+        shape = (shape,) * image.ndim
 
     if cutoffs is None:
         cutoffs = (0.5,) * image.ndim
     elif type(cutoffs) is float and image.ndim > 1:
         cutoffs = (cutoffs,) * image.ndim
 
-    butterworth_filter_numpy = butterworth_kernel(backend, filter_shape, cutoffs, n)
+    butterworth_filter_numpy = butterworth_kernel(backend, shape, cutoffs, n)
     butterworth_filter = backend.to_backend(butterworth_filter_numpy)
 
     image = backend.to_backend(image)

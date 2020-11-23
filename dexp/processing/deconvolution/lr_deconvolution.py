@@ -7,6 +7,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels import gaussian_kernel_nd
+from dexp.processing.filters.kernels.wiener_butterworth import wiener_butterworth_kernel
 from dexp.processing.utils.nan_to_zero import nan_to_zero
 from dexp.processing.utils.normalise import normalise
 
@@ -123,8 +124,18 @@ def lucy_richardson_deconvolution(backend: Backend,
 
     if back_projection == 'tpsf':
         back_projector = xp.flip(psf.copy())
+    elif back_projection == 'wbw':
+        back_projector = wiener_butterworth_kernel(backend, psf.copy())
     else:
         raise ValueError(f"back projection mode: {back_projection} not supported.")
+
+    from napari import Viewer, gui_qt
+    with gui_qt():
+        def _c(array):
+            return backend.to_numpy(array)
+        viewer = Viewer()
+        viewer.add_image(_c(psf), name='psf')
+        viewer.add_image(_c(back_projector), name='back_projector')
 
     if normalise_input:
         image, denorm_fun = normalise(backend, image, minmax=normalise_minmax, out=image, dtype=internal_dtype)
@@ -170,6 +181,11 @@ def lucy_richardson_deconvolution(backend: Backend,
             back_projector,
             mode='wrap',
         )
+
+        if back_projection == 'wbw':
+            multiplicative_correction = xp.clip(multiplicative_correction,
+                                                a_min=0, a_max=None,
+                                                out=multiplicative_correction)
 
         if power != 1.0:
             multiplicative_correction **= (1 + (power - 1) / (math.sqrt(1 + i)))

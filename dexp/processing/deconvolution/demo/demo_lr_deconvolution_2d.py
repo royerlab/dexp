@@ -47,6 +47,11 @@ def _demo_lr_deconvolution(backend):
                                                 num_iterations=iterations,
                                                 padding=16)
 
+    deconvolved_wbw = lucy_richardson_deconvolution(backend, blurry, psf,
+                                                    back_projection='wbw',
+                                                    num_iterations=25,
+                                                    padding=16)
+
     deconvolved_blind_spot = lucy_richardson_deconvolution(backend, noisy, psf,
                                                            num_iterations=iterations,
                                                            padding=16,
@@ -67,6 +72,7 @@ def _demo_lr_deconvolution(backend):
         viewer.add_image(_c(deconvolved_no_noise), name='deconvolved_no_noise')
         viewer.add_image(_c(deconvolved_no_noise_power), name='deconvolved_no_noise_power')
         viewer.add_image(_c(deconvolved), name='deconvolved')
+        viewer.add_image(_c(deconvolved_wbw), name='deconvolved_wbw')
         viewer.add_image(_c(deconvolved_blind_spot), name='deconvolved_blind_spot')
 
 

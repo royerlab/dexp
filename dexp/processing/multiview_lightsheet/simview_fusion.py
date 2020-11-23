@@ -175,7 +175,7 @@ def simview_fuse_2I2D(backend: Backend,
         if 0 < butterworth_filter_cutoff < 1:
             with timeit(f"Filter output using a Butterworth filter"):
                 cutoffs = (butterworth_filter_cutoff,) * CxLx.ndim
-                CxLx = butterworth_filter(backend, CxLx, filter_shape=(17, 17, 17), cutoffs=cutoffs)
+                CxLx = butterworth_filter(backend, CxLx, shape=(17, 17, 17), cutoffs=cutoffs)
                 gc.collect()
 
         with timeit(f"Converting back to original dtype..."):
