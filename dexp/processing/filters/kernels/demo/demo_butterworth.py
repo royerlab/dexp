@@ -25,8 +25,9 @@ def _demo_butterworth(backend):
     xp = backend.get_xp_module()
 
     b = butterworth_kernel(backend,
-                               shape=(17, 17),
-                               cutoffs=0.3,
+                               shape=(31, 31),
+                               cutoffs=0.75,
+                               cutoffs_in_freq_units=False,
                                epsilon=1,
                                order=7)
 

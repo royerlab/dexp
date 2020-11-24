@@ -4,7 +4,7 @@ from skimage.util import random_noise
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.filters.butterworth import butterworth_filter
+from dexp.processing.filters.butterworth_filter import butterworth_filter
 
 
 def test_butterworth_numpy():

@@ -9,6 +9,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 def butterworth_kernel(backend: Backend,
                        shape: Tuple[int, ...],
                        cutoffs: Union[float, Tuple[float, ...]],
+                       cutoffs_in_freq_units=False,
                        epsilon: float = 1,
                        order: int = 3,
                        frequency_domain: bool = False,
@@ -19,9 +20,12 @@ def butterworth_kernel(backend: Backend,
     ----------
     backend : Backend to use
     shape : filter shape
-    cutoffs : Cutoffs in normalise k-space.
+    cutoffs : Butterworth cutoffs.
+    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]
     epsilon : maximum cutoff gain
-    order : order
+    order : Butterworth filter order
+    frequency_domain : True to return the kernel in the frequency domain
+    dtype : dtype to return kernel
 
     Returns
     -------
@@ -36,13 +40,23 @@ def butterworth_kernel(backend: Backend,
     if type(cutoffs) is not tuple:
         cutoffs = (cutoffs,)*ndim
 
-    if ndim == 2:
+    if ndim == 1:
+
+        lx, = shape
+        cx, = cutoffs
+
+        x = xp.fft.fftfreq(lx) if cutoffs_in_freq_units else xp.linspace(-1, 1, lx)
+
+        # An array with every pixel = radius relative to center
+        freq = xp.abs(x / cx)
+
+    elif ndim == 2:
 
         ly, lx = shape
         cy, cx = cutoffs
 
-        x = xp.fft.fftfreq(lx)
-        y = xp.fft.fftfreq(ly)
+        x = xp.fft.fftfreq(lx) if cutoffs_in_freq_units else xp.linspace(-1, 1, lx)
+        y = xp.fft.fftfreq(ly) if cutoffs_in_freq_units else xp.linspace(-1, 1, ly)
 
         # An array with every pixel = radius relative to center
         freq = xp.sqrt(((x / cx) ** 2)[xp.newaxis, xp.newaxis, :] + ((y / cy) ** 2)[xp.newaxis, :, xp.newaxis])
@@ -51,19 +65,21 @@ def butterworth_kernel(backend: Backend,
         lz, ly, lx = shape
         cz, cy, cx = cutoffs
 
-        x = xp.fft.fftfreq(lx)
-        y = xp.fft.fftfreq(ly)
-        z = xp.fft.fftfreq(lz)
+        x = xp.fft.fftfreq(lx) if cutoffs_in_freq_units else xp.linspace(-1, 1, lx)
+        y = xp.fft.fftfreq(ly) if cutoffs_in_freq_units else xp.linspace(-1, 1, ly)
+        z = xp.fft.fftfreq(lz) if cutoffs_in_freq_units else xp.linspace(-1, 1, lz)
 
         # An array with every pixel = radius relative to center
         freq = xp.sqrt(((x / cx) ** 2)[xp.newaxis, xp.newaxis, :] + ((y / cy) ** 2)[xp.newaxis, :, xp.newaxis] + ((z / cz) ** 2)[:, xp.newaxis, xp.newaxis])
 
-    kernel_fft = 1 / (1.0 + (epsilon*freq) ** (2 * order)) ** 0.5
+    kernel_fft = 1 / (1.0 + (epsilon**2)*(freq ** (2 * order))) ** 0.5
 
     kernel_fft = xp.squeeze(kernel_fft)
 
+    if not cutoffs_in_freq_units:
+        kernel_fft = sp.fft.ifftshift(kernel_fft)
+
     if frequency_domain:
-        kernel_fft = kernel_fft.astype(dtype, copy=False)
         return kernel_fft
     else:
         kernel = sp.fft.fftshift(xp.real(sp.fft.ifftn(kernel_fft)))

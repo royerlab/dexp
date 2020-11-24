@@ -5,7 +5,7 @@ import numpy
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.equalise.equalise_intensity import equalise_intensity
-from dexp.processing.filters.butterworth import butterworth_filter
+from dexp.processing.filters.butterworth_filter import butterworth_filter
 from dexp.processing.fusion.dct_fusion import fuse_dct_nd
 from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd

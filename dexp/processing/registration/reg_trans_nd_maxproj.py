@@ -2,7 +2,7 @@ import numpy
 from numpy.linalg import norm
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.filters.sobel import sobel_magnitude_filter
+from dexp.processing.filters.sobel_filter import sobel_filter
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.registration.reg_trans_2d import register_translation_2d_dexp
 
@@ -143,11 +143,11 @@ def _preprocess_image(backend: Backend,
     processed_image = xp.clip(processed_image, 0, 1, out=processed_image)
 
     if edge_filter:
-        processed_image = sobel_magnitude_filter(backend,
-                                                 processed_image,
-                                                 exponent=1,
-                                                 in_place_normalisation=True,
-                                                 normalise_input=False)
+        processed_image = sobel_filter(backend,
+                                       processed_image,
+                                       exponent=1,
+                                       in_place_normalisation=True,
+                                       normalise_input=False)
 
     processed_image **= gamma
 

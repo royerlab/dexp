@@ -29,7 +29,7 @@ def register_warp_nD(backend, length_xy=256, warp_grid_size=2, reg_grid_size=6):
                                                   zoom=2)
     xp = backend.get_xp_module()
 
-    magnitude = 15
+    magnitude = 10
     vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 3 + (3,))
     # vector_field[:, :, 0] = 10
     # vector_field[:, :, 1] = -3

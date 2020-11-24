@@ -28,19 +28,20 @@ def _demo_lr_deconvolution(backend):
     blurry = fft_convolve(NumpyBackend(), image, psf)
     blurry = blurry - blurry.min()
     blurry = blurry / blurry.max()
+    noisy = random_noise(blurry, mode="gaussian", var=0.01, seed=0, clip=False)
+    noisy = random_noise(noisy, mode="s&p", amount=0.01, seed=0, clip=False)
 
-    iterations = 200
+    iterations = 50
 
-    deconvolved_no_noise = lucy_richardson_deconvolution(backend, blurry, psf,
-                                                         num_iterations=iterations,
-                                                         padding=16)
+    deconvolved = lucy_richardson_deconvolution(backend, noisy, psf,
+                                                num_iterations=iterations,
+                                                padding=16)
 
-    deconvolved_no_noise_power = lucy_richardson_deconvolution(backend, blurry, psf,
-                                                               num_iterations=iterations,
-                                                               padding=16,
-                                                               power=3,
-                                                               )
-
+    deconvolved_blind_spot = lucy_richardson_deconvolution(backend, noisy, psf,
+                                                           num_iterations=iterations,
+                                                           padding=16,
+                                                           blind_spot=5,
+                                                           blind_spot_mode='uniform+median')
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -51,9 +52,9 @@ def _demo_lr_deconvolution(backend):
         viewer.add_image(_c(image), name='image')
         viewer.add_image(_c(blurry), name='blurry')
         viewer.add_image(_c(psf), name='psf')
-        viewer.add_image(_c(deconvolved_no_noise), name='deconvolved_no_noise')
-        viewer.add_image(_c(deconvolved_no_noise_power), name='deconvolved_no_noise_power')
-
+        viewer.add_image(_c(noisy), name='noisy')
+        viewer.add_image(_c(deconvolved), name='deconvolved')
+        viewer.add_image(_c(deconvolved_blind_spot), name='deconvolved_blind_spot')
 
 
 demo_lr_deconvolution_cupy()

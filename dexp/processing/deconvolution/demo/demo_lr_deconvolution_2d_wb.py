@@ -41,6 +41,11 @@ def _demo_lr_deconvolution(backend):
                                                                power=3,
                                                                )
 
+    deconvolved_wbw = lucy_richardson_deconvolution(backend, blurry, psf,
+                                                    back_projection='wbw',
+                                                    num_iterations=20,
+                                                    padding=16)
+
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -53,6 +58,7 @@ def _demo_lr_deconvolution(backend):
         viewer.add_image(_c(psf), name='psf')
         viewer.add_image(_c(deconvolved_no_noise), name='deconvolved_no_noise')
         viewer.add_image(_c(deconvolved_no_noise_power), name='deconvolved_no_noise_power')
+        viewer.add_image(_c(deconvolved_wbw), name='deconvolved_wbw')
 
 
 

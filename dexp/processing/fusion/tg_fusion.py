@@ -2,7 +2,7 @@ from typing import Optional
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.filters.sobel import sobel_magnitude_filter
+from dexp.processing.filters.sobel_filter import sobel_filter
 from dexp.processing.utils.blend_images import blend_images
 from dexp.processing.utils.element_wise_affine import element_wise_affine
 from dexp.processing.utils.fit_shape import fit_to_shape
@@ -86,8 +86,8 @@ def fuse_tg_nd(backend: Backend,
     # gc.collect()
 
     # Compute Tenengrad filter:
-    t_image_a = sobel_magnitude_filter(backend, d_image_a, exponent=1, normalise_input=False, in_place_normalisation=True)
-    t_image_b = sobel_magnitude_filter(backend, d_image_b, exponent=1, normalise_input=False, in_place_normalisation=True)
+    t_image_a = sobel_filter(backend, d_image_a, exponent=1, normalise_input=False, in_place_normalisation=True)
+    t_image_b = sobel_filter(backend, d_image_b, exponent=1, normalise_input=False, in_place_normalisation=True)
     del d_image_a, d_image_b
     # gc.collect()
 

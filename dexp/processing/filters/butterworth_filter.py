@@ -9,7 +9,9 @@ def butterworth_filter(backend: Backend,
                        image,
                        shape=None,
                        cutoffs: Union[float, Tuple[float, ...]] = None,
-                       n: int = 3,
+                       cutoffs_in_freq_units = False,
+                       epsilon: float = 1,
+                       order: int = 3,
                        mode: str = 'reflect',
                        internal_dtype=None):
     """
@@ -24,8 +26,9 @@ def butterworth_filter(backend: Backend,
     backend : Backedn to use for computation
     image : image to apply filter to
     shape : filter shape
-    cutoffs : Cutoffs in normalise k-space. Can be a single value for all axis or a tuple. Default is 0.5
-    n : order
+    cutoffs : Butterworth cutoffs.
+    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]
+    order : Butterworth filter order
     mode : mode for convolution
     internal_dtype : internal dtype used for computation
 
@@ -55,8 +58,12 @@ def butterworth_filter(backend: Backend,
     elif type(cutoffs) is float and image.ndim > 1:
         cutoffs = (cutoffs,) * image.ndim
 
-    butterworth_filter_numpy = butterworth_kernel(backend, shape, cutoffs, n)
-    butterworth_filter = backend.to_backend(butterworth_filter_numpy)
+    butterworth_filter = butterworth_kernel(backend=backend,
+                                                  shape=shape,
+                                                  cutoffs=cutoffs,
+                                                  cutoffs_in_freq_units=cutoffs_in_freq_units,
+                                                  epsilon=epsilon,
+                                                  order=order)
 
     image = backend.to_backend(image)
     filtered_image = sp.ndimage.convolve(image, butterworth_filter, mode=mode)

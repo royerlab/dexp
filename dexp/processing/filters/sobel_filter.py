@@ -5,12 +5,12 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.utils.normalise import normalise
 
 
-def sobel_magnitude_filter(backend: Backend,
-                           image,
-                           exponent: int = 2,
-                           normalise_input: bool = True,
-                           in_place_normalisation: bool = False,
-                           internal_dtype=None):
+def sobel_filter(backend: Backend,
+                 image,
+                 exponent: int = 2,
+                 normalise_input: bool = True,
+                 in_place_normalisation: bool = False,
+                 internal_dtype=None):
     """
     Computes the Sobel magnitude filter response for a given image.
 

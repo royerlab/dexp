@@ -1,38 +1,70 @@
-# Derived from Guo et al, bioRxiv 2019.
-from typing import Tuple
+
+from typing import Tuple, Union
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.filters.butterworth import butterworth_kernel
+from dexp.processing.filters.butterworth_filter import butterworth_kernel
 from dexp.processing.filters.kernels.wiener import wiener_kernel
 
 
 def wiener_butterworth_kernel(backend: Backend,
-                              psf,
+                              kernel,
                               alpha: float = 1e-3,
                               beta: float = 1e-3,
-                              cutoffs: Tuple[float, ...] = 0.5,
-                              order: int = 7,
+                              cutoffs: Union[float, Tuple[float, ...], None] = None,
+                              cutoffs_in_freq_units=False,
+                              auto_cutoff_threshold = 0.05,
+                              order: int = 5,
                               dtype = None):
+    """
+    Computes the Wiener-Butterworth back projector according to Guo et al, bioRxiv 2019.
 
+    Parameters
+    ----------
+    backend : Backend to use.
+    kernel : psf
+    alpha : alpha
+    beta : beta
+    cutoffs : Butterworth cutoffs.
+    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]
+    order : Butterworth order
+    dtype : dtype for kernel
+
+    Returns
+    -------
+    Wiener-Butterworth for given psf.
+
+    """
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
     if dtype is None:
-        dtype = psf.dtype
+        dtype = kernel.dtype
 
     wk_f = wiener_kernel(backend,
-                         psf,
+                         kernel,
                          alpha=alpha,
                          frequency_domain=True,
                          dtype=dtype)
 
-    epsilon = xp.sqrt(1.0 / (beta * beta) - 1)
+    #epsilon = xp.sqrt(1.0 / (beta * beta) - 1)
+    epsilon = 1
 
-    ##TODO: figure ot cutoff from PSF ?
+    ##TODO: figure out cutoff from PSF ?
+
+    if cutoffs is None:
+        cutoffs_in_freq_units = False
+        psf_f = xp.log1p(xp.absolute(xp.fft.fftshift(xp.fft.fftn(kernel))))
+        psf_sumproj = tuple(xp.absolute(psf_f).sum(axis=i) for i in range(psf_f.ndim))
+        psf_sumproj = tuple(p/p.max() for p in psf_sumproj)
+        psf_sumproj = tuple(p[s//2:] for s, p in zip(psf_f.shape, psf_sumproj))
+        pass_band = tuple(p > auto_cutoff_threshold for p in psf_sumproj)
+        cutoffs = tuple(float(xp.count_nonzero(b)/b.size) for b in pass_band)
+
 
     bwk_f = butterworth_kernel(backend,
-                               shape=psf.shape,
+                               shape=kernel.shape,
                                cutoffs=cutoffs,
+                               cutoffs_in_freq_units=cutoffs_in_freq_units,
                                epsilon=epsilon,
                                order=order,
                                frequency_domain=True,
@@ -41,6 +73,17 @@ def wiener_butterworth_kernel(backend: Backend,
     # Weiner-Butterworth back projector
     wbwk_f = wk_f * bwk_f
     wbwk = xp.real(xp.fft.ifftn(wbwk_f))
+
+    # from napari import Viewer, gui_qt
+    # with gui_qt():
+    #     def _c(array):
+    #         return backend.to_numpy(xp.absolute(xp.fft.fftshift(array)))
+    #
+    #     viewer = Viewer()
+    #     viewer.add_image(_c(wk_f), name='wk_f', colormap='viridis')
+    #     viewer.add_image(_c(bwk_f), name='bwk_f', colormap='viridis')
+    #     viewer.add_image(_c(wbwk_f), name='wbwk_f', colormap='viridis')
+    #     viewer.grid_view(2, 2, 1)
 
     wbwk = wbwk.astype(dtype=dtype, copy=False)
 
