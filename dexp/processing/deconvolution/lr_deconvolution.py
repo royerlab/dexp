@@ -9,16 +9,19 @@ from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels.gaussian import gaussian_kernel_nd
 from dexp.processing.filters.kernels.wiener_butterworth import wiener_butterworth_kernel
 from dexp.processing.utils.nan_to_zero import nan_to_zero
-from dexp.processing.utils.normalise import normalise
+from dexp.processing.utils.normalise import normalise_functions
 
 
 def lucy_richardson_deconvolution(backend: Backend,
                                   image,
                                   psf,
                                   num_iterations: int = 50,
-                                  max_correction: float = 8,
+                                  max_correction: float = None,
                                   power: float = 1.0,
                                   back_projection='tpsf',
+                                  wb_cutoffs: Union[float, Tuple[float, ...], None] = 0.9,
+                                  wb_beta: float = 1e-3,
+                                  wb_order: int = 5,
                                   padding: int = 0,
                                   padding_mode: str = 'edge',
                                   normalise_input: bool = True,
@@ -40,7 +43,7 @@ def lucy_richardson_deconvolution(backend: Backend,
     num_iterations : number of iterations
     max_correction : Lucy-Richardson correction will remain clamped within [1/mc, mc] (before back projection)
     power : power to elevate coorection (before back projection)
-    back_projection : back projection operator to use.
+    back_projection : back projection operator to use: 'tpsf' or 'wbw'.
     padding : padding (see numpy/cupy pad function)
     padding_mode : padding mode (see numpy/cupy pad function)
     normalise_input : This deconvolution code assumes values within [0, 1], by default input images are normalised to that range, but if already normalised, then normalisation can be ommited.
@@ -123,10 +126,13 @@ def lucy_richardson_deconvolution(backend: Backend,
         #     viewer.add_image(_c(back_projector), name='psf')
 
     if back_projection == 'tpsf':
-        back_projector = xp.flip(psf.copy())
-    elif back_projection == 'wbw':
-        back_projector = wiener_butterworth_kernel(backend, kernel=psf)
-
+        back_projector = xp.flip(psf)
+    elif back_projection == 'wb':
+        back_projector = wiener_butterworth_kernel(backend,
+                                                   kernel=xp.flip(psf),
+                                                   cutoffs=wb_cutoffs,
+                                                   beta=wb_beta,
+                                                   order=wb_order)
     else:
         raise ValueError(f"back projection mode: {back_projection} not supported.")
 
@@ -134,14 +140,21 @@ def lucy_richardson_deconvolution(backend: Backend,
     # with gui_qt():
     #     def _c(array):
     #         return backend.to_numpy(array)
+    #     psf_f = xp.log1p(xp.absolute(xp.fft.fftshift(xp.fft.fftn(psf))))
+    #     back_projector_f = xp.log1p(xp.absolute(xp.fft.fftshift(xp.fft.fftn(back_projector))))
     #     viewer = Viewer()
     #     viewer.add_image(_c(psf), name='psf')
     #     viewer.add_image(_c(back_projector), name='back_projector')
+    #     viewer.add_image(_c(psf_f), name='psf_f', colormap='viridis')
+    #     viewer.add_image(_c(back_projector_f), name='back_projector_f', colormap='viridis')
 
-    if normalise_input:
-        image, denorm_fun = normalise(backend, image, minmax=normalise_minmax, out=image, dtype=internal_dtype)
-    else:
-        denorm_fun = None
+    norm_fun, denorm_fun = normalise_functions(backend, image,
+                                               minmax=normalise_minmax,
+                                               do_normalise=normalise_input,
+                                               clip=False,
+                                               dtype=internal_dtype)
+
+    image = norm_fun(image)
 
     if padding > 0:
         image = numpy.pad(image, pad_width=padding, mode=padding_mode)
@@ -169,12 +182,13 @@ def lucy_richardson_deconvolution(backend: Backend,
         # relative_blur[zeros] = 0
         relative_blur = nan_to_zero(backend, relative_blur, copy=False)
 
-        relative_blur[
-            relative_blur > max_correction
-            ] = max_correction
-        relative_blur[relative_blur < 1 / max_correction] = (
-                1 / max_correction
-        )
+        if max_correction is not None:
+            relative_blur[
+                relative_blur > max_correction
+                ] = max_correction
+            relative_blur[relative_blur < 1 / max_correction] = (
+                    1 / max_correction
+            )
 
         multiplicative_correction = convolve_method(
             backend,
@@ -183,12 +197,13 @@ def lucy_richardson_deconvolution(backend: Backend,
             mode='wrap',
         )
 
-        if back_projection == 'wbw':
+        if back_projection == 'wb':
             multiplicative_correction = xp.clip(multiplicative_correction,
                                                 a_min=0, a_max=None,
                                                 out=multiplicative_correction)
 
         if power != 1.0:
+            multiplicative_correction = xp.clip(multiplicative_correction, 0, None, out=multiplicative_correction)
             multiplicative_correction **= (1 + (power - 1) / (math.sqrt(1 + i)))
 
         result *= multiplicative_correction
@@ -201,8 +216,7 @@ def lucy_richardson_deconvolution(backend: Backend,
         else:
             result = xp.clip(result, xp.min(image), xp.max(image), out=result)
 
-    if denorm_fun is not None:
-        result = denorm_fun(result)
+    result = denorm_fun(result)
 
     if padding > 0:
         slicing = (slice(padding, -padding),) * result.ndim

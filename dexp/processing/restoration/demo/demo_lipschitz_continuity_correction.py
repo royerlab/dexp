@@ -42,5 +42,6 @@ def demo_lipschitz_correction(backend: Backend):
         viewer.add_image(_c(corrected), name='corrected')
 
 
-demo_lipschitz_correction_cupy()
-demo_lipschitz_correction_numpy()
+if __name__ == "__main__":
+    demo_lipschitz_correction_cupy()
+    demo_lipschitz_correction_numpy()

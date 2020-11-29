@@ -3,7 +3,7 @@ import numpy
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
-from dexp.processing.utils.normalise import normalise
+from dexp.processing.utils.normalise import normalise_functions
 
 
 def test_normalise_numpy():
@@ -24,14 +24,17 @@ def _test_normalise(backend, length_xy=128):
 
     _, _, image = generate_nuclei_background_data(backend, add_noise=True,
                                                   length_xy=length_xy,
-                                                  length_z_factor=4)
+                                                  length_z_factor=4,
+                                                  dtype=numpy.float32)
 
-    image = image.astype(numpy.float16)
+    image = image.astype(numpy.uint16)
 
-    image_normalised, denorm_fun = normalise(backend, image, low=-0.5, high=1)
+    norm_fun, denorm_fun = normalise_functions(backend, image, low=-0.5, high=1, in_place=False, dtype=numpy.float32)
+
+    image_normalised = norm_fun(image)
     image_denormalised = denorm_fun(image_normalised)
 
-    assert image_normalised.dtype == image.dtype
+    assert image_normalised.dtype == numpy.float32
     assert image_denormalised.dtype == image.dtype
 
     assert image_normalised.shape == image.shape
@@ -41,9 +44,9 @@ def _test_normalise(backend, length_xy=128):
     assert image_normalised.max() <= 1
     assert image_normalised.max() - image_normalised.min() >= 1.5
 
-    assert image_denormalised.min() >= image.min()
-    assert image_denormalised.max() <= image.max()
-    assert image_denormalised.max() - image_denormalised.min() >= image.max() - image.min()
+    assert image_denormalised.min() * (1 + 1e-3) >= image.min()
+    assert image_denormalised.max() <= (1 + 1e-3) * image.max()
+    assert (image_denormalised.max() - image_denormalised.min()) * (1 + 1e-3) >= image.max() - image.min()
 
     image = backend.to_numpy(image)
     image_denormalised = backend.to_numpy(image_denormalised)

@@ -29,20 +29,22 @@ def _demo_warp_3d(backend, length_xy=256, grid_size=8):
                                                       add_noise=True,
                                                       length_xy=length_xy,
                                                       length_z_factor=1,
-                                                      zoom=2)
+                                                      zoom=2,
+                                                      dtype=numpy.float32)
 
     newimage = image[0:512, 0:511, 0:509]
     image = newimage
 
     print(f"shape={image.shape}")
 
-    vector_field = numpy.random.uniform(low=-15, high=+15, size=(grid_size,) * 3 + (3,))
+    magnitude = 15
+    vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(grid_size,) * 3 + (3,))
 
     with timeit("warp"):
-        warped = warp(backend, image, vector_field, vector_field_zoom=4)
+        warped = warp(backend, image, vector_field, vector_field_upsampling=4)
 
     with timeit("dewarped"):
-        dewarped = warp(backend, warped, -vector_field, vector_field_zoom=4)
+        dewarped = warp(backend, warped, -vector_field, vector_field_upsampling=4)
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -56,5 +58,6 @@ def _demo_warp_3d(backend, length_xy=256, grid_size=8):
         viewer.camera.ndisplay = 3
 
 
-demo_warp_3d_cupy()
-demo_warp_3d_numpy()
+if __name__ == "__main__":
+    demo_warp_3d_cupy()
+    demo_warp_3d_numpy()

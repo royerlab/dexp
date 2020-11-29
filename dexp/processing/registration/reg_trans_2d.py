@@ -31,10 +31,12 @@ def register_translation_2d_skimage(backend: Backend,
     image_a = backend.to_numpy(image_a, dtype=internal_dtype)
     image_b = backend.to_numpy(image_b, dtype=internal_dtype)
     shifts, error, _ = phase_cross_correlation(image_a, image_b, upsample_factor=upsample_factor, **kwargs)
-    return TranslationRegistrationModel(shift_vector=shifts, error=error)
+    return TranslationRegistrationModel(shift_vector=shifts, confidence=error)
 
 
-def register_translation_2d_dexp(backend: Backend, image_a, image_b, **kwargs) -> TranslationRegistrationModel:
+def register_translation_2d_dexp(backend: Backend,
+                                 image_a, image_b,
+                                 **kwargs) -> TranslationRegistrationModel:
     """
     Registers two 2D images using just a translation-only model using dexp own registration code.
 
@@ -50,4 +52,6 @@ def register_translation_2d_dexp(backend: Backend, image_a, image_b, **kwargs) -
     Translation-only registration model
 
     """
-    return register_translation_nd(backend, image_a, image_b, **kwargs)
+    return register_translation_nd(backend,
+                                   image_a, image_b,
+                                   **kwargs)

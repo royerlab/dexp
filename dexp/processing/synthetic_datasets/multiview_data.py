@@ -17,14 +17,15 @@ def generate_fusion_test_data(backend: Backend,
                               amount_low: Optional[float] = 1,
                               zero_level: Optional[float] = 95,
                               odd_dimension: Optional[float] = True,
-                              z_overlap: Optional[float] = None):
+                              z_overlap: Optional[float] = None,
+                              dtype=numpy.float32):
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
     with timeit("generate blob images"):
-        image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype('f4')
-        blend_a = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype('f4')
-        blend_b = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype('f4')
+        image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype(dtype)
+        blend_a = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype(dtype)
+        blend_b = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype(dtype)
 
     with timeit("convert blob images to backend"):
         image_gt = backend.to_backend(image_gt)
@@ -93,9 +94,9 @@ def generate_fusion_test_data(backend: Backend,
         image_gt = zero_level + 300 * image_gt
         image_lowq = zero_level + 300 * image_lowq
 
-    return image_gt.astype('f4', copy=False), \
-           image_lowq.astype('f4', copy=False), \
-           blend_a.astype('f4', copy=False), \
-           blend_b.astype('f4', copy=False), \
-           image1.astype('f4', copy=False), \
-           image2.astype('f4', copy=False)
+    return image_gt.astype(dtype, copy=False), \
+           image_lowq.astype(dtype, copy=False), \
+           blend_a.astype(dtype, copy=False), \
+           blend_b.astype(dtype, copy=False), \
+           image1.astype(dtype, copy=False), \
+           image2.astype(dtype, copy=False)

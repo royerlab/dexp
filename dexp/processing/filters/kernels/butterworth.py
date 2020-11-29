@@ -3,7 +3,6 @@ from typing import Tuple, Union
 import numpy
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
 def butterworth_kernel(backend: Backend,
@@ -13,7 +12,7 @@ def butterworth_kernel(backend: Backend,
                        epsilon: float = 1,
                        order: int = 3,
                        frequency_domain: bool = False,
-                       dtype = numpy.float32):
+                       dtype=numpy.float32):
     """
 
     Parameters
@@ -38,7 +37,7 @@ def butterworth_kernel(backend: Backend,
     ndim = len(shape)
 
     if type(cutoffs) is not tuple:
-        cutoffs = (cutoffs,)*ndim
+        cutoffs = (cutoffs,) * ndim
 
     if ndim == 1:
 
@@ -59,7 +58,7 @@ def butterworth_kernel(backend: Backend,
         y = xp.fft.fftfreq(ly) if cutoffs_in_freq_units else xp.linspace(-1, 1, ly)
 
         # An array with every pixel = radius relative to center
-        freq = xp.sqrt(((x / cx) ** 2)[xp.newaxis, xp.newaxis, :] + ((y / cy) ** 2)[xp.newaxis, :, xp.newaxis])
+        freq = ((x / cx) ** 2)[xp.newaxis, xp.newaxis, :] + ((y / cy) ** 2)[xp.newaxis, :, xp.newaxis]
 
     elif ndim == 3:
         lz, ly, lx = shape
@@ -70,9 +69,9 @@ def butterworth_kernel(backend: Backend,
         z = xp.fft.fftfreq(lz) if cutoffs_in_freq_units else xp.linspace(-1, 1, lz)
 
         # An array with every pixel = radius relative to center
-        freq = xp.sqrt(((x / cx) ** 2)[xp.newaxis, xp.newaxis, :] + ((y / cy) ** 2)[xp.newaxis, :, xp.newaxis] + ((z / cz) ** 2)[:, xp.newaxis, xp.newaxis])
+        freq = ((x / cx) ** 2)[xp.newaxis, xp.newaxis, :] + ((y / cy) ** 2)[xp.newaxis, :, xp.newaxis] + ((z / cz) ** 2)[:, xp.newaxis, xp.newaxis]
 
-    kernel_fft = 1 / (1.0 + (epsilon**2)*(freq ** (2 * order))) ** 0.5
+    kernel_fft = 1 / xp.sqrt(1.0 + (epsilon ** 2) * (freq ** order))
 
     kernel_fft = xp.squeeze(kernel_fft)
 
@@ -86,4 +85,3 @@ def butterworth_kernel(backend: Backend,
         kernel = kernel / kernel.sum()
         kernel = kernel.astype(dtype, copy=False)
         return kernel
-

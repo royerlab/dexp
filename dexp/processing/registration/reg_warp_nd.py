@@ -22,12 +22,10 @@ def register_warp_nd(backend: Backend,
     backend : backend for computation
     image_a : First image to register
     image_b : Second image to register
-    max_range_ratio : backend for computation
-    fine_window_radius : Window of which to refine translation estimate
-    decimate : How much to decimate when computing floor level
-    quantile : Quantile to use for robust min and max
-    internal_dtype : internal dtype for computation
-    log : output logging information, or not.
+    chunks : Chunk sizes to divide image into
+    margins : Margins to add along each dimension per chunk
+    registration_method : registration method to use per tile, must return a TranslationRegistrationModel.
+    all additional kwargs are passed to the registration method (by default register_translation_maxproj_nd)
 
     Returns
     -------
@@ -42,8 +40,8 @@ def register_warp_nd(backend: Backend,
 
     def f(x, y):
         model = registration_method(backend, x, y, **kwargs)
-        shift, error = model.get_shift_and_error()
-        print(f"shift found: {shift}")
+        shift, error = model.get_shift_and_confidence()
+        # print(f"shift found: {shift}")
         return xp.asarray(shift), xp.asarray(error)
 
     vector_field, confidence = scatter_gather_i2v(backend,

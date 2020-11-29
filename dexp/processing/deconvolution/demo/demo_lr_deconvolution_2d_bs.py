@@ -57,5 +57,6 @@ def _demo_lr_deconvolution(backend):
         viewer.add_image(_c(deconvolved_blind_spot), name='deconvolved_blind_spot')
 
 
-demo_lr_deconvolution_cupy()
-demo_lr_deconvolution_numpy()
+if __name__ == "__main__":
+    demo_lr_deconvolution_cupy()
+    demo_lr_deconvolution_numpy()

@@ -27,10 +27,10 @@ def _test_warp_1d(backend, grid_size=8):
     vector_field = numpy.random.uniform(low=-5, high=+5, size=(grid_size,))
 
     with timeit("warp"):
-        warped = warp(backend, image, vector_field, vector_field_zoom=4)
+        warped = warp(backend, image, vector_field, vector_field_upsampling=4)
 
     with timeit("dewarp"):
-        dewarped = warp(backend, warped, -vector_field, vector_field_zoom=4)
+        dewarped = warp(backend, warped, -vector_field, vector_field_upsampling=4)
 
     error = xp.mean(xp.absolute(image - dewarped))
     print(f"error = {error}")

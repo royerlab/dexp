@@ -2,7 +2,7 @@ import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.utils.normalise import normalise
+from dexp.processing.utils.normalise import normalise_functions
 
 
 def sobel_filter(backend: Backend,
@@ -57,8 +57,9 @@ def sobel_filter(backend: Backend,
     original_dtype = image.dtype
     image = backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input and not in_place_normalisation)
 
-    if normalise_input:
-        image, _ = normalise(backend, image, out=image, dtype=internal_dtype)
+    norm_fun, denorm_fun = normalise_functions(backend, image, do_normalise=normalise_input, dtype=internal_dtype)
+
+    image = norm_fun(image)
 
     sobel_image = xp.zeros_like(image)
 

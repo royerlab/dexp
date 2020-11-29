@@ -55,7 +55,9 @@ def scatter_gather_i2v(backend: Backend,
     if type(chunks) == int:
         chunks = (chunks,) * ndim
 
-    if type(margins) == int:
+    if margins is None:
+        margins = (0,) * ndim
+    elif type(margins) == int:
         margins = (margins,) * ndim
 
     # We compute the slices objects to cut the input image into batches:

@@ -48,5 +48,6 @@ def _demo_butterworth_filter(backend):
         viewer.add_image(_c(butterworth_kernel(backend, shape=(9, 9), cutoffs=cutoffs, order=n)), name='filtered')
 
 
-demo_butterworth_filter_cupy()
-demo_butterworth_filter_numpy()
+if __name__ == "__main__":
+    demo_butterworth_filter_cupy()
+    demo_butterworth_filter_numpy()

@@ -20,7 +20,6 @@ def demo_wiener_butterworth_cupy():
 
 
 def _demo_wiener_butterworth(backend):
-
     xp = backend.get_xp_module()
 
     psf = gaussian_kernel_nd(backend,
@@ -29,12 +28,11 @@ def _demo_wiener_butterworth(backend):
                              dtype=numpy.float32)
 
     wb = wiener_butterworth_kernel(backend,
-                                      psf,
-                                      cutoffs=None)
+                                   psf,
+                                   cutoffs=None)
 
     psf_f = xp.log1p(xp.absolute(xp.fft.fftshift(xp.fft.fftn(psf))))
     wb_f = xp.log1p(xp.absolute(xp.fft.fftshift(xp.fft.fftn(wb))))
-
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -49,5 +47,5 @@ def _demo_wiener_butterworth(backend):
         viewer.grid_view(2, 2, 1)
 
 
-#demo_wiener_butterworth_cupy()
+# demo_wiener_butterworth_cupy()
 demo_wiener_butterworth_numpy()

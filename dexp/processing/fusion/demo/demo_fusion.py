@@ -63,5 +63,6 @@ def demo_fusion(backend, include_dct=True, length_xy=120):
         viewer.add_image(_c(image_fused_tg), name='image_fused_tg')
 
 
-#demo_fusion_cupy()
-demo_fusion_numpy()
+if __name__ == "__main__":
+    # demo_fusion_cupy()
+    demo_fusion_numpy()

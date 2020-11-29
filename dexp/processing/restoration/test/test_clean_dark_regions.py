@@ -1,7 +1,8 @@
+import numpy
+
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
-
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 from dexp.utils.timeit import timeit
 
@@ -28,7 +29,8 @@ def _test_clean_dark_regions(backend, length_xy=128):
                                                                       length_xy=length_xy,
                                                                       length_z_factor=1,
                                                                       independent_haze=False,
-                                                                      background_stength=0.05)
+                                                                      background_stength=0.05,
+                                                                      dtype=numpy.float32)
 
     # remove zero level
     image = xp.clip(image - 95, 0, None)

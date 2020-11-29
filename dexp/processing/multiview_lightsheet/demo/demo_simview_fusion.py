@@ -9,6 +9,7 @@ from tifffile import imread
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.multiview_lightsheet.simview_fusion import simview_fuse_2I2D
+from dexp.utils.timeit import timeit
 
 filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'
 
@@ -20,18 +21,18 @@ def demo_simview_fusion_numpy():
 
 def demo_simview_fusion_cupy():
     try:
-        backend = CupyBackend(enable_memory_pool=False)
+        backend = CupyBackend(enable_memory_pool=True)
         simview_fusion(backend)
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
 
 
 def simview_fusion(backend):
+    xp = backend.get_xp_module()
     start = time.time()
 
-    print(f"Loading data...")
-    array = imread(filepath)
-    print(f"Done loading.")
+    with timeit("imread"):
+        array = imread(filepath)
 
     C0L0 = array[0]
     C0L1 = array[1]
@@ -42,14 +43,13 @@ def simview_fusion(backend):
     C1L0 = numpy.flip(C1L0, -1)
     C1L1 = numpy.flip(C1L1, -1)
 
-    CxLx, shifts = simview_fuse_2I2D(backend, C0L0, C0L1, C1L0, C1L1)
+    with timeit("simview_fuse_2I2D"):
+        CxLx, shifts = simview_fuse_2I2D(backend, C0L0, C0L1, C1L0, C1L1)
     # CxLx = CxLx.astype(numpy.float32)
     print(f"Shifts = {shifts}")
 
-    stop = time.time()
-    print(f"Elapsed fusion time:  {stop - start} (includes loading)")
-
-    CxLx = backend.to_numpy(CxLx)
+    with timeit("to_numpy"):
+        CxLx = backend.to_numpy(CxLx)
     #
     # psf = SimpleMicroscopePSF()
     # psf_kernel = psf.generate_xyz_psf(dxy=0.485,
@@ -75,13 +75,14 @@ def simview_fusion(backend):
             return backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1500), scale=(4, 1, 1), blending='additive')
-        viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive')
-        viewer.add_image(_c(C1L0), name='C1L0', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive')
-        viewer.add_image(_c(C1L1), name='C1L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive')
-        viewer.add_image(_c(CxLx), name='CxLx', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', colormap='viridis')
+        viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
+        viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
+        viewer.add_image(_c(C1L0), name='C1L0', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
+        viewer.add_image(_c(C1L1), name='C1L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
+        viewer.add_image(_c(CxLx), name='CxLx', contrast_limits=(0, 1200), scale=(4, 1, 1), blending='additive', colormap='viridis')
         # viewer.add_image(_c(CxLx_deconvolved), name='CxLx_deconvolved', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', colormap='viridis')
 
 
-# demo_simview_fuse_numpy()
-demo_simview_fusion_cupy()
+if __name__ == "__main__":
+    # demo_simview_fuse_numpy()
+    demo_simview_fusion_cupy()

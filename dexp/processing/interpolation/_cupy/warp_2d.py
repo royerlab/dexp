@@ -7,6 +7,7 @@ from dexp.processing.backends.backend import Backend
 def _warp_2d_cupy(backend: Backend,
                   image,
                   vector_field,
+                  mode,
                   block_size: int = 16):
     xp = backend.get_xp_module()
     source = r'''
@@ -31,8 +32,8 @@ def _warp_2d_cupy(backend: Backend,
                         
                         // Obtain the shifted coordinates of the source voxel: 
                         // flip axis order to match numpy order
-                        float sx = float(x) + vector.y;
-                        float sy = float(y) + vector.x;
+                        float sx = 0.5f + float(x) - vector.y;
+                        float sy = 0.5f + float(y) - vector.x;
                         
                         // Sample source image for voxel value:
                         float value = tex2D<float>(input_image, sx, sy);
@@ -57,12 +58,14 @@ def _warp_2d_cupy(backend: Backend,
     input_image_tex = create_cuda_texture(image,
                                           num_channels=1,
                                           normalised_coords=False,
-                                          sampling_mode='linear')
+                                          sampling_mode='linear',
+                                          address_mode=mode, )
 
     vector_field_tex = create_cuda_texture(vector_field,
                                            num_channels=2,
                                            normalised_coords=True,
-                                           sampling_mode='linear')
+                                           sampling_mode='linear',
+                                           address_mode='clamp')
 
     # Set up resulting image:
     warped_image = xp.empty_like(image)

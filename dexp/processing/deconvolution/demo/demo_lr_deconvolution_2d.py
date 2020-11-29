@@ -1,6 +1,5 @@
 import numpy
 from skimage.data import camera
-from skimage.util import random_noise
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -38,9 +37,8 @@ def _demo_lr_deconvolution(backend):
     deconvolved_no_noise_power = lucy_richardson_deconvolution(backend, blurry, psf,
                                                                num_iterations=iterations,
                                                                padding=16,
-                                                               power=3,
+                                                               power=1.5,
                                                                )
-
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -55,6 +53,6 @@ def _demo_lr_deconvolution(backend):
         viewer.add_image(_c(deconvolved_no_noise_power), name='deconvolved_no_noise_power')
 
 
-
-demo_lr_deconvolution_cupy()
-demo_lr_deconvolution_numpy()
+if __name__ == "__main__":
+    demo_lr_deconvolution_cupy()
+    demo_lr_deconvolution_numpy()

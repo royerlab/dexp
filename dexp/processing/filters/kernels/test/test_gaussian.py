@@ -2,7 +2,7 @@ import pytest
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.filters.kernels import gaussian_kernel_nd
+from dexp.processing.filters.kernels.gaussian import gaussian_kernel_nd
 
 
 def test_gaussian_numpy():

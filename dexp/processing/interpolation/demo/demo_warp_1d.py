@@ -27,7 +27,8 @@ def demo_warp_1d_cupy():
 def _demo_warp_1d(backend):
     image = numpy.random.uniform(low=0, high=1, size=(128,)).astype(dtype=numpy.float32)
 
-    vector_field = numpy.random.uniform(low=-15, high=+15, size=(8,))
+    magnitude = 15
+    vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(8,))
 
     with timeit("warp"):
         warped = warp(backend, image, vector_field)
@@ -45,5 +46,6 @@ def _demo_warp_1d(backend):
     pprint(numpy.max(numpy.absolute(dewarped - image)))
 
 
-demo_warp_1d_cupy()
-demo_warp_1d_numpy()
+if __name__ == "__main__":
+    demo_warp_1d_cupy()
+    demo_warp_1d_numpy()

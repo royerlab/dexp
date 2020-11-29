@@ -11,7 +11,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
 
     def __init__(self,
                  shift_vector: Union[Sequence[float], numpy.ndarray],
-                 error: float = 0,
+                 confidence: float = 1,
                  integral: bool = False):
 
         """ Instantiates a translation registration model
@@ -19,43 +19,50 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
         Parameters
         ----------
         shift_vector : Relative shift between two images
-        error : registration error
+        confidence : registration confidence: a float within [0, 1] which conveys how confident is the registration.
+        A value of 0 means no confidence, a value of 1 means perfectly confident.
         integral : True if shifts are snapped to integer values, False otherwise
 
         """
         super().__init__()
         self.shift_vector = list(shift_vector)
-        self.error = error
+        self.confidence = confidence
         self.integral = integral
 
     def __str__(self):
-        return f"TranslationRegistrationModel(shift={self.shift_vector}, error={self.error}, integral={self.integral})"
+        return f"TranslationRegistrationModel(shift={self.shift_vector}, error={self.confidence}, integral={self.integral})"
 
     def to_json(self) -> str:
-        return json.dumps({'type': 'translation', 'translation': self.shift_vector, 'integral': self.integral})
+        return json.dumps({'type': 'translation', 'translation': self.shift_vector, 'integral': self.integral, 'confidence': self.confidence})
 
-    def get_shift_and_error(self):
-        return self.shift_vector, self.error
+    def get_shift_and_confidence(self):
+        return self.shift_vector, self.confidence
 
     def apply(self, backend: Backend, image_a, image_b, pad: bool = False) -> Tuple[Any, Any]:
 
         xp = backend.get_xp_module()
+        sp = backend.get_sp_module()
 
-        if self.integral:
-            integral_shift_vector = tuple(int(round(shift)) for shift in self.shift_vector)
+        integral_shift_vector = tuple(int(round(shift)) for shift in self.shift_vector)
 
+        if pad:
             padding_a = tuple(((0, abs(s)) if s >= 0 else (abs(s), 0)) for s in integral_shift_vector)
             padding_b = tuple(((0, abs(s)) if s < 0 else (abs(s), 0)) for s in integral_shift_vector)
 
-            if pad:
-                image_a = xp.pad(image_a, pad_width=padding_a)
-                image_b = xp.pad(image_b, pad_width=padding_b)
+            image_a = xp.pad(image_a, pad_width=padding_a)
+            image_b = xp.pad(image_b, pad_width=padding_b)
 
-            else:
+            return image_a, image_b
+
+        else:
+            if self.integral:
                 image_b = numpy.roll(image_b,
                                      shift=integral_shift_vector,
                                      axis=range(len(integral_shift_vector)))
 
-            return image_a, image_b
-        else:
-            raise NotImplementedError("Not implemented!")
+                return image_a, image_b
+            else:
+                image_b = sp.ndimage.shift(image_b,
+                                           shift=self.shift_vector,
+                                           order=1)
+                return image_a, image_b

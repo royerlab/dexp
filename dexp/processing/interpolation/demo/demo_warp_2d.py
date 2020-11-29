@@ -27,13 +27,14 @@ def _demo_warp_2d(backend, grid_size=8):
     image = camera().astype(numpy.float32) / 255
     image = image[0:377, :]
 
-    vector_field = numpy.random.uniform(low=-15, high=+15, size=(grid_size,) * 2 + (2,))
+    magnitude = 15
+    vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(grid_size,) * 2 + (2,))
 
     with timeit("warp"):
-        warped = warp(backend, image, vector_field, vector_field_zoom=4)
+        warped = warp(backend, image, vector_field, vector_field_upsampling=4)
 
     with timeit("dewarped"):
-        dewarped = warp(backend, warped, -vector_field, vector_field_zoom=4)
+        dewarped = warp(backend, warped, -vector_field, vector_field_upsampling=4)
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -47,5 +48,6 @@ def _demo_warp_2d(backend, grid_size=8):
         viewer.add_image(_c(dewarped), name='dewarped')
 
 
-demo_warp_2d_cupy()
-demo_warp_2d_numpy()
+if __name__ == "__main__":
+    demo_warp_2d_cupy()
+    demo_warp_2d_numpy()

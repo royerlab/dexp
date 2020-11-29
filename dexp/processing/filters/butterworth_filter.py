@@ -1,5 +1,7 @@
 from typing import Tuple, Union
+
 import numpy
+
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.kernels.butterworth import butterworth_kernel
@@ -9,7 +11,7 @@ def butterworth_filter(backend: Backend,
                        image,
                        shape=None,
                        cutoffs: Union[float, Tuple[float, ...]] = None,
-                       cutoffs_in_freq_units = False,
+                       cutoffs_in_freq_units=False,
                        epsilon: float = 1,
                        order: int = 3,
                        mode: str = 'reflect',
@@ -59,11 +61,11 @@ def butterworth_filter(backend: Backend,
         cutoffs = (cutoffs,) * image.ndim
 
     butterworth_filter = butterworth_kernel(backend=backend,
-                                                  shape=shape,
-                                                  cutoffs=cutoffs,
-                                                  cutoffs_in_freq_units=cutoffs_in_freq_units,
-                                                  epsilon=epsilon,
-                                                  order=order)
+                                            shape=shape,
+                                            cutoffs=cutoffs,
+                                            cutoffs_in_freq_units=cutoffs_in_freq_units,
+                                            epsilon=epsilon,
+                                            order=order)
 
     image = backend.to_backend(image)
     filtered_image = sp.ndimage.convolve(image, butterworth_filter, mode=mode)

@@ -5,7 +5,6 @@ import numpy
 
 
 def create_cuda_texture(array,
-                        shape: Tuple[int, ...] = None,
                         texture_shape: Tuple[int, ...] = None,
                         num_channels: int = 1,
                         normalised_values: bool = False,
@@ -18,6 +17,9 @@ def create_cuda_texture(array,
             texture_shape = array.shape[0:-1]
         else:
             texture_shape = array.shape
+
+    if array.dtype == numpy.float16 or dtype == numpy.float16:
+        raise ValueError('float16 types not yet supported!')
 
     if dtype is None:
         dtype = array.dtype
@@ -45,7 +47,7 @@ def create_cuda_texture(array,
     elif 'u' in dtype.kind:
         channel_type = cupy.cuda.runtime.cudaChannelFormatKindUnsigned
     else:
-        raise ValueError(f"Dtype '{address_mode}' is not supported")
+        raise ValueError(f"dtype '{address_mode}' is not supported")
 
     format_descriptor = cupy.cuda.texture.ChannelFormatDescriptor(*channels, channel_type)
 

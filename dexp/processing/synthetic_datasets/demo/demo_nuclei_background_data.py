@@ -35,5 +35,6 @@ def demo_nuclei_background_data(backend, length_xy=320):
         viewer.add_image(_c(image), name='image')
 
 
-demo_nuclei_background_data_cupy()
-demo_nuclei_background_data_numpy()
+if __name__ == "__main__":
+    demo_nuclei_background_data_cupy()
+    demo_nuclei_background_data_numpy()

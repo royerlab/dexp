@@ -45,5 +45,6 @@ def register_translation_nD(backend, length_xy=320):
         viewer.add_image(_c(image2_reg_pad), name='image2_reg_pad')
 
 
-demo_register_translation_nD_cupy()
-demo_register_translation_nD_numpy()
+if __name__ == "__main__":
+    demo_register_translation_nD_cupy()
+    demo_register_translation_nD_numpy()

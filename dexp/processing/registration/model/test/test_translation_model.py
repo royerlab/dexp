@@ -66,12 +66,6 @@ def _test_translation_model(backend, length_xy=128):
     assert average_error_pad < 11
 
     json_str = model.to_json()
-
     new_model = from_json(json_str)
-
     assert new_model.shift_vector == model.shift_vector
     assert new_model.integral == model.integral
-
-
-test_translation_model_cupy()
-test_translation_model_numpy()

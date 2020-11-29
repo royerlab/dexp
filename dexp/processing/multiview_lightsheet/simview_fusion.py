@@ -26,7 +26,7 @@ def simview_fuse_2I2D(backend: Backend,
                       fusion_bias_strength: float = 0.1,
                       registration_model: PairwiseRegistrationModel = None,
                       dehaze_size: int = 65,
-                      dark_denoise_threshold: int = 80,
+                      dark_denoise_threshold: int = 0,
                       dark_denoise_size: int = 9,
                       butterworth_filter_cutoff: float = 1,
                       internal_dtype=numpy.float16):
@@ -175,7 +175,7 @@ def simview_fuse_2I2D(backend: Backend,
         if 0 < butterworth_filter_cutoff < 1:
             with timeit(f"Filter output using a Butterworth filter"):
                 cutoffs = (butterworth_filter_cutoff,) * CxLx.ndim
-                CxLx = butterworth_filter(backend, CxLx, shape=(17, 17, 17), cutoffs=cutoffs)
+                CxLx = butterworth_filter(backend, CxLx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
                 gc.collect()
 
         with timeit(f"Converting back to original dtype..."):

@@ -48,5 +48,6 @@ def demo_clean_dark_regions_data(backend, length_xy=256):
         viewer.add_image(_c(cleaned), name='cleaned', gamma=0.1)
 
 
-demo_clean_dark_regions_cupy()
-demo_clean_dark_regions_numpy()
+if __name__ == "__main__":
+    demo_clean_dark_regions_cupy()
+    demo_clean_dark_regions_numpy()

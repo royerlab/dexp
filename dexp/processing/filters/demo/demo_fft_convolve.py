@@ -47,5 +47,6 @@ def _demo_fft_convolve(backend):
         viewer.add_image(_c(result), name='result')
 
 
-demo_fft_convolve_cupy()
-demo_fft_convolve_numpy()
+if __name__ == "__main__":
+    demo_fft_convolve_cupy()
+    demo_fft_convolve_numpy()

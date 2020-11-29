@@ -1,12 +1,8 @@
-import scipy
 from pytest import approx
-from skimage.data import binary_blobs
-from skimage.filters import gaussian
-from skimage.util import random_noise
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.reg_trans_nd import register_translation_nd
+from dexp.processing.registration.demo.demo_reg_trans_2d import _register_translation_2d
 
 
 def test_register_translation_2d_numpy():
@@ -23,22 +19,19 @@ def test_register_translation_2d_cupy():
 
 
 def register_translation_2d(backend):
-    image = binary_blobs(length=100, n_dim=2, blob_size_fraction=0.04, volume_fraction=0.01).astype('f4')
-    image = gaussian(image, sigma=1)
-    translated_image = scipy.ndimage.shift(image, shift=(13, -5))
+    xp = backend.get_xp_module()
+    sp = backend.get_sp_module()
 
-    image = random_noise(image, mode='speckle', var=0.5)
-    translated_image = random_noise(translated_image, mode='speckle', var=0.5)
+    image, shifted, unshifted, model = _register_translation_2d(backend, display=False)
 
-    shifts, error = register_translation_nd(backend, image, translated_image).get_shift_and_error()
-
-    # from napari import Viewer, gui_qt
-    # with gui_qt():
-    #     viewer = Viewer()
-    #     viewer.add_image(image, name='array_first')
-    #     viewer.add_image(translated_image, name='array_second')
-
-    print(shifts, error)
-
+    shifts = model.shift_vector
     assert shifts[0] == approx(-13, abs=0.5)
     assert shifts[1] == approx(5, abs=0.5)
+
+    error_shifted = xp.mean(xp.absolute(image - shifted))
+    error_unshifted = xp.mean(xp.absolute(image - unshifted))
+    print(f"error_shifted = {error_shifted}")
+    print(f"error_unshifted = {error_unshifted}")
+
+    assert error_unshifted < error_shifted
+    assert error_unshifted < 0.02

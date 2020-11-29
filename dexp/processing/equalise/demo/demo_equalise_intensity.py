@@ -59,5 +59,6 @@ def _equalise_intensity(backend: Backend, length=512):
         viewer.add_image(_c(equ_image_2), name='equ_image_2', contrast_limits=(0, 700))
 
 
-demo_equalise_intensity_numpy()
-demo_equalise_intensity_cupy()
+if __name__ == "__main__":
+    demo_equalise_intensity_numpy()
+    demo_equalise_intensity_cupy()

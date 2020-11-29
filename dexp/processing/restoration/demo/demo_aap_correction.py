@@ -45,5 +45,6 @@ def demo_aap_correction(backend: Backend, length_xy=128, level=0.3):
         viewer.add_image(_c(corrected), name='corrected')
 
 
-demo_aap_correction_cupy()
-demo_aap_correction_numpy()
+if __name__ == "__main__":
+    demo_aap_correction_cupy()
+    demo_aap_correction_numpy()

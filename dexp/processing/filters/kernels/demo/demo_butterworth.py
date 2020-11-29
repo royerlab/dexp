@@ -1,10 +1,6 @@
-import numpy
-
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.kernels.butterworth import butterworth_kernel
-from dexp.processing.filters.kernels.gaussian import gaussian_kernel_nd
-from dexp.processing.filters.kernels.wiener_butterworth import wiener_butterworth_kernel
 
 
 def demo_butterworth_numpy():
@@ -21,18 +17,16 @@ def demo_butterworth_cupy():
 
 
 def _demo_butterworth(backend):
-
     xp = backend.get_xp_module()
 
     b = butterworth_kernel(backend,
-                               shape=(31, 31),
-                               cutoffs=0.75,
-                               cutoffs_in_freq_units=False,
-                               epsilon=1,
-                               order=7)
+                           shape=(31, 31),
+                           cutoffs=0.75,
+                           cutoffs_in_freq_units=False,
+                           epsilon=1,
+                           order=7)
 
     b_f = xp.log1p(xp.absolute(xp.fft.fftshift(xp.fft.fftn(b))))
-
 
     from napari import Viewer, gui_qt
     with gui_qt():

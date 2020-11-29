@@ -30,5 +30,6 @@ def demo_blobs(backend, length_xy=320):
         viewer.add_image(_c(image_blobs), name='image_gt')
 
 
-demo_blobs_cupy()
-demo_blobs_numpy()
+if __name__ == "__main__":
+    demo_blobs_cupy()
+    demo_blobs_numpy()

@@ -25,7 +25,8 @@ def _test_blend(backend, length_xy=128):
     image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend,
                                                                                        add_noise=False,
                                                                                        length_xy=length_xy,
-                                                                                       length_z_factor=4)
+                                                                                       length_z_factor=4,
+                                                                                       dtype=numpy.float32)
 
     blended = blend_images(backend, image1, image2, blend_a)
 

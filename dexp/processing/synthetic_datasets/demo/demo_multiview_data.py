@@ -35,5 +35,6 @@ def demo_multiview_data(backend, length_xy=320):
         viewer.add_image(_c(image2), name='image2')
 
 
-demo_multiview_data_cupy()
-demo_multiview_data_numpy()
+if __name__ == "__main__":
+    demo_multiview_data_cupy()
+    demo_multiview_data_numpy()

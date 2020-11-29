@@ -52,5 +52,6 @@ def demo_dehaze_data(backend, length_xy=320):
         viewer.add_image(_c(dehazed), name='dehazed')
 
 
-demo_dehaze_cupy()
-demo_dehaze_numpy()
+if __name__ == "__main__":
+    demo_dehaze_cupy()
+    demo_dehaze_numpy()

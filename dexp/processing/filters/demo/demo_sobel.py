@@ -44,5 +44,6 @@ def _demo_sobel(backend):
         viewer.add_image(_c(tenengrad_image2), name='tenengrad_image2')
 
 
-demo_sobel_cupy()
-demo_sobel_numpy()
+if __name__ == "__main__":
+    demo_sobel_cupy()
+    demo_sobel_numpy()
