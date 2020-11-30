@@ -63,5 +63,5 @@ def _test_dehaze(backend, length_xy=128):
     #     viewer.add_image(_c(image), name='image')
     #     viewer.add_image(_c(dehazed), name='dehazed')
 
-    assert percent_removed > 0.92
+    assert percent_removed > 0.90
     assert percent_removed < 12

@@ -4,6 +4,7 @@ import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels.butterworth import butterworth_kernel
 
 
@@ -15,6 +16,7 @@ def butterworth_filter(backend: Backend,
                        epsilon: float = 1,
                        order: int = 3,
                        mode: str = 'reflect',
+                       use_fft: bool = False,
                        internal_dtype=None):
     """
     Applies a Butterworth filter to an image.
@@ -32,6 +34,7 @@ def butterworth_filter(backend: Backend,
     cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]
     order : Butterworth filter order
     mode : mode for convolution
+    use_fft : True to use FFT
     internal_dtype : internal dtype used for computation
 
     Returns
@@ -68,7 +71,12 @@ def butterworth_filter(backend: Backend,
                                             order=order)
 
     image = backend.to_backend(image)
-    filtered_image = sp.ndimage.convolve(image, butterworth_filter, mode=mode)
+
+    if use_fft:
+        filtered_image = fft_convolve(backend, image, butterworth_filter, mode=mode)
+    else:
+        filtered_image = sp.ndimage.convolve(image, butterworth_filter, mode=mode)
+
 
     filtered_image = filtered_image.astype(original_dtype, copy=False)
 

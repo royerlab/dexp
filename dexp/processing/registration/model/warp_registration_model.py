@@ -37,7 +37,7 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
     def median_shift_magnitude(self, backend: Backend, confidence_threshold: float = 0.7):
         xp = backend.get_xp_module(self.confidence)
         norms = xp.linalg.norm(self.vector_field, axis=-1)
-        norms *= self.confidence > confidence_threshold
+        norms = norms[self.confidence > confidence_threshold]
         return xp.median(norms)
 
     def clean(self,

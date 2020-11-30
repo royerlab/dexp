@@ -9,6 +9,7 @@ def register_translation_maxproj_nd(backend: Backend,
                                     image_a, image_b,
                                     register_translation_2d=register_translation_2d_dexp,
                                     gamma: float = 1,
+                                    drop_worse: bool = True,
                                     internal_dtype=None,
                                     **kwargs):
     """
@@ -57,16 +58,29 @@ def register_translation_maxproj_nd(backend: Backend,
         shifts_p1, confidence_p1 = register_translation_2d(backend, iap1, ibp1, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
         shifts_p2, confidence_p2 = register_translation_2d(backend, iap2, ibp2, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
 
-        shifts_p0 = numpy.asarray([0, shifts_p0[0], shifts_p0[1]])
-        shifts_p1 = numpy.asarray([shifts_p1[0], 0, shifts_p1[1]])
-        shifts_p2 = numpy.asarray([shifts_p2[0], shifts_p2[1], 0])
-
         # print(shifts_p0)
         # print(shifts_p1)
         # print(shifts_p2)
 
-        shifts = (shifts_p0 + shifts_p1 + shifts_p2) / 2
-        confidence = (confidence_p0 * confidence_p1 * confidence_p2) ** 0.33
+        if drop_worse:
+            worse_index = numpy.argmin(numpy.asarray([confidence_p0, confidence_p1, confidence_p2]))
+
+            if worse_index == 0:
+                shifts = numpy.asarray([0.5 * (shifts_p1[0] + shifts_p2[0]), shifts_p2[1], shifts_p1[1]])
+                confidence = (confidence_p1 * confidence_p2) ** 0.5
+            elif worse_index == 1:
+                shifts = numpy.asarray([shifts_p2[0], 0.5 * (shifts_p0[0] + shifts_p2[1]), shifts_p0[1]])
+                confidence = (confidence_p0 * confidence_p2) ** 0.5
+            elif worse_index == 2:
+                shifts = numpy.asarray([shifts_p1[0], shifts_p0[0], 0.5 * (shifts_p0[1] + shifts_p1[1])])
+                confidence = (confidence_p0 * confidence_p1) ** 0.5
+
+        else:
+            shifts_p0 = numpy.asarray([0, shifts_p0[0], shifts_p0[1]])
+            shifts_p1 = numpy.asarray([shifts_p1[0], 0, shifts_p1[1]])
+            shifts_p2 = numpy.asarray([shifts_p2[0], shifts_p2[1], 0])
+            shifts = (shifts_p0 + shifts_p1 + shifts_p2) / 2
+            confidence = (confidence_p0 * confidence_p1 * confidence_p2) ** 0.33
 
         # if confidence>0.1:
         #     print(f"shift={shifts}, confidence={confidence}")
@@ -111,7 +125,7 @@ def _project_image(backend: Backend, image, axis: int):
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
     image = backend.to_backend(image)
-    projection = xp.max(image, axis=axis)
+    projection = xp.max(image, axis=axis) - xp.min(image, axis=axis)
     return projection
 
 

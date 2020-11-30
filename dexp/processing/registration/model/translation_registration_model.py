@@ -30,7 +30,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
         self.integral = integral
 
     def __str__(self):
-        return f"TranslationRegistrationModel(shift={self.shift_vector}, error={self.confidence}, integral={self.integral})"
+        return f"TranslationRegistrationModel(shift={self.shift_vector}, confidence={self.confidence}, integral={self.integral})"
 
     def to_json(self) -> str:
         return json.dumps({'type': 'translation', 'translation': self.shift_vector, 'integral': self.integral, 'confidence': self.confidence})

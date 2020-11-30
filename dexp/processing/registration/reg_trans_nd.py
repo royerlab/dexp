@@ -12,8 +12,8 @@ from dexp.processing.registration.model.translation_registration_model import Tr
 def register_translation_nd(backend: Backend,
                             image_a,
                             image_b,
+                            denoise_input_sigma: float = None,
                             max_range_ratio: float = 0.9,
-                            fine_window_radius: int = 0,
                             decimate: int = 16,
                             quantile: float = 0.999,
                             sigma: float = 1.0,
@@ -29,8 +29,8 @@ def register_translation_nd(backend: Backend,
     backend : backend for computation
     image_a : First image to register
     image_b : Second image to register
+    denoise_input_sigma : Uses a Gaussian filter to denoise input images.
     max_range_ratio : backend for computation
-    fine_window_radius : Window of which to refine translation estimate
     decimate : How much to decimate when computing floor level
     quantile : Quantile to use for robust min and max
     sigma : sigma for Gaussian smoothing of phase correlogram
@@ -57,6 +57,10 @@ def register_translation_nd(backend: Backend,
     image_a = backend.to_backend(image_a, dtype=internal_dtype)
     image_b = backend.to_backend(image_b, dtype=internal_dtype)
 
+    if denoise_input_sigma is not None:
+        image_a = sp.ndimage.filters.gaussian_filter(image_a, sigma=denoise_input_sigma)
+        image_b = sp.ndimage.filters.gaussian_filter(image_b, sigma=denoise_input_sigma)
+
     if edge_filter:
         image_a = sobel_filter(backend,
                                image_a,
@@ -78,13 +82,16 @@ def register_translation_nd(backend: Backend,
     center = tuple(s // 2 for s in correlation.shape)
     empty_region = correlation[tuple(slice(0, c - r) for c, r in zip(center, max_ranges))]
     noise_floor_level = xp.percentile(empty_region.ravel()[::decimate].astype(numpy.float32), q=100 * quantile)
+    if xp.isnan(noise_floor_level):
+        noise_floor_level = xp.mean(empty_region.ravel()[::decimate])
     # print(f"noise_floor_level={noise_floor_level}")
 
-    # we use that floor to clip anything below:
-    correlation = correlation.clip(noise_floor_level, math.inf) - noise_floor_level
-
     # We roll the array and crop it to restrict ourself to the search region:
-    correlation = correlation[tuple(slice(c - r, c + r) for c, r in zip(center, max_ranges))]
+    correlation = correlation[tuple(slice(max(c - r, 0), min(c + r, s)) for c, r, s in zip(center, max_ranges, correlation.shape))]
+
+    # we use that floor to clip anything below:
+    correlation = xp.maximum(correlation, noise_floor_level, out=correlation)
+    correlation -= noise_floor_level
 
     # denoise cropped correlation image:
     if sigma > 0:
@@ -95,47 +102,27 @@ def register_translation_nd(backend: Backend,
     rough_shift = xp.unravel_index(max_correlation_flat_index, correlation.shape)
     max_correlation = correlation[rough_shift]
 
-    # We compute the signed rough shift
-    signed_rough_shift = xp.array(tuple(int(rs) - r for rs, r in zip(rough_shift, max_ranges)))
-    signed_rough_shift = backend.to_numpy(signed_rough_shift)
+    # We compute the signed shift vector:
+    shift_vector = xp.array(tuple(int(rs) - r for rs, r in zip(rough_shift, max_ranges)))
+    shift_vector = backend.to_numpy(shift_vector)
     # print(f"signed_rough_shift= {signed_rough_shift}")
 
     # Compute confidence:
     masked_correlation = correlation.copy()
-    masked_correlation[tuple(slice(rs - s // 8, rs + s // 8) for rs, s in zip(rough_shift, masked_correlation.shape))] = 0
+    mask_size = tuple(max(8, math.sqrt(s) // 4) for s in masked_correlation.shape)
+    masked_correlation[tuple(slice(rs - s, rs + s) for rs, s in zip(rough_shift, mask_size))] = 0
     background_correlation_max = xp.max(masked_correlation)
-    confidence = (max_correlation - background_correlation_max) / max_correlation
+    epsilon = 1e-6
+    confidence = (max_correlation - background_correlation_max) / (epsilon + max_correlation)
     # print(f"shift={signed_rough_shift}, confidence={confidence}")
 
-    if fine_window_radius > 0:
-
-        # We crop further to facilitate center-of-mass estimation:
-        cropped_correlation = correlation[
-            tuple(
-                slice(max(0, int(s) - fine_window_radius), min(d, int(s) + fine_window_radius))
-                for s, d in zip(rough_shift, correlation.shape)
-            )
-        ]
-        cropped_correlation = backend.to_numpy(cropped_correlation)
-
-        # We compute the center of mass:
-        # We take the square to squash small values far from the maximum that are likely noisy...
-        signed_com_shift = (
-                xp.array(_center_of_mass(backend, cropped_correlation ** 2))
-                - fine_window_radius
-        )
-        signed_com_shift = backend.to_numpy(signed_com_shift)
-        # print(f"signed_com_shift= {signed_com_shift}")
-        # The final shift is the sum of the rough sight plus the fine center of mass shift:
-        shift = list(signed_rough_shift + signed_com_shift)
-    else:
-        cropped_correlation = None
-        shift = list(signed_rough_shift)
+    # shift vector:
+    shift_vector = list(shift_vector)
 
     # # DO NOT DELETE, INSTRUMENTATION CODE FOR DEBUGGING
     # from napari import gui_qt, Viewer
     # with gui_qt():
-    #     print(f"shift = {shift}")
+    #     print(f"shift = {shift_vector}, confidence = {confidence} ")
     #     def _c(array):
     #         return backend.to_numpy(array)
     #     viewer = Viewer()
@@ -143,12 +130,10 @@ def register_translation_nd(backend: Backend,
     #     viewer.add_image(_c(image_b), name='image_b')
     #     viewer.add_image(_c(raw_correlation), name='raw_correlation', colormap='viridis')
     #     viewer.add_image(_c(correlation), name='correlation', colormap='viridis')
-    #     if cropped_correlation is not None:
-    #         viewer.add_image(_c(cropped_correlation), name='cropped_correlation', colormap='viridis')
-    #     viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='viridis')
+    #     viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='bop orange', blending='additive')
     #     viewer.grid_view(2,3,1)
 
-    return TranslationRegistrationModel(shift_vector=shift, confidence=confidence)
+    return TranslationRegistrationModel(shift_vector=shift_vector, confidence=confidence)
 
 
 def _center_of_mass(backend: Backend, image):
@@ -175,19 +160,6 @@ def _center_of_mass(backend: Backend, image):
             return tuple(float(f) for f in results)
         else:
             return tuple(s / 2 for s in image.shape)
-
-
-def _normalised_projection(backend: Backend, image, axis, gamma=3):
-    xp = backend.get_xp_module(image)
-    projection = xp.max(image, axis=axis)
-    min_value = xp.min(projection)
-    max_value = xp.max(projection)
-    range_value = (max_value - min_value)
-    if abs(range_value) > 0:
-        normalised_image = ((projection - min_value) / range_value) ** gamma
-    else:
-        normalised_image = 0
-    return normalised_image
 
 
 def _phase_correlation(backend: Backend,

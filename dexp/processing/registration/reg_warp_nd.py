@@ -40,9 +40,10 @@ def register_warp_nd(backend: Backend,
 
     def f(x, y):
         model = registration_method(backend, x, y, **kwargs)
-        shift, error = model.get_shift_and_confidence()
-        # print(f"shift found: {shift}")
-        return xp.asarray(shift), xp.asarray(error)
+        # if model.confidence > 0.3:
+        print(f"model: {model}")
+        shift, confidence = model.get_shift_and_confidence()
+        return xp.asarray(shift), xp.asarray(confidence)
 
     vector_field, confidence = scatter_gather_i2v(backend,
                                                   f,

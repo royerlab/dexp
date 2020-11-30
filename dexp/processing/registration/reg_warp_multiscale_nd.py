@@ -12,6 +12,7 @@ def register_warp_multiscale_nd(backend: Backend,
                                 num_iterations: int = 3,
                                 confidence_threshold: float = 0.5,
                                 margin_ratios: Union[float, Tuple[float, ...]] = 0.2,
+                                min_chunk: int = 32,
                                 min_margin: int = 4,
                                 **kwargs) -> WarpRegistrationModel:
     """
@@ -61,7 +62,7 @@ def register_warp_multiscale_nd(backend: Backend,
         with timeit(f"register_warp_nd {i}"):
             nb_div = 2 ** i
             # Note: the trick below is a 'ceil division' ceil(u/v) == -(-u//v)
-            chunks = tuple(-(-s // nb_div) for s in image_a.shape)
+            chunks = tuple(max(min_chunk, -(-s // nb_div)) for s in image_a.shape)
             margins = tuple(max(min_margin, int(c * r)) for c, r in zip(chunks, margin_ratios))
             print(f"register iteration: {i}, div= {nb_div}, chunks={chunks}, margins={margins}")
             model = register_warp_nd(backend, image_a, image, chunks=chunks, margins=margins, **kwargs)
@@ -73,17 +74,23 @@ def register_warp_multiscale_nd(backend: Backend,
             model_confidence = backend.to_backend(model.confidence)
 
         if vector_field is None:
-            nb_div = 2 ** (num_iterations - 1)
-            vector_field = xp.zeros(shape=(nb_div,) * ndim + (ndim,), dtype=model_vector_field.dtype)
-            confidence = xp.zeros(shape=(nb_div,) * ndim, dtype=model_confidence.dtype)
+            splits = tuple(s // max(min_chunk, -(-s // (2 ** (num_iterations - 1)))) for s in image_a.shape)
+            print(f"final resolution = {splits}")
+            vector_field = xp.zeros(shape=splits + (ndim,), dtype=model_vector_field.dtype)
+            confidence = xp.zeros(shape=splits, dtype=model_confidence.dtype)
 
-        scale_factor = 2 ** (num_iterations - 1 - i)
+        if model.mean_confidence(backend) > confidence_threshold // 2:
+            scale_factors = tuple(s / ms for ms, s in zip(model_confidence.shape, confidence.shape))
+            print(f"scale_factors: {scale_factors}")
 
-        scaled_vector_field = sp.ndimage.zoom(model_vector_field, zoom=(scale_factor,) * ndim + (1,), order=1)
-        vector_field += scaled_vector_field
+            scaled_vector_field = sp.ndimage.zoom(model_vector_field, zoom=scale_factors + (1,), order=1)
+            vector_field += scaled_vector_field
 
-        scaled_confidence = sp.ndimage.zoom(model_confidence, zoom=(scale_factor,) * ndim, order=1)
-        confidence = xp.maximum(confidence, scaled_confidence)
+            scaled_confidence = sp.ndimage.zoom(model_confidence, zoom=scale_factors, order=1)
+            confidence = xp.maximum(confidence, scaled_confidence)
+        else:
+            print(f"Scale ignored!")
+            break
 
     model = WarpRegistrationModel(vector_field=vector_field,
                                   confidence=confidence)
