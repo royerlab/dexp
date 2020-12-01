@@ -77,7 +77,6 @@ def butterworth_filter(backend: Backend,
     else:
         filtered_image = sp.ndimage.convolve(image, butterworth_filter, mode=mode)
 
-
     filtered_image = filtered_image.astype(original_dtype, copy=False)
 
     return filtered_image

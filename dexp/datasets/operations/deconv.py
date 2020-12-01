@@ -75,45 +75,44 @@ def dataset_deconv(dataset,
 
         def process(tp):
 
-            backend = CupyBackend(device, enable_memory_pool=False)
+            with CupyBackend(device) as backend:
+                try:
+                    print(f"Starting to process time point: {tp} ...")
+                    tp_array = array[tp].compute()
+                    if downscalexy2:
+                        tp_array = downscale_local_mean(tp_array, factors=(1, 2, 2)).astype(tp_array.dtype)
 
-            try:
-                print(f"Starting to process time point: {tp} ...")
-                tp_array = array[tp].compute()
-                if downscalexy2:
-                    tp_array = downscale_local_mean(tp_array, factors=(1, 2, 2)).astype(tp_array.dtype)
+                    if method == 'lr':
+                        min_value = tp_array.min()
+                        max_value = tp_array.max()
 
-                if method == 'lr':
-                    min_value = tp_array.min()
-                    max_value = tp_array.max()
+                        def f(image):
+                            return lucy_richardson_deconvolution(backend,
+                                                                 image=image,
+                                                                 psf=psf_kernel,
+                                                                 num_iterations=num_iterations,
+                                                                 max_correction=max_correction,
+                                                                 normalise_minmax=(min_value, max_value),
+                                                                 power=power,
+                                                                 blind_spot=blind_spot,
+                                                                 blind_spot_mode='median+uniform',
+                                                                 blind_spot_axis_exclusion=(0,)
+                                                                 )
 
-                    def f(image):
-                        return lucy_richardson_deconvolution(backend,
-                                                             image=image,
-                                                             psf=psf_kernel,
-                                                             num_iterations=num_iterations,
-                                                             max_correction=max_correction,
-                                                             normalise_minmax=(min_value, max_value),
-                                                             power=power,
-                                                             blind_spot=blind_spot,
-                                                             blind_spot_mode='median+uniform',
-                                                             blind_spot_axis_exclusion=(0,)
-                                                             )
+                        with timeit("lucy_richardson_deconvolution"):
+                            tp_array = scatter_gather_i2i(backend, f, tp_array, chunks=chunksize, margins=max(xy_size, z_size))
+                    else:
+                        raise ValueError(f"Unknown deconvolution mode: {method}")
 
-                    with timeit("lucy_richardson_deconvolution"):
-                        tp_array = scatter_gather_i2i(backend, f, tp_array, chunks=chunksize, margins=max(xy_size, z_size))
-                else:
-                    raise ValueError(f"Unknown deconvolution mode: {method}")
+                    tp_array = backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
+                    dest_array[tp] = tp_array
+                    print(f"Done processing time point: {tp} .")
 
-                tp_array = backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
-                dest_array[tp] = tp_array
-                print(f"Done processing time point: {tp} .")
-
-            except Exception as error:
-                print(error)
-                print(f"Error occurred while copying time point {tp} !")
-                import traceback
-                traceback.print_exc()
+                except Exception as error:
+                    print(error)
+                    print(f"Error occurred while copying time point {tp} !")
+                    import traceback
+                    traceback.print_exc()
 
         # TODO: we are not yet distributing computation over GPUs, that would require a proper use of DASK for that.
         # See: https://medium.com/rapids-ai/parallelizing-custom-cupy-kernels-with-dask-4d2ccd3b0732

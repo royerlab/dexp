@@ -26,7 +26,7 @@ def _register_translation_nd(backend):
     model = register_translation_nd(backend, image1, image2)
     print(model)
 
-    assert model.confidence < 0.2
+    assert model.confidence < 0.3
 
     image1 *= 0
     image2 *= 0
@@ -34,4 +34,4 @@ def _register_translation_nd(backend):
     model = register_translation_nd(backend, image1, image2)
     print(model)
 
-    assert model.confidence < 0.2
+    assert model.confidence < 0.3

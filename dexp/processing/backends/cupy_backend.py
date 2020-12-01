@@ -1,23 +1,21 @@
-from contextlib import contextmanager
+import os
 from typing import Any
 
 import numpy
-import nvgpu
 
 from dexp.processing.backends.backend import Backend
-
-try:
-    if len(nvgpu.gpu_info()) > 0:
-        print("Available CUDA GPUs:")
-        for gpu in nvgpu.gpu_info():
-            print(f"GPU:'{gpu['type']}', id:{gpu['index']}, total memory:{gpu['mem_total']}MB ({gpu['mem_used_percent']}%) ")
-except:
-    pass
 
 
 class CupyBackend(Backend):
     _dexp_cuda_cluster = None
     _dexp_dask_client = None
+
+    @staticmethod
+    def available_devices():
+        # Set CUDA_DEVICE_ORDER so the IDs assigned by CUDA match those from nvidia-smi
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        import GPUtil
+        return GPUtil.getAvailable(order='first', limit=numpy.Inf, maxLoad=0.5, maxMemory=0.5, includeNan=False, excludeID=[], excludeUUID=[])
 
     def __init__(self,
                  device_id=0,
@@ -46,14 +44,9 @@ class CupyBackend(Backend):
         self.device_id = device_id
 
         import cupy
-        self.cupy_device = cupy.cuda.Device(self.device_id)
-        self.cupy_device.use()
-        free_mem = self.cupy_device.mem_info[0]
-        total_mem = self.cupy_device.mem_info[0]
-        percent = (100 * free_mem) // total_mem
-        print(f"Using CUDA device id:{self.device_id} "
-              f"with {free_mem // (1024 * 1024)} MB ({percent}%) free memory out of {free_mem // (1024 * 1024)} MB, "
-              f"compute:{self.cupy_device.compute_capability}, pci-bus-id:'{self.cupy_device.pci_bus_id}'")
+        self.cupy_device: cupy.cuda.Device = cupy.cuda.Device(self.device_id)
+
+        self.stream = cupy.cuda.stream.Stream(non_blocking=False)
 
         from cupy.cuda import cub, cutensor
         cub.available = enable_cub
@@ -80,11 +73,33 @@ class CupyBackend(Backend):
         ## Important: Leave this, this is to make sure that the ndimage package works properly!
         exec("import cupyx.scipy.ndimage")
 
-    @contextmanager
-    def compute_context(self):
+    def __str__(self):
+        free_mem = self.cupy_device.mem_info[0]
+        total_mem = self.cupy_device.mem_info[0]
+        percent = (100 * free_mem) // total_mem
+        return (f"CUDA device id:{self.device_id} "
+                f"with {free_mem // (1024 * 1024)} MB ({percent}%) free memory out of {free_mem // (1024 * 1024)} MB, "
+                f"compute:{self.cupy_device.compute_capability}, pci-bus-id:'{self.cupy_device.pci_bus_id}'")
+
+    def __enter__(self):
+        self.cupy_device.__enter__()
+        self.stream.__enter__()
+        return super().__enter__()
+
+    def __exit__(self, type, value, traceback):
+        super().__exit__(type, value, traceback)
+        self.stream.__exit__()
+        self.cupy_device.__exit__()
         import cupy
-        with cupy.cuda.Device(self.device_id):
-            yield
+        mempool = cupy.get_default_memory_pool()
+        pinned_mempool = cupy.get_default_pinned_memory_pool()
+        if mempool is not None:
+            mempool.free_all_blocks()
+        if pinned_mempool is not None:
+            pinned_mempool.free_all_blocks()
+
+    def synchronise(self):
+        self.stream.synchronize()
 
     def close(self):
         # Nothing to do

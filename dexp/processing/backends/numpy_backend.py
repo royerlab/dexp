@@ -15,6 +15,15 @@ class NumpyBackend(Backend):
         ## Important: Leave this, this is to make sure that the ndimage package works properly!
         exec("import scipy.ndimage")
 
+    def __str__(self):
+        return "NumpyBackend"
+
+    def __enter__(self):
+        return super().__enter__()
+
+    def __exit__(self, type, value, traceback):
+        super().__exit__(type, value, traceback)
+
     def close(self):
         # Nothing to do
         pass

@@ -15,6 +15,9 @@ class PytorchBackend(Backend):
         """
         self.device = device
 
+    def __str__(self):
+        return "PytorchBackend"
+
     def close(self):
         # Nothing to do
         pass

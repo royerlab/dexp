@@ -40,10 +40,10 @@ def simview_fuse_2I2D(backend: Backend,
     C1L0 : Image for Camera 1 lightsheet 0
     C1L1 : Image for Camera 1 lightsheet 1
 
-    zero_level : Zero level: that's the expected detector pixel vlaue floor to substract,
+    zero_level : Zero level: that's the minimal detector pixel value floor to substract,
     typically for sCMOS cameras the floor is at around 100 (this is to avoid negative values
-    due to electronic noise!). Substracting a bit more than that is a good idea, hence the
-    default of 120.
+    due to electronic noise!). Substracting a bit more than that is a good idea to clear out noise
+    in the background --  hence the default of 120.
 
     clip_too_high : clips very high intensities, to avoid loss of precision when converting an internal format such as float16
 

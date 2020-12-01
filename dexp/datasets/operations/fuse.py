@@ -56,8 +56,6 @@ def dataset_fuse(dataset,
     def process(tp):
         print(f"Writing time point: {tp} ")
 
-        backend = CupyBackend(device, enable_memory_pool=False)
-
         C0L0 = array_C0L0[tp].compute()
         C0L1 = array_C0L1[tp].compute()
         C1L0 = array_C1L0[tp].compute()
@@ -76,20 +74,22 @@ def dataset_fuse(dataset,
                 print(f"Cannot read model from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
 
         print(f'Fusing...')
-        array, model = simview_fuse_2I2D(backend, C0L0, C0L1, C1L0, C1L1,
-                                         registration_model=model,
-                                         zero_level=zero_level,
-                                         fusion=fusion,
-                                         fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
-                                         fusion_bias_strength=fusion_bias_strength,
-                                         dehaze_size=dehaze_size,
-                                         dark_denoise_threshold=dark_denoise_threshold)
+
+        with CupyBackend(device) as backend:
+            array, model = simview_fuse_2I2D(backend, C0L0, C0L1, C1L0, C1L1,
+                                             registration_model=model,
+                                             zero_level=zero_level,
+                                             fusion=fusion,
+                                             fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
+                                             fusion_bias_strength=fusion_bias_strength,
+                                             dehaze_size=dehaze_size,
+                                             dark_denoise_threshold=dark_denoise_threshold)
+
+            array = backend.to_numpy(array, dtype=dest_array.dtype, force_copy=False)
 
         if not load_shifts:
             json_text = model.to_json()
             registration_models_file.write(json_text + '\n')
-
-        array = backend.to_numpy(array, dtype=dest_array.dtype, force_copy=False)
 
         print(f'Writing array of dtype: {array.dtype}')
         dest_array[tp] = array

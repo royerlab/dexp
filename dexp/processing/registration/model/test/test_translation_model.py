@@ -62,7 +62,7 @@ def _test_translation_model(backend, length_xy=128):
     #     viewer.add_image(_c(dumb_fusion_pad), name='dumb_fusion_pad')
     #     viewer.add_image(_c(image_gt_shifted), name='image_gt_shifted')
 
-    assert average_error < 10
+    assert average_error < 11
     assert average_error_pad < 11
 
     json_str = model.to_json()
