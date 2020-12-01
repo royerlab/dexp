@@ -5,8 +5,7 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def blend_images(backend: Backend,
-                 array_a, array_b,
+def blend_images(array_a, array_b,
                  blend_map,
                  dtype=None):
     """
@@ -15,7 +14,6 @@ def blend_images(backend: Backend,
 
     Parameters
     ----------
-    backend : backend to use
     array_a : first array to blend
     array_b : second array to blend
     blend_map : blend map with values within [0, 1]
@@ -36,9 +34,11 @@ def blend_images(backend: Backend,
     if dtype is None:
         dtype = array_a.dtype
 
-    array_a = backend.to_backend(array_a, dtype=dtype)
-    array_b = backend.to_backend(array_b, dtype=dtype)
-    blend_map = backend.to_backend(blend_map)
+    array_a = Backend.to_backend(array_a, dtype=dtype)
+    array_b = Backend.to_backend(array_b, dtype=dtype)
+    blend_map = Backend.to_backend(blend_map)
+
+    backend = Backend.current()
 
     if type(backend) is NumpyBackend:
         a = array_a

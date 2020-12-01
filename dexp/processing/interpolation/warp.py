@@ -5,8 +5,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def warp(backend: Backend,
-         image,
+def warp(image,
          vector_field,
          vector_field_upsampling: int = 2,
          vector_field_upsampling_order: int = 1,
@@ -18,7 +17,6 @@ def warp(backend: Backend,
 
     Parameters
     ----------
-    backend : backend to use
     image : image to warp
     vector_field : vector field to warp inoput image with. The vector field is an array of dimension n+1 where n is the dimension of the input image.
     The first n dimensions can be of arbirary lengths, and the last vector is the warp vector for each image region that the first
@@ -33,38 +31,35 @@ def warp(backend: Backend,
 
     """
 
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
-
     if not (image.ndim + 1 == vector_field.ndim or (image.ndim == 1 and vector_field.ndim == 1)):
         raise ValueError("Vector field must have one additional dimension")
 
     if internal_dtype is None:
         internal_dtype = image.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
 
     if vector_field_upsampling != 1:
         # Note: unfortunately numpy does support float16 zooming, and cupy does not support high-order zooming...
-        vector_field = backend.to_numpy(vector_field, dtype=numpy.float32)
+        vector_field = Backend.to_numpy(vector_field, dtype=numpy.float32)
         if image.ndim > 1:
             vector_field = zoom(vector_field, zoom=(vector_field_upsampling,) * image.ndim + (1,), order=vector_field_upsampling_order)
         else:
             vector_field = zoom(vector_field, zoom=(vector_field_upsampling,), order=vector_field_upsampling_order)
 
-    image = backend.to_backend(image, dtype=internal_dtype)
-    vector_field = backend.to_backend(vector_field, dtype=internal_dtype)
+    image = Backend.to_backend(image, dtype=internal_dtype)
+    vector_field = Backend.to_backend(vector_field, dtype=internal_dtype)
 
     from dexp.processing.backends.cupy_backend import CupyBackend
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
 
         raise NotImplementedError("Warping not yet implemented for the Numpy backend.")
-    elif type(backend) is CupyBackend:
+    elif type(Backend.current()) is CupyBackend:
 
-        params = (backend, image, vector_field, mode)
+        params = (image, vector_field, mode)
         if image.ndim == 1:
             from dexp.processing.interpolation._cupy.warp_1d import _warp_1d_cupy
             result = _warp_1d_cupy(*params)

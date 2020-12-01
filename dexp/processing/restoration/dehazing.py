@@ -5,8 +5,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.utils.fit_shape import fit_to_shape
 
 
-def dehaze(backend: Backend,
-           image,
+def dehaze(image,
            size: int = 21,
            downscale: int = 4,
            minimal_zero_level: float = 0,
@@ -18,7 +17,6 @@ def dehaze(backend: Backend,
 
     Parameters
     ----------
-    backend : Backend to use for computation
     image : image to filter
     size : filter size
     downscale : downscale factor for speeding up computation of the haze map.
@@ -31,20 +29,20 @@ def dehaze(backend: Backend,
     Dehazed image
 
     """
-    sp = backend.get_sp_module()
-    xp = backend.get_xp_module()
+    sp = Backend.get_sp_module()
+    xp = Backend.get_xp_module()
 
     if internal_dtype is None:
         internal_dtype = image.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
+    image = Backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
     # original_image = image.copy()
 
-    minimal_zero_level = backend.to_backend(numpy.asarray(minimal_zero_level), dtype=internal_dtype)
+    minimal_zero_level = Backend.to_backend(numpy.asarray(minimal_zero_level), dtype=internal_dtype)
 
     # get rid of low values due to noise:
     image_zero_level = sp.ndimage.filters.maximum_filter(image, size=3)
@@ -65,7 +63,7 @@ def dehaze(backend: Backend,
     image_zero_level = sp.ndimage.zoom(image_zero_level, zoom=downscale, order=1)
 
     # Padding to recover original image size:
-    image_zero_level = fit_to_shape(backend, image_zero_level, shape=image.shape)
+    image_zero_level = fit_to_shape(image_zero_level, shape=image.shape)
 
     # Ensure that we remove at least the minimum zero level:
     if minimal_zero_level > 0:

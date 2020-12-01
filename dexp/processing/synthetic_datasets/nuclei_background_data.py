@@ -7,8 +7,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.utils.timeit import timeit
 
 
-def generate_nuclei_background_data(backend: Backend,
-                                    length_xy=320,
+def generate_nuclei_background_data(length_xy=320,
                                     length_z_factor=4,
                                     zoom=1,
                                     add_noise=True,
@@ -18,10 +17,29 @@ def generate_nuclei_background_data(backend: Backend,
                                     sphere: bool = False,
                                     add_offset=True,
                                     dtype=numpy.float16):
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    """
 
-    if type(backend) is NumpyBackend:
+    Parameters
+    ----------
+    length_xy
+    length_z_factor
+    zoom
+    add_noise
+    background_stength
+    background_scale
+    independent_haze
+    sphere
+    add_offset
+    dtype
+
+    Returns
+    -------
+
+    """
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
+
+    if type(Backend.current()) is NumpyBackend:
         dtype = numpy.float32
 
     with timeit("generate blob images"):
@@ -33,8 +51,8 @@ def generate_nuclei_background_data(backend: Backend,
             background = image_gt.copy()
 
     with timeit("convert blob images to backend"):
-        image_gt = backend.to_backend(image_gt)
-        background = backend.to_backend(background)
+        image_gt = Backend.to_backend(image_gt)
+        background = Backend.to_backend(background)
 
     if sphere:
         with timeit("sphere mask"):
@@ -69,9 +87,9 @@ def generate_nuclei_background_data(backend: Backend,
 
     if add_noise:
         with timeit("add noise"):
-            image = backend.to_numpy(image)
+            image = Backend.to_numpy(image)
             image = random_noise(image, mode='speckle', var=0.5)
-            image = backend.to_backend(image)
+            image = Backend.to_backend(image)
 
     with timeit("scale image intensities"):
         zero_level = (1 if add_offset else 0) * xp.random.uniform(95, 10, size=image_gt.shape)

@@ -1,5 +1,6 @@
 import numpy
 
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.model.model_factory import from_json
@@ -16,17 +17,16 @@ from dexp.utils.timeit import timeit
 
 def test_warp_model_cupy():
     try:
-        backend = CupyBackend()
-        _test_warp_model(backend)
+        with CupyBackend():
+            _test_warp_model()
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
 
 
-def _test_warp_model(backend, length_xy=128, warp_grid_size=3):
-    xp = backend.get_xp_module()
+def _test_warp_model(length_xy=128, warp_grid_size=3):
+    xp = Backend.get_xp_module()
 
-    _, _, image = generate_nuclei_background_data(backend,
-                                                  add_noise=False,
+    _, _, image = generate_nuclei_background_data(add_noise=False,
                                                   length_xy=length_xy,
                                                   length_z_factor=1,
                                                   zoom=2,
@@ -38,11 +38,11 @@ def _test_warp_model(backend, length_xy=128, warp_grid_size=3):
     # print(f"vector field applied: {vector_field}")
 
     with timeit("warp"):
-        image_warped = warp(backend, image, -vector_field, vector_field_upsampling=8)
+        image_warped = warp(image, -vector_field, vector_field_upsampling=8)
 
     model = WarpRegistrationModel(vector_field=vector_field)
 
-    image, image_reg = model.apply(backend, image, image_warped)
+    image, image_reg = model.apply(image, image_warped)
 
     warped_error = xp.mean(xp.absolute(image - image_warped))
     dewarped_error = xp.mean(xp.absolute(image - image_reg))
@@ -65,7 +65,7 @@ def _test_warp_model(backend, length_xy=128, warp_grid_size=3):
 
     json_str = model.to_json()
     new_model = from_json(json_str)
-    vf1 = backend.to_numpy(new_model.vector_field)
-    vf2 = backend.to_numpy(model.vector_field)
+    vf1 = Backend.to_numpy(new_model.vector_field)
+    vf2 = Backend.to_numpy(model.vector_field)
     error = numpy.mean(numpy.absolute(vf1 - vf2))
     print(f"error = {error}")

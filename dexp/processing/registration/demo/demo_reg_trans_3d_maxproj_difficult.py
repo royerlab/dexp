@@ -1,3 +1,4 @@
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
@@ -6,22 +7,21 @@ from dexp.utils.timeit import timeit
 
 
 def demo_register_translation_3d_maxproj_diff_numpy():
-    backend = NumpyBackend()
-    _register_translation_3d_maxproj_diff(backend)
+    with NumpyBackend():
+        _register_translation_3d_maxproj_diff()
 
 
 def demo_register_translation_3d_maxproj_diff_cupy():
     try:
-        backend = CupyBackend()
-        _register_translation_3d_maxproj_diff(backend)
+        with CupyBackend():
+            _register_translation_3d_maxproj_diff()
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
 
 
-def _register_translation_3d_maxproj_diff(backend, length_xy=256, display=True):
+def _register_translation_3d_maxproj_diff(length_xy=256, display=True):
     with timeit("generate dataset"):
-        image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend,
-                                                                                           add_noise=False,
+        image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=False,
                                                                                            shift=(1, 5, -13),
                                                                                            volume_fraction=0.5,
                                                                                            length_xy=length_xy,
@@ -34,18 +34,18 @@ def _register_translation_3d_maxproj_diff(backend, length_xy=256, display=True):
         image2 = image2[crop:-crop]
 
     with timeit("register_translation_maxproj_nd"):
-        model = register_translation_maxproj_nd(backend, image1, image2)
+        model = register_translation_maxproj_nd(image1, image2)
         print(f"model: {model}")
 
     with timeit("shift back"):
-        image1_reg, image2_reg = model.apply(backend, image1, image2, pad=False)
-        image1_reg_pad, image2_reg_pad = model.apply(backend, image1, image2, pad=True)
+        image1_reg, image2_reg = model.apply(image1, image2, pad=False)
+        image1_reg_pad, image2_reg_pad = model.apply(image1, image2, pad=True)
 
     if display:
         from napari import Viewer, gui_qt
         with gui_qt():
             def _c(array):
-                return backend.to_numpy(array)
+                return Backend.to_numpy(array)
 
             viewer = Viewer()
             viewer.add_image(_c(image_gt), name='image_gt', visible=False)

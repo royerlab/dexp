@@ -3,7 +3,8 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
 def test_backend_context():
-    assert Backend.current(raise_error_if_none=False) is None
+    Backend.reset()
+    assert Backend.current(raise_error_if_none=False) == None
 
     with NumpyBackend() as backend_1:
         backend_c = Backend.current()

@@ -28,7 +28,7 @@ class NumpyBackend(Backend):
         # Nothing to do
         pass
 
-    def to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
+    def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         if dtype:
             return array.astype(dtype, copy=force_copy)
         elif force_copy:
@@ -36,7 +36,7 @@ class NumpyBackend(Backend):
         else:
             return array
 
-    def to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
+    def _to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
         if dtype:
             return array.astype(dtype, copy=force_copy)
         elif force_copy:
@@ -44,8 +44,8 @@ class NumpyBackend(Backend):
         else:
             return array
 
-    def get_xp_module(self, array=None) -> Any:
+    def _get_xp_module(self, array=None) -> Any:
         return numpy
 
-    def get_sp_module(self, array=None) -> Any:
+    def _get_sp_module(self, array=None) -> Any:
         return scipy

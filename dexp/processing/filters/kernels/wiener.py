@@ -1,11 +1,24 @@
 from dexp.processing.backends.backend import Backend
 
 
-def wiener_kernel(backend: Backend,
-                  kernel,
+def wiener_kernel(kernel,
                   alpha: float = 1e-3,
                   frequency_domain: bool = False,
                   dtype=None):
+    """ Computes the Wiener filter for a given kernel and alpha parameter.
+
+    Parameters
+    ----------
+    kernel : kernel
+    alpha : alpha parameter
+    frequency_domain : if True then the wiener kernel is returned in the frequency domain
+    dtype : dtype for kernel
+
+    Returns
+    -------
+    Wiener kernel
+    """
+    backend = Backend.current()
     xp = backend.get_xp_module()
 
     if dtype is None:

@@ -8,8 +8,7 @@ from dexp.processing.utils.element_wise_affine import element_wise_affine
 from dexp.processing.utils.fit_shape import fit_to_shape
 
 
-def fuse_tg_nd(backend: Backend,
-               image_a,
+def fuse_tg_nd(image_a,
                image_b,
                downscale: Optional[int] = 2,
                sharpness: Optional[float] = 24,
@@ -28,7 +27,6 @@ def fuse_tg_nd(backend: Backend,
 
     Parameters
     ----------
-    backend : Backend for computation
     image_a : First image to fuse
     image_b : Second image to fuse
     downscale : How much to downscale the two images in order to compute the blend map.
@@ -48,9 +46,8 @@ def fuse_tg_nd(backend: Backend,
     -------
 
     """
-
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     if not image_a.shape == image_b.shape:
         raise ValueError("Arrays must have the same shape")
@@ -61,13 +58,13 @@ def fuse_tg_nd(backend: Backend,
     if internal_dtype is None:
         internal_dtype = image_a.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = xp.float32
 
     original_dtype = image_a.dtype
 
-    image_a = backend.to_backend(image_a, dtype=internal_dtype)
-    image_b = backend.to_backend(image_b, dtype=internal_dtype)
+    image_a = Backend.to_backend(image_a, dtype=internal_dtype)
+    image_b = Backend.to_backend(image_b, dtype=internal_dtype)
     # gc.collect()
 
     min_a, max_a = xp.min(image_a), xp.max(image_a)
@@ -86,8 +83,8 @@ def fuse_tg_nd(backend: Backend,
     # gc.collect()
 
     # Compute Tenengrad filter:
-    t_image_a = sobel_filter(backend, d_image_a, exponent=1, normalise_input=False, in_place_normalisation=True)
-    t_image_b = sobel_filter(backend, d_image_b, exponent=1, normalise_input=False, in_place_normalisation=True)
+    t_image_a = sobel_filter(d_image_a, exponent=1, normalise_input=False, in_place_normalisation=True)
+    t_image_b = sobel_filter(d_image_b, exponent=1, normalise_input=False, in_place_normalisation=True)
     del d_image_a, d_image_b
     # gc.collect()
 
@@ -107,8 +104,8 @@ def fuse_tg_nd(backend: Backend,
     t_max_value = max(xp.max(t_image_a), xp.max(t_image_b))
     alpha = (1 / (t_max_value - t_min_value)).astype(internal_dtype)
     beta = (-t_min_value / (t_max_value - t_min_value)).astype(internal_dtype)
-    t_image_a = element_wise_affine(backend, t_image_a, alpha, beta, out=t_image_a)
-    t_image_b = element_wise_affine(backend, t_image_b, alpha, beta, out=t_image_b)
+    t_image_a = element_wise_affine(t_image_a, alpha, beta, out=t_image_a)
+    t_image_b = element_wise_affine(t_image_b, alpha, beta, out=t_image_b)
     del t_min_value, t_max_value
 
     # Add bias:
@@ -136,7 +133,7 @@ def fuse_tg_nd(backend: Backend,
     # compute blending map:
     blend_map = abs_diff
     blend_map *= sgn_diff
-    blend_map = element_wise_affine(backend, blend_map, 0.5, 0.5, out=blend_map)
+    blend_map = element_wise_affine(blend_map, 0.5, 0.5, out=blend_map)
     del sgn_diff
     # gc.collect()
 
@@ -145,7 +142,7 @@ def fuse_tg_nd(backend: Backend,
     # gc.collect()
 
     # Padding to recover original image size:
-    blend_map = fit_to_shape(backend, blend_map, shape=image_a.shape)
+    blend_map = fit_to_shape(blend_map, shape=image_a.shape)
     # gc.collect()
 
     # Smooth blend map to have less seams:
@@ -153,7 +150,7 @@ def fuse_tg_nd(backend: Backend,
     # gc.collect()
 
     # Fuse using blending map:
-    image_fused = blend_images(backend, image_a, image_b, blend_map)
+    image_fused = blend_images(image_a, image_b, blend_map)
     del image_a, image_b, blend_map
     # gc.collect()
 

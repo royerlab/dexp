@@ -4,12 +4,24 @@ from dexp.processing.backends._cupy.texture.texture import create_cuda_texture
 from dexp.processing.backends.backend import Backend
 
 
-def _warp_1d_cupy(backend: Backend,
-                  image,
+def _warp_1d_cupy(image,
                   vector_field,
                   mode,
                   block_size: int = 128):
-    xp = backend.get_xp_module()
+    """
+
+    Parameters
+    ----------
+    image
+    vector_field
+    mode
+    block_size
+
+    Returns
+    -------
+
+    """
+    xp = Backend.get_xp_module()
     source = r'''
                 extern "C"{
                 __global__ void warp_1d(float* warped_image,

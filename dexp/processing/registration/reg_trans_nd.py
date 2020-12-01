@@ -9,8 +9,7 @@ from dexp.processing.filters.sobel_filter import sobel_filter
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 
 
-def register_translation_nd(backend: Backend,
-                            image_a,
+def register_translation_nd(image_a,
                             image_b,
                             denoise_input_sigma: float = None,
                             max_range_ratio: float = 0.9,
@@ -26,7 +25,6 @@ def register_translation_nd(backend: Backend,
 
     Parameters
     ----------
-    backend : backend for computation
     image_a : First image to register
     image_b : Second image to register
     denoise_input_sigma : Uses a Gaussian filter to denoise input images.
@@ -42,8 +40,8 @@ def register_translation_nd(backend: Backend,
     Translation-only registration model
 
     """
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     if not image_a.dtype == image_b.dtype:
         raise ValueError("Arrays must have the same dtype")
@@ -51,28 +49,26 @@ def register_translation_nd(backend: Backend,
     if internal_dtype is None:
         internal_dtype = image_a.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = xp.float32
 
-    image_a = backend.to_backend(image_a, dtype=internal_dtype)
-    image_b = backend.to_backend(image_b, dtype=internal_dtype)
+    image_a = Backend.to_backend(image_a, dtype=internal_dtype)
+    image_b = Backend.to_backend(image_b, dtype=internal_dtype)
 
     if denoise_input_sigma is not None:
         image_a = sp.ndimage.filters.gaussian_filter(image_a, sigma=denoise_input_sigma)
         image_b = sp.ndimage.filters.gaussian_filter(image_b, sigma=denoise_input_sigma)
 
     if edge_filter:
-        image_a = sobel_filter(backend,
-                               image_a,
+        image_a = sobel_filter(image_a,
                                exponent=1,
                                normalise_input=False)
-        image_b = sobel_filter(backend,
-                               image_b,
+        image_b = sobel_filter(image_b,
                                exponent=1,
                                normalise_input=False)
 
     # We compute the phase correlation:
-    raw_correlation = _phase_correlation(backend, image_a, image_b, internal_dtype)
+    raw_correlation = _phase_correlation(image_a, image_b, internal_dtype)
     correlation = raw_correlation
 
     # max range is computed from max_range_ratio:
@@ -104,7 +100,7 @@ def register_translation_nd(backend: Backend,
 
     # We compute the signed shift vector:
     shift_vector = xp.array(tuple(int(rs) - r for rs, r in zip(rough_shift, max_ranges)))
-    shift_vector = backend.to_numpy(shift_vector)
+    shift_vector = Backend.to_numpy(shift_vector)
     # print(f"signed_rough_shift= {signed_rough_shift}")
 
     # Compute confidence:
@@ -136,11 +132,11 @@ def register_translation_nd(backend: Backend,
     return TranslationRegistrationModel(shift_vector=shift_vector, confidence=confidence)
 
 
-def _center_of_mass(backend: Backend, image):
-    image = backend.to_backend(image)
+def _center_of_mass(image):
+    image = Backend.to_backend(image)
 
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     try:
         return sp.ndimage.center_of_mass(image)
@@ -152,7 +148,7 @@ def _center_of_mass(backend: Backend, image):
 
         if abs(normalizer) > 0:
             grids = numpy.ogrid[[slice(0, i) for i in image.shape]]
-            grids = list([backend.to_backend(grid) for grid in grids])
+            grids = list([Backend.to_backend(grid) for grid in grids])
 
             results = list([xp.sum(image * grids[dir].astype(float)) / normalizer
                             for dir in range(image.ndim)])
@@ -162,12 +158,11 @@ def _center_of_mass(backend: Backend, image):
             return tuple(s / 2 for s in image.shape)
 
 
-def _phase_correlation(backend: Backend,
-                       image_a, image_b,
+def _phase_correlation(image_a, image_b,
                        internal_dtype=numpy.float32,
                        epsilon: float = 1e-6,
                        window: float = 0.5):
-    xp = backend.get_xp_module(image_a)
+    xp = Backend.get_xp_module(image_a)
 
     if window > 0:
         window_axis = tuple(xp.hanning(s) ** window for s in image_a.shape)

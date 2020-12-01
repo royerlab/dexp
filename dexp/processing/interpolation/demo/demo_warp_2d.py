@@ -1,6 +1,7 @@
 import numpy
 from skimage.data import camera
 
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
@@ -9,21 +10,21 @@ from dexp.utils.timeit import timeit
 
 def demo_warp_2d_numpy():
     try:
-        backend = NumpyBackend()
-        _demo_warp_2d(backend)
+        with NumpyBackend():
+            _demo_warp_2d()
     except NotImplementedError:
         print("Numpy version not yet implemented")
 
 
 def demo_warp_2d_cupy():
     try:
-        backend = CupyBackend()
-        _demo_warp_2d(backend)
+        with CupyBackend():
+            _demo_warp_2d()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _demo_warp_2d(backend, grid_size=8):
+def _demo_warp_2d(grid_size=8):
     image = camera().astype(numpy.float32) / 255
     image = image[0:377, :]
 
@@ -31,15 +32,15 @@ def _demo_warp_2d(backend, grid_size=8):
     vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(grid_size,) * 2 + (2,))
 
     with timeit("warp"):
-        warped = warp(backend, image, vector_field, vector_field_upsampling=4)
+        warped = warp(image, vector_field, vector_field_upsampling=4)
 
     with timeit("dewarped"):
-        dewarped = warp(backend, warped, -vector_field, vector_field_upsampling=4)
+        dewarped = warp(warped, -vector_field, vector_field_upsampling=4)
 
     from napari import Viewer, gui_qt
     with gui_qt():
         def _c(array):
-            return backend.to_numpy(array)
+            return Backend.to_numpy(array)
 
         viewer = Viewer()
         viewer.add_image(_c(image), name='image')

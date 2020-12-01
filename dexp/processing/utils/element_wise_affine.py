@@ -5,13 +5,12 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def element_wise_affine(backend: Backend, array, alpha, beta, sum_first=False, out=None):
+def element_wise_affine(array, alpha, beta, sum_first=False, out=None):
     """
     Applies the affine function: alpha*x + beta to every value x of a given array. If sum_first is True, then alpha*(x + beta) is computed instead.
 
     Parameters
     ----------
-    backend : backend to use
     array : array to apply function to
     alpha : 'scale'
     beta : 'offset'
@@ -25,15 +24,16 @@ def element_wise_affine(backend: Backend, array, alpha, beta, sum_first=False, o
     Array: alpha*array + beta (or alpha*array + beta if sum_first is True)
 
     """
-    array = backend.to_backend(array)
 
-    if type(backend) is NumpyBackend:
+    array = Backend.to_backend(array)
+
+    if type(Backend.current()) is NumpyBackend:
         if sum_first:
             return numexpr.evaluate("alpha*(array+beta)", casting='same_kind', out=out)
         else:
             return numexpr.evaluate("alpha*array+beta", casting='same_kind', out=out)
 
-    elif type(backend) is CupyBackend:
+    elif type(Backend.current()) is CupyBackend:
         import cupy
         if sum_first:
             @cupy.fuse()

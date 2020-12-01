@@ -5,8 +5,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.utils.normalise import normalise_functions
 
 
-def sobel_filter(backend: Backend,
-                 image,
+def sobel_filter(image,
                  exponent: int = 2,
                  normalise_input: bool = True,
                  in_place_normalisation: bool = False,
@@ -32,7 +31,6 @@ def sobel_filter(backend: Backend,
 
     Parameters
     ----------
-    backend : Backend to use
     image : image to apply filter on
     exponent : Exponent to use for the magnitude (norm) of the gradient, 2 for L2, and 1 for L1...
     normalise_input : True to normalise input image between 0 and 1 before applying filter
@@ -44,20 +42,20 @@ def sobel_filter(backend: Backend,
     Filtered image
 
     """
-    xp = backend.get_xp_module(image)
-    sp = backend.get_sp_module(image)
+    xp = Backend.get_xp_module(image)
+    sp = Backend.get_sp_module(image)
     ndim = image.ndim
 
     if internal_dtype is None:
         internal_dtype = image.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input and not in_place_normalisation)
+    image = Backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input and not in_place_normalisation)
 
-    norm_fun, denorm_fun = normalise_functions(backend, image, do_normalise=normalise_input, dtype=internal_dtype)
+    norm_fun, denorm_fun = normalise_functions(image, do_normalise=normalise_input, dtype=internal_dtype)
 
     image = norm_fun(image)
 

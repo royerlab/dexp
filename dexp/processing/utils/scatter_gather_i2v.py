@@ -5,8 +5,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.utils.nd_slice import nd_split_slices
 
 
-def scatter_gather_i2v(backend: Backend,
-                       function,
+def scatter_gather_i2v(function,
                        images: Union[Any, Tuple[Any]],
                        chunks: Union[int, Tuple[int, ...]],
                        margins: Union[int, Tuple[int, ...]] = None,
@@ -20,7 +19,6 @@ def scatter_gather_i2v(backend: Backend,
 
     Parameters
     ----------
-    backend : Backend to use for computation
     function : n-ary function. Must accept one or more arrays -- of same shape -- and return a _tuple_ of arrays as result.
     images : sequence of images (can be any backend, numpy )
     chunks : chunks to cut input image into, can be a single integer or a tuple of integers.
@@ -35,7 +33,8 @@ def scatter_gather_i2v(backend: Backend,
     function to the input images. If to_numpy==True then the returned arrays are numpy array.
 
     """
-    xp = backend.get_xp_module()
+
+    xp = Backend.get_xp_module()
 
     if type(images) is not tuple:
         images = (images,)
@@ -77,20 +76,20 @@ def scatter_gather_i2v(backend: Backend,
         # If there is only one tile, let's not be complicated about it:
         results = function(*images)
         if to_numpy:
-            results = tuple(backend.to_numpy(result, dtype=dtype) for result in results)
+            results = tuple(Backend.to_numpy(result, dtype=dtype) for result in results)
         else:
-            results = tuple(backend.to_backend(result, dtype=dtype) for result in results)
+            results = tuple(Backend.to_backend(result, dtype=dtype) for result in results)
         results_stacked_reshaped = tuple(xp.reshape(result, newshape=(1,) * ndim + result.shape) for result in results)
     else:
         results_lists = None
         for chunk_slice, chunk_slice_no_margins in slices:
             image_chunks = tuple(image[chunk_slice] for image in images)
-            image_chunks = tuple(backend.to_backend(image_chunk, dtype=internal_dtype) for image_chunk in image_chunks)
+            image_chunks = tuple(Backend.to_backend(image_chunk, dtype=internal_dtype) for image_chunk in image_chunks)
             results = function(*image_chunks)
             if to_numpy:
-                results = tuple(backend.to_numpy(result, dtype=image.dtype) for result in results)
+                results = tuple(Backend.to_numpy(result, dtype=image.dtype) for result in results)
             else:
-                results = tuple(backend.to_backend(result, dtype=image.dtype) for result in results)
+                results = tuple(Backend.to_backend(result, dtype=image.dtype) for result in results)
 
             if results_lists is None:
                 results_lists = tuple([] for _ in results)
@@ -98,7 +97,7 @@ def scatter_gather_i2v(backend: Backend,
             for result, results_list in zip(results, results_lists):
                 results_list.append(result)
 
-        rxps = tuple(backend.get_xp_module(results_list[0]) for results_list in results_lists)
+        rxps = tuple(Backend.get_xp_module(results_list[0]) for results_list in results_lists)
         results_stacked = tuple(rxp.stack(results_list) for rxp, results_list in zip(rxps, results_lists))
         results_stacked_reshaped = tuple(rxp.reshape(stack, newshape=chunk_shape + results[0].shape) for rxp, stack, results in zip(rxps, results_stacked, results_lists))
 

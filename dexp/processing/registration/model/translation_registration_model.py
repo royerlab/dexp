@@ -38,10 +38,10 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
     def get_shift_and_confidence(self):
         return self.shift_vector, self.confidence
 
-    def apply(self, backend: Backend, image_a, image_b, pad: bool = False) -> Tuple[Any, Any]:
+    def apply(self, image_a, image_b, pad: bool = False) -> Tuple[Any, Any]:
 
-        xp = backend.get_xp_module()
-        sp = backend.get_sp_module()
+        xp = Backend.get_xp_module()
+        sp = Backend.get_sp_module()
 
         integral_shift_vector = tuple(int(round(shift)) for shift in self.shift_vector)
 

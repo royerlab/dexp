@@ -1,5 +1,6 @@
 import numpy
 
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
@@ -7,21 +8,21 @@ from dexp.utils.timeit import timeit
 
 
 def test_scatter_gather_i2v_numpy():
-    backend = NumpyBackend()
-    _test_scatter_gather_i2v(backend)
+    with NumpyBackend():
+        _test_scatter_gather_i2v()
 
 
 def test_scatter_gather_i2v_cupy():
     try:
-        backend = CupyBackend()
-        _test_scatter_gather_i2v(backend, length_xy=512, splits=4, filter_size=7)
+        with CupyBackend():
+            _test_scatter_gather_i2v(length_xy=512, splits=4, filter_size=7)
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _test_scatter_gather_i2v(backend, ndim=3, length_xy=128, splits=4, filter_size=7):
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+def _test_scatter_gather_i2v(ndim=3, length_xy=128, splits=4, filter_size=7):
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     image1 = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
     image2 = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
@@ -31,7 +32,7 @@ def _test_scatter_gather_i2v(backend, ndim=3, length_xy=128, splits=4, filter_si
 
     try:
         with timeit("f"):
-            result_ref_1, result_ref_2 = backend.to_numpy(f(backend.to_backend(image1), backend.to_backend(image2)))
+            result_ref_1, result_ref_2 = Backend.to_numpy(f(Backend.to_backend(image1), Backend.to_backend(image2)))
     except:
         print("Can't run this, not enough GPU memory!")
         result_ref_1 = 0
@@ -39,7 +40,7 @@ def _test_scatter_gather_i2v(backend, ndim=3, length_xy=128, splits=4, filter_si
 
     with timeit("scatter_gather(f)"):
         chunks = (length_xy // splits,) * ndim
-        result1, result2 = scatter_gather_i2v(backend, f, (image1, image2), chunks=chunks, margins=8)
+        result1, result2 = scatter_gather_i2v(f, (image1, image2), chunks=chunks, margins=8)
 
     print(result1.shape)
     print(result2.shape)
@@ -52,14 +53,14 @@ def _test_scatter_gather_i2v(backend, ndim=3, length_xy=128, splits=4, filter_si
 
     mean = result1.mean(axis=tuple(a for a in range(ndim)))
     result1 -= mean
-    result1 = backend.to_numpy(result1)
+    result1 = Backend.to_numpy(result1)
     error = numpy.linalg.norm(result1.ravel(), ord=1) / result1.size
     print(f"Error = {error}")
     assert error < 0.001
 
     mean = result2.mean(axis=tuple(a for a in range(ndim)))
     result2 -= mean
-    result2 = backend.to_numpy(result2)
+    result2 = Backend.to_numpy(result2)
     error = numpy.linalg.norm(result2.ravel(), ord=1) / result2.size
     print(f"Error = {error}")
     assert error < 0.001

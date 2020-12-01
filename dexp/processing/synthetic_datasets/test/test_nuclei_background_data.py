@@ -6,22 +6,21 @@ from dexp.utils.timeit import timeit
 
 
 def test_nuclei_background_data_numpy():
-    backend = NumpyBackend()
-    _test_nuclei_background_data(backend)
+    with NumpyBackend():
+        _test_nuclei_background_data()
 
 
 def test_nuclei_background_data_cupy():
     try:
-        backend = CupyBackend()
-        _test_nuclei_background_data(backend)
+        with CupyBackend():
+            _test_nuclei_background_data()
     except (ModuleNotFoundError, NotImplementedError):
         print("Cupy module not found! ignored!")
 
 
-def _test_nuclei_background_data(backend, length_xy=128):
+def _test_nuclei_background_data(length_xy=128):
     with timeit("generate data"):
-        image_gt, background, image = generate_nuclei_background_data(backend,
-                                                                      add_noise=True,
+        image_gt, background, image = generate_nuclei_background_data(add_noise=True,
                                                                       length_xy=length_xy,
                                                                       length_z_factor=4)
     assert image_gt.shape == background.shape

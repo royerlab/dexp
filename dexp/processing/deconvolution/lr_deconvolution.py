@@ -12,8 +12,7 @@ from dexp.processing.utils.nan_to_zero import nan_to_zero
 from dexp.processing.utils.normalise import normalise_functions
 
 
-def lucy_richardson_deconvolution(backend: Backend,
-                                  image,
+def lucy_richardson_deconvolution(image,
                                   psf,
                                   num_iterations: int = 50,
                                   max_correction: float = None,
@@ -37,7 +36,6 @@ def lucy_richardson_deconvolution(backend: Backend,
 
     Parameters
     ----------
-    backend : backend to use
     image : image to deconvolve
     psf : point-spread-function (must have the same number of dimensions as image!)
     num_iterations : number of iterations
@@ -61,9 +59,8 @@ def lucy_richardson_deconvolution(backend: Backend,
     Deconvolved image
 
     """
-
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     if image.ndim != psf.ndim:
         raise ValueError("The image and PSF must have same number of dimensions!")
@@ -71,19 +68,19 @@ def lucy_richardson_deconvolution(backend: Backend,
     if internal_dtype is None:
         internal_dtype = image.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype)
-    psf = backend.to_backend(psf, dtype=internal_dtype)
+    image = Backend.to_backend(image, dtype=internal_dtype)
+    psf = Backend.to_backend(psf, dtype=internal_dtype)
 
     if blind_spot > 0:
         if 2 * (blind_spot // 2) == blind_spot:
             raise ValueError(f"Blind spot size must be an odd integer, blind_spot={blind_spot} is not!")
 
         if 'gaussian' in blind_spot_mode:
-            full_kernel = gaussian_kernel_nd(backend, ndim=image.ndim, size=blind_spot, sigma=max(1, blind_spot // 2))
+            full_kernel = gaussian_kernel_nd(ndim=image.ndim, size=blind_spot, sigma=max(1, blind_spot // 2))
         else:
             full_kernel = xp.ones(shape=(blind_spot,) * image.ndim, dtype=internal_dtype)
 
@@ -128,8 +125,7 @@ def lucy_richardson_deconvolution(backend: Backend,
     if back_projection == 'tpsf':
         back_projector = xp.flip(psf)
     elif back_projection == 'wb':
-        back_projector = wiener_butterworth_kernel(backend,
-                                                   kernel=xp.flip(psf),
+        back_projector = wiener_butterworth_kernel(kernel=xp.flip(psf),
                                                    cutoffs=wb_cutoffs,
                                                    beta=wb_beta,
                                                    order=wb_order)
@@ -148,7 +144,7 @@ def lucy_richardson_deconvolution(backend: Backend,
     #     viewer.add_image(_c(psf_f), name='psf_f', colormap='viridis')
     #     viewer.add_image(_c(back_projector_f), name='back_projector_f', colormap='viridis')
 
-    norm_fun, denorm_fun = normalise_functions(backend, image,
+    norm_fun, denorm_fun = normalise_functions(image,
                                                minmax=normalise_minmax,
                                                do_normalise=normalise_input,
                                                clip=False,
@@ -169,7 +165,6 @@ def lucy_richardson_deconvolution(backend: Backend,
         # print(f"LR iteration: {i}")
 
         convolved = convolve_method(
-            backend,
             result,
             psf,
             mode='wrap',
@@ -180,7 +175,7 @@ def lucy_richardson_deconvolution(backend: Backend,
         # replace Nans with zeros:
         # zeros = convolved == 0
         # relative_blur[zeros] = 0
-        relative_blur = nan_to_zero(backend, relative_blur, copy=False)
+        relative_blur = nan_to_zero(relative_blur, copy=False)
 
         if max_correction is not None:
             relative_blur[
@@ -191,7 +186,6 @@ def lucy_richardson_deconvolution(backend: Backend,
             )
 
         multiplicative_correction = convolve_method(
-            backend,
             relative_blur,
             back_projector,
             mode='wrap',

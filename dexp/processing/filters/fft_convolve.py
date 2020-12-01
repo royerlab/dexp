@@ -4,8 +4,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def fft_convolve(backend: Backend,
-                 image1, image2,
+def fft_convolve(image1, image2,
                  mode: str = 'reflect',
                  in_place: bool = True,
                  internal_dtype=None):
@@ -14,7 +13,6 @@ def fft_convolve(backend: Backend,
 
     Parameters
     ----------
-    backend : Backend to use for computation
     image1 : First image
     image2 : Second image
     mode : Not supported!
@@ -24,9 +22,8 @@ def fft_convolve(backend: Backend,
     -------
     Convolved image: image1 ○ image2
     """
-
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     if image1.ndim == image2.ndim == 0:  # scalar inputs
         return image1 * image2
@@ -40,12 +37,12 @@ def fft_convolve(backend: Backend,
     if internal_dtype is None:
         internal_dtype = image1.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image1.dtype
-    image1 = backend.to_backend(image1, dtype=internal_dtype, force_copy=False)
-    image2 = backend.to_backend(image2, dtype=internal_dtype, force_copy=False)
+    image1 = Backend.to_backend(image1, dtype=internal_dtype, force_copy=False)
+    image2 = Backend.to_backend(image2, dtype=internal_dtype, force_copy=False)
 
     if mode != 'wrap':
         pad_width = tuple((tuple((s // 2, s // 2)) for s in image2.shape))

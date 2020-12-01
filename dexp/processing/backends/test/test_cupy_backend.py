@@ -17,22 +17,20 @@ def test_cupy_backend():
         array1 = numpy.random.uniform(0, 1, size=(512,) * 3).astype(numpy.float32)
         array2 = numpy.random.uniform(0, 1, size=(512,) * 3).astype(numpy.float32)
 
-        backend = CupyBackend()
+        with CupyBackend():
 
-        array1 = backend.to_backend(array1, numpy.float32)
-        array2 = backend.to_backend(array2, numpy.float32)
+            array1 = backend.to_backend(array1, numpy.float32)
+            array2 = backend.to_backend(array2, numpy.float32)
 
-        with timeit("synchronise"):
-            with backend:
-                with timeit("gpu computation"):
-                    def f(array1, array2):
-                        for i in range(100):
-                            array1 += array2
-                            array2 /= (2 + array1)
+            with timeit("gpu computation"):
+                def f(array1, array2):
+                    for i in range(100):
+                        array1 += array2
+                        array2 /= (2 + array1)
 
-                    backend.submit(f, array1, array2)
+                backend.submit(f, array1, array2)
 
-                backend.synchronise()
+            backend.synchronise()
 
         # assert pytest.approx(array, rel=1e-5) == array_r
     except ModuleNotFoundError:

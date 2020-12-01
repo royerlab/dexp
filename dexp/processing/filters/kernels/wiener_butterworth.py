@@ -6,8 +6,7 @@ from dexp.processing.filters.butterworth_filter import butterworth_kernel
 from dexp.processing.filters.kernels.wiener import wiener_kernel
 
 
-def wiener_butterworth_kernel(backend: Backend,
-                              kernel,
+def wiener_butterworth_kernel(kernel,
                               alpha: float = 1e-3,
                               beta: float = 1e-1,
                               cutoffs: Union[float, Tuple[float, ...], None] = None,
@@ -20,7 +19,6 @@ def wiener_butterworth_kernel(backend: Backend,
 
     Parameters
     ----------
-    backend : Backend to use.
     kernel : psf
     alpha : alpha
     beta : beta
@@ -34,14 +32,14 @@ def wiener_butterworth_kernel(backend: Backend,
     Wiener-Butterworth for given psf.
 
     """
+    backend = Backend.current()
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 
     if dtype is None:
         dtype = kernel.dtype
 
-    wk_f = wiener_kernel(backend,
-                         kernel,
+    wk_f = wiener_kernel(kernel,
                          alpha=alpha,
                          frequency_domain=True,
                          dtype=dtype)
@@ -66,8 +64,7 @@ def wiener_butterworth_kernel(backend: Backend,
 
     epsilon = math.sqrt((beta ** -2) - 1)
 
-    bwk_f = butterworth_kernel(backend,
-                               shape=kernel.shape,
+    bwk_f = butterworth_kernel(shape=kernel.shape,
                                cutoffs=cutoffs,
                                cutoffs_in_freq_units=cutoffs_in_freq_units,
                                epsilon=epsilon,

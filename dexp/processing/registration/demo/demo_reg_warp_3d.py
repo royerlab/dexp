@@ -1,6 +1,7 @@
 import numpy
 import scipy
 
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
@@ -10,24 +11,23 @@ from dexp.utils.timeit import timeit
 
 
 def demo_register_warp_3d_numpy():
-    backend = NumpyBackend()
-    _register_warp_3d(backend)
+    with NumpyBackend():
+        _register_warp_3d()
 
 
 def demo_register_warp_3d_cupy():
     try:
-        backend = CupyBackend()
-        _register_warp_3d(backend)
+        with CupyBackend():
+            _register_warp_3d()
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
 
 
-def _register_warp_3d(backend, length_xy=256, warp_grid_size=3, reg_grid_size=6, display=True):
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+def _register_warp_3d(length_xy=256, warp_grid_size=3, reg_grid_size=6, display=True):
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
-    _, _, image = generate_nuclei_background_data(backend,
-                                                  add_noise=False,
+    _, _, image = generate_nuclei_background_data(add_noise=False,
                                                   length_xy=length_xy,
                                                   length_z_factor=1,
                                                   independent_haze=True,
@@ -40,7 +40,7 @@ def _register_warp_3d(backend, length_xy=256, warp_grid_size=3, reg_grid_size=6,
     with timeit("warp"):
         magnitude = 10
         vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 3 + (3,))
-        warped = warp(backend, image, vector_field, vector_field_upsampling=8)
+        warped = warp(image, vector_field, vector_field_upsampling=8)
         print(f"vector field applied: {vector_field}")
 
     with timeit("add noise"):
@@ -51,12 +51,12 @@ def _register_warp_3d(backend, length_xy=256, warp_grid_size=3, reg_grid_size=6,
         chunks = tuple(s // reg_grid_size for s in image.shape)
         margins = tuple(max(4, c // 3) for c in chunks)
         print(f"chunks={chunks}, margins={margins}")
-        model = register_warp_nd(backend, image, warped, chunks=chunks, margins=margins)
-        model.clean(backend)
+        model = register_warp_nd(image, warped, chunks=chunks, margins=margins)
+        model.clean()
         # print(f"vector field found: {vector_field}")
 
     with timeit("unwarp"):
-        _, unwarped = model.apply(backend, image, warped, vector_field_upsampling=4)
+        _, unwarped = model.apply(image, warped, vector_field_upsampling=4)
 
     vector_field = scipy.ndimage.zoom(vector_field, zoom=(2, 2, 2, 1), order=1)
 
@@ -64,7 +64,7 @@ def _register_warp_3d(backend, length_xy=256, warp_grid_size=3, reg_grid_size=6,
         from napari import Viewer, gui_qt
         with gui_qt():
             def _c(array):
-                return backend.to_numpy(array)
+                return Backend.to_numpy(array)
 
             viewer = Viewer()
             viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', rendering='attenuated_mip', attenuation=0.01)

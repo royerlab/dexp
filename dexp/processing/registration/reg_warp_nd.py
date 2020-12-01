@@ -6,8 +6,7 @@ from dexp.processing.registration.reg_trans_nd_maxproj import register_translati
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
 
 
-def register_warp_nd(backend: Backend,
-                     image_a,
+def register_warp_nd(image_a,
                      image_b,
                      chunks: Union[int, Tuple[int, ...]],
                      margins: Union[int, Tuple[int, ...]] = None,
@@ -19,7 +18,6 @@ def register_warp_nd(backend: Backend,
 
     Parameters
     ----------
-    backend : backend for computation
     image_a : First image to register
     image_b : Second image to register
     chunks : Chunk sizes to divide image into
@@ -32,21 +30,20 @@ def register_warp_nd(backend: Backend,
     Warp registration model
 
     """
-    image_a = backend.to_backend(image_a)
-    image_b = backend.to_backend(image_b)
+    image_a = Backend.to_backend(image_a)
+    image_b = Backend.to_backend(image_b)
 
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     def f(x, y):
-        model = registration_method(backend, x, y, **kwargs)
+        model = registration_method(x, y, **kwargs)
         # if model.confidence > 0.3:
-        print(f"model: {model}")
+        # print(f"model: {model}")
         shift, confidence = model.get_shift_and_confidence()
         return xp.asarray(shift), xp.asarray(confidence)
 
-    vector_field, confidence = scatter_gather_i2v(backend,
-                                                  f,
+    vector_field, confidence = scatter_gather_i2v(f,
                                                   (image_a, image_b),
                                                   chunks=chunks,
                                                   margins=margins)

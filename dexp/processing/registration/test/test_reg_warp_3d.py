@@ -1,3 +1,4 @@
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.registration.demo.demo_reg_warp_3d import _register_warp_3d
 
@@ -10,17 +11,17 @@ from dexp.processing.registration.demo.demo_reg_warp_3d import _register_warp_3d
 
 def test_register_warp_3d_cupy():
     try:
-        backend = CupyBackend()
-        register_warp_3d(backend)
+        with CupyBackend():
+            register_warp_3d()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def register_warp_3d(backend, length_xy=128, warp_grid_size=3, reg_grid_size=6):
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+def register_warp_3d(length_xy=128, warp_grid_size=3, reg_grid_size=6):
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
-    image, warped, unwarped, model = _register_warp_3d(backend, length_xy=length_xy, warp_grid_size=warp_grid_size, reg_grid_size=reg_grid_size, display=False)
+    image, warped, unwarped, model = _register_warp_3d(length_xy=length_xy, warp_grid_size=warp_grid_size, reg_grid_size=reg_grid_size, display=False)
 
     error_warped = xp.mean(xp.absolute(image - warped))
     error_unwarped = xp.mean(xp.absolute(image - unwarped))

@@ -19,7 +19,7 @@ class CupyBackend(Backend):
 
     def __init__(self,
                  device_id=0,
-                 enable_memory_pool: bool = False,
+                 enable_memory_pool: bool = True,
                  enable_cub: bool = True,
                  enable_cutensor: bool = True,
                  enable_fft_planning: bool = True,
@@ -77,9 +77,9 @@ class CupyBackend(Backend):
         free_mem = self.cupy_device.mem_info[0]
         total_mem = self.cupy_device.mem_info[0]
         percent = (100 * free_mem) // total_mem
-        return (f"CUDA device id:{self.device_id} "
+        return (f"Cupy backend [device id:{self.device_id} "
                 f"with {free_mem // (1024 * 1024)} MB ({percent}%) free memory out of {free_mem // (1024 * 1024)} MB, "
-                f"compute:{self.cupy_device.compute_capability}, pci-bus-id:'{self.cupy_device.pci_bus_id}'")
+                f"compute:{self.cupy_device.compute_capability}, pci-bus-id:'{self.cupy_device.pci_bus_id}']")
 
     def __enter__(self):
         self.cupy_device.__enter__()
@@ -105,7 +105,7 @@ class CupyBackend(Backend):
         # Nothing to do
         pass
 
-    def to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
+    def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         import cupy
         if cupy.get_array_module(array) == cupy:
             array = cupy.asnumpy(array)
@@ -117,7 +117,7 @@ class CupyBackend(Backend):
         else:
             return array
 
-    def to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
+    def _to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
 
         import cupy
         if cupy.get_array_module(array) == cupy:
@@ -132,7 +132,7 @@ class CupyBackend(Backend):
             with cupy.cuda.Device(self.device_id):
                 return cupy.asarray(array, dtype=dtype)
 
-    def get_xp_module(self, array=None) -> Any:
+    def _get_xp_module(self, array=None) -> Any:
         if array is not None:
             import cupy
             return cupy.get_array_module(array)
@@ -140,7 +140,7 @@ class CupyBackend(Backend):
             import cupy
             return cupy
 
-    def get_sp_module(self, array=None) -> Any:
+    def _get_sp_module(self, array=None) -> Any:
         if array is not None:
             import cupyx
             return cupyx.scipy.get_array_module(array)

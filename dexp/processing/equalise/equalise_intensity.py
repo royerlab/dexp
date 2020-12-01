@@ -4,8 +4,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def equalise_intensity(backend: Backend,
-                       image1,
+def equalise_intensity(image1,
                        image2,
                        zero_level=90,
                        quantile_low=0.01,
@@ -18,7 +17,6 @@ def equalise_intensity(backend: Backend,
 
     Parameters
     ----------
-    backend : backend to use
     image1 : first image to equalise
     image2 : second image to equalise
     zero_level : zero level -- removes this value if that's the minimal voxel value expected for both images
@@ -32,20 +30,21 @@ def equalise_intensity(backend: Backend,
     The two arrays intensity equalised.
 
     """
+
     if image1.dtype != image2.dtype:
         raise ValueError("Two images must have same dtype!")
 
     if internal_dtype is None:
         internal_dtype = image1.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image1.dtype
-    image1 = backend.to_backend(image1, dtype=internal_dtype, force_copy=copy)
-    image2 = backend.to_backend(image2, dtype=internal_dtype, force_copy=copy)
+    image1 = Backend.to_backend(image1, dtype=internal_dtype, force_copy=copy)
+    image2 = Backend.to_backend(image2, dtype=internal_dtype, force_copy=copy)
 
-    xp = backend.get_xp_module()
+    xp = Backend.get_xp_module()
 
     reduction = max(1, 4 * (int(image1.size / max_voxels) // 4))
 

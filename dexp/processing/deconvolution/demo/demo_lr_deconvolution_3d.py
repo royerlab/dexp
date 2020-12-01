@@ -1,6 +1,7 @@
 import numpy
 
 from dexp.optics.psf.standard_psfs import nikon16x08na
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
@@ -10,24 +11,23 @@ from dexp.utils.timeit import timeit
 
 
 def demo_lr_deconvolution_numpy():
-    backend = NumpyBackend()
-    _demo_lr_deconvolution(backend)
+    with NumpyBackend():
+        _demo_lr_deconvolution()
 
 
 def demo_lr_deconvolution_cupy():
     try:
-        backend = CupyBackend()
-        _demo_lr_deconvolution(backend)
+        with CupyBackend():
+            _demo_lr_deconvolution()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _demo_lr_deconvolution(backend, length_xy=128):
-    xp = backend.get_xp_module()
+def _demo_lr_deconvolution(length_xy=128):
+    xp = Backend.get_xp_module()
 
     with timeit("generate data"):
-        image_gt, background, image = generate_nuclei_background_data(backend,
-                                                                      add_noise=False,
+        image_gt, background, image = generate_nuclei_background_data(add_noise=False,
                                                                       length_xy=length_xy,
                                                                       length_z_factor=1,
                                                                       background_stength=0,
@@ -38,7 +38,7 @@ def _demo_lr_deconvolution(backend, length_xy=128):
     psf = psf.astype(dtype=numpy.float16)
     image = image.astype(dtype=numpy.float16)
 
-    blurry = fft_convolve(backend, image, psf)
+    blurry = fft_convolve(image, psf)
     blurry = blurry - blurry.min()
     blurry = blurry / blurry.max()
     noisy = blurry
@@ -47,15 +47,15 @@ def _demo_lr_deconvolution(backend, length_xy=128):
     iterations = 50
 
     with timeit("deconvolved"):
-        deconvolved = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=iterations, padding=16)
+        deconvolved = lucy_richardson_deconvolution(noisy, psf, num_iterations=iterations, padding=16)
 
     with timeit("deconvolved_power"):
-        deconvolved_power = lucy_richardson_deconvolution(backend, noisy, psf, num_iterations=iterations, padding=16, power=2)
+        deconvolved_power = lucy_richardson_deconvolution(noisy, psf, num_iterations=iterations, padding=16, power=2)
 
     from napari import Viewer, gui_qt
     with gui_qt():
         def _c(array):
-            return backend.to_numpy(array)
+            return Backend.to_numpy(array)
 
         viewer = Viewer()
         viewer.add_image(_c(image), name='image')

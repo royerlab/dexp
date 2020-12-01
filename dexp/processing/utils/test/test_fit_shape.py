@@ -1,28 +1,29 @@
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.utils.fit_shape import fit_to_shape
 
 
 def test_fit_shape_numpy():
-    backend = NumpyBackend()
-    _test_fit_shape(backend)
+    with NumpyBackend():
+        _test_fit_shape()
 
 
 def test_fit_shape_cupy():
     try:
-        backend = CupyBackend()
-        _test_fit_shape(backend)
+        with CupyBackend():
+            _test_fit_shape()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _test_fit_shape(backend, length_xy=128):
-    xp = backend.get_xp_module()
+def _test_fit_shape():
+    xp = Backend.get_xp_module()
 
     array_1 = xp.random.uniform(0, 1, size=(31, 10, 17))
     array_2 = xp.random.uniform(0, 1, size=(32, 9, 18))
 
-    array_2_fit = fit_to_shape(backend, array_2.copy(), shape=array_1.shape)
+    array_2_fit = fit_to_shape(array_2.copy(), shape=array_1.shape)
 
     assert array_2_fit is not array_2
     assert array_2_fit.shape == array_1.shape

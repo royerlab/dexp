@@ -1,3 +1,4 @@
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.sobel_filter import sobel_filter
@@ -5,23 +6,23 @@ from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_te
 
 
 def demo_sobel_numpy():
-    backend = NumpyBackend()
-    _demo_sobel(backend)
+    with NumpyBackend():
+        _demo_sobel()
 
 
 def demo_sobel_cupy():
     try:
-        backend = CupyBackend()
-        _demo_sobel(backend)
+        with CupyBackend():
+            _demo_sobel()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _demo_sobel(backend):
-    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend, add_noise=False)
+def _demo_sobel():
+    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=False)
 
-    tenengrad_image1 = sobel_filter(backend, image1)
-    tenengrad_image2 = sobel_filter(backend, image2)
+    tenengrad_image1 = sobel_filter(image1)
+    tenengrad_image2 = sobel_filter(image2)
 
     assert tenengrad_image1.shape == image1.shape
     assert tenengrad_image2.shape == image2.shape
@@ -31,7 +32,7 @@ def _demo_sobel(backend):
     from napari import Viewer, gui_qt
     with gui_qt():
         def _c(array):
-            return backend.to_numpy(array)
+            return Backend.to_numpy(array)
 
         viewer = Viewer()
         viewer.add_image(_c(image_gt), name='image_gt')

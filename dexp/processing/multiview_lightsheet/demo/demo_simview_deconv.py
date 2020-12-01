@@ -4,6 +4,7 @@ from napari import gui_qt, Viewer
 from tifffile import imread
 
 from dexp.optics.psf.standard_psfs import nikon16x08na
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
@@ -16,20 +17,20 @@ filepath = '/home/royer/Desktop/test_data/embryo_fused.tif'
 
 
 def demo_simview_deconv_numpy():
-    backend = NumpyBackend()
-    simview_deconv(backend)
+    with NumpyBackend():
+        simview_deconv()
 
 
 def demo_simview_deconv_cupy():
     try:
-        backend = CupyBackend(enable_memory_pool=False)
-        simview_deconv(backend)
+        with CupyBackend():
+            simview_deconv()
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
 
 
-def simview_deconv(backend):
-    xp = backend.get_xp_module()
+def simview_deconv():
+    xp = Backend.get_xp_module()
 
     print(f"Loading data...")
     array = imread(filepath)
@@ -39,19 +40,18 @@ def simview_deconv(backend):
             1533 - 256:1533 + 256,
             931 - 256:931 + 256]
 
-    view = backend.to_backend(array, dtype=xp.float32)
+    view = Backend.to_backend(array, dtype=xp.float32)
 
     # with timeit(f"Clip view ..."):
     #     view = xp.clip(view, a_min=0, a_max=3048, out=view)
 
     with timeit(f"Dehaze view ..."):
-        view_dehazed = dehaze(backend, view, size=65, minimal_zero_level=0)
+        view_dehazed = dehaze(view, size=65, minimal_zero_level=0)
 
     with timeit(f"Denoise dark regions of CxLx..."):
         dark_denoise_threshold: int = 80
         dark_denoise_size: int = 9
-        view_dehazed_darkcleaned = clean_dark_regions(backend,
-                                                      view_dehazed,
+        view_dehazed_darkcleaned = clean_dark_regions(view_dehazed,
                                                       size=dark_denoise_size,
                                                       threshold=dark_denoise_threshold)
     # view_dehazed_darkcleaned = view_dehazed
@@ -86,13 +86,13 @@ def simview_deconv(backend):
 
     with timeit("lucy_richardson_deconvolution_wb"):
         def f(_image):
-            return lucy_richardson_deconvolution(backend, image=_image, num_iterations=5, **parameters, **parameters_wb)
+            return lucy_richardson_deconvolution(image=_image, num_iterations=5, **parameters, **parameters_wb)
 
-        view_dehazed_darkdenoised_deconvolved_wb = scatter_gather_i2i(backend, f, view_dehazed_darkcleaned, chunks=320, margins=psf_size, clip=False, to_numpy=True)
+        view_dehazed_darkdenoised_deconvolved_wb = scatter_gather_i2i(f, view_dehazed_darkcleaned, chunks=320, margins=psf_size, clip=False, to_numpy=True)
 
     with gui_qt():
         def _c(array):
-            return backend.to_numpy(array)
+            return Backend.to_numpy(array)
 
         viewer = Viewer()
         viewer.add_image(_c(view), name='raw',

@@ -6,8 +6,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def gaussian_kernel_nd(backend: Backend,
-                       size: Union[int, Tuple[int, ...]] = 5,
+def gaussian_kernel_nd(size: Union[int, Tuple[int, ...]] = 5,
                        ndim: int = None,
                        sigma: float = 1.0,
                        dtype=numpy.float16):
@@ -15,7 +14,6 @@ def gaussian_kernel_nd(backend: Backend,
     Computes a nD Gaussian kernel
     Parameters
     ----------
-    backend : Backend to use for computation
     ndim : number of dimensions
     size : size in pixels
     sigma : Gaussian sigma
@@ -26,6 +24,7 @@ def gaussian_kernel_nd(backend: Backend,
     nD Gaussian kernel
 
     """
+    backend = Backend.current()
     xp = backend.get_xp_module()
     sp = backend.get_sp_module()
 

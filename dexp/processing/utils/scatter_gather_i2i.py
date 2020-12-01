@@ -3,13 +3,11 @@ from typing import Tuple, Union
 import numpy
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.utils.nd_slice import nd_split_slices, remove_margin_slice
 from dexp.processing.utils.normalise import normalise_functions
 
 
-def scatter_gather_i2i(backend: Backend,
-                       function,
+def scatter_gather_i2i(function,
                        image,
                        chunks: Union[int, Tuple[int, ...]],
                        margins: Union[int, Tuple[int, ...]] = None,
@@ -26,7 +24,6 @@ def scatter_gather_i2i(backend: Backend,
 
     Parameters
     ----------
-    backend : Backend to use for computation
     function : unary function
     image : input image (can be any backend, numpy )
     chunks : chunk sizes to cut input image into, can be a single integer or a tuple of integers.
@@ -40,6 +37,7 @@ def scatter_gather_i2i(backend: Backend,
     Result of applying the unary function to the input image, if to_numpy==True then the image is
 
     """
+
     if internal_dtype is None:
         internal_dtype = image.dtype
 
@@ -52,10 +50,10 @@ def scatter_gather_i2i(backend: Backend,
     if to_numpy:
         result = numpy.empty(shape=image.shape, dtype=image.dtype)
     else:
-        result = backend.get_xp_module(image).empty_like(image)
+        result = Backend.get_xp_module(image).empty_like(image)
 
     # Normalise:
-    norm_fun, denorm_fun = normalise_functions(backend, image, do_normalise=normalise, clip=clip)
+    norm_fun, denorm_fun = normalise_functions(image, do_normalise=normalise, clip=clip)
 
     # image shape:
     shape = image.shape
@@ -74,31 +72,24 @@ def scatter_gather_i2i(backend: Backend,
         # If there is only one tile, let's not be complicated about it:
         result = denorm_fun(function(norm_fun(image)))
         if to_numpy:
-            result = backend.to_numpy(result, dtype=image.dtype)
+            result = Backend.to_numpy(result, dtype=image.dtype)
         else:
-            result = backend.to_backend(result, dtype=image.dtype)
+            result = Backend.to_backend(result, dtype=image.dtype)
     else:
-        if type(backend) is CupyBackend:
-            import cupy
-            stream = cupy.cuda.stream.Stream()
-            with stream:
-                _scatter_gather_loop(backend, denorm_fun, function, image, internal_dtype, norm_fun, result, shape, slices, to_numpy)
-            stream.synchronize()
-        else:
-            _scatter_gather_loop(backend, denorm_fun, function, image, internal_dtype, norm_fun, result, shape, slices, to_numpy)
+        _scatter_gather_loop(denorm_fun, function, image, internal_dtype, norm_fun, result, shape, slices, to_numpy)
 
     return result
 
 
-def _scatter_gather_loop(backend, denorm_fun, function, image, internal_dtype, norm_fun, result, shape, slices, to_numpy):
+def _scatter_gather_loop(denorm_fun, function, image, internal_dtype, norm_fun, result, shape, slices, to_numpy):
     for chunk_slice, chunk_slice_no_margins in slices:
         image_chunk = image[chunk_slice]
-        image_chunk = backend.to_backend(image_chunk, dtype=internal_dtype)
+        image_chunk = Backend.to_backend(image_chunk, dtype=internal_dtype)
         image_chunk = denorm_fun(function(norm_fun(image_chunk)))
         if to_numpy:
-            image_chunk = backend.to_numpy(image_chunk, dtype=image.dtype)
+            image_chunk = Backend.to_numpy(image_chunk, dtype=image.dtype)
         else:
-            image_chunk = backend.to_backend(image_chunk, dtype=image.dtype)
+            image_chunk = Backend.to_backend(image_chunk, dtype=image.dtype)
 
         remove_margin_slice_tuple = remove_margin_slice(
             shape, chunk_slice, chunk_slice_no_margins

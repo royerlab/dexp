@@ -8,8 +8,7 @@ from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels.butterworth import butterworth_kernel
 
 
-def butterworth_filter(backend: Backend,
-                       image,
+def butterworth_filter(image,
                        shape=None,
                        cutoffs: Union[float, Tuple[float, ...]] = None,
                        cutoffs_in_freq_units=False,
@@ -27,7 +26,6 @@ def butterworth_filter(backend: Backend,
 
     Parameters
     ----------
-    backend : Backedn to use for computation
     image : image to apply filter to
     shape : filter shape
     cutoffs : Butterworth cutoffs.
@@ -42,16 +40,16 @@ def butterworth_filter(backend: Backend,
     Filtered image.
 
     """
-    sp = backend.get_sp_module()
+    sp = Backend.get_sp_module()
 
     if internal_dtype is None:
         internal_dtype = image.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype)
+    image = Backend.to_backend(image, dtype=internal_dtype)
 
     if shape is None:
         shape = (11,) * image.ndim
@@ -63,17 +61,16 @@ def butterworth_filter(backend: Backend,
     elif type(cutoffs) is float and image.ndim > 1:
         cutoffs = (cutoffs,) * image.ndim
 
-    butterworth_filter = butterworth_kernel(backend=backend,
-                                            shape=shape,
+    butterworth_filter = butterworth_kernel(shape=shape,
                                             cutoffs=cutoffs,
                                             cutoffs_in_freq_units=cutoffs_in_freq_units,
                                             epsilon=epsilon,
                                             order=order)
 
-    image = backend.to_backend(image)
+    image = Backend.to_backend(image)
 
     if use_fft:
-        filtered_image = fft_convolve(backend, image, butterworth_filter, mode=mode)
+        filtered_image = fft_convolve(image, butterworth_filter, mode=mode)
     else:
         filtered_image = sp.ndimage.convolve(image, butterworth_filter, mode=mode)
 

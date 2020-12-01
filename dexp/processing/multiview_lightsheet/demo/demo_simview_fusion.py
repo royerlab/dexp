@@ -1,11 +1,11 @@
 # You need to point to a tiff file with 4 views as first dim,
 # as produced for example by: dexp tiff -w -s [128:129] dataset.zarr -o /home/royer/Desktop/test_data/test_data.tiff
-import time
 
 import numpy
 from napari import gui_qt, Viewer
 from tifffile import imread
 
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.multiview_lightsheet.simview_fusion import simview_fuse_2I2D
@@ -15,22 +15,19 @@ filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'
 
 
 def demo_simview_fusion_numpy():
-    backend = NumpyBackend()
-    simview_fusion(backend)
+    with NumpyBackend():
+        simview_fusion()
 
 
 def demo_simview_fusion_cupy():
     try:
-        backend = CupyBackend(enable_memory_pool=True)
-        simview_fusion(backend)
+        with CupyBackend():
+            simview_fusion()
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
 
 
-def simview_fusion(backend):
-    xp = backend.get_xp_module()
-    start = time.time()
-
+def simview_fusion():
     with timeit("imread"):
         array = imread(filepath)
 
@@ -44,12 +41,12 @@ def simview_fusion(backend):
     C1L1 = numpy.flip(C1L1, -1)
 
     with timeit("simview_fuse_2I2D"):
-        CxLx, shifts = simview_fuse_2I2D(backend, C0L0, C0L1, C1L0, C1L1)
+        CxLx, shifts = simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1)
     # CxLx = CxLx.astype(numpy.float32)
     print(f"Shifts = {shifts}")
 
     with timeit("to_numpy"):
-        CxLx = backend.to_numpy(CxLx)
+        CxLx = Backend.to_numpy(CxLx)
     #
     # psf = SimpleMicroscopePSF()
     # psf_kernel = psf.generate_xyz_psf(dxy=0.485,
@@ -72,7 +69,7 @@ def simview_fusion(backend):
 
     with gui_qt():
         def _c(array):
-            return backend.to_numpy(array)
+            return Backend.to_numpy(array)
 
         viewer = Viewer()
         viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)

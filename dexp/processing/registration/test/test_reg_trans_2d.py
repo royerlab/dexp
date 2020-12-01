@@ -1,28 +1,29 @@
 from pytest import approx
 
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.demo.demo_reg_trans_2d import _register_translation_2d
 
 
 def test_register_translation_2d_numpy():
-    backend = NumpyBackend()
-    register_translation_2d(backend)
+    with  NumpyBackend():
+        register_translation_2d()
 
 
 def test_register_translation_2d_cupy():
     try:
-        backend = CupyBackend()
-        register_translation_2d(backend)
+        with CupyBackend():
+            register_translation_2d()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def register_translation_2d(backend):
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+def register_translation_2d():
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
-    image, shifted, unshifted, model = _register_translation_2d(backend, display=False)
+    image, shifted, unshifted, model = _register_translation_2d(display=False)
 
     shifts = model.shift_vector
     assert shifts[0] == approx(-13, abs=0.5)

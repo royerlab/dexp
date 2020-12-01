@@ -1,6 +1,7 @@
 from skimage.transform import downscale_local_mean
 
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
@@ -75,7 +76,7 @@ def dataset_deconv(dataset,
 
         def process(tp):
 
-            with CupyBackend(device) as backend:
+            with CupyBackend(device):
                 try:
                     print(f"Starting to process time point: {tp} ...")
                     tp_array = array[tp].compute()
@@ -87,8 +88,7 @@ def dataset_deconv(dataset,
                         max_value = tp_array.max()
 
                         def f(image):
-                            return lucy_richardson_deconvolution(backend,
-                                                                 image=image,
+                            return lucy_richardson_deconvolution(image=image,
                                                                  psf=psf_kernel,
                                                                  num_iterations=num_iterations,
                                                                  max_correction=max_correction,
@@ -100,11 +100,11 @@ def dataset_deconv(dataset,
                                                                  )
 
                         with timeit("lucy_richardson_deconvolution"):
-                            tp_array = scatter_gather_i2i(backend, f, tp_array, chunks=chunksize, margins=max(xy_size, z_size))
+                            tp_array = scatter_gather_i2i(f, tp_array, chunks=chunksize, margins=max(xy_size, z_size))
                     else:
                         raise ValueError(f"Unknown deconvolution mode: {method}")
 
-                    tp_array = backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
+                    tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
                     dest_array[tp] = tp_array
                     print(f"Done processing time point: {tp} .")
 

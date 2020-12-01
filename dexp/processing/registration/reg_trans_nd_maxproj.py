@@ -5,8 +5,7 @@ from dexp.processing.registration.model.translation_registration_model import Tr
 from dexp.processing.registration.reg_trans_2d import register_translation_2d_dexp
 
 
-def register_translation_maxproj_nd(backend: Backend,
-                                    image_a, image_b,
+def register_translation_maxproj_nd(image_a, image_b,
                                     register_translation_2d=register_translation_2d_dexp,
                                     gamma: float = 1,
                                     drop_worse: bool = True,
@@ -18,7 +17,6 @@ def register_translation_maxproj_nd(backend: Backend,
 
     Parameters
     ----------
-    backend : backend for computation
     image_a : First image to register
     image_b : Second image to register
     register_translation_2d : 2d registration method to use
@@ -32,31 +30,31 @@ def register_translation_maxproj_nd(backend: Backend,
 
     """
 
+    xp = Backend.get_xp_module()
+
     if image_a.ndim != image_b.ndim:
         raise ValueError("Images must have the same number of dimensions")
 
-    xp = backend.get_xp_module()
-
-    image_a = backend.to_backend(image_a)
-    image_b = backend.to_backend(image_b)
+    image_a = Backend.to_backend(image_a)
+    image_b = Backend.to_backend(image_b)
 
     if image_a.ndim == 2:
-        image_a = _preprocess_image(backend, image_a, gamma=gamma, in_place=False, dtype=internal_dtype)
-        image_b = _preprocess_image(backend, image_b, gamma=gamma, in_place=False, dtype=internal_dtype)
-        shifts, confidence = register_translation_2d(backend, image_a, image_b, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
+        image_a = _preprocess_image(image_a, gamma=gamma, in_place=False, dtype=internal_dtype)
+        image_b = _preprocess_image(image_b, gamma=gamma, in_place=False, dtype=internal_dtype)
+        shifts, confidence = register_translation_2d(image_a, image_b, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
 
     elif image_a.ndim == 3:
-        iap0 = _project_preprocess_image(backend, image_a, axis=0, dtype=xp.float32, gamma=gamma)
-        iap1 = _project_preprocess_image(backend, image_a, axis=1, dtype=xp.float32, gamma=gamma)
-        iap2 = _project_preprocess_image(backend, image_a, axis=2, dtype=xp.float32, gamma=gamma)
+        iap0 = _project_preprocess_image(image_a, axis=0, dtype=xp.float32, gamma=gamma)
+        iap1 = _project_preprocess_image(image_a, axis=1, dtype=xp.float32, gamma=gamma)
+        iap2 = _project_preprocess_image(image_a, axis=2, dtype=xp.float32, gamma=gamma)
 
-        ibp0 = _project_preprocess_image(backend, image_b, axis=0, dtype=xp.float32, gamma=gamma)
-        ibp1 = _project_preprocess_image(backend, image_b, axis=1, dtype=xp.float32, gamma=gamma)
-        ibp2 = _project_preprocess_image(backend, image_b, axis=2, dtype=xp.float32, gamma=gamma)
+        ibp0 = _project_preprocess_image(image_b, axis=0, dtype=xp.float32, gamma=gamma)
+        ibp1 = _project_preprocess_image(image_b, axis=1, dtype=xp.float32, gamma=gamma)
+        ibp2 = _project_preprocess_image(image_b, axis=2, dtype=xp.float32, gamma=gamma)
 
-        shifts_p0, confidence_p0 = register_translation_2d(backend, iap0, ibp0, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
-        shifts_p1, confidence_p1 = register_translation_2d(backend, iap1, ibp1, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
-        shifts_p2, confidence_p2 = register_translation_2d(backend, iap2, ibp2, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
+        shifts_p0, confidence_p0 = register_translation_2d(iap0, ibp0, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
+        shifts_p1, confidence_p1 = register_translation_2d(iap1, ibp1, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
+        shifts_p2, confidence_p2 = register_translation_2d(iap2, ibp2, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
 
         # print(shifts_p0)
         # print(shifts_p1)
@@ -103,16 +101,14 @@ def register_translation_maxproj_nd(backend: Backend,
     return TranslationRegistrationModel(shift_vector=shifts, confidence=confidence)
 
 
-def _project_preprocess_image(backend: Backend,
-                              image,
+def _project_preprocess_image(image,
                               axis: int,
                               smoothing: float = 0,
                               quantile: int = None,
                               gamma: float = 1,
                               dtype=None):
-    image_projected = _project_image(backend, image, axis=axis)
-    image_projected_processed = _preprocess_image(backend,
-                                                  image_projected,
+    image_projected = _project_image(image, axis=axis)
+    image_projected_processed = _preprocess_image(image_projected,
                                                   smoothing=smoothing,
                                                   quantile=quantile,
                                                   gamma=gamma,
@@ -121,25 +117,24 @@ def _project_preprocess_image(backend: Backend,
     return image_projected_processed
 
 
-def _project_image(backend: Backend, image, axis: int):
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
-    image = backend.to_backend(image)
+def _project_image(image, axis: int):
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
+    image = Backend.to_backend(image)
     projection = xp.max(image, axis=axis) - xp.min(image, axis=axis)
     return projection
 
 
-def _preprocess_image(backend: Backend,
-                      image,
+def _preprocess_image(image,
                       smoothing: float = 0,
                       quantile: int = None,
                       gamma: float = 1,
                       in_place: bool = True,
                       dtype=None):
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
-    processed_image = backend.to_backend(image, dtype=dtype, force_copy=not in_place)
+    processed_image = Backend.to_backend(image, dtype=dtype, force_copy=not in_place)
 
     if smoothing > 0:
         processed_image = sp.ndimage.gaussian_filter(processed_image, sigma=smoothing)

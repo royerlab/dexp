@@ -10,19 +10,19 @@ from dexp.processing.equalise.equalise_intensity import equalise_intensity
 
 
 def test_equalise_intensity_numpy():
-    backend = NumpyBackend()
-    _equalise_intensity(backend)
+    with NumpyBackend():
+        _equalise_intensity()
 
 
 def test_equalise_intensity_cupy():
     try:
-        backend = CupyBackend()
-        _equalise_intensity(backend)
+        with CupyBackend():
+            _equalise_intensity()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _equalise_intensity(backend: Backend, length=128):
+def _equalise_intensity(length=128):
     ratio_gt = 1.77
 
     image_1 = 300 * binary_blobs(length=length, n_dim=3, blob_size_fraction=0.04, volume_fraction=0.01).astype('f4')
@@ -39,9 +39,9 @@ def _equalise_intensity(backend: Backend, length=128):
     #     viewer.add_image(image_2, name='image_2')
 
     org_image_1, org_image_2 = image_1.copy(), image_2.copy()
-    equ_image_1, equ_image_2, corr_ratio = equalise_intensity(backend, image_1, image_2)
+    equ_image_1, equ_image_2, corr_ratio = equalise_intensity(image_1, image_2)
 
-    corr_ratio = backend.to_numpy(corr_ratio)
+    corr_ratio = Backend.to_numpy(corr_ratio)
 
     print(f" Ratio:{1 / corr_ratio}")
 

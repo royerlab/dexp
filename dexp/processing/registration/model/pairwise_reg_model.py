@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 
 import numpy
 
-from dexp.processing.backends.backend import Backend
-
 
 class PairwiseRegistrationModel(ABC):
 
@@ -17,7 +15,7 @@ class PairwiseRegistrationModel(ABC):
         pass
 
     @abstractmethod
-    def apply(self, backend: Backend, image_a, image_b, pad: bool = False) -> numpy.ndarray:
+    def apply(self, image_a, image_b, pad: bool = False) -> numpy.ndarray:
         """ Applies this pairwise registration model to the two given images.
         Two images will be returned as there might be need to pad both images.
 

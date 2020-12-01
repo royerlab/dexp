@@ -4,8 +4,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def clean_dark_regions(backend: Backend,
-                       image,
+def clean_dark_regions(image,
                        threshold: float,
                        size: int = 3,
                        mode: str = 'median',
@@ -20,7 +19,6 @@ def clean_dark_regions(backend: Backend,
 
     Parameters
     ----------
-    backend : backend to use (numpy, cupy, ...)
     image : image to correct
     threshold : threshold for 'dark' voxel values.
     size : filter size
@@ -33,18 +31,17 @@ def clean_dark_regions(backend: Backend,
     Cleaned image
 
     """
-
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     if internal_dtype is None:
         internal_dtype = image.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
+    image = Backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
 
     if mode == 'none':
         filtered = image.copy()

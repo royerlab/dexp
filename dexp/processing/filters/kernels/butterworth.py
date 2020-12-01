@@ -5,8 +5,7 @@ import numpy
 from dexp.processing.backends.backend import Backend
 
 
-def butterworth_kernel(backend: Backend,
-                       shape: Tuple[int, ...],
+def butterworth_kernel(shape: Tuple[int, ...],
                        cutoffs: Union[float, Tuple[float, ...]],
                        cutoffs_in_freq_units=False,
                        epsilon: float = 1,
@@ -17,7 +16,6 @@ def butterworth_kernel(backend: Backend,
 
     Parameters
     ----------
-    backend : Backend to use
     shape : filter shape
     cutoffs : Butterworth cutoffs.
     cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]
@@ -31,8 +29,8 @@ def butterworth_kernel(backend: Backend,
     Normalised butterworth filter kernel.
 
     """
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     ndim = len(shape)
 

@@ -7,8 +7,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def axis_aligned_pattern_correction(backend: Backend,
-                                    image,
+def axis_aligned_pattern_correction(image,
                                     axis_combinations: List[Tuple[int]] = None,
                                     quantile: float = 0.5,
                                     sigma: float = 0,
@@ -29,7 +28,6 @@ def axis_aligned_pattern_correction(backend: Backend,
 
     Parameters
     ----------
-    backend : backend to use (numpy, cupy, ...)
     image : image to correct
     axis_combinations : List of tuples of axis in the order of correction
     percentile : percentile value used for stabilisation
@@ -37,19 +35,18 @@ def axis_aligned_pattern_correction(backend: Backend,
     in_place : True if the input image may be modified in-place.
     internal_dtype : internal dtype for computation
     """
-
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     if internal_dtype is None:
         internal_dtype = image.dtype
 
-    if type(backend) is NumpyBackend:
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
 
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
+    image = Backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
 
     axis_combinations = (
         _all_axis_combinations(image.ndim)

@@ -1,5 +1,6 @@
 import numpy
 
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.multiview_lightsheet.simview_fusion import simview_fuse_2I2D
 from dexp.processing.registration.model.model_factory import from_json
@@ -75,8 +76,8 @@ def dataset_fuse(dataset,
 
         print(f'Fusing...')
 
-        with CupyBackend(device) as backend:
-            array, model = simview_fuse_2I2D(backend, C0L0, C0L1, C1L0, C1L1,
+        with CupyBackend(device):
+            array, model = simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1,
                                              registration_model=model,
                                              zero_level=zero_level,
                                              fusion=fusion,
@@ -85,7 +86,7 @@ def dataset_fuse(dataset,
                                              dehaze_size=dehaze_size,
                                              dark_denoise_threshold=dark_denoise_threshold)
 
-            array = backend.to_numpy(array, dtype=dest_array.dtype, force_copy=False)
+            array = Backend.to_numpy(array, dtype=dest_array.dtype, force_copy=False)
 
         if not load_shifts:
             json_text = model.to_json()
