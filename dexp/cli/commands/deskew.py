@@ -26,7 +26,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--loadshifts', '-ls', is_flag=True, help='Turn on to load the registration parameters (i.e translation shifts) from another run', show_default=True)  #
 @click.option('--devices', '-d', type=int, default=0, nargs=-1, help='Sets the CUDA devices id', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
-def fuse(input_path,
+def deskew(input_path,
          output_path,
          slicing,
          store,

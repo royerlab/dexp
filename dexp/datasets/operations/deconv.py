@@ -1,3 +1,4 @@
+from joblib import Parallel
 from skimage.transform import downscale_local_mean
 
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
@@ -29,7 +30,7 @@ def dataset_deconv(dataset,
                    xy_size,
                    z_size,
                    downscalexy2,
-                   device,
+                   devices,
                    check):
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
@@ -74,7 +75,7 @@ def dataset_deconv(dataset,
         elif objective == 'olympus20x10na':
             psf_kernel = olympus20x10na(**psf_kwargs)
 
-        def process(tp):
+        def process(tp, device):
 
             with CupyBackend(device):
                 try:
@@ -114,11 +115,11 @@ def dataset_deconv(dataset,
                     import traceback
                     traceback.print_exc()
 
-        # TODO: we are not yet distributing computation over GPUs, that would require a proper use of DASK for that.
-        # See: https://medium.com/rapids-ai/parallelizing-custom-cupy-kernels-with-dask-4d2ccd3b0732
-
-        for tp in range(0, shape[0]):
-            process(tp)
+        if workers > 1:
+            Parallel(n_jobs=workers)(process(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
+        else:
+            for tp in range(0, shape[0]):
+                process(tp)
 
     print(dest_dataset.info())
     if check:

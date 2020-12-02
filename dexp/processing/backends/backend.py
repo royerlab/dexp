@@ -60,6 +60,10 @@ class Backend(ABC):
     def get_sp_module(array=None) -> Any:
         return Backend.current()._get_sp_module(array)
 
+    @staticmethod
+    def submit(self, *args, **kwargs):
+        self._pool.submit(*args, **kwargs)
+
     def __enter__(self):
         if not hasattr(Backend._local, 'backend_stack'):
             Backend._local.backend_stack = []
@@ -74,9 +78,6 @@ class Backend(ABC):
 
         """
         pass
-
-    def submit(self, *args, **kwargs):
-        self._pool.submit(*args, **kwargs)
 
     @abstractmethod
     def close(self):

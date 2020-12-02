@@ -1,8 +1,9 @@
 import numpy
+from joblib import Parallel
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.multiview_lightsheet.simview_fusion import simview_fuse_2I2D
+from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2I2D
 from dexp.processing.registration.model.model_factory import from_json
 
 
@@ -20,7 +21,7 @@ def dataset_fuse(dataset,
                  dehaze_size,
                  dark_denoise_threshold,
                  load_shifts,
-                 device,
+                 devices,
                  check):
     print(f"getting Dask arrays for all channels to fuse...")
     array_C0L0 = dataset.get_array('C0L0', per_z_slice=False, wrap_with_dask=True)
@@ -54,7 +55,7 @@ def dataset_fuse(dataset,
     if load_shifts:
         print(f"Loading registration shifts from existing file! ({registration_models_file.name})")
 
-    def process(tp):
+    def process(tp, device):
         print(f"Writing time point: {tp} ")
 
         C0L0 = array_C0L0[tp].compute()
@@ -95,11 +96,12 @@ def dataset_fuse(dataset,
         print(f'Writing array of dtype: {array.dtype}')
         dest_array[tp] = array
 
-    # TODO: we are not yet distributing computation over GPUs, that would require a proper use of DASK for that.
-    # See: https://medium.com/rapids-ai/parallelizing-custom-cupy-kernels-with-dask-4d2ccd3b0732
 
-    for tp in range(0, shape[0]):
-        process(tp)
+    if workers > 1:
+        Parallel(n_jobs=workers)(process(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
+    else:
+        for tp in range(0, shape[0]):
+            process(tp)
 
     registration_models_file.close()
 

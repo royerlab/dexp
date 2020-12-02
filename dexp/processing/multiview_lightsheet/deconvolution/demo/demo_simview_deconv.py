@@ -23,7 +23,7 @@ def demo_simview_deconv_numpy():
 
 def demo_simview_deconv_cupy():
     try:
-        with CupyBackend():
+        with CupyBackend(enable_memory_pool=False):
             simview_deconv()
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
@@ -36,9 +36,9 @@ def simview_deconv():
     array = imread(filepath)
     print(f"Done loading.")
 
-    array = array[150 - 64:150 + 64,
-            1533 - 256:1533 + 256,
-            931 - 256:931 + 256]
+    # array = array[150 - 64:150 + 64,
+    #         1533 - 256:1533 + 256,
+    #         931 - 256:931 + 256]
 
     view = Backend.to_backend(array, dtype=xp.float32)
 
@@ -48,16 +48,9 @@ def simview_deconv():
     with timeit(f"Dehaze view ..."):
         view_dehazed = dehaze(view, size=65, minimal_zero_level=0)
 
-    with timeit(f"Denoise dark regions of CxLx..."):
-        dark_denoise_threshold: int = 80
-        dark_denoise_size: int = 9
-        view_dehazed_darkcleaned = clean_dark_regions(view_dehazed,
-                                                      size=dark_denoise_size,
-                                                      threshold=dark_denoise_threshold)
-    # view_dehazed_darkcleaned = view_dehazed
 
-    min_value = view_dehazed_darkcleaned.min()
-    max_value = view_dehazed_darkcleaned.max()
+    min_value = view_dehazed.min()
+    max_value = view_dehazed.max()
 
     print(f"min={min_value}, max={max_value}")
 
@@ -86,9 +79,9 @@ def simview_deconv():
 
     with timeit("lucy_richardson_deconvolution_wb"):
         def f(_image):
-            return lucy_richardson_deconvolution(image=_image, num_iterations=5, **parameters, **parameters_wb)
+            return lucy_richardson_deconvolution(image=_image, num_iterations=3, **parameters, **parameters_wb)
 
-        view_dehazed_darkdenoised_deconvolved_wb = scatter_gather_i2i(f, view_dehazed_darkcleaned, chunks=320, margins=psf_size, clip=False, to_numpy=True)
+        view_dehazed_deconvolved_wb = scatter_gather_i2i(f, view_dehazed, chunks=320, margins=psf_size, clip=False, to_numpy=True)
 
     with gui_qt():
         def _c(array):
@@ -99,11 +92,7 @@ def simview_deconv():
                          contrast_limits=(0, 2000), scale=(4, 1, 1), visible=False)
         viewer.add_image(_c(view_dehazed), name='dehazed',
                          contrast_limits=(0, 2000), scale=(4, 1, 1), colormap='bop purple', blending='additive', visible=False)
-        viewer.add_image(_c(view_dehazed_darkcleaned), name='darkdenoised',
-                         contrast_limits=(0, 2000), scale=(4, 1, 1), colormap='bop orange', blending='additive')
-        # viewer.add_image(_c(view_dehazed_darkdenoised_deconvolved), name='deconvolved', contrast_limits=(0, 13000), scale=(4, 1, 1))
-
-        viewer.add_image(_c(view_dehazed_darkdenoised_deconvolved_wb), name='deconvolved_wb',
+        viewer.add_image(_c(view_dehazed_deconvolved_wb), name='deconvolved_wb',
                          contrast_limits=(0, 13000), scale=(4, 1, 1), colormap='bop blue', blending='additive')
 
 

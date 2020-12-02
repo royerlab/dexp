@@ -62,6 +62,7 @@ def cli():
 from dexp.cli.commands.check import check
 from dexp.cli.commands.copy import copy
 from dexp.cli.commands.add import add
+from dexp.cli.commands.deskew import deskew
 from dexp.cli.commands.fuse import fuse
 from dexp.cli.commands.deconv import deconv
 from dexp.cli.commands.isonet import isonet
@@ -76,6 +77,7 @@ from dexp.cli.commands.mp4 import mp4
 cli.add_command(check)
 cli.add_command(copy)
 cli.add_command(add)
+cli.add_command(deskew)
 cli.add_command(fuse)
 cli.add_command(deconv)
 cli.add_command(isonet)
