@@ -19,11 +19,19 @@ def warp(image,
     Parameters
     ----------
     image : image to warp
+
     vector_field : vector field to warp inoput image with. The vector field is an array of dimension n+1 where n is the dimension of the input image.
     The first n dimensions can be of arbirary lengths, and the last vector is the warp vector for each image region that the first
+
     vector_field_upsampling : upsampling factor for teh vector field (best use a power of two)
+
     vector_field_upsampling_order : upsampling order: 0-> nearest, 1->linear, 2->quadratic, ... (uses scipy zoom)
+
     mode : How to handle warping that reaches outside of the image bounds, can be: 'clamp', 'border', 'wrap', 'mirror'
+
+    image_to_backend : By default one can directly copy a numpy array to texture memory,
+    if needed, this option let's one first more the data to a cupy array before moving to texture memory. Not recommended.
+
     internal_dtype : internal dtype
 
     Returns
@@ -51,7 +59,7 @@ def warp(image,
         else:
             vector_field = zoom(vector_field, zoom=(vector_field_upsampling,), order=vector_field_upsampling_order)
 
-    #we can actually directly copy from numpy to texture mem!
+    # we can actually directly copy from numpy to texture mem!
     if image_to_backend:
         image = Backend.to_backend(image, dtype=internal_dtype)
     image = image.astype(dtype=internal_dtype, copy=False)

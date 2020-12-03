@@ -14,8 +14,23 @@ def create_cuda_texture(array,
                         sampling_mode: str = 'linear',
                         address_mode: str = 'clamp',
                         dtype=None):
+    """ Creates a Cuda texture and takes care of a lot of the needed 'know-how'
 
+    Parameters
+    ----------
+    array
+    texture_shape
+    num_channels
+    normalised_values
+    normalised_coords
+    sampling_mode
+    address_mode
+    dtype
 
+    Returns
+    -------
+
+    """
     if texture_shape is None:
         if num_channels > 1:
             texture_shape = array.shape[0:-1]
