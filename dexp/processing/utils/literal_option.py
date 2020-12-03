@@ -1,6 +1,7 @@
+import ast
 
 import click
-import ast
+
 
 class PythonLiteralOption(click.Option):
 

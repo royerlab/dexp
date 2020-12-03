@@ -1,9 +1,9 @@
-from time import time
-
 import click
 
-from dexp.cli.main import _get_dataset_from_path, _default_clevel, _default_codec, _default_store, _get_output_path, _parse_slicing
+from dexp.cli.main import _default_clevel, _default_codec, _default_store
+from dexp.cli.utils import _get_dataset_from_path, _get_output_path, _parse_slicing
 from dexp.datasets.operations.isonet import dataset_isonet
+from dexp.utils.timeit import timeit
 
 
 @click.command()
@@ -20,34 +20,22 @@ from dexp.datasets.operations.isonet import dataset_isonet
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def isonet(input_path, output_path, slicing, store, codec, clevel, overwrite, context, mode, max_epochs, check):
     input_dataset = _get_dataset_from_path(input_path)
-
-    print(f"Available Channels: {input_dataset.channels()}")
-    for channel in input_dataset.channels():
-        print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
-
-    if output_path is None or not output_path.strip():
-        output_path = _get_output_path(input_path) + '.zarr'
-
+    output_path = _get_output_path(input_path, output_path, '.isonet')
     slicing = _parse_slicing(slicing)
-    print(f"Requested slicing: {slicing} ")
 
-    print("Fusing dataset.")
-    print(f"Saving dataset to: {output_path} with zarr format... ")
-    time_start = time()
-    dataset_isonet(input_dataset,
-                   output_path,
-                   slicing=slicing,
-                   store=store,
-                   compression=codec,
-                   compression_level=clevel,
-                   overwrite=overwrite,
-                   context=context,
-                   mode=mode,
-                   max_epochs=max_epochs,
-                   check=check
-                   )
+    with timeit(f"Isonet"):
+        dataset_isonet(input_dataset,
+                       output_path,
+                       slicing=slicing,
+                       store=store,
+                       compression=codec,
+                       compression_level=clevel,
+                       overwrite=overwrite,
+                       context=context,
+                       mode=mode,
+                       max_epochs=max_epochs,
+                       check=check
+                       )
 
-    time_stop = time()
-    print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
     input_dataset.close()
     print("Done!")

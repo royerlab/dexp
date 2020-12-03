@@ -32,8 +32,8 @@ def _mvsols_resample():
 
         print(zdataset.channels())
 
-        C0L0 = zdataset.get_stack('v0c0', 0)[...,700:-700]
-        C0L1 = zdataset.get_stack('v1c0', 0)[...,700:-700]
+        C0L0 = zdataset.get_stack('v0c0', 0)[..., 700:-700]
+        C0L1 = zdataset.get_stack('v1c0', 0)[..., 700:-700]
 
         print(f"C0L0 shape={C0L0.shape}, dtype={C0L0.dtype}")
         print(f"C0L1 shape={C0L1.shape}, dtype={C0L1.dtype}")

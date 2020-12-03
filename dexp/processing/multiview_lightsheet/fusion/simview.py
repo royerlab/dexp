@@ -1,5 +1,3 @@
-import gc
-
 import numpy
 
 from dexp.processing.backends.backend import Backend

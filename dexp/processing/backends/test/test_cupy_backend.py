@@ -5,7 +5,7 @@ from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.utils.timeit import timeit
+
 
 def test_cupy_basics():
     try:
@@ -16,6 +16,7 @@ def test_cupy_basics():
 
     except (ModuleNotFoundError, NotImplementedError):
         print("Cupy module not found! ignored!")
+
 
 def test_list_devices():
     try:
@@ -86,6 +87,7 @@ def test_allocation_pool():
 
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
+
 
 def test_paralell():
     try:

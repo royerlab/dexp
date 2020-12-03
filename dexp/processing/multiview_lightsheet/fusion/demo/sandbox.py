@@ -1,9 +1,10 @@
 """The resampling functions used to resample the dual view eSPIM data from x'yz' space to xyz space"""
 import os
 import time
-import numpy as np
+
 import cupy as cp
 import cupyx.scipy.ndimage as cp_ndimage
+import numpy as np
 import zarr
 from natsort import natsorted
 from numcodecs import Blosc
@@ -221,7 +222,7 @@ def resampling_vertical_cupy_split(data, dz=1.0, dx=0.2, angle=45, num_split=4):
             output_mip = cp.asnumpy(data_mip)
         else:
             output = np.concatenate((output, cp.asnumpy(data_resampled)), axis=1)
-            data_mip = cp.max(data_resampled, axis=0)   # get mip
+            data_mip = cp.max(data_resampled, axis=0)  # get mip
             output_mip = np.concatenate((output_mip, cp.asnumpy(data_mip)), axis=0)
     del data_resampled, data_mip, data
     return output, output_mip

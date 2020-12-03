@@ -51,4 +51,4 @@ def _demo_warp_2d(grid_size=8):
 
 if __name__ == "__main__":
     demo_warp_2d_cupy()
-    #demo_warp_2d_numpy()
+    # demo_warp_2d_numpy()

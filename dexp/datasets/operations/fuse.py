@@ -32,10 +32,6 @@ def dataset_fuse(dataset,
         if channels is None:
             channels = ('C0L0', 'C0L1')
 
-    print(f"Channels: {channels}")
-    for channel in channels:
-        print(channel)
-
     views = tuple(dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for channel in channels)
 
     if slicing is not None:
@@ -103,7 +99,7 @@ def dataset_fuse(dataset,
         print(f'Writing array of dtype: {array.dtype}')
         if 'fused' not in dest_dataset.channels():
             dest_dataset.add_channel('fused',
-                                     shape=(shape[0],)+array.shape,
+                                     shape=(shape[0],) + array.shape,
                                      dtype=dtype,
                                      codec=compression,
                                      clevel=compression_level)
@@ -127,5 +123,3 @@ def dataset_fuse(dataset,
     if check:
         dest_dataset.check_integrity()
     dest_dataset.close()
-
-

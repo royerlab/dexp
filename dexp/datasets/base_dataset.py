@@ -5,7 +5,6 @@ import numpy
 
 
 class BaseDataset(ABC):
-
     _default_chunks = (1, 32, 512, 512)
 
     def __init__(self, dask_backed=False):
@@ -13,7 +12,6 @@ class BaseDataset(ABC):
 
         """
         self.dask_backed = dask_backed
-
 
     def _selected_channels(self, channels):
         if channels is None:
@@ -74,5 +72,5 @@ class BaseDataset(ABC):
         pass
 
     @abstractmethod
-    def check_integrity(self) -> bool:
+    def check_integrity(self, channels: Sequence[str]) -> bool:
         pass

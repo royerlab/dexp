@@ -1,9 +1,9 @@
-from time import time
-
 import click
 
-from dexp.cli.main import _get_dataset_from_path, _get_output_path, _parse_slicing, _default_clevel, _default_codec, _default_store
+from dexp.cli.main import _default_clevel, _default_codec, _default_store
+from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing
 from dexp.datasets.operations.copy import dataset_copy
+from dexp.utils.timeit import timeit
 
 
 @click.command()
@@ -20,37 +20,22 @@ from dexp.datasets.operations.copy import dataset_copy
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def copy(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, project, workers, check):
     input_dataset = _get_dataset_from_path(input_path)
-
-    print(f"Available Channel(s): {input_dataset.channels()}")
-    for channel in input_dataset.channels():
-        print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
-
-    if output_path is None or not output_path.strip():
-        output_path = _get_output_path(input_path)
-
+    output_path = _get_output_path(input_path, output_path)
     slicing = _parse_slicing(slicing)
-    print(f"Requested slicing: {slicing} ")
+    channels = _parse_channels(input_dataset, channels)
 
-    print(f"Requested channel(s)  {channels if channels else '--All--'} ")
-    if channels is not None:
-        channels = tuple(channel.strip() for channel in channels.split(','))
-    print(f"Selected channel(s): '{channels}' and slice: {slicing}")
+    with timeit(f"copying from: {input_path} to {output_path} for channels: {channels}, slicing: {slicing} "):
+        dataset_copy(input_dataset,
+                     output_path,
+                     channels=channels,
+                     slicing=slicing,
+                     store=store,
+                     compression=codec,
+                     compression_level=clevel,
+                     overwrite=overwrite,
+                     project=project,
+                     workers=workers,
+                     check=check)
 
-    print("Converting dataset.")
-    print(f"Saving dataset to: {output_path} with zarr format... ")
-    time_start = time()
-    dataset_copy(input_dataset,
-                 output_path,
-                 channels=channels,
-                 slicing=slicing,
-                 store=store,
-                 compression=codec,
-                 compression_level=clevel,
-                 overwrite=overwrite,
-                 project=project,
-                 workers=workers,
-                 check=check)
-    time_stop = time()
-    print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
     input_dataset.close()
     print("Done!")

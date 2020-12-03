@@ -11,7 +11,6 @@ from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
 from dexp.processing.multiview_lightsheet.fusion.simview import fuse_illumination_views
 from dexp.processing.registration.model.pairwise_reg_model import PairwiseRegistrationModel
-from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
 from dexp.processing.registration.reg_warp_multiscale_nd import register_warp_multiscale_nd
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
@@ -90,7 +89,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
     if C0L0.dtype != C0L1.dtype:
         raise ValueError("The two views must have same dtype!")
 
-    if C0L0.shape != C0L1.shape :
+    if C0L0.shape != C0L1.shape:
         raise ValueError("The two views must have same shapes!")
 
     if type(Backend.current()) is NumpyBackend:
@@ -130,20 +129,18 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
             if registration_model is None:
                 registration_model = register_warp_multiscale_nd(C0L0, C0L1,
-                                                    num_iterations=5,
-                                                    confidence_threshold=0.3,
-                                                    edge_filter=False,
-                                                    denoise_input_sigma=1)
+                                                                 num_iterations=5,
+                                                                 confidence_threshold=0.3,
+                                                                 edge_filter=False,
+                                                                 denoise_input_sigma=1)
 
             print(f"Registration model: {registration_model}")
-
 
             C0L0, C0L1 = registration_model.apply(C0L0, C0L1)
 
             C0L0 = C0L0.astype(dtype=numpy.float16)
             C0L1 = C0L1.astype(dtype=numpy.float16)
             Backend.current().clear_allocation_pool()
-
 
         with timeit(f"Fuse detection views C0lx and C1Lx..."):
 
@@ -157,7 +154,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
             with timeit(f"Dehaze CxLx ..."):
                 C1Lx = dehaze(C1Lx, size=dehaze_size, minimal_zero_level=0)
                 Backend.current().clear_allocation_pool()
-
 
         if dark_denoise_threshold > 0:
             with timeit(f"Denoise dark regions of CxLx..."):
@@ -190,7 +186,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
     return C1Lx, registration_model
 
 
-
 def fuse_illumination_views(CxL0, CxL1,
                             mode: str = 'tg',
                             smoothing: int = 12,
@@ -204,6 +199,7 @@ def fuse_illumination_views(CxL0, CxL1,
         fused = fuse_dft_nd(CxL0, CxL1)
 
     return fused
+
 
 def resample_C0L0(image,
                   dx: float,

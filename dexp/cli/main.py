@@ -1,21 +1,12 @@
-from os.path import join, exists
-
 import click
-from numpy import s_
 
-from dexp.datasets.clearcontrol_dataset import CCDataset
-from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.utils.mkl_util import set_mkl_threads
-
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 _default_store = 'dir'
 _default_clevel = 3
 _default_codec = 'zstd'
 
 set_mkl_threads()
-
-import sys
 
 
 def log_uncaught_exceptions(exception_type, exception, tb):
@@ -24,33 +15,11 @@ def log_uncaught_exceptions(exception_type, exception, tb):
     print('{0}: {1}'.format(exception_type, exception))
 
 
+import sys
+
 sys.excepthook = log_uncaught_exceptions
 
-
-def _get_dataset_from_path(input_path):
-    if exists(join(input_path, 'stacks')):
-        input_dataset = CCDataset(input_path)
-    else:
-        input_dataset = ZDataset(input_path)
-    return input_dataset
-
-
-def _get_output_path(input_path):
-    if input_path.endswith('/') or input_path.endswith('\\'):
-        input_path = input_path[:-1]
-    if input_path.endswith('.zip'):
-        input_path = input_path[:-4]
-    if input_path.endswith('.zarr'):
-        input_path = input_path[:-5]
-    return input_path
-
-
-def _parse_slicing(slicing: str):
-    if slicing is not None:
-        print(f"Slicing: {slicing}")
-        dummy = s_[1, 2]
-        slicing = eval(f"s_{slicing}")
-    return slicing
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 @click.group()

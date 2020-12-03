@@ -115,7 +115,7 @@ class ZDataset(BaseDataset):
                 print(f"Opening Zarr storage with mode='{mode}'")
                 self._root_group = zarr.convenience.open(self._store, mode=mode)
                 self._root_group.attrs['store_type'] = store_type
-                print(self._root_group.tree())
+                # print(self._root_group.tree())
             except Exception as e:
                 raise ValueError(f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect: {path}")
         else:
@@ -153,9 +153,11 @@ class ZDataset(BaseDataset):
             except AttributeError:
                 pass
 
-    def check_integrity(self) -> bool:
+    def check_integrity(self, channels: Sequence[str] = None) -> bool:
         print(f"Checking integrity of zarr storage, might take some time.")
-        for channel in self.channels():
+        if channels is None:
+            channels = self.channels()
+        for channel in channels:
             print(f"Checking integrity of channel '{channel}'...")
             array = self.get_array(channel, wrap_with_dask=False)
             if array.nchunks_initialized < array.nchunks:

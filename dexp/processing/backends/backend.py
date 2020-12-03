@@ -17,7 +17,6 @@ class Backend(ABC):
     _local = threading.local()
     _pool = ThreadPoolExecutor(max_workers=psutil.cpu_count())
 
-
     @staticmethod
     def reset():
         if hasattr(Backend._local, 'backend_stack'):
@@ -147,6 +146,3 @@ class Backend(ABC):
         scipy-like module
         """
         pass
-
-
-

@@ -3,7 +3,7 @@ import dask
 import numpy
 from napari._qt.qthreading import thread_worker
 
-from dexp.cli.main import _get_dataset_from_path, _parse_slicing
+from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _parse_slicing
 
 
 @click.command()
@@ -13,26 +13,16 @@ from dexp.cli.main import _get_dataset_from_path, _parse_slicing
 @click.option('--volume', '-v', is_flag=True, help='to view with volume rendering (3D ray casting)', show_default=True)
 @click.option('--aspect', '-a', type=float, default=4, help='sets aspect ratio e.g. 4', show_default=True)
 @click.option('--colormap', '-cm', type=str, default='viridis', help='sets colormap, e.g. viridis, gray, magma, plasma, inferno ', show_default=True)
-@click.option('--render', '-r', type=str, default=None, help='Renders video using napari movie script (not great, prefer the render command instead)')
 @click.option('--windowsize', '-ws', type=int, default=1536, help='Sets the napari window size. i.e. -ws 400 sets the window to 400x400', show_default=True)
 @click.option('--clim', '-cl', type=str, default=None, help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]', show_default=True)
-def view(input_path, channels=None, slicing=None, volume=False, aspect=None, colormap='viridis', render=None, windowsize=1536, clim=None):
+def view(input_path, channels=None, slicing=None, volume=False, aspect=None, colormap='viridis', windowsize=1536, clim=None):
     from napari import Viewer, gui_qt
 
     input_dataset = _get_dataset_from_path(input_path)
 
-    if channels is None:
-        selected_channels = input_dataset.channels()
-    else:
-        channels = channels.split(',')
-        selected_channels = list(set(channels) & set(input_dataset.channels()))
+    channels = _parse_channels(input_dataset, channels)
 
     slicing = _parse_slicing(slicing)
-    print(f"Requested slicing: {slicing} ")
-
-    print(f"Available channel(s): {input_dataset.channels()}")
-    print(f"Requested channel(s): {channels}")
-    print(f"Selected channel(s):  {selected_channels}")
 
     # Annoying napari induced warnings:
     import warnings
@@ -43,7 +33,7 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
 
         viewer.window.resize(windowsize + 256, windowsize)
 
-        for channel in selected_channels:
+        for channel in channels:
             print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
             print(input_dataset.info(channel))
 
@@ -92,8 +82,5 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
             worker = workaround_for_recalcitrant_parameters()
             worker.start()
 
-            if render is not None:
-                render = render.strip()
-                parameters = dict(item.split("=") for item in render.split(",")) if render != 'defaults' else dict()
-
-                backend = parameters['backend'] if 'backend' in parameters else 'naparimovie'
+    input_dataset.close()
+    print("Done!")

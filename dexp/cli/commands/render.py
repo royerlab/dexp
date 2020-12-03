@@ -5,7 +5,7 @@ from os.path import exists, join
 import click
 import numpy
 
-from dexp.cli.main import _get_dataset_from_path, _parse_slicing
+from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _parse_slicing
 
 
 @click.command()
@@ -21,21 +21,10 @@ from dexp.cli.main import _get_dataset_from_path, _parse_slicing
 @click.option('--options', '-opt', type=str, default=None, help='Render options, e.g: \'gamma=1.2,box=True\'. Important: no white spaces!!! Complete list with defaults will be displayed on first run')
 def render(input_path, output_path, channels=None, slicing=None, overwrite=False, aspect=None, colormap='viridis', rendersize=1536, clim=None, options=None):
     input_dataset = _get_dataset_from_path(input_path)
-
-    if channels is None:
-        selected_channels = input_dataset.channels()
-    else:
-        channels = channels.split(',')
-        selected_channels = list(set(channels) & set(input_dataset.channels()))
-
+    channels = _parse_channels(input_dataset, channels)
     slicing = _parse_slicing(slicing)
-    print(f"Requested slicing: {slicing} ")
 
-    print(f"Available channel(s): {input_dataset.channels()}")
-    print(f"Requested channel(s): {channels}")
-    print(f"Selected channel(s):  {selected_channels}")
-
-    for channel in selected_channels:
+    for channel in channels:
         print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
         print(input_dataset.info(channel))
 

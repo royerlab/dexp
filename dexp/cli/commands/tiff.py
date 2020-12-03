@@ -1,9 +1,9 @@
-from time import time
-
 import click
 
-from dexp.cli.main import _get_dataset_from_path, _get_output_path, _default_clevel, _parse_slicing
+from dexp.cli.main import _default_clevel
+from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing
 from dexp.datasets.operations.tiff import dataset_tiff
+from dexp.utils.timeit import timeit
 
 
 @click.command()
@@ -18,37 +18,21 @@ from dexp.datasets.operations.tiff import dataset_tiff
 @click.option('--workers', '-k', default=1, help='Number of worker threads to spawn.', show_default=True)  #
 def tiff(input_path, output_path, channels, slicing, overwrite, project, split, clevel, workers):
     input_dataset = _get_dataset_from_path(input_path)
-
-    print(f"Available Channel(s): {input_dataset.channels()}")
-    for channel in input_dataset.channels():
-        print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
-
-    if output_path is None or not output_path.strip():
-        output_path = _get_output_path(input_path)
-
+    output_path = _get_output_path(input_path, output_path)
     slicing = _parse_slicing(slicing)
-    print(f"Requested slicing: {slicing} ")
+    channels = _parse_channels(input_dataset, channels)
 
-    print(f"Requested channel(s)  {channels if channels else '--All--'} ")
+    with timeit("converting to TIFF"):
+        dataset_tiff(input_dataset,
+                     output_path,
+                     channels=channels,
+                     slicing=slicing,
+                     overwrite=overwrite,
+                     project=project,
+                     one_file_per_first_dim=split,
+                     clevel=clevel,
+                     workers=workers
+                     )
 
-    if channels is not None:
-        channels = tuple(channel.strip() for channel in channels.split(','))
-
-    print(f"Selected channel(s): '{channels}' and slice: {slicing}")
-
-    print(f"Saving dataset to TIFF file: {output_path}")
-    time_start = time()
-    dataset_tiff(input_dataset,
-                 output_path,
-                 channels=channels,
-                 slicing=slicing,
-                 overwrite=overwrite,
-                 project=project,
-                 one_file_per_first_dim=split,
-                 clevel=clevel,
-                 workers=workers
-                 )
-    time_stop = time()
-    print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
     input_dataset.close()
     print("Done!")

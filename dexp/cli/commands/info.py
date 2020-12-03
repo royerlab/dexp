@@ -1,6 +1,6 @@
 import click
 
-from dexp.cli.main import _get_dataset_from_path
+from dexp.cli.utils import _get_dataset_from_path
 
 
 @click.command()

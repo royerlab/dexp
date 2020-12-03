@@ -35,7 +35,7 @@ def _test_warp_model(length_xy=128, warp_grid_size=3):
 
     magnitude = 15
     vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 3 + (3,))
-    confidence = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 3 )
+    confidence = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 3)
     # print(f"vector field applied: {vector_field}")
 
     with timeit("warp"):

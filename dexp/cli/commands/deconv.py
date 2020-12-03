@@ -1,10 +1,9 @@
-from time import time
-
 import click
 
-from dexp.cli.main import _get_dataset_from_path, _get_output_path, _parse_slicing, _default_store, _default_codec, _default_clevel
+from dexp.cli.main import _default_store, _default_codec, _default_clevel
+from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing, _parse_devices
 from dexp.datasets.operations.deconv import dataset_deconv
-from dexp.processing.utils.literal_option import PythonLiteralOption
+from dexp.utils.timeit import timeit
 
 
 @click.command()
@@ -36,55 +35,38 @@ def deconv(input_path, output_path, channels, slicing, store, codec, clevel, ove
            method, iterations, maxcorrection, power, blindspot, objective, dxy, dz, xysize, zsize, downscalexy2,
            workers, devices, check):
     input_dataset = _get_dataset_from_path(input_path)
-
-    print(f"Available Channels: {input_dataset.channels()}")
-    for channel in input_dataset.channels():
-        print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
-
-    if output_path is None or not output_path.strip():
-        output_path = _get_output_path(input_path) + '.deconv'
+    output_path = _get_output_path(input_path, output_path, ".deconv")
 
     slicing = _parse_slicing(slicing)
-    print(f"Requested slicing: {slicing} ")
+    channels = _parse_channels(input_dataset, channels)
+    devices = _parse_devices(devices)
 
-    print(f"Requested channel(s)  {channels if channels else '--All--'} ")
-    if channels is not None:
-        channels = tuple(channel.strip() for channel in channels.split(','))
-    print(f"Selected channel(s): '{channels}' and slice: {slicing}")
+    with timeit("deconvolution"):
+        print("Fusing dataset.")
+        dataset_deconv(input_dataset,
+                       output_path,
+                       channels=channels,
+                       slicing=slicing,
+                       store=store,
+                       compression=codec,
+                       compression_level=clevel,
+                       overwrite=overwrite,
+                       chunksize=chunksize,
+                       method=method,
+                       num_iterations=iterations,
+                       max_correction=maxcorrection,
+                       power=power,
+                       blind_spot=blindspot,
+                       objective=objective,
+                       dxy=dxy,
+                       dz=dz,
+                       xy_size=xysize,
+                       z_size=zsize,
+                       downscalexy2=downscalexy2,
+                       workers=workers,
+                       devices=devices,
+                       check=check
+                       )
 
-    print(f"Requested devices  {devices if devices else '--All--'} ")
-    if devices is not None:
-        devices = tuple(device.strip() for device in devices.split(','))
-
-    print("Fusing dataset.")
-    print(f"Saving dataset to: {output_path} with zarr format... ")
-    time_start = time()
-    dataset_deconv(input_dataset,
-                   output_path,
-                   channels=channels,
-                   slicing=slicing,
-                   store=store,
-                   compression=codec,
-                   compression_level=clevel,
-                   overwrite=overwrite,
-                   chunksize=chunksize,
-                   method=method,
-                   num_iterations=iterations,
-                   max_correction=maxcorrection,
-                   power=power,
-                   blind_spot=blindspot,
-                   objective=objective,
-                   dxy=dxy,
-                   dz=dz,
-                   xy_size=xysize,
-                   z_size=zsize,
-                   downscalexy2=downscalexy2,
-                   workers=workers,
-                   devices=devices,
-                   check=check
-                   )
-
-    time_stop = time()
-    print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
     input_dataset.close()
     print("Done!")

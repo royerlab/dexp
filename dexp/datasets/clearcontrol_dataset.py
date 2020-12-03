@@ -155,7 +155,7 @@ class CCDataset(BaseDataset):
             return self.tree()
 
     def get_metadata(self):
-        #TODO: implement this!
+        # TODO: implement this!
         return {}
 
     def get_array(self, channel: str, per_z_slice: bool = True, wrap_with_dask: bool = False):
@@ -208,6 +208,6 @@ class CCDataset(BaseDataset):
 
         return stack
 
-    def check_integrity(self) -> bool:
+    def check_integrity(self, channels: Sequence[str]) -> bool:
         # TODO: actually implement!
         return True
