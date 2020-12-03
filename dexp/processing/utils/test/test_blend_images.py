@@ -40,7 +40,7 @@ def _test_blend(length_xy=128):
     blended = Backend.to_numpy(blended)
     error = numpy.median(numpy.abs(image_gt - blended))
     print(f"error={error}")
-    assert error < 22
+    assert error < 23
 
     # from napari import Viewer, gui_qt
     # with gui_qt():

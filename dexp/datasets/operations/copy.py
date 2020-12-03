@@ -66,7 +66,6 @@ def dataset_copy(dataset,
             workers = os.cpu_count() // 2
 
         print(f"Number of workers: {workers}")
-
         Parallel(n_jobs=workers)(delayed(process)(tp) for tp in range(0, shape[0]))
 
     print(dest_dataset.info())

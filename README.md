@@ -1,22 +1,16 @@
-
 ## DEXP
+
 Dataset Exploration and Processing Tool
 
+DEXP let's you view both ClearControl and Zarr formats, and copy (convert) from ClearControl format to Zarr. You can select channels and slice which lets you crop arbitrarily in time and space. You can also query information for both
+formats.
 
-DEXP let's you view both ClearControl and Zarr formats, and copy (convert) from ClearControl format
-to Zarr. You can select channels and slice which lets you crop arbitrarily in time and space.
-You can also query information for both formats. 
+DEXP ZARR storage supports both directory and zip storage and different compression codecs. Expect a typicall factor 3 compression for raw data, 10x compression for deconvolved and/or denoised data, and up to 90x compression for sparse
+expression. Substracting the backgroundlight level (~ around 100 for sCMOS cameras) brings compression from typically 3X on raw data to almost 10x.
 
-DEXP ZARR storage supports both directory and zip storage and different compression codecs. Expect a typicall factor 3
-compression for raw data, 10x compression for deconvolved and/or denoised data, and up to 90x compression for sparse expression.
-Substracting the backgroundlight level (~ around 100 for sCMOS cameras) brings compression from typically 3X on raw data to almost 10x.
-
-DEXP currently supports fusion, registration, deconvolution, isonet, vieweing with napari, volumetric rendering,
-video compositing (merging channels), video export to mp4, export to tiff. 
+DEXP currently supports fusion, registration, deconvolution, isonet, vieweing with napari, volumetric rendering, video compositing (merging channels), video export to mp4, export to tiff.
 
 DEXP should be run ideally on very fast machines very close to the storage.
-
-
 
 # Prerequisites:
 
@@ -28,16 +22,19 @@ On windows, make sure to insatll CUDA 10.2 (exactly that version for the current
 # Installation:
 
 ### Clone dexp:
+
 ```
 git clone https://github.com/royerlab/dexp.git
 ```
 
 ### Create conda environment:
+
 ```
 conda create --name dexp python=3.7 
 ```
 
 ### Activate environment:
+
 ```
 conda activate dexp
 ```
@@ -47,25 +44,29 @@ conda activate dexp
 On a Linux system:
 
 First make sure to have headers for OpenCL:
+
 ```
 sudo apt-get install opencl-headers
 sudo apt-get install ocl-icd-opencl-dev
 sudo apt-get install ocl-icd-libopencl1
 ```
+
 and then install dependencies:
+
 ```
 bash install_linux.sh
 ```
+
 or on Windows:
+
 ```
 bash install_windows.sh
 ```
 
 If some errors occur -- in paticular related to pyopencl or mako -- please rerun the script.
 
-
-
 You might want to install clinf to check your OpenCL install:
+
 ```
 sudo apt-get install beignet clinfo
 ```
@@ -73,6 +74,7 @@ sudo apt-get install beignet clinfo
 ### Install Aydin:
 
 DEXP depends on Aydin (for denoising, deconvolution and more...)
+
 ```
 cd aydin
 pip install -e .
@@ -80,6 +82,7 @@ python setup.py develop
 ```
 
 ### Install dexp:
+
 ```
 cd dexp
 pip install -e .
@@ -88,36 +91,32 @@ pip install -e .
 # Usage:
 
 Always make sure that you are in the correct environment:
+
 ```
 source activate dexp
 ```
 
-There is currently 12dexp commands:   
+There is currently 12dexp commands:
 
 Sytorage info & manipulation commands:
-  info
-  copy
-  add
-  
+info copy add
+
 Processing commands:
-  fuse
-  deconv
-  isonet
-  
+fuse deconv isonet
+
 Video rendering commands:
-  render
-  blend
-  stack
-  mp4
- 
+render blend stack mp4
+
 Export commnads:
-  tiff
-  
+tiff
+
 Viewing commands:
-  view
+view
 
 ## info:
+
 Collects information about a given dataset:
+
 ```
 Usage: dexp info [OPTIONS] INPUT_PATH
 
@@ -127,10 +126,10 @@ Options:
 ```
 
 ## copy:
-Copies a dataset from one file/folder to another file/folder.
-The destination is _always_ in ZARR format (dir ort zip).
-Prefer 'zip' for fully processed datasets (<200GB) to be able to 
-convenienytly copy a single file instead of a gazillion files.
+
+Copies a dataset from one file/folder to another file/folder. The destination is _always_ in ZARR format (dir ort zip). Prefer 'zip' for fully processed datasets (<200GB) to be able to convenienytly copy a single file instead of a gazillion
+files.
+
 ```
 Usage: dexp copy [OPTIONS] INPUT_PATH
 
@@ -155,8 +154,9 @@ Options:
 ```
 
 ## add:
-Adds a channel from one dataset to another (possibly not yet existant) ZARR file/folder.
-Channels can be renamed as they are copied.
+
+Adds a channel from one dataset to another (possibly not yet existant) ZARR file/folder. Channels can be renamed as they are copied.
+
 ```
 Usage: dexp add [OPTIONS] INPUT_PATH
 
@@ -177,10 +177,10 @@ Options:
 ```
 
 ## Fusion (& registration):
-Fuses and registers stacks acquired on a multi-view lightsheet microscope.
-Right now we have only support for SimView type lightsheet microscope
-with 2 detection arms and 2 illmination arms. Channels must be named:
+
+Fuses and registers stacks acquired on a multi-view lightsheet microscope. Right now we have only support for SimView type lightsheet microscope with 2 detection arms and 2 illmination arms. Channels must be named:
 'C0L0', 'C0L1', 'C1L0', 'C1L1'. The result has a single channel called 'fused'.
+
 ```
 Usage: dexp fuse [OPTIONS] INPUT_PATH
 
@@ -209,8 +209,9 @@ Options:
 ```
 
 ## Deconvolution:
-Deconvolves stacks using a simulated PSF. Right now we only support the optics of
-our SimVew type light sheet (0.8 NA objectives wth custom magnfication.)
+
+Deconvolves stacks using a simulated PSF. Right now we only support the optics of our SimVew type light sheet (0.8 NA objectives wth custom magnfication.)
+
 ```
 Usage: dexp deconv [OPTIONS] INPUT_PATH
 
@@ -260,8 +261,10 @@ Options:
 ```
 
 ## Isonet:
+
 Provides support for Isonet deep learning based axial deconvolution:
 https://arxiv.org/abs/1704.01510
+
 ```
 Usage: dexp isonet [OPTIONS] INPUT_PATH
 
@@ -285,12 +288,11 @@ Options:
 
 ```
 
-
 ## Volume rendering:
-Simple but effective volume rendering. By default should produce nice rotating views,
-but lots of parameters can be configured!
-This command produces video frames as individual PNG files in a subfolder (frames).
-To make a movie, blend channels together, or stich panels together, use the blend, stack and mp4 commands.
+
+Simple but effective volume rendering. By default should produce nice rotating views, but lots of parameters can be configured!
+This command produces video frames as individual PNG files in a subfolder (frames). To make a movie, blend channels together, or stich panels together, use the blend, stack and mp4 commands.
+
 ```
 Usage: dexp render [OPTIONS] INPUT_PATH
 
@@ -324,9 +326,9 @@ Options:
 ```
 
 ## Video compositing:
-Takes frames and blend them together. Typically used for merging channels,
-but can also be used to add text -- if you provide a folder with a single PNG image
-of correct dimensions
+
+Takes frames and blend them together. Typically used for merging channels, but can also be used to add text -- if you provide a folder with a single PNG image of correct dimensions
+
 ```
 Usage: dexp blend [OPTIONS] [INPUT_PATHS]...
 
@@ -344,8 +346,9 @@ Options:
 ```
 
 ## Video stacking:
-In addition to blending frames you can also stack frames horyzontally or vertically
-to make multi-panel videos. Again, here we just manipulate folders of PNG files. 
+
+In addition to blending frames you can also stack frames horyzontally or vertically to make multi-panel videos. Again, here we just manipulate folders of PNG files.
+
 ```
 Usage: dexp stack [OPTIONS] [INPUT_PATHS]...
 
@@ -361,7 +364,9 @@ Options:
 ```
 
 ## Conversion from frame sequences to mp4 file:
+
 Takes a folder of PNG files and makes it into a MP4 file.
+
 ```
 Usage: dexp mp4 [OPTIONS] INPUT_PATH
 
@@ -376,7 +381,9 @@ Options:
 ```
 
 ## view:
+
 Views a dataset with napari
+
 ```
 Usage: dexp view [OPTIONS] INPUT_PATH
 
@@ -390,22 +397,24 @@ Options:
   --help               Show this message and exit.
 ```
 
-
 # Examples:
 
 The folowing examples can be tested on existing datasets:
 
-Gathers info on the dataset '2019-07-03-16-23-15-65-f2va.mch7' with napari: 
+Gathers info on the dataset '2019-07-03-16-23-15-65-f2va.mch7' with napari:
+
 ```
 dexp info 2019-07-03-16-23-15-65-f2va.mch7
 ```
 
-Copies a z-max-projection for the first 10n timepoints (-s [0:10]) from scope acquisition '2019-07-03-16-23-15-65-f2va.mch7' to Zarr folder '~/Downloads/local.zarr', and overwrites whatever is there (-w). 
+Copies a z-max-projection for the first 10n timepoints (-s [0:10]) from scope acquisition '2019-07-03-16-23-15-65-f2va.mch7' to Zarr folder '~/Downloads/local.zarr', and overwrites whatever is there (-w).
+
 ```
 dexp copy -w -p 1 -s '[0:10]' 2019-07-03-16-23-15-65-f2va.mch7 -o ~/Downloads/local.zarr
 ```
 
-Views the first 100 times points '2019-07-03-16-23-15-65-f2va.mch7' with napari: 
+Views the first 100 times points '2019-07-03-16-23-15-65-f2va.mch7' with napari:
+
 ```
 dexp view -s '[0:100]' 2019-07-03-16-23-15-65-f2va.mch7
 ```
@@ -415,64 +424,66 @@ dexp view -s '[0:100]' 2019-07-03-16-23-15-65-f2va.mch7
 - You can pass arguments in any order for bash but not for all shells, i.e. zsh.
 - You can pass string arguments as non string in bash but not in all shells.
 
-
 # Pro Tips
 
 ## redirect to file and to standard output:
+
 You can send the output to a log file and still be able to see the output by using the following postfix:
+
 ```
 2>&1 | tee logfile.txt
 ```
+
 Example:
+
 ```
 dexp ... dexp parameters ... 2>&1 | tee logfile.txt
 ```
 
 ## use tmux to keep track of long runing jobs
 
-Why tmux? When you connect via network adn SSH, you can start a process on a remote machine,
-but it often occurs that closing the terminal or loosing the network connection will kill the running
-process. Even if one figures out how to keep the processs running, you rarely can see again the log 
-outputs - unless you have explictely redirected to a file. tmux greatly simplifies all this by providing
-persistent terminal sessions.
-
+Why tmux? When you connect via network adn SSH, you can start a process on a remote machine, but it often occurs that closing the terminal or loosing the network connection will kill the running process. Even if one figures out how to keep
+the processs running, you rarely can see again the log outputs - unless you have explictely redirected to a file. tmux greatly simplifies all this by providing persistent terminal sessions.
 
 First make sure that tmux is instaled on your system:
+
 ```
 sudo apt-get install tmux
 ```
 
 Connect to your machine using, for example, ssh:
+
 ```
 ssh username@machine
 ```
 
 Create the session in which you want to run your long-running process:
+
 ```
 tmux new -s dexp
 ```
 
 Once in your session you can activate the dexp environment, and start dexp, etc...
 
-Important: You can leave a session by pressing the keys: CTRL+B then D 
- 
+Important: You can leave a session by pressing the keys: CTRL+B then D
+
 To come back to a session, you reattach:
+
 ```
 tmux attach -t dexp
 ```
-Once a session is created, it will remain active until you close it, no need
-to create it again (unless you have closed it!). You can disconnect your SSH session, loose network connection, 
-close your computer, and still be able to reconnect to your session and have everything 
-as if you had kept everything open.
+
+Once a session is created, it will remain active until you close it, no need to create it again (unless you have closed it!). You can disconnect your SSH session, loose network connection, close your computer, and still be able to reconnect
+to your session and have everything as if you had kept everything open.
 
 In doubt, you can list all active sessions:
+
 ```
 tmux ls
 ```
 
 To close a session:
-First kill, if needed, the running process within the session by pressing CTRL+C or/and CTRL+Z,
-and then, simply type the command exit in the termnal within the session. This is another 
+First kill, if needed, the running process within the session by pressing CTRL+C or/and CTRL+Z, and then, simply type the command exit in the termnal within the session. This is another 
   
  
 
