@@ -73,7 +73,7 @@ def _warp_1d_cupy(image,
                                            address_mode='clamp')
 
     # Set up resulting image:
-    warped_image = xp.empty_like(image)
+    warped_image = xp.empty(shape=image.shape, dtype=image.dtype)
 
     # get the kernel, which copies from texture memory
     warp_1d_kernel = cupy.RawKernel(source, 'warp_1d')

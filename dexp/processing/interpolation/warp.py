@@ -10,6 +10,7 @@ def warp(image,
          vector_field_upsampling: int = 2,
          vector_field_upsampling_order: int = 1,
          mode: str = 'border',
+         image_to_backend: bool = False,
          internal_dtype=None):
     """
     Applies a warp transform (piece wise linear or constant) to an image based on a vector field.
@@ -50,13 +51,16 @@ def warp(image,
         else:
             vector_field = zoom(vector_field, zoom=(vector_field_upsampling,), order=vector_field_upsampling_order)
 
-    image = Backend.to_backend(image, dtype=internal_dtype)
+    #we can actually directly copy from numpy to texture mem!
+    if image_to_backend:
+        image = Backend.to_backend(image, dtype=internal_dtype)
+    image = image.astype(dtype=internal_dtype, copy=False)
     vector_field = Backend.to_backend(vector_field, dtype=internal_dtype)
 
     from dexp.processing.backends.cupy_backend import CupyBackend
     if type(Backend.current()) is NumpyBackend:
-
         raise NotImplementedError("Warping not yet implemented for the Numpy backend.")
+
     elif type(Backend.current()) is CupyBackend:
 
         params = (image, vector_field, mode)

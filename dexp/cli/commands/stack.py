@@ -6,6 +6,8 @@ import click
 import imageio
 import numpy
 
+from dexp.utils.timeit import timeit
+
 
 @click.command()
 @click.argument('input_paths', nargs=-1)

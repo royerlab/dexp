@@ -2,8 +2,9 @@ from time import time
 
 import click
 
-from dexp.cli.main import _get_dataset_from_path, _get_folder_name_without_end_slash, _parse_slicing, _default_store, _default_codec, _default_clevel
+from dexp.cli.main import _get_dataset_from_path, _get_output_path, _parse_slicing, _default_store, _default_codec, _default_clevel
 from dexp.datasets.operations.deconv import dataset_deconv
+from dexp.processing.utils.literal_option import PythonLiteralOption
 
 
 @click.command()
@@ -15,7 +16,6 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--codec', '-z', default=_default_codec, help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ', show_default=True)
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)
-@click.option('--workers', '-k', default=1, help='Number of worker threads to spawn, recommended: 1 (unless you know what you are doing)', show_default=True)
 @click.option('--chunksize', '-cs', type=int, default=512, help='Chunk size for tiled computation', show_default=True)
 @click.option('--method', '-m', type=str, default='lr', help='Deconvolution method: for now only lr (Lucy Richardson)', show_default=True)
 @click.option('--iterations', '-i', type=int, default=20, help='Number of deconvolution iterations. More iterations takes longer, will be sharper, but might also be potentially more noisy depending on method.', show_default=True)
@@ -29,11 +29,12 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--xysize', '-sxy', type=int, default=17, help='Voxel size along xy in microns', show_default=True)
 @click.option('--zsize', '-sz', type=int, default=17, help='Voxel size along z in microns', show_default=True)
 @click.option('--downscalexy2', '-d', is_flag=False, help='Downscales along x and y for faster deconvolution (but worse quality of course)', show_default=True)  #
-@click.option('--devices', '-d', type=int, default=0, n_args=-1, help='Sets the CUDA device id', show_default=True)  #
+@click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)
+@click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
-def deconv(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, workers, chunksize,
+def deconv(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, chunksize,
            method, iterations, maxcorrection, power, blindspot, objective, dxy, dz, xysize, zsize, downscalexy2,
-           devices, check):
+           workers, devices, check):
     input_dataset = _get_dataset_from_path(input_path)
 
     print(f"Available Channels: {input_dataset.channels()}")
@@ -41,15 +42,19 @@ def deconv(input_path, output_path, channels, slicing, store, codec, clevel, ove
         print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
 
     if output_path is None or not output_path.strip():
-        output_path = _get_folder_name_without_end_slash(input_path) + '.zarr'
+        output_path = _get_output_path(input_path) + '.deconv'
 
     slicing = _parse_slicing(slicing)
     print(f"Requested slicing: {slicing} ")
 
     print(f"Requested channel(s)  {channels if channels else '--All--'} ")
-    if not channels is None:
-        channels = channels.split(',')
+    if channels is not None:
+        channels = tuple(channel.strip() for channel in channels.split(','))
     print(f"Selected channel(s): '{channels}' and slice: {slicing}")
+
+    print(f"Requested devices  {devices if devices else '--All--'} ")
+    if devices is not None:
+        devices = tuple(device.strip() for device in devices.split(','))
 
     print("Fusing dataset.")
     print(f"Saving dataset to: {output_path} with zarr format... ")
@@ -62,7 +67,6 @@ def deconv(input_path, output_path, channels, slicing, store, codec, clevel, ove
                    compression=codec,
                    compression_level=clevel,
                    overwrite=overwrite,
-                   workers=workers,
                    chunksize=chunksize,
                    method=method,
                    num_iterations=iterations,
@@ -75,6 +79,7 @@ def deconv(input_path, output_path, channels, slicing, store, codec, clevel, ove
                    xy_size=xysize,
                    z_size=zsize,
                    downscalexy2=downscalexy2,
+                   workers=workers,
                    devices=devices,
                    check=check
                    )

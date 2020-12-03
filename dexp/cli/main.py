@@ -35,9 +35,13 @@ def _get_dataset_from_path(input_path):
     return input_dataset
 
 
-def _get_folder_name_without_end_slash(input_path):
+def _get_output_path(input_path):
     if input_path.endswith('/') or input_path.endswith('\\'):
         input_path = input_path[:-1]
+    if input_path.endswith('.zip'):
+        input_path = input_path[:-4]
+    if input_path.endswith('.zarr'):
+        input_path = input_path[:-5]
     return input_path
 
 
@@ -56,13 +60,25 @@ def cli():
     print("  Royer lab                               ")
     print("------------------------------------------")
     print("")
+
+    try:
+        from dexp.processing.backends.cupy_backend import CupyBackend
+        available = CupyBackend.available_devices()
+        print(f"Available GPU devices: {available}")
+        for device_id in available:
+            backend = CupyBackend(device_id)
+            print(backend)
+        print("")
+
+    except (ModuleNotFoundError, NotImplementedError):
+        print("Cupy module not found! ignored!")
+
     pass
 
 
 from dexp.cli.commands.check import check
 from dexp.cli.commands.copy import copy
 from dexp.cli.commands.add import add
-from dexp.cli.commands.deskew import deskew
 from dexp.cli.commands.fuse import fuse
 from dexp.cli.commands.deconv import deconv
 from dexp.cli.commands.isonet import isonet
@@ -77,7 +93,6 @@ from dexp.cli.commands.mp4 import mp4
 cli.add_command(check)
 cli.add_command(copy)
 cli.add_command(add)
-cli.add_command(deskew)
 cli.add_command(fuse)
 cli.add_command(deconv)
 cli.add_command(isonet)

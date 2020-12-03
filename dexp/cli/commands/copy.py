@@ -2,7 +2,7 @@ from time import time
 
 import click
 
-from dexp.cli.main import _get_dataset_from_path, _get_folder_name_without_end_slash, _parse_slicing, _default_clevel, _default_codec, _default_store
+from dexp.cli.main import _get_dataset_from_path, _get_output_path, _parse_slicing, _default_clevel, _default_codec, _default_store
 from dexp.datasets.operations.copy import dataset_copy
 
 
@@ -26,14 +26,14 @@ def copy(input_path, output_path, channels, slicing, store, codec, clevel, overw
         print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
 
     if output_path is None or not output_path.strip():
-        output_path = _get_folder_name_without_end_slash(input_path) + '.zarr'
+        output_path = _get_output_path(input_path)
 
     slicing = _parse_slicing(slicing)
     print(f"Requested slicing: {slicing} ")
 
     print(f"Requested channel(s)  {channels if channels else '--All--'} ")
-    if not channels is None:
-        channels = channels.split(',')
+    if channels is not None:
+        channels = tuple(channel.strip() for channel in channels.split(','))
     print(f"Selected channel(s): '{channels}' and slice: {slicing}")
 
     print("Converting dataset.")

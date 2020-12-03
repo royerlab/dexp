@@ -1,55 +1,55 @@
-import numpy
-from joblib import Parallel
+from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2I2D
+from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
+from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2C2L
 from dexp.processing.registration.model.model_factory import from_json
 
 
 def dataset_fuse(dataset,
-                 path,
+                 output_path,
+                 channels,
                  slicing,
                  store,
                  compression,
                  compression_level,
                  overwrite,
-                 workers,
+                 microscope,
                  zero_level,
                  fusion,
                  fusion_bias_strength,
                  dehaze_size,
                  dark_denoise_threshold,
                  load_shifts,
+                 workers,
                  devices,
                  check):
-    print(f"getting Dask arrays for all channels to fuse...")
-    array_C0L0 = dataset.get_array('C0L0', per_z_slice=False, wrap_with_dask=True)
-    array_C0L1 = dataset.get_array('C0L1', per_z_slice=False, wrap_with_dask=True)
-    array_C1L0 = dataset.get_array('C1L0', per_z_slice=False, wrap_with_dask=True)
-    array_C1L1 = dataset.get_array('C1L1', per_z_slice=False, wrap_with_dask=True)
+    if microscope == 'simview':
+        if channels is None:
+            channels = ('C0L0', 'C0L1', 'C1L0', 'C1L1')
+    elif microscope == 'mvsols':
+        if channels is None:
+            channels = ('C0L0', 'C0L1')
+
+    print(f"Channels: {channels}")
+    for channel in channels:
+        print(channel)
+
+    views = tuple(dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for channel in channels)
 
     if slicing is not None:
         print(f"Slicing with: {slicing}")
-        array_C0L0 = array_C0L0[slicing]
-        array_C0L1 = array_C0L1[slicing]
-        array_C1L0 = array_C1L0[slicing]
-        array_C1L1 = array_C1L1[slicing]
+        views = tuple(view[slicing] for view in views)
 
     # shape and dtype of views to fuse:
-    shape = array_C0L0.shape
-    dtype = array_C0L0.dtype
+    shape = views[0].shape
+    dtype = views[0].dtype
 
+    # We allocate last minute once we know the shape...
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
-    dest_dataset = ZDataset(path, mode, store)
-
-    dest_array = dest_dataset.add_channel('fused',
-                                          shape=shape,
-                                          dtype=dtype,
-                                          chunks=dataset._default_chunks,
-                                          codec=compression,
-                                          clevel=compression_level)
+    dest_dataset = ZDataset(output_path, mode, store)
 
     registration_models_file = open("registration_models.txt", "r" if load_shifts else 'w')
     if load_shifts:
@@ -58,13 +58,7 @@ def dataset_fuse(dataset,
     def process(tp, device):
         print(f"Writing time point: {tp} ")
 
-        C0L0 = array_C0L0[tp].compute()
-        C0L1 = array_C0L1[tp].compute()
-        C1L0 = array_C1L0[tp].compute()
-        C1L1 = array_C1L1[tp].compute()
-
-        C1L0 = numpy.flip(C1L0, -1)
-        C1L1 = numpy.flip(C1L1, -1)
+        views_tp = tuple(view[tp].compute() for view in views)
 
         model = None
         if load_shifts:
@@ -78,30 +72,54 @@ def dataset_fuse(dataset,
         print(f'Fusing...')
 
         with CupyBackend(device):
-            array, model = simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1,
-                                             registration_model=model,
-                                             zero_level=zero_level,
-                                             fusion=fusion,
-                                             fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
-                                             fusion_bias_strength=fusion_bias_strength,
-                                             dehaze_size=dehaze_size,
-                                             dark_denoise_threshold=dark_denoise_threshold)
+            if microscope == 'simview':
+                array, model = simview_fuse_2C2L(*views_tp,
+                                                 registration_model=model,
+                                                 zero_level=zero_level,
+                                                 fusion=fusion,
+                                                 fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
+                                                 fusion_bias_strength=fusion_bias_strength,
+                                                 dehaze_size=dehaze_size,
+                                                 dark_denoise_threshold=dark_denoise_threshold)
+            elif microscope == 'mvsols':
+                metadata = dataset.get_metadata()
+                angle = metadata['angle']
+                channel = metadata['channel']
+                dz = metadata['dz']
+                res = metadata['res']
 
-            array = Backend.to_numpy(array, dtype=dest_array.dtype, force_copy=False)
+                array, model = msols_fuse_1C2L(*views_tp,
+                                               zero_level=0,
+                                               angle=angle,
+                                               dx=res,
+                                               dz=dz)
 
-        if not load_shifts:
-            json_text = model.to_json()
-            registration_models_file.write(json_text + '\n')
+            array = Backend.to_numpy(array, dtype=dtype, force_copy=False)
+
+            if not load_shifts:
+                json_text = model.to_json()
+                registration_models_file.write(json_text + '\n')
 
         print(f'Writing array of dtype: {array.dtype}')
-        dest_array[tp] = array
+        if 'fused' not in dest_dataset.channels():
+            dest_dataset.add_channel('fused',
+                                     shape=(shape[0],)+array.shape,
+                                     dtype=dtype,
+                                     codec=compression,
+                                     clevel=compression_level)
 
+        dest_dataset.get_array('fused')[tp] = array
+
+    if workers == -1:
+        workers = len(devices)
+
+    print(f"workers={workers}")
 
     if workers > 1:
-        Parallel(n_jobs=workers)(process(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
+        Parallel(n_jobs=workers, backend='threading')(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
     else:
         for tp in range(0, shape[0]):
-            process(tp)
+            process(tp, devices[0])
 
     registration_models_file.close()
 
@@ -109,3 +127,5 @@ def dataset_fuse(dataset,
     if check:
         dest_dataset.check_integrity()
     dest_dataset.close()
+
+

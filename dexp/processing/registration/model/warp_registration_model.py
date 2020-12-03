@@ -24,7 +24,7 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         return f"WarpRegistrationModel(vector_field_shape={self.vector_field.shape}, confidence_shape={self.confidence.shape})"
 
     def to_json(self) -> str:
-        return json.dumps({'type': 'warp', 'vector_field': numpy.asarray(self.vector_field).tolist(), 'confidence': self.confidence})
+        return json.dumps({'type': 'warp', 'vector_field': (Backend.to_numpy(self.vector_field)).tolist(), 'confidence': (Backend.to_numpy(self.confidence)).tolist()})
 
     def clean(self,
               confidence_threshold: float = 0.1,

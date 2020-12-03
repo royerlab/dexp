@@ -3,6 +3,8 @@ from typing import Tuple
 import cupy
 import numpy
 
+from dexp.processing.backends.backend import Backend
+
 
 def create_cuda_texture(array,
                         texture_shape: Tuple[int, ...] = None,
@@ -12,6 +14,8 @@ def create_cuda_texture(array,
                         sampling_mode: str = 'linear',
                         address_mode: str = 'clamp',
                         dtype=None):
+
+
     if texture_shape is None:
         if num_channels > 1:
             texture_shape = array.shape[0:-1]
@@ -95,12 +99,17 @@ def create_cuda_texture(array,
         array_shape_for_copy = texture_shape[:-1] + (texture_shape[-1] * num_channels,)
     else:
         array_shape_for_copy = texture_shape
-    array = cupy.reshape(array, newshape=array_shape_for_copy)
+    axp = cupy.get_array_module(array)
+    array = axp.reshape(array, newshape=array_shape_for_copy)
 
     if not array.flags.owndata or not not array.flags.c_contiguous:
         # the array must be contiguous, we check if this is a derived array,
         # if yes we must unfortunately copy the data...
         array = array.copy()
+
+    # We need to synchronise otherwise some weird stuff happens! see warp 3d demo does not work withoutv this!
+    Backend.current().synchronise()
     cuda_array.copy_from(array)
+    Backend.current().synchronise()
 
     return texture_object

@@ -26,7 +26,7 @@ def demo_warp_2d_cupy():
 
 def _demo_warp_2d(grid_size=8):
     image = camera().astype(numpy.float32) / 255
-    image = image[0:377, :]
+    image = image[0:477, 0:507]
 
     magnitude = 15
     vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(grid_size,) * 2 + (2,))
@@ -51,4 +51,4 @@ def _demo_warp_2d(grid_size=8):
 
 if __name__ == "__main__":
     demo_warp_2d_cupy()
-    demo_warp_2d_numpy()
+    #demo_warp_2d_numpy()

@@ -8,7 +8,7 @@ from tifffile import imread
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2I2D
+from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2C2L
 from dexp.utils.timeit import timeit
 
 filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'
@@ -41,9 +41,9 @@ def simview_fusion():
     C1L1 = numpy.flip(C1L1, -1)
 
     with timeit("simview_fuse_2I2D"):
-        CxLx, shifts = simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1)
+        CxLx, model = simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1)
     # CxLx = CxLx.astype(numpy.float32)
-    print(f"Shifts = {shifts}")
+    print(f"Model = {model}")
 
     with timeit("to_numpy"):
         CxLx = Backend.to_numpy(CxLx)

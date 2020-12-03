@@ -9,7 +9,7 @@ def equalise_intensity(image1,
                        zero_level=90,
                        quantile_low=0.01,
                        quantile_high=0.99,
-                       max_voxels=1e6,
+                       max_voxels=5e7,
                        copy: bool = True,
                        internal_dtype=None):
     """

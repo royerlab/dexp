@@ -17,6 +17,7 @@ class Backend(ABC):
     _local = threading.local()
     _pool = ThreadPoolExecutor(max_workers=psutil.cpu_count())
 
+
     @staticmethod
     def reset():
         if hasattr(Backend._local, 'backend_stack'):
@@ -60,10 +61,6 @@ class Backend(ABC):
     def get_sp_module(array=None) -> Any:
         return Backend.current()._get_sp_module(array)
 
-    @staticmethod
-    def submit(self, *args, **kwargs):
-        self._pool.submit(*args, **kwargs)
-
     def __enter__(self):
         if not hasattr(Backend._local, 'backend_stack'):
             Backend._local.backend_stack = []
@@ -73,6 +70,9 @@ class Backend(ABC):
     def __exit__(self, type, value, traceback):
         Backend._local.backend_stack.pop()
 
+    def submit(self, *args, **kwargs):
+        self._pool.submit(*args, **kwargs)
+
     def synchronise(self):
         """ Synchronises backend computation to this call, i.e. call to this method will block until all computation on backend (and its corresponding device) are finished.
 
@@ -80,11 +80,15 @@ class Backend(ABC):
         pass
 
     @abstractmethod
+    def clear_allocation_pool(self):
+        import gc
+        gc.collect()
+
     def close(self):
         """ Releases all ressources allocated/cached by backend (if can be done safely)
 
         """
-        pass
+        self.clear_allocation_pool()
 
     @abstractmethod
     def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
@@ -143,3 +147,6 @@ class Backend(ABC):
         scipy-like module
         """
         pass
+
+
+

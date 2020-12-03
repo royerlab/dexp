@@ -2,7 +2,7 @@ from time import time
 
 import click
 
-from dexp.cli.main import _get_dataset_from_path, _default_clevel, _default_codec, _default_store, _get_folder_name_without_end_slash, _parse_slicing
+from dexp.cli.main import _get_dataset_from_path, _default_clevel, _default_codec, _default_store, _get_output_path, _parse_slicing
 from dexp.datasets.operations.isonet import dataset_isonet
 
 
@@ -26,7 +26,7 @@ def isonet(input_path, output_path, slicing, store, codec, clevel, overwrite, co
         print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
 
     if output_path is None or not output_path.strip():
-        output_path = _get_folder_name_without_end_slash(input_path) + '.zarr'
+        output_path = _get_output_path(input_path) + '.zarr'
 
     slicing = _parse_slicing(slicing)
     print(f"Requested slicing: {slicing} ")

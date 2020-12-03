@@ -41,10 +41,10 @@ def _demo_warp_3d(length_xy=256, grid_size=8):
     vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(grid_size,) * 3 + (3,))
 
     with timeit("warp"):
-        warped = warp(image, vector_field, vector_field_upsampling=4)
+        warped = warp(image, vector_field, vector_field_upsampling=4, image_to_backend=True)
 
     with timeit("dewarped"):
-        dewarped = warp(warped, -vector_field, vector_field_upsampling=4)
+        dewarped = warp(warped, -vector_field, vector_field_upsampling=4, image_to_backend=True)
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -60,4 +60,4 @@ def _demo_warp_3d(length_xy=256, grid_size=8):
 
 if __name__ == "__main__":
     demo_warp_3d_cupy()
-    demo_warp_3d_numpy()
+    #demo_warp_3d_numpy()

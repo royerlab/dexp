@@ -154,6 +154,10 @@ class CCDataset(BaseDataset):
         else:
             return self.tree()
 
+    def get_metadata(self):
+        #TODO: implement this!
+        return {}
+
     def get_array(self, channel: str, per_z_slice: bool = True, wrap_with_dask: bool = False):
 
         if False:

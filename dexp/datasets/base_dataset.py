@@ -6,12 +6,14 @@ import numpy
 
 class BaseDataset(ABC):
 
+    _default_chunks = (1, 32, 512, 512)
+
     def __init__(self, dask_backed=False):
         """ Instanciates a Dataset
 
         """
         self.dask_backed = dask_backed
-        self._default_chunks = (1, 32, 512, 512)
+
 
     def _selected_channels(self, channels):
         if channels is None:
@@ -57,6 +59,10 @@ class BaseDataset(ABC):
 
     @abstractmethod
     def info(self, channel: str = None) -> str:
+        pass
+
+    @abstractmethod
+    def get_metadata(self):
         pass
 
     @abstractmethod

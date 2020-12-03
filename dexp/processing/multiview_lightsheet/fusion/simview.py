@@ -17,7 +17,7 @@ from dexp.processing.restoration.dehazing import dehaze
 from dexp.utils.timeit import timeit
 
 
-def simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1,
+def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                       zero_level: float = 120,
                       clip_too_high: int = 2048,
                       fusion='tg',
@@ -92,19 +92,19 @@ def simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1,
         with timeit(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):
             C0L0 = Backend.to_backend(C0L0, dtype=internal_dtype, force_copy=False)
             C0L1 = Backend.to_backend(C0L1, dtype=internal_dtype, force_copy=False)
-            gc.collect()
+            Backend.current().clear_allocation_pool()
 
         if clip_too_high > 0:
             with timeit(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
                 C0L0 = xp.clip(C0L0, a_min=0, a_max=clip_too_high, out=C0L0)
                 C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
-                gc.collect()
+                Backend.current().clear_allocation_pool()
 
         with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
             C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
                                                    zero_level=zero_level,
                                                    copy=False)
-            gc.collect()
+            Backend.current().clear_allocation_pool()
             print(f"Equalisation ratio: {ratio}")
 
         with timeit(f"Fuse illumination views C0L0 and C0L1..."):
@@ -114,24 +114,27 @@ def simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1,
                                            bias_strength=fusion_bias_strength)
             del C0L0
             del C0L1
-            gc.collect()
+            Backend.current().clear_allocation_pool()
 
         with timeit(f"Moving C1L0 and C1L1 to backend storage and converting to {internal_dtype}..."):
             C1L0 = Backend.to_backend(C1L0, dtype=internal_dtype, force_copy=False)
+            C1L0 = xp.flip(C1L0, -1)
             C1L1 = Backend.to_backend(C1L1, dtype=internal_dtype, force_copy=False)
-            gc.collect()
+            C1L1 = xp.flip(C1L1, -1)
+
+            Backend.current().clear_allocation_pool()
 
         if clip_too_high > 0:
             with timeit(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
                 C1L0 = xp.clip(C1L0, a_min=0, a_max=clip_too_high, out=C1L0)
                 C1L1 = xp.clip(C1L1, a_min=0, a_max=clip_too_high, out=C1L1)
-                gc.collect()
+                Backend.current().clear_allocation_pool()
 
         with timeit(f"Equalise intensity of C1L0 relative to C1L1 ..."):
             C1L0, C1L1, ratio = equalise_intensity(C1L0, C1L1,
                                                    zero_level=zero_level,
                                                    copy=False)
-            gc.collect()
+            Backend.current().clear_allocation_pool()
             print(f"Equalisation ratio: {ratio}")
 
         with timeit(f"Fuse illumination views C1L0 and C1L1..."):
@@ -141,18 +144,18 @@ def simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1,
                                            bias_strength=fusion_bias_strength)
             del C1L0
             del C1L1
-            gc.collect()
+            Backend.current().clear_allocation_pool()
 
         with timeit(f"Equalise intensity of C0lx relative to C1Lx ..."):
             C0lx, C1Lx, ratio = equalise_intensity(C0lx, C1Lx, zero_level=0, copy=False)
-            gc.collect()
+            Backend.current().clear_allocation_pool()
             print(f"Equalisation ratio: {ratio}")
 
         with timeit(f"Register_stacks C0lx and C1Lx ..."):
             C0lx, C1Lx, registration_model = register_views(C0lx, C1Lx,
                                                             model=registration_model)
             print(f"Registration model: {registration_model}")
-            gc.collect()
+            Backend.current().clear_allocation_pool()
 
         with timeit(f"Fuse detection views C0lx and C1Lx..."):
             CxLx = fuse_detection_views(C0lx, C1Lx,
@@ -161,19 +164,19 @@ def simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1,
                                         bias_strength=fusion_bias_strength)
             del C0lx
             del C1Lx
-            gc.collect()
+            Backend.current().clear_allocation_pool()
 
         if dehaze_size > 0:
             with timeit(f"Dehaze CxLx ..."):
                 CxLx = dehaze(CxLx, size=dehaze_size, minimal_zero_level=0)
-                gc.collect()
+                Backend.current().clear_allocation_pool()
 
         if dark_denoise_threshold > 0:
             with timeit(f"Denoise dark regions of CxLx..."):
                 CxLx = clean_dark_regions(CxLx,
                                           size=dark_denoise_size,
                                           threshold=dark_denoise_threshold)
-                gc.collect()
+                Backend.current().clear_allocation_pool()
 
         # from napari import gui_qt, Viewer
         # with gui_qt():
@@ -188,13 +191,13 @@ def simview_fuse_2I2D(C0L0, C0L1, C1L0, C1L1,
             with timeit(f"Filter output using a Butterworth filter"):
                 cutoffs = (butterworth_filter_cutoff,) * CxLx.ndim
                 CxLx = butterworth_filter(CxLx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
-                gc.collect()
+                Backend.current().clear_allocation_pool()
 
         with timeit(f"Converting back to original dtype..."):
             if original_dtype is numpy.uint16:
                 CxLx = xp.clip(CxLx, 0, None, out=CxLx)
             CxLx = CxLx.astype(dtype=original_dtype, copy=False)
-            gc.collect()
+            Backend.current().clear_allocation_pool()
 
     return CxLx, registration_model
 

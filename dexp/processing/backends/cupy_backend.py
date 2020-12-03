@@ -1,3 +1,4 @@
+
 import os
 from typing import Any
 
@@ -19,6 +20,7 @@ class CupyBackend(Backend):
 
     def __init__(self,
                  device_id=0,
+                 enable_streaming: bool = True,
                  enable_memory_pool: bool = True,
                  enable_cub: bool = True,
                  enable_cutensor: bool = True,
@@ -42,11 +44,10 @@ class CupyBackend(Backend):
 
         super().__init__()
         self.device_id = device_id
+        self.enable_streaming = enable_streaming
 
         import cupy
         self.cupy_device: cupy.cuda.Device = cupy.cuda.Device(self.device_id)
-
-        self.stream = cupy.cuda.stream.Stream(non_blocking=False)
 
         from cupy.cuda import cub, cutensor
         cub.available = enable_cub
@@ -83,13 +84,23 @@ class CupyBackend(Backend):
 
     def __enter__(self):
         self.cupy_device.__enter__()
-        self.stream.__enter__()
+        if self.enable_streaming:
+            import cupy
+            self.stream = cupy.cuda.stream.Stream(non_blocking=True)
+            self.stream.__enter__()
         return super().__enter__()
 
     def __exit__(self, type, value, traceback):
         super().__exit__(type, value, traceback)
-        self.stream.__exit__()
+        if self.enable_streaming:
+            self.stream.__exit__()
         self.cupy_device.__exit__()
+        self.clear_allocation_pool()
+
+    def synchronise(self):
+        self.stream.synchronize()
+
+    def clear_allocation_pool(self):
         import cupy
         mempool = cupy.get_default_memory_pool()
         pinned_mempool = cupy.get_default_pinned_memory_pool()
@@ -97,13 +108,7 @@ class CupyBackend(Backend):
             mempool.free_all_blocks()
         if pinned_mempool is not None:
             pinned_mempool.free_all_blocks()
-
-    def synchronise(self):
-        self.stream.synchronize()
-
-    def close(self):
-        # Nothing to do
-        pass
+        super().clear_allocation_pool()
 
     def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         import cupy
@@ -129,7 +134,7 @@ class CupyBackend(Backend):
                 return array
         else:
             array = self.to_numpy(array)
-            with cupy.cuda.Device(self.device_id):
+            with self.cupy_device:
                 return cupy.asarray(array, dtype=dtype)
 
     def _get_xp_module(self, array=None) -> Any:

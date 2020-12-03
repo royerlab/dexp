@@ -198,6 +198,13 @@ class ZDataset(BaseDataset):
 
             return info_str
 
+    def get_metadata(self):
+        """get the attributes stored in the zarr folder"""
+        attrs = {}
+        for name in self._root_group.attrs:
+            attrs[name] = self._root_group.attrs[name]
+        return attrs
+
     def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False):
         array = self._arrays[channel]
         if wrap_with_dask:
@@ -209,7 +216,7 @@ class ZDataset(BaseDataset):
         stack_array = self.get_array(channel)[time_point]
         return stack_array
 
-    def add_channel(self, name: str, shape: Tuple[int, ...], dtype, chunks: Tuple[int, ...], codec: str = 'zstd', clevel: int = 3) -> Any:
+    def add_channel(self, name: str, shape: Tuple[int, ...], dtype, chunks: Tuple[int, ...] = None, codec: str = 'zstd', clevel: int = 3) -> Any:
         """Adds a channel to this dataset
 
         Parameters
@@ -231,6 +238,11 @@ class ZDataset(BaseDataset):
         # check if channel exists:
         if name in self.channels():
             raise ValueError("Channel already exist!")
+
+        if chunks is None:
+            chunks = BaseDataset._default_chunks[0: len(shape)]
+
+        print(f"chunks={chunks}")
 
         # Choosing the fill value to the largest value:
         fill_value = self._get_largest_dtype_value(dtype)

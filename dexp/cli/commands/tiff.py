@@ -2,7 +2,7 @@ from time import time
 
 import click
 
-from dexp.cli.main import _get_dataset_from_path, _get_folder_name_without_end_slash, _default_clevel, _parse_slicing
+from dexp.cli.main import _get_dataset_from_path, _get_output_path, _default_clevel, _parse_slicing
 from dexp.datasets.operations.tiff import dataset_tiff
 
 
@@ -24,15 +24,15 @@ def tiff(input_path, output_path, channels, slicing, overwrite, project, split, 
         print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
 
     if output_path is None or not output_path.strip():
-        output_path = _get_folder_name_without_end_slash(input_path) + '.zarr'
+        output_path = _get_output_path(input_path)
 
     slicing = _parse_slicing(slicing)
     print(f"Requested slicing: {slicing} ")
 
     print(f"Requested channel(s)  {channels if channels else '--All--'} ")
 
-    if not channels is None:
-        channels = channels.split(',')
+    if channels is not None:
+        channels = tuple(channel.strip() for channel in channels.split(','))
 
     print(f"Selected channel(s): '{channels}' and slice: {slicing}")
 

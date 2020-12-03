@@ -1,4 +1,4 @@
-from joblib import Parallel
+from joblib import Parallel, delayed
 from skimage.transform import downscale_local_mean
 
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
@@ -17,7 +17,6 @@ def dataset_deconv(dataset,
                    compression,
                    compression_level,
                    overwrite,
-                   workers,
                    chunksize,
                    method,
                    num_iterations,
@@ -30,6 +29,7 @@ def dataset_deconv(dataset,
                    xy_size,
                    z_size,
                    downscalexy2,
+                   workers,
                    devices,
                    check):
     from dexp.datasets.zarr_dataset import ZDataset
@@ -115,11 +115,14 @@ def dataset_deconv(dataset,
                     import traceback
                     traceback.print_exc()
 
+        if workers == -1:
+            workers = len(devices)
+
         if workers > 1:
-            Parallel(n_jobs=workers)(process(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
+            Parallel(n_jobs=workers, backend='threading')(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
         else:
             for tp in range(0, shape[0]):
-                process(tp)
+                process(tp, devices[0])
 
     print(dest_dataset.info())
     if check:

@@ -34,9 +34,6 @@ def register_warp_multiscale_nd(image_a,
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
-    image_a = Backend.to_backend(image_a)
-    image_b = Backend.to_backend(image_b)
-
     if image_a.shape != image_b.shape:
         raise ValueError("Image must have same shape!")
 
@@ -49,6 +46,9 @@ def register_warp_multiscale_nd(image_a,
     confidence = None
 
     for i in range(num_iterations):
+
+        # Clear memory allocation cache:
+        Backend.current().clear_allocation_pool()
 
         # pre-apply transform from previous iterations:
         if vector_field is not None:

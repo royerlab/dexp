@@ -35,12 +35,13 @@ def _test_warp_model(length_xy=128, warp_grid_size=3):
 
     magnitude = 15
     vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 3 + (3,))
+    confidence = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 3 )
     # print(f"vector field applied: {vector_field}")
 
     with timeit("warp"):
         image_warped = warp(image, -vector_field, vector_field_upsampling=8)
 
-    model = WarpRegistrationModel(vector_field=vector_field)
+    model = WarpRegistrationModel(vector_field=vector_field, confidence=confidence)
 
     image, image_reg = model.apply(image, image_warped)
 

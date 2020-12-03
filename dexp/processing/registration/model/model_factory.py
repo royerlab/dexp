@@ -14,6 +14,6 @@ def from_json(json_str: str):
                                              integral=parsed_model['integral'])
     elif parsed_model['type'] == 'warp':
         model = WarpRegistrationModel(vector_field=numpy.asarray(parsed_model['vector_field']),
-                                      confidence=parsed_model['confidence'])
+                                      confidence=numpy.asarray(parsed_model['confidence']))
 
     return model
