@@ -47,8 +47,9 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
             if clim is None:
                 print(f"Computing min and max from first stack...")
                 first_stack = numpy.array(input_dataset.get_stack(channel, 0, per_z_slice=False))[::8]
-                min_value = numpy.percentile(first_stack[::32], q=0.1)
-                max_value = numpy.percentile(first_stack[::32], q=99.99)
+                first_stack_proj = numpy.max(first_stack, axis=0)
+                min_value = numpy.percentile(first_stack_proj[::4], q=0.1)
+                max_value = numpy.percentile(first_stack_proj[::4], q=99.99)
                 print(f"min={min_value} and max={max_value}.")
                 contrast_limits = [max(0, min_value - 32), max_value + 32]
             else:

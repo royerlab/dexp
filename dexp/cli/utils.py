@@ -20,6 +20,8 @@ def _get_output_path(input_path, output_path, postfix=''):
             input_path = input_path[:-1]
         if input_path.endswith('.zip'):
             input_path = input_path[:-4]
+        if input_path.endswith('.nested.zarr'):
+            input_path = input_path[:-12]
         if input_path.endswith('.zarr'):
             input_path = input_path[:-5]
         return input_path + postfix
