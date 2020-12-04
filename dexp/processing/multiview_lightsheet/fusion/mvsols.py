@@ -110,13 +110,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
                 C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
                 Backend.current().clear_allocation_pool()
 
-        with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
-            C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
-                                                   zero_level=zero_level,
-                                                   copy=False)
-
-            print(f"Equalisation ratio: {ratio}")
-
         with timeit(f"Resample C0L0 and C0L1"):
             C0L0 = resample_C0L0(C0L0, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
             C0L1 = resample_C0L1(C0L1, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
@@ -141,6 +134,13 @@ def msols_fuse_1C2L(C0L0, C0L1,
             C0L0 = C0L0.astype(dtype=numpy.float16)
             C0L1 = C0L1.astype(dtype=numpy.float16)
             Backend.current().clear_allocation_pool()
+
+        with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
+            C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
+                                                   zero_level=zero_level,
+                                                   copy=False)
+
+            print(f"Equalisation ratio: {ratio}")
 
         with timeit(f"Fuse detection views C0lx and C1Lx..."):
 
