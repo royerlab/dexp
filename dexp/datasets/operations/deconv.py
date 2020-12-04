@@ -23,6 +23,7 @@ def dataset_deconv(dataset,
                    max_correction,
                    power,
                    blind_spot,
+                   back_projection,
                    objective,
                    dxy,
                    dz,
@@ -58,13 +59,6 @@ def dataset_deconv(dataset,
                                               codec=compression,
                                               clevel=compression_level)
 
-        # psf = SimpleMicroscopePSF()
-        # psf_kernel = psf.generate_xyz_psf(dxy=dxy * (2 if downscalexy2 else 1),
-        #                                   dz=dz,
-        #                                   xy_size=xy_size,
-        #                                   z_size=z_size)
-        # psf_kernel /= psf_kernel.sum()
-
         psf_kwargs = {'dxy': dxy * (2 if downscalexy2 else 1),
                       'dz': dz,
                       'xy_size': xy_size,
@@ -97,7 +91,8 @@ def dataset_deconv(dataset,
                                                                  power=power,
                                                                  blind_spot=blind_spot,
                                                                  blind_spot_mode='median+uniform',
-                                                                 blind_spot_axis_exclusion=(0,)
+                                                                 blind_spot_axis_exclusion=(0,),
+                                                                 back_projection=back_projection
                                                                  )
 
                         with timeit("lucy_richardson_deconvolution"):

@@ -9,8 +9,8 @@ from dexp.utils.timeit import timeit
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='List of channels, all channels when ommited.')
-@click.option('--rename', '-rc', default=None, help='You can rename channels: e.g. if channels are `channel1,anotherc` then `gfp,rfp` would rename the `channel1` channel to `gfp`, and `anotherc` to `rfp` ')
-@click.option('--store', '-st', default=_default_store, help='Store: ‘dir’, ‘zip’', show_default=True)
+@click.option('--rename', '-rc', default=None, help='You can rename channels: e.g. if channels are ‘channel1,anotherc’ then ‘gfp,rfp’ would rename the ‘channel1’ channel to ‘gfp’, and ‘anotherc’ to ‘rfp’ ')
+@click.option('--store', '-st', default=_default_store, help='Zarr store: ‘dir’, ‘ndir’, or ‘zip’', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='Forces overwrite of target', show_default=True)
 def add(input_path, output_path, channels, rename, store, overwrite):
     input_dataset = _get_dataset_from_path(input_path)

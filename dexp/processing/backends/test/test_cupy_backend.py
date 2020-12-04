@@ -29,12 +29,13 @@ def test_list_devices():
         for device_id in available:
             with CupyBackend(device_id) as backend:
                 print(backend)
+                xp = Backend.get_xp_module()
 
-                array1 = numpy.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
-                array2 = numpy.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
+                array1 = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
+                array2 = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
 
-                array1 = backend.to_backend(array1, numpy.float32)
-                array2 = backend.to_backend(array2, numpy.float32)
+                array1 = Backend.to_backend(array1, numpy.float32)
+                array2 = Backend.to_backend(array2, numpy.float32)
 
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")

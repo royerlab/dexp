@@ -35,7 +35,7 @@ class ZDataset(BaseDataset):
             'a' means read/write (create if doesn't exist);
             'w' means create (overwrite if exists);
             'w-' means create (fail if exists).
-        store : type of store, can be 'dir' or 'zip'
+        store : type of store, can be 'dir', 'ndir', or 'zip'
 
         Returns
         -------
@@ -66,26 +66,15 @@ class ZDataset(BaseDataset):
             if isfile(path) and (path.endswith('.zarr.zip') or store == 'zip'):
                 print(f"Opening as ZIP store")
                 self._store = zarr.storage.ZipStore(path)
-            elif isdir(path) and (path.endswith('.zarr') or path.endswith('.zarr/') or store == 'dir'):
-                # We need to figure out if this is a directory or nested directory store:
-
-                group = open_group(path, mode='r')
-                if 'storage_type' in group.attrs:
-                    storage_type = group.attrs['storage_type']
-                    print(f"storage_type={storage_type} ")
-                    if storage_type == 'dir':
-                        print(f"Opening as Directory store")
-                        self._store = zarr.storage.DirectoryStore(path)
-                    elif storage_type == 'ndir':
-                        print(f"Opening as Nested Directory store")
-                        self._store = zarr.storage.NestedDirectoryStore(path)
-                else:
-                    print(f"Opening as Directory store")
-                    self._store = zarr.storage.DirectoryStore(path)
+            elif isdir(path) and ((path.endswith('.nested.zarr') or path.endswith('.nested.zarr/') or store == 'ndir')):
+                print(f"Opening as Nested Directory store")
+                self._store = zarr.storage.NestedDirectoryStore(path)
+            elif isdir(path) and ((path.endswith('.zarr') or path.endswith('.zarr/') or store == 'dir')):
+                print(f"Opening as Directory store")
+                self._store = zarr.storage.DirectoryStore(path)
 
             print(f"Opening with mode: {mode}")
             self._root_group = open_group(self._store, mode=mode)
-            print(self._root_group.tree())
             self._initialise_existing(path)
         elif 'a' in mode or 'w' in mode:
             try:
@@ -98,20 +87,21 @@ class ZDataset(BaseDataset):
                     path = path if path.endswith('.zarr.zip') else path + 'zarr.zip'
                     self._store = zarr.storage.ZipStore(path)
                     store_type = 'zip'
+                elif path.endswith('.nested.zarr') or path.endswith('.nested.zarr/') or store == 'ndir':
+                    print(f"Opening as Nested Directory store")
+                    # correcting path to adhere to convention:
+                    path = path if path.endswith('.nested.zarr') else path + '.nested.zarr'
+                    self._store = zarr.storage.NestedDirectoryStore(path)
+                    store_type = 'ndir'
                 elif path.endswith('.zarr') or path.endswith('.zarr/') or store == 'dir':
                     print(f"Opening as Directory store")
                     # correcting path to adhere to convention:
                     path = path if path.endswith('.zarr') else path + '.zarr'
                     self._store = zarr.storage.DirectoryStore(path)
                     store_type = 'dir'
-                elif path.endswith('.zarr') or path.endswith('.zarr/') or store == 'ndir':
-                    print(f"Opening as Nested Directory store")
-                    # correcting path to adhere to convention:
-                    path = path if path.endswith('.zarr') else path + '.zarr'
-                    self._store = zarr.storage.NestedDirectoryStore(path)
-                    store_type = 'ndir'
+
                 else:
-                    print(f'Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr`), or a zipped zarr file (file that ends with `.zarr.zip`)')
+                    print(f'Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr` or `.nested.zarr` for nested folders), or a zipped zarr file (file that ends with `.zarr.zip`)')
                 print(f"Opening Zarr storage with mode='{mode}'")
                 self._root_group = zarr.convenience.open(self._store, mode=mode)
                 self._root_group.attrs['store_type'] = store_type
@@ -124,17 +114,17 @@ class ZDataset(BaseDataset):
     def _initialise_existing(self, path: str):
         self._channels = [channel for channel, _ in self._root_group.groups()]
 
-        print(f"Exploring Zarr hierarchy...")
+        # print(f"Exploring Zarr hierarchy...")
         for channel, channel_group in self._root_group.groups():
-            print(f"Found channel: {channel}")
+            # print(f"Found channel: {channel}")
 
             channel_items = channel_group.items()
 
             for item_name, array in channel_items:
-                print(f"Found array: {item_name}")
+                # print(f"Found array: {item_name}")
 
                 if item_name == channel or item_name == 'fused':
-                    print(f'Opening array at {path}:{channel}/{item_name} ')
+                    # print(f'Opening array at {path}:{channel}/{item_name} ')
                     self._arrays[channel] = array
                     # self._arrays[channel] = from_zarr(path, component=f"{channel}/{item_name}")
 
@@ -192,7 +182,8 @@ class ZDataset(BaseDataset):
             info_str += str(self._arrays[channel].info)
             return info_str
         else:
-            info_str = str(self._root_group.tree())
+            info_str = "Zarr tree: \n"
+            info_str += str(self._root_group.tree())
             info_str += "\n\n"
             info_str += "Channels: \n"
             for channel in self.channels():

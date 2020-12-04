@@ -41,7 +41,7 @@ def lucy_richardson_deconvolution(image,
     num_iterations : number of iterations
     max_correction : Lucy-Richardson correction will remain clamped within [1/mc, mc] (before back projection)
     power : power to elevate coorection (before back projection)
-    back_projection : back projection operator to use: 'tpsf' or 'wbw'.
+    back_projection : back projection operator to use: 'tpsf' or 'wb'.
     padding : padding (see numpy/cupy pad function)
     padding_mode : padding mode (see numpy/cupy pad function)
     normalise_input : This deconvolution code assumes values within [0, 1], by default input images are normalised to that range, but if already normalised, then normalisation can be ommited.
