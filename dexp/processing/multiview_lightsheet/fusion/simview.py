@@ -16,8 +16,9 @@ from dexp.utils.timeit import timeit
 
 
 def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
+                      equalise: bool = True,
                       zero_level: float = 120,
-                      clip_too_high: int = 2048,
+                      clip_too_high: int = 0,
                       fusion='tg',
                       fusion_bias_exponent: int = 2,
                       fusion_bias_strength: float = 0.1,
@@ -35,6 +36,8 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
     C0L1 : Image for Camera 0 lightsheet 1
     C1L0 : Image for Camera 1 lightsheet 0
     C1L1 : Image for Camera 1 lightsheet 1
+
+    equalise : Equalise intensity of views before fusion, or not.
 
     zero_level : Zero level: that's the minimal detector pixel value floor to substract,
     typically for sCMOS cameras the floor is at around 100 (this is to avoid negative values
@@ -98,12 +101,13 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                 C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
                 Backend.current().clear_allocation_pool()
 
-        with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
-            C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
-                                                   zero_level=zero_level,
-                                                   copy=False)
-            Backend.current().clear_allocation_pool()
-            print(f"Equalisation ratio: {ratio}")
+        if equalise:
+            with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
+                C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
+                                                       zero_level=zero_level,
+                                                       copy=False)
+                Backend.current().clear_allocation_pool()
+                print(f"Equalisation ratio: {ratio}")
 
         with timeit(f"Fuse illumination views C0L0 and C0L1..."):
             C0lx = fuse_illumination_views(C0L0, C0L1,
@@ -128,12 +132,13 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                 C1L1 = xp.clip(C1L1, a_min=0, a_max=clip_too_high, out=C1L1)
                 Backend.current().clear_allocation_pool()
 
-        with timeit(f"Equalise intensity of C1L0 relative to C1L1 ..."):
-            C1L0, C1L1, ratio = equalise_intensity(C1L0, C1L1,
-                                                   zero_level=zero_level,
-                                                   copy=False)
-            Backend.current().clear_allocation_pool()
-            print(f"Equalisation ratio: {ratio}")
+        if equalise:
+            with timeit(f"Equalise intensity of C1L0 relative to C1L1 ..."):
+                C1L0, C1L1, ratio = equalise_intensity(C1L0, C1L1,
+                                                       zero_level=zero_level,
+                                                       copy=False)
+                Backend.current().clear_allocation_pool()
+                print(f"Equalisation ratio: {ratio}")
 
         with timeit(f"Fuse illumination views C1L0 and C1L1..."):
             C1Lx = fuse_illumination_views(C1L0, C1L1,
@@ -144,10 +149,11 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             del C1L1
             Backend.current().clear_allocation_pool()
 
-        with timeit(f"Equalise intensity of C0lx relative to C1Lx ..."):
-            C0lx, C1Lx, ratio = equalise_intensity(C0lx, C1Lx, zero_level=0, copy=False)
-            Backend.current().clear_allocation_pool()
-            print(f"Equalisation ratio: {ratio}")
+        if equalise:
+            with timeit(f"Equalise intensity of C0lx relative to C1Lx ..."):
+                C0lx, C1Lx, ratio = equalise_intensity(C0lx, C1Lx, zero_level=0, copy=False)
+                Backend.current().clear_allocation_pool()
+                print(f"Equalisation ratio: {ratio}")
 
         with timeit(f"Register_stacks C0lx and C1Lx ..."):
             C0lx, C1Lx, registration_model = register_views(C0lx, C1Lx,

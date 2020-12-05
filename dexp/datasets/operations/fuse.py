@@ -16,6 +16,7 @@ def dataset_fuse(dataset,
                  compression_level,
                  overwrite,
                  microscope,
+                 equalise,
                  zero_level,
                  fusion,
                  fusion_bias_strength,
@@ -75,6 +76,7 @@ def dataset_fuse(dataset,
                                                  fusion=fusion,
                                                  fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
                                                  fusion_bias_strength=fusion_bias_strength,
+                                                 equalise=equalise,
                                                  dehaze_size=dehaze_size,
                                                  dark_denoise_threshold=dark_denoise_threshold)
             elif microscope == 'mvsols':
@@ -85,6 +87,7 @@ def dataset_fuse(dataset,
                 res = metadata['res']
 
                 array, model = msols_fuse_1C2L(*views_tp,
+                                               equalise=equalise,
                                                zero_level=0,
                                                angle=angle,
                                                dx=res,

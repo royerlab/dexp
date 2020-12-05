@@ -16,6 +16,7 @@ from dexp.utils.timeit import timeit
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--microscope', '-m', type=str, default='simview', help='Microscope objective to use for computing psf, can be: simview or mvsols', show_default=True)
+@click.option('--equalise/--no-equalise', '-eq', default=True, help='Equalise intensity of views before fusion, or not.', show_default=True)
 @click.option('--zerolevel', '-zl', type=int, default=110, help='\'zero-level\' i.e. the pixel values in the restoration (to be substracted)', show_default=True)  #
 @click.option('--fusion', '-f', type=str, default='tg', help="Fusion mode, can be: 'tg' or 'dct'.  ", show_default=True)  #
 @click.option('--fusion_bias_strength', '-fbs', type=float, default=0.1, help='Fusion bias strength, set to 0 if fusing a cropped region', show_default=True)  #
@@ -35,6 +36,7 @@ def fuse(input_path,
          clevel,
          overwrite,
          microscope,
+         equalise,
          zerolevel,
          fusion,
          fusion_bias_strength,
@@ -61,6 +63,7 @@ def fuse(input_path,
                      compression_level=clevel,
                      overwrite=overwrite,
                      microscope=microscope,
+                     equalise=equalise,
                      zero_level=zerolevel,
                      fusion=fusion,
                      fusion_bias_strength=fusion_bias_strength,

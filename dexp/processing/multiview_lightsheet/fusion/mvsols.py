@@ -22,8 +22,9 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     dx: float,
                     angle: float,
                     resampling_mode: str = 'yang',
+                    equalise: bool = True,
                     zero_level: float = 120,
-                    clip_too_high: int = 2048,
+                    clip_too_high: int = 0,
                     fusion='tg',
                     fusion_bias_exponent: int = 2,
                     fusion_bias_strength: float = 0.1,
@@ -47,6 +48,8 @@ def msols_fuse_1C2L(C0L0, C0L1,
     angle  : float, incident angle of the light sheet, angle between the light sheet and the optical axis
 
     mode : Resampling mode, can be 'byang' for Bin Yang's resampling ;-)
+
+    equalise : Equalise intensity of views before fusion, or not.
 
     zero_level : Zero level: that's the minimal detector pixel value floor to substract,
     typically for sCMOS cameras the floor is at around 100 (this is to avoid negative values
@@ -135,12 +138,13 @@ def msols_fuse_1C2L(C0L0, C0L1,
             C0L1 = C0L1.astype(dtype=numpy.float16)
             Backend.current().clear_allocation_pool()
 
-        with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
-            C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
-                                                   zero_level=zero_level,
-                                                   copy=False)
+        if equalise:
+            with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
+                C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
+                                                       zero_level=zero_level,
+                                                       copy=False)
 
-            print(f"Equalisation ratio: {ratio}")
+                print(f"Equalisation ratio: {ratio}")
 
         with timeit(f"Fuse detection views C0lx and C1Lx..."):
 
