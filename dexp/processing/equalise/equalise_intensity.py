@@ -1,3 +1,5 @@
+import math
+
 import numpy
 
 from dexp.processing.backends.backend import Backend
@@ -9,7 +11,8 @@ def equalise_intensity(image1,
                        zero_level=90,
                        quantile_low=0.01,
                        quantile_high=0.99,
-                       max_voxels=5e7,
+                       project_axis: int = 0,
+                       max_voxels: int = 1e7,
                        copy: bool = True,
                        internal_dtype=None):
     """
@@ -21,6 +24,7 @@ def equalise_intensity(image1,
     image2 : second image to equalise
     zero_level : zero level -- removes this value if that's the minimal voxel value expected for both images
     quantile_low, quantile_high : quantile for computing the robust min and max values in image
+    project_axis : Axis over which to project image to speed up computation
     max_voxels : maximal number of voxels to use to compute min and max values.
     copy : Set to True to force copy of images.
     internal_dtype : dtype to use internally for computation.
@@ -46,10 +50,13 @@ def equalise_intensity(image1,
 
     xp = Backend.get_xp_module()
 
-    reduction = max(1, 4 * (int(image1.size / max_voxels) // 4))
+    proj_image1 = xp.max(image1, axis=project_axis)
+    proj_image2 = xp.max(image2, axis=project_axis)
 
-    strided_image1 = image1.ravel()[::reduction].astype(numpy.float32, copy=False)
-    strided_image2 = image2.ravel()[::reduction].astype(numpy.float32, copy=False)
+    reduction = max(1, 4 * (int(proj_image1.size / max_voxels) // 4))
+
+    strided_image1 = proj_image1.ravel()[::reduction].astype(numpy.float32, copy=False)
+    strided_image2 = proj_image2.ravel()[::reduction].astype(numpy.float32, copy=False)
 
     highvalue1 = xp.percentile(strided_image1, q=quantile_high * 100)
     highvalue2 = xp.percentile(strided_image2, q=quantile_high * 100)
