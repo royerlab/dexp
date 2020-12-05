@@ -72,11 +72,11 @@ def dataset_fuse(dataset,
             if microscope == 'simview':
                 array, model = simview_fuse_2C2L(*views_tp,
                                                  registration_model=model,
+                                                 equalise=equalise,
                                                  zero_level=zero_level,
                                                  fusion=fusion,
                                                  fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
                                                  fusion_bias_strength=fusion_bias_strength,
-                                                 equalise=equalise,
                                                  dehaze_size=dehaze_size,
                                                  dark_denoise_threshold=dark_denoise_threshold)
             elif microscope == 'mvsols':

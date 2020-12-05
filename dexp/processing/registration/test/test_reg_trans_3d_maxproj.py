@@ -30,4 +30,4 @@ def register_translation_3d_maxproj(method, length_xy=128):
     shifts = model.shift_vector
     assert shifts[0] == approx(-1, abs=0.2)
     assert shifts[1] == approx(-5, abs=0.2)
-    assert shifts[2] == approx(13, abs=0.2)
+    assert shifts[2] == approx(13, abs=0.3)

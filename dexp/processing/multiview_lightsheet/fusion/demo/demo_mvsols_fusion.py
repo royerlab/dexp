@@ -18,7 +18,7 @@ def demo_mvsols_resample_numpy():
 
 def demo_mvsols_resample_cupy():
     try:
-        with CupyBackend(1):
+        with CupyBackend(0):
             _mvsols_resample()
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
@@ -32,8 +32,8 @@ def _mvsols_resample():
 
         print(zdataset.channels())
 
-        C0L0 = zdataset.get_stack('v0c0', 0)[..., 700:-700]
-        C0L1 = zdataset.get_stack('v1c0', 0)[..., 700:-700]
+        C0L0 = zdataset.get_stack('v0c0', 0)
+        C0L1 = zdataset.get_stack('v1c0', 0)
 
         print(f"C0L0 shape={C0L0.shape}, dtype={C0L0.dtype}")
         print(f"C0L1 shape={C0L1.shape}, dtype={C0L1.dtype}")
@@ -51,7 +51,8 @@ def _mvsols_resample():
                                   zero_level=0,
                                   angle=angle,
                                   dx=res,
-                                  dz=dz)
+                                  dz=dz,
+                                  equalise=False)
 
     from napari import Viewer, gui_qt
     with gui_qt():
