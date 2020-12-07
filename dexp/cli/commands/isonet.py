@@ -1,10 +1,10 @@
 import click
+from arbol.arbol import section, aprint, asection
 
 from dexp.cli.main import _default_clevel, _default_codec, _default_store
 from dexp.cli.utils import _get_dataset_from_path, _get_output_path, _parse_slicing
 from dexp.datasets.operations.isonet import dataset_isonet
 from dexp.utils.timeit import timeit
-
 
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
@@ -23,19 +23,19 @@ def isonet(input_path, output_path, slicing, store, codec, clevel, overwrite, co
     output_path = _get_output_path(input_path, output_path, '.isonet')
     slicing = _parse_slicing(slicing)
 
-    with timeit(f"Isonet"):
+    with asection(f"Applying Isonet to: {input_path}, saving result to: {output_path}, slicing: {slicing} "):
         dataset_isonet(input_dataset,
-                       output_path,
-                       slicing=slicing,
-                       store=store,
-                       compression=codec,
-                       compression_level=clevel,
-                       overwrite=overwrite,
-                       context=context,
-                       mode=mode,
-                       max_epochs=max_epochs,
-                       check=check
-                       )
+                           output_path,
+                           slicing=slicing,
+                           store=store,
+                           compression=codec,
+                           compression_level=clevel,
+                           overwrite=overwrite,
+                           context=context,
+                           mode=mode,
+                           max_epochs=max_epochs,
+                           check=check
+                           )
 
-    input_dataset.close()
-    print("Done!")
+        input_dataset.close()
+        aprint("Done!")

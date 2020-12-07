@@ -2,13 +2,14 @@ from abc import ABC, abstractmethod
 from typing import Sequence
 
 import numpy
+from arbol.arbol import aprint
 
 
 class BaseDataset(ABC):
     _default_chunks = (1, 32, 512, 512)
 
     def __init__(self, dask_backed=False):
-        """ Instanciates a Dataset
+        """ Instanciates a Base Dataset
 
         """
         self.dask_backed = dask_backed
@@ -19,9 +20,9 @@ class BaseDataset(ABC):
         else:
             selected_channels = list(set(channels) & set(self._channels))
 
-        print(f"Available channels: {self._channels}")
-        print(f"Requested channels: {channels if channels else '--All--'} ")
-        print(f"Selected channels:  {selected_channels}")
+        # aprint(f"Available channels: {self._channels}")
+        # aprint(f"Requested channels: {channels if channels else '--All--'} ")
+        # aprint(f"Selected channels:  {selected_channels}")
 
         return selected_channels
 

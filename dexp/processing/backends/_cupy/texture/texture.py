@@ -1,6 +1,6 @@
 from typing import Tuple
 
-import cupy
+
 import numpy
 
 from dexp.processing.backends.backend import Backend
@@ -31,6 +31,8 @@ def create_cuda_texture(array,
     -------
 
     """
+    import cupy
+
     if texture_shape is None:
         if num_channels > 1:
             texture_shape = array.shape[0:-1]

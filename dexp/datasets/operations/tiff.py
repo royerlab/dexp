@@ -2,6 +2,7 @@ import os
 from os.path import join
 
 import numpy
+from arbol.arbol import aprint
 from tifffile import TiffWriter
 
 from dexp.io.io import tiff_save
@@ -19,21 +20,21 @@ def dataset_tiff(dataset,
                  workers):
     selected_channels = dataset._selected_channels(channels)
 
-    print(f"getting Dask arrays for channels {selected_channels}")
+    aprint(f"getting Dask arrays for channels {selected_channels}")
     arrays = list([dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for channel in selected_channels])
 
     if slicing is not None:
-        print(f"Slicing with: {slicing}")
+        aprint(f"Slicing with: {slicing}")
         arrays = list([array[slicing] for array in arrays])
-        print(f"Done slicing.")
+        aprint(f"Done slicing.")
 
     if project:
         # project is the axis for projection, but here we are not considering the T dimension anymore...
-        print(f"Projecting along axis {project}")
+        aprint(f"Projecting along axis {project}")
         arrays = list([array.max(axis=project) for array in arrays])
 
     if one_file_per_first_dim:
-        print(f"Saving one TIFF file for each tp (or Z if already sliced) to: {output_path}.")
+        aprint(f"Saving one TIFF file for each tp (or Z if already sliced) to: {output_path}.")
 
         os.makedirs(output_path, exist_ok=True)
 
@@ -58,15 +59,15 @@ def dataset_tiff(dataset,
         array = numpy.stack(arrays)
 
         if not overwrite and os.path.exists(output_path):
-            print(f"File {output_path} already exists! Set option -w to overwrite.")
+            aprint(f"File {output_path} already exists! Set option -w to overwrite.")
             return
 
-        print(f"Creating memory mapped TIFF file at: {output_path}.")
+        aprint(f"Creating memory mapped TIFF file at: {output_path}.")
         with TiffWriter(output_path, bigtiff=True, imagej=True) as tif:
             tp = 0
             for stack in array:
                 with timeit('Elapsed time: '):
-                    print(f"Writing time point: {tp} ")
+                    aprint(f"Writing time point: {tp} ")
                     stack = stack.compute()
                     tif.save(stack)
                     tp += 1

@@ -1,4 +1,4 @@
-import cupy
+
 
 from dexp.processing.backends._cupy.texture.texture import create_cuda_texture
 from dexp.processing.backends.cupy_backend import CupyBackend
@@ -6,6 +6,7 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 
 def test_cupy_texture_4channels():
     try:
+        import cupy
         with CupyBackend():
             source = r'''
                 extern "C"{
@@ -62,6 +63,7 @@ def test_cupy_texture_4channels():
 
 def test_cupy_texture_1channel_normcoord():
     try:
+        import cupy
         with CupyBackend():
             source = r'''
                 
@@ -121,6 +123,7 @@ def test_cupy_texture_1channel_normcoord():
 
 def test_cupy_texture_1channel():
     try:
+        import cupy
         with CupyBackend():
             source = r'''
                 extern "C"{
@@ -177,6 +180,7 @@ def test_cupy_texture_1channel():
 
 def test_basic_cupy_texture():
     try:
+        import cupy
         with CupyBackend():
             source = r'''
                 extern "C"{

@@ -1,4 +1,5 @@
 import click
+from arbol.arbol import section, aprint, asection
 
 from dexp.cli.main import _default_clevel
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing
@@ -22,7 +23,7 @@ def tiff(input_path, output_path, channels, slicing, overwrite, project, split, 
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
 
-    with timeit("converting to TIFF"):
+    with asection(f"Exporting to TIFF datset: {input_path}, channels: {channels}, slice: {slicing}, project:{project}, split:{split}"):
         dataset_tiff(input_dataset,
                      output_path,
                      channels=channels,
@@ -34,5 +35,5 @@ def tiff(input_path, output_path, channels, slicing, overwrite, project, split, 
                      workers=workers
                      )
 
-    input_dataset.close()
-    print("Done!")
+        input_dataset.close()
+        aprint("Done!")

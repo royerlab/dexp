@@ -1,5 +1,7 @@
 import os
 
+from arbol.arbol import aprint, asection
+
 
 def dataset_copy(dataset,
                  path,
@@ -27,7 +29,7 @@ def dataset_copy(dataset,
             shape = array.shape[0:project] + array.shape[project + 1:]
             dim = len(shape)
             chunks = (1,) + (None,) * (dim - 1)
-            print(f"projecting along axis {project} to shape: {shape} and chunks: {chunks}")
+            aprint(f"projecting along axis {project} to shape: {shape} and chunks: {chunks}")
 
         else:
             shape = array.shape
@@ -46,29 +48,27 @@ def dataset_copy(dataset,
 
         def process(tp):
             try:
-                print(f"Starting to process time point: {tp} ...")
-                tp_array = array[tp].compute()
-                if project:
-                    # project is the axis for projection, but here we are not considering the T dimension anymore...
-                    axis = project - 1
-                    tp_array = tp_array.max(axis=axis)
+                with asection(f"Starting to process time point: {tp} ..."):
+                    tp_array = array[tp].compute()
+                    if project:
+                        # project is the axis for projection, but here we are not considering the T dimension anymore...
+                        axis = project - 1
+                        tp_array = tp_array.max(axis=axis)
 
-                dest_array[tp] = tp_array
-                print(f"Done processing time point: {tp} .")
-
+                    dest_array[tp] = tp_array
             except Exception as error:
-                print(error)
-                print(f"Error occurred while copying time point {tp} !")
+                aprint(error)
+                aprint(f"Error occurred while copying time point {tp} !")
 
         from joblib import Parallel, delayed
 
         if workers is None:
             workers = os.cpu_count() // 2
 
-        print(f"Number of workers: {workers}")
+        aprint(f"Number of workers: {workers}")
         Parallel(n_jobs=workers)(delayed(process)(tp) for tp in range(0, shape[0]))
 
-    print(dest_dataset.info())
+    aprint(dest_dataset.info())
     if check:
         dest_dataset.check_integrity()
     dest_dataset.close()

@@ -1,3 +1,4 @@
+from arbol.arbol import aprint
 from joblib import Parallel, delayed
 from skimage.transform import downscale_local_mean
 
@@ -73,7 +74,7 @@ def dataset_deconv(dataset,
 
             with CupyBackend(device):
                 try:
-                    print(f"Starting to process time point: {tp} ...")
+                    aprint(f"Starting to process time point: {tp} ...")
                     tp_array = array[tp].compute()
                     if downscalexy2:
                         tp_array = downscale_local_mean(tp_array, factors=(1, 2, 2)).astype(tp_array.dtype)
@@ -102,11 +103,11 @@ def dataset_deconv(dataset,
 
                     tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
                     dest_array[tp] = tp_array
-                    print(f"Done processing time point: {tp} .")
+                    aprint(f"Done processing time point: {tp} .")
 
                 except Exception as error:
-                    print(error)
-                    print(f"Error occurred while copying time point {tp} !")
+                    aprint(error)
+                    aprint(f"Error occurred while copying time point {tp} !")
                     import traceback
                     traceback.print_exc()
 
@@ -119,7 +120,7 @@ def dataset_deconv(dataset,
             for tp in range(0, shape[0]):
                 process(tp, devices[0])
 
-    print(dest_dataset.info())
+    aprint(dest_dataset.info())
     if check:
         dest_dataset.check_integrity()
     dest_dataset.close()
