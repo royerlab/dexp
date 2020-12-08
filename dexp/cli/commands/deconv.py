@@ -36,7 +36,7 @@ def deconv(input_path, output_path, channels, slicing, store, codec, clevel, ove
            method, iterations, maxcorrection, power, blindspot, backprojection, objective, dxy, dz, xysize, zsize, downscalexy2,
            workers, devices, check):
     input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path, ".deconv")
+    output_path = _get_output_path(input_path, output_path, "_deconv")
 
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)

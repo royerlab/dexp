@@ -47,7 +47,7 @@ def fuse(input_path,
          devices,
          check):
     input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path, ".fused")
+    output_path = _get_output_path(input_path, output_path, "_fused")
 
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)

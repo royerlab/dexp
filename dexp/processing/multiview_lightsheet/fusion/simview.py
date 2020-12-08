@@ -1,4 +1,5 @@
 import numpy
+from arbol import asection, section, aprint
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -14,19 +15,22 @@ from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
 from dexp.utils.timeit import timeit
 
-
+@section("SimView 2D2L fusion")
 def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                       equalise: bool = True,
                       zero_level: float = 120,
-                      clip_too_high: int = 0,
+                      clip_too_high: int = 2048,
                       fusion='tg',
                       fusion_bias_exponent: int = 2,
                       fusion_bias_strength: float = 0.1,
+                      registration_mode : str = 'projection',
+                      registration_edge_filter: bool = False,
                       registration_model: PairwiseRegistrationModel = None,
                       dehaze_size: int = 65,
                       dark_denoise_threshold: int = 0,
                       dark_denoise_size: int = 9,
                       butterworth_filter_cutoff: float = 1,
+                      flip_camera1: bool = True,
                       internal_dtype=numpy.float16):
     """
 
@@ -47,6 +51,15 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
     clip_too_high : clips very high intensities, to avoid loss of precision when converting an internal format such as float16
 
     fusion : Fusion mode, can be 'tg', 'dct', 'dft'
+
+    fusion_bias_exponent : Exponent for fusion bias
+
+    fusion_bias_strength : Strength of fusion bias, set to zero to deactivate
+
+    registration_mode : Registration mode, can be: 'projection' or 'full'.
+    Projection mode is faster but might have occasionally  issues for certain samples. Full mode is slower and is only recomended as a last resort.
+
+    registration_edge_filter : apply edge filter to help registration
 
     registration_model : registration model to use the two camera views (C0Lx and C1Lx),
     if None, the two camera views are registered, and the registration model is returned.
@@ -86,30 +99,30 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
-    with timeit("SimView 2I2D fusion"):
+    with asection("SimView 2I2D fusion"):
 
         original_dtype = C0L0.dtype
 
-        with timeit(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):
+        with asection(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):
             C0L0 = Backend.to_backend(C0L0, dtype=internal_dtype, force_copy=False)
             C0L1 = Backend.to_backend(C0L1, dtype=internal_dtype, force_copy=False)
             Backend.current().clear_allocation_pool()
 
         if clip_too_high > 0:
-            with timeit(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
+            with asection(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
                 C0L0 = xp.clip(C0L0, a_min=0, a_max=clip_too_high, out=C0L0)
                 C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
                 Backend.current().clear_allocation_pool()
 
         if equalise:
-            with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
+            with asection(f"Equalise intensity of C0L0 relative to C0L1 ..."):
                 C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
                                                        zero_level=zero_level,
                                                        copy=False)
                 Backend.current().clear_allocation_pool()
-                print(f"Equalisation ratio: {ratio}")
+                aprint(f"Equalisation ratio: {ratio}")
 
-        with timeit(f"Fuse illumination views C0L0 and C0L1..."):
+        with asection(f"Fuse illumination views C0L0 and C0L1..."):
             C0lx = fuse_illumination_views(C0L0, C0L1,
                                            mode=fusion,
                                            bias_exponent=fusion_bias_exponent,
@@ -118,29 +131,31 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             del C0L1
             Backend.current().clear_allocation_pool()
 
-        with timeit(f"Moving C1L0 and C1L1 to backend storage and converting to {internal_dtype}..."):
+        with asection(f"Moving C1L0 and C1L1 to backend storage and converting to {internal_dtype}..."):
             C1L0 = Backend.to_backend(C1L0, dtype=internal_dtype, force_copy=False)
-            C1L0 = xp.flip(C1L0, -1)
+            if flip_camera1:
+                C1L0 = xp.flip(C1L0, -1)
             C1L1 = Backend.to_backend(C1L1, dtype=internal_dtype, force_copy=False)
-            C1L1 = xp.flip(C1L1, -1)
+            if flip_camera1:
+                C1L1 = xp.flip(C1L1, -1)
 
             Backend.current().clear_allocation_pool()
 
         if clip_too_high > 0:
-            with timeit(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
+            with asection(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
                 C1L0 = xp.clip(C1L0, a_min=0, a_max=clip_too_high, out=C1L0)
                 C1L1 = xp.clip(C1L1, a_min=0, a_max=clip_too_high, out=C1L1)
                 Backend.current().clear_allocation_pool()
 
         if equalise:
-            with timeit(f"Equalise intensity of C1L0 relative to C1L1 ..."):
+            with asection(f"Equalise intensity of C1L0 relative to C1L1 ..."):
                 C1L0, C1L1, ratio = equalise_intensity(C1L0, C1L1,
                                                        zero_level=zero_level,
                                                        copy=False)
                 Backend.current().clear_allocation_pool()
-                print(f"Equalisation ratio: {ratio}")
+                aprint(f"Equalisation ratio: {ratio}")
 
-        with timeit(f"Fuse illumination views C1L0 and C1L1..."):
+        with asection(f"Fuse illumination views C1L0 and C1L1..."):
             C1Lx = fuse_illumination_views(C1L0, C1L1,
                                            mode=fusion,
                                            bias_exponent=fusion_bias_exponent,
@@ -150,18 +165,20 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             Backend.current().clear_allocation_pool()
 
         if equalise:
-            with timeit(f"Equalise intensity of C0lx relative to C1Lx ..."):
+            with asection(f"Equalise intensity of C0lx relative to C1Lx ..."):
                 C0lx, C1Lx, ratio = equalise_intensity(C0lx, C1Lx, zero_level=0, copy=False)
                 Backend.current().clear_allocation_pool()
-                print(f"Equalisation ratio: {ratio}")
+                aprint(f"Equalisation ratio: {ratio}")
 
-        with timeit(f"Register_stacks C0lx and C1Lx ..."):
-            C0lx, C1Lx, registration_model = register_views(C0lx, C1Lx,
-                                                            model=registration_model)
-            print(f"Registration model: {registration_model}")
+        with asection(f"Register_stacks C0lx and C1Lx ..."):
+            C0lx, C1Lx, registration_model = register_detection_views(C0lx, C1Lx,
+                                                                      mode=registration_mode,
+                                                                      edge_filter=registration_edge_filter,
+                                                                      model=registration_model)
+            aprint(f"Registration model: {registration_model}")
             Backend.current().clear_allocation_pool()
 
-        with timeit(f"Fuse detection views C0lx and C1Lx..."):
+        with asection(f"Fuse detection views C0lx and C1Lx..."):
             CxLx = fuse_detection_views(C0lx, C1Lx,
                                         mode=fusion,
                                         bias_exponent=fusion_bias_exponent,
@@ -171,12 +188,12 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             Backend.current().clear_allocation_pool()
 
         if dehaze_size > 0:
-            with timeit(f"Dehaze CxLx ..."):
+            with asection(f"Dehaze CxLx ..."):
                 CxLx = dehaze(CxLx, size=dehaze_size, minimal_zero_level=0)
                 Backend.current().clear_allocation_pool()
 
         if dark_denoise_threshold > 0:
-            with timeit(f"Denoise dark regions of CxLx..."):
+            with asection(f"Denoise dark regions of CxLx..."):
                 CxLx = clean_dark_regions(CxLx,
                                           size=dark_denoise_size,
                                           threshold=dark_denoise_threshold)
@@ -192,12 +209,12 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
         #     #viewer.add_image(_c(CxLx_denoised), name='CxLx_denoised', contrast_limits=(0, 1000))
 
         if 0 < butterworth_filter_cutoff < 1:
-            with timeit(f"Filter output using a Butterworth filter"):
+            with asection(f"Filter output using a Butterworth filter"):
                 cutoffs = (butterworth_filter_cutoff,) * CxLx.ndim
                 CxLx = butterworth_filter(CxLx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
                 Backend.current().clear_allocation_pool()
 
-        with timeit(f"Converting back to original dtype..."):
+        with asection(f"Converting back to original dtype..."):
             if original_dtype is numpy.uint16:
                 CxLx = xp.clip(CxLx, 0, None, out=CxLx)
             CxLx = CxLx.astype(dtype=original_dtype, copy=False)
@@ -232,11 +249,16 @@ def fuse_detection_views(C0Lx, C1Lx,
         fused = fuse_dct_nd(C0Lx, C1Lx)
     elif mode == 'dft':
         fused = fuse_dft_nd(C0Lx, C1Lx)
-
     return fused
 
 
-def register_views(C0Lx, C1Lx, mode='maxproj', integral=True, model=None, crop_factor_along_z=0.3):
+def register_detection_views(C0Lx, C1Lx,
+                             mode='projection',
+                             edge_filter=False,
+                             integral=True,
+                             model=None,
+                             crop_factor_along_z=0.3):
+
     C0Lx = Backend.to_backend(C0Lx)
     C1Lx = Backend.to_backend(C1Lx)
 
@@ -247,10 +269,10 @@ def register_views(C0Lx, C1Lx, mode='maxproj', integral=True, model=None, crop_f
         C0Lx_c = C0Lx[crop:-crop]
         C1Lx_c = C1Lx[crop:-crop]
 
-        if mode == 'maxproj':
-            model = register_translation_maxproj_nd(C0Lx_c, C1Lx_c)
+        if mode == 'projection':
+            model = register_translation_maxproj_nd(C0Lx_c, C1Lx_c, edge_filter=edge_filter)
         elif mode == 'full':
-            model = register_translation_nd(C0Lx_c, C1Lx_c)
+            model = register_translation_nd(C0Lx_c, C1Lx_c, edge_filter=edge_filter)
 
         model.integral = integral
 

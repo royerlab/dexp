@@ -21,7 +21,7 @@ from dexp.utils.timeit import timeit
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def copy(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, project, workers, check):
     input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path, '.copy')
+    output_path = _get_output_path(input_path, output_path, '_copy')
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
 

@@ -20,7 +20,7 @@ from dexp.utils.timeit import timeit
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def isonet(input_path, output_path, slicing, store, codec, clevel, overwrite, context, mode, max_epochs, check):
     input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path, '.isonet')
+    output_path = _get_output_path(input_path, output_path, '_isonet')
     slicing = _parse_slicing(slicing)
 
     with asection(f"Applying Isonet to: {input_path}, saving result to: {output_path}, slicing: {slicing} "):

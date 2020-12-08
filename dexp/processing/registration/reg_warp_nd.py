@@ -1,11 +1,14 @@
 from typing import Union, Tuple
 
+from arbol import section, aprint
+
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
 from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
 
 
+@section("register_warp_nd")
 def register_warp_nd(image_a,
                      image_b,
                      chunks: Union[int, Tuple[int, ...]],
@@ -38,8 +41,7 @@ def register_warp_nd(image_a,
 
     def f(x, y):
         model = registration_method(x, y, **kwargs)
-        # if model.confidence > 0.3:
-        # print(f"model: {model}")
+        aprint(f"model: {model} {'' if model.confidence > 0.3 else '(LOW QUALITY!)'}")
         shift, confidence = model.get_shift_and_confidence()
         return xp.asarray(shift), xp.asarray(confidence)
 

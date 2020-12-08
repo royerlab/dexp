@@ -119,7 +119,6 @@ def dataset_deconv(dataset,
         else:
             for tp in range(0, shape[0]):
                 process(tp, devices[0])
-
     aprint(dest_dataset.info())
     if check:
         dest_dataset.check_integrity()

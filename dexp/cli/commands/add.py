@@ -16,7 +16,7 @@ from dexp.utils.timeit import timeit
 @click.option('--overwrite', '-w', is_flag=True, help='Forces overwrite of target', show_default=True)
 def add(input_path, output_path, channels, rename, store, overwrite):
     input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path)
+    output_path = _get_output_path(input_path, output_path, '_add')
     channels = _parse_channels(input_dataset, channels)
 
     if rename is None:
