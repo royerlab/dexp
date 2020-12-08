@@ -1,10 +1,10 @@
 import click
+from arbol.arbol import section, aprint, asection
 
 from dexp.cli.main import _default_store, _default_codec, _default_clevel
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing, _parse_devices
 from dexp.datasets.operations.deconv import dataset_deconv
 from dexp.utils.timeit import timeit
-
 
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
@@ -36,14 +36,13 @@ def deconv(input_path, output_path, channels, slicing, store, codec, clevel, ove
            method, iterations, maxcorrection, power, blindspot, backprojection, objective, dxy, dz, xysize, zsize, downscalexy2,
            workers, devices, check):
     input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path, ".deconv")
+    output_path = _get_output_path(input_path, output_path, "_deconv")
 
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
     devices = _parse_devices(devices)
 
-    with timeit("deconvolution"):
-        print("Fusing dataset.")
+    with asection(f"Deconvolving dataset: {input_path}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "):
         dataset_deconv(input_dataset,
                        output_path,
                        channels=channels,
@@ -70,5 +69,5 @@ def deconv(input_path, output_path, channels, slicing, store, codec, clevel, ove
                        check=check
                        )
 
-    input_dataset.close()
-    print("Done!")
+        input_dataset.close()
+        aprint("Done!")

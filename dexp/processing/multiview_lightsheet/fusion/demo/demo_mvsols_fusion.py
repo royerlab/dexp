@@ -1,5 +1,6 @@
 # You need to point to a tiff file with 4 views as first dim,
 # as produced for example by: dexp tiff -w -s [128:129] dataset.zarr -o /home/royer/Desktop/test_data/test_data.tiff
+from arbol import asection, aprint
 
 from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.backends.backend import Backend
@@ -8,8 +9,8 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
 from dexp.utils.timeit import timeit
 
-dataset_path = '/mnt/raid0/pisces_datasets/data2_fish_TL100_range1300um_step0.31_6um_20ms_dualv_300tp_2_first10tp.zarr'
-
+#dataset_path = '/mnt/raid0/pisces_datasets/data2_fish_TL100_range1300um_step0.31_6um_20ms_dualv_300tp_2_first10tp.zarr'
+dataset_path = '/mnt/raid0/dexp_datasets/tail/raw.zarr'
 
 def demo_mvsols_resample_numpy():
     with NumpyBackend():
@@ -18,7 +19,7 @@ def demo_mvsols_resample_numpy():
 
 def demo_mvsols_resample_cupy():
     try:
-        with CupyBackend(0):
+        with CupyBackend():
             _mvsols_resample()
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")
@@ -27,21 +28,21 @@ def demo_mvsols_resample_cupy():
 def _mvsols_resample():
     xp = Backend.get_xp_module()
 
-    with timeit(f"Load"):
+    with asection(f"Load"):
         zdataset = ZDataset(path=dataset_path, mode='r')
 
-        print(zdataset.channels())
+        aprint(zdataset.channels())
 
         C0L0 = zdataset.get_stack('v0c0', 0)
         C0L1 = zdataset.get_stack('v1c0', 0)
 
-        print(f"C0L0 shape={C0L0.shape}, dtype={C0L0.dtype}")
-        print(f"C0L1 shape={C0L1.shape}, dtype={C0L1.dtype}")
+        aprint(f"C0L0 shape={C0L0.shape}, dtype={C0L0.dtype}")
+        aprint(f"C0L1 shape={C0L1.shape}, dtype={C0L1.dtype}")
 
         metadata = zdataset.get_metadata()
-        print(metadata)
+        aprint(metadata)
 
-    with timeit(f"Fuse"):
+    with asection(f"Fuse"):
         angle = metadata['angle']
         channel = metadata['channel']
         dz = metadata['dz']
@@ -52,7 +53,8 @@ def _mvsols_resample():
                                   angle=angle,
                                   dx=res,
                                   dz=dz,
-                                  equalise=False)
+                                  equalise=False,
+                                  fusion_bias_strength=0)
 
     from napari import Viewer, gui_qt
     with gui_qt():

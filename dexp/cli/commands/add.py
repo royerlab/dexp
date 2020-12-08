@@ -1,8 +1,10 @@
 import click
+from arbol.arbol import aprint, section, asection
 
 from dexp.cli.main import _default_store
 from dexp.cli.utils import _get_dataset_from_path, _parse_channels, _get_output_path
 from dexp.utils.timeit import timeit
+
 
 
 @click.command()
@@ -14,7 +16,7 @@ from dexp.utils.timeit import timeit
 @click.option('--overwrite', '-w', is_flag=True, help='Forces overwrite of target', show_default=True)
 def add(input_path, output_path, channels, rename, store, overwrite):
     input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path)
+    output_path = _get_output_path(input_path, output_path, '_add')
     channels = _parse_channels(input_dataset, channels)
 
     if rename is None:
@@ -22,9 +24,7 @@ def add(input_path, output_path, channels, rename, store, overwrite):
     else:
         rename = rename.split(',')
 
-    print(f"New names for channel(s): {rename}")
-
-    with timeit("deconvolution"):
+    with asection(f"Adding channels: {channels} from: {input_path} to {output_path}, with new names: {rename}"):
         input_dataset.add_channels_to(output_path,
                                       channels=channels,
                                       rename=rename,
@@ -32,5 +32,5 @@ def add(input_path, output_path, channels, rename, store, overwrite):
                                       overwrite=overwrite
                                       )
 
-    input_dataset.close()
-    print("Done!")
+        input_dataset.close()
+        aprint("Done!")

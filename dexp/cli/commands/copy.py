@@ -1,4 +1,5 @@
 import click
+from arbol.arbol import section, aprint, asection
 
 from dexp.cli.main import _default_clevel, _default_codec, _default_store
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing
@@ -20,11 +21,11 @@ from dexp.utils.timeit import timeit
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def copy(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, project, workers, check):
     input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path, '.copy')
+    output_path = _get_output_path(input_path, output_path, '_copy')
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
 
-    with timeit(f"copying from: {input_path} to {output_path} for channels: {channels}, slicing: {slicing} "):
+    with asection(f"Copying from: {input_path} to {output_path} for channels: {channels}, slicing: {slicing} "):
         dataset_copy(input_dataset,
                      output_path,
                      channels=channels,
@@ -37,5 +38,5 @@ def copy(input_path, output_path, channels, slicing, store, codec, clevel, overw
                      workers=workers,
                      check=check)
 
-    input_dataset.close()
-    print("Done!")
+        input_dataset.close()
+        aprint("Done!")

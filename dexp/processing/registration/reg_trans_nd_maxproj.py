@@ -1,4 +1,5 @@
 import numpy
+from arbol import section
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel

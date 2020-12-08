@@ -1,4 +1,5 @@
 import click
+from arbol.arbol import aprint, asection
 
 from dexp.processing.utils.mkl_util import set_mkl_threads
 
@@ -24,23 +25,22 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 @click.group()
 def cli():
-    print("------------------------------------------")
-    print("  DEXP -- Data EXploration & Processing   ")
-    print("  Royer lab                               ")
-    print("------------------------------------------")
-    print("")
+    aprint("__________________________________________")
+    aprint("  DEXP -- Data EXploration & Processing   ")
+    aprint("  Royer lab                               ")
+    aprint("__________________________________________")
+    aprint("")
 
     try:
         from dexp.processing.backends.cupy_backend import CupyBackend
         available = CupyBackend.available_devices()
-        print(f"Available GPU devices: {available}")
-        for device_id in available:
-            backend = CupyBackend(device_id)
-            print(backend)
-        print("")
+        with asection(f"Available GPU devices: {available}"):
+            for device_id in available:
+                backend = CupyBackend(device_id)
+                aprint(backend)
 
     except (ModuleNotFoundError, NotImplementedError):
-        print("Cupy module not found! ignored!")
+        aprint("'cupy' module not found! ignored!")
 
     pass
 

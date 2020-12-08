@@ -1,3 +1,4 @@
+from arbol.arbol import aprint
 from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
@@ -36,7 +37,7 @@ def dataset_fuse(dataset,
     views = tuple(dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for channel in channels)
 
     if slicing is not None:
-        print(f"Slicing with: {slicing}")
+        aprint(f"Slicing with: {slicing}")
         views = tuple(view[slicing] for view in views)
 
     # shape and dtype of views to fuse:
@@ -50,10 +51,10 @@ def dataset_fuse(dataset,
 
     registration_models_file = open("registration_models.txt", "r" if load_shifts else 'w')
     if load_shifts:
-        print(f"Loading registration shifts from existing file! ({registration_models_file.name})")
+        aprint(f"Loading registration shifts from existing file! ({registration_models_file.name})")
 
     def process(tp, device):
-        print(f"Writing time point: {tp} ")
+        aprint(f"Writing time point: {tp} ")
 
         views_tp = tuple(view[tp].compute() for view in views)
 
@@ -62,11 +63,11 @@ def dataset_fuse(dataset,
             try:
                 line = registration_models_file.readline().strip()
                 model = from_json(line)
-                print(f"loaded model: {line} ")
+                aprint(f"loaded model: {line} ")
             except ValueError:
-                print(f"Cannot read model from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
+                aprint(f"Cannot read model from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
 
-        print(f'Fusing...')
+        aprint(f'Fusing...')
 
         with CupyBackend(device):
             if microscope == 'simview':
@@ -99,7 +100,7 @@ def dataset_fuse(dataset,
                 json_text = model.to_json()
                 registration_models_file.write(json_text + '\n')
 
-        print(f'Writing array of dtype: {array.dtype}')
+        aprint(f'Writing array of dtype: {array.dtype}')
         if 'fused' not in dest_dataset.channels():
             dest_dataset.add_channel('fused',
                                      shape=(shape[0],) + array.shape,
@@ -112,7 +113,7 @@ def dataset_fuse(dataset,
     if workers == -1:
         workers = len(devices)
 
-    print(f"workers={workers}")
+    aprint(f"workers={workers}")
 
     if workers > 1:
         Parallel(n_jobs=workers, backend='threading')(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
@@ -122,7 +123,7 @@ def dataset_fuse(dataset,
 
     registration_models_file.close()
 
-    print(dest_dataset.info())
+    aprint(dest_dataset.info())
     if check:
         dest_dataset.check_integrity()
     dest_dataset.close()

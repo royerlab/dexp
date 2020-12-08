@@ -1,4 +1,5 @@
 import numpy
+from arbol.arbol import aprint
 from skimage.transform import downscale_local_mean
 
 from dexp.utils.timeit import timeit
@@ -27,20 +28,20 @@ def dataset_isonet(dataset,
     if training_tp_index is None:
         training_tp_index = dataset.nb_timepoints(channel) // 2
 
-    print(f"Selected channel {channel}")
+    aprint(f"Selected channel {channel}")
 
-    print(f"getting Dask arrays to apply isonet on...")
+    aprint(f"getting Dask arrays to apply isonet on...")
     array = dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True)
 
     if slicing is not None:
-        print(f"Slicing with: {slicing}")
+        aprint(f"Slicing with: {slicing}")
         array = array[slicing]
 
-    print(f"Binning image by a factor {binning}...")
+    aprint(f"Binning image by a factor {binning}...")
     dxy *= binning
 
     subsampling = dz / dxy
-    print(f"Parameters: dxy={dxy}, dz={dz}, subsampling={subsampling}")
+    aprint(f"Parameters: dxy={dxy}, dz={dz}, subsampling={subsampling}")
 
     psf = numpy.ones((1, 1)) / 1
     print(f"PSF (along xy): {psf}")
@@ -65,26 +66,26 @@ def dataset_isonet(dataset,
         for tp in range(0, array.shape[0] - 1):
             with timeit('Elapsed time: '):
 
-                print(f"Processing time point: {tp} ...")
+                aprint(f"Processing time point: {tp} ...")
                 array_tp = array[tp].compute()
 
-                print("Downscaling image...")
+                aprint("Downscaling image...")
                 array_tp = downscale_local_mean(array_tp, factors=(1, binning, binning))
                 # array_tp_downscaled = zoom(array_tp, zoom=(1, 1.0/binning, 1.0/binning), order=0)
 
                 if sharpening:
-                    print("Sharpening image...")
+                    aprint("Sharpening image...")
                     from dexp.processing.restoration import dehazing
                     array_tp = dehazing(array_tp, mode='hybrid', min=0, max=1024, margin_pad=False)
 
-                print("Applying IsoNet to image...")
+                aprint("Applying IsoNet to image...")
                 array_tp = isonet.apply(array_tp)
 
-                print(f'Result: image of shape: {array_tp.shape}, dtype: {array_tp.dtype} ')
+                aprint(f'Result: image of shape: {array_tp.shape}, dtype: {array_tp.dtype} ')
 
                 if zarr_array is None:
                     shape = (array.shape[0],) + array_tp.shape
-                    print(f"Creating Zarr array of shape: {shape} ")
+                    aprint(f"Creating Zarr array of shape: {shape} ")
                     zarr_array = dest_dataset.add_channel(name=channel,
                                                           shape=shape,
                                                           dtype=array.dtype,
@@ -92,12 +93,12 @@ def dataset_isonet(dataset,
                                                           codec=compression,
                                                           clevel=compression_level)
 
-                print(f'Writing image to Zarr file...')
+                aprint(f'Writing image to Zarr file...')
                 zarr_array[tp] = array_tp.astype(zarr_array.dtype, copy=False)
 
-                print(f"Done processing time point: {tp}")
+                aprint(f"Done processing time point: {tp}")
 
-        print(dest_dataset.info())
+        aprint(dest_dataset.info())
         if check:
             dest_dataset.check_integrity()
         dest_dataset.close()

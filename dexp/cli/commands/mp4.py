@@ -2,6 +2,7 @@ import os
 from os.path import exists
 
 import click
+from arbol.arbol import section, aprint, asection
 
 
 @click.command()
@@ -18,11 +19,10 @@ def mp4(input_path, output_path, framerate, overwrite=False):
     videofilepath = videofilepath.replace('frames_', '')
 
     if overwrite or not exists(videofilepath):
-
-        ffmpeg_command = f"ffmpeg -framerate {framerate} -start_number 0 -pattern_type glob -i '{input_path}/*.png'  " \
-                         f"-f mp4 -vcodec libx264 -preset slow -pix_fmt yuv420p -y {videofilepath}"
-        # -vf  \"crop=576:1240:320:0\"
-
-        os.system(ffmpeg_command)
+        with asection(f"Converting PNG files at: {input_path}, into MP4 file: {videofilepath}, framerate: {framerate} "):
+            ffmpeg_command = f"ffmpeg -framerate {framerate} -start_number 0 -pattern_type glob -i '{input_path}/*.png'  " \
+                             f"-f mp4 -vcodec libx264 -preset slow -pix_fmt yuv420p -y {videofilepath}"
+            # -vf  \"crop=576:1240:320:0\"
+            os.system(ffmpeg_command)
     else:
-        print(f"Video file: {videofilepath} already exists! use -w option to force overwrite...")
+        aprint(f"Video file: {videofilepath} already exists! use -w option to force overwrite...")

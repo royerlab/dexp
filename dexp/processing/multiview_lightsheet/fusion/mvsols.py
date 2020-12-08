@@ -1,6 +1,7 @@
 import gc
 
 import numpy
+from arbol import asection, aprint, section
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -11,12 +12,14 @@ from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
 from dexp.processing.multiview_lightsheet.fusion.simview import fuse_illumination_views
 from dexp.processing.registration.model.pairwise_reg_model import PairwiseRegistrationModel
+from dexp.processing.registration.reg_trans_nd import register_translation_nd
+from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
 from dexp.processing.registration.reg_warp_multiscale_nd import register_warp_multiscale_nd
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
 from dexp.utils.timeit import timeit
 
-
+@section("mvSOLS 2D1L fusion")
 def msols_fuse_1C2L(C0L0, C0L1,
                     dz: float,
                     dx: float,
@@ -24,10 +27,12 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     resampling_mode: str = 'yang',
                     equalise: bool = True,
                     zero_level: float = 120,
-                    clip_too_high: int = 0,
+                    clip_too_high: int = 2048,
                     fusion='tg',
                     fusion_bias_exponent: int = 2,
                     fusion_bias_strength: float = 0.1,
+                    registration_mode: str = 'projection',
+                    registration_edge_filter: bool = False,
                     registration_model: PairwiseRegistrationModel = None,
                     dehaze_size: int = 65,
                     dark_denoise_threshold: int = 0,
@@ -59,6 +64,15 @@ def msols_fuse_1C2L(C0L0, C0L1,
     clip_too_high : clips very high intensities, to avoid loss of precision when converting an internal format such as float16
 
     fusion : Fusion mode, can be 'tg', 'dct', 'dft'
+
+    fusion_bias_exponent : Exponent for fusion bias
+
+    fusion_bias_strength : Strength of fusion bias, set to zero to deactivate
+
+    registration_mode : Registration mode, can be: 'projection' or 'full'.
+    Projection mode is faster but might have occasionally  issues for certain samples. Full mode is slower and is only recomended as a last resort.
+
+    registration_edge_filter : apply edge filter to help registration
 
     registration_model : registration model to use the two camera views (C0Lx and C1Lx),
     if None, the two camera views are registered, and the registration model is returned.
@@ -98,94 +112,96 @@ def msols_fuse_1C2L(C0L0, C0L1,
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
-    with timeit("mvSOLS 2D1L fusion"):
 
-        original_dtype = C0L0.dtype
+    original_dtype = C0L0.dtype
 
-        with timeit(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):
-            C0L0 = Backend.to_backend(C0L0, dtype=internal_dtype, force_copy=False)
-            C0L1 = Backend.to_backend(C0L1, dtype=internal_dtype, force_copy=False)
+    with asection(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):
+        C0L0 = Backend.to_backend(C0L0, dtype=internal_dtype, force_copy=False)
+        C0L1 = Backend.to_backend(C0L1, dtype=internal_dtype, force_copy=False)
+        Backend.current().clear_allocation_pool()
+
+    if clip_too_high > 0:
+        with asection(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
+            C0L0 = xp.clip(C0L0, a_min=0, a_max=clip_too_high, out=C0L0)
+            C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
             Backend.current().clear_allocation_pool()
 
-        if clip_too_high > 0:
-            with timeit(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
-                C0L0 = xp.clip(C0L0, a_min=0, a_max=clip_too_high, out=C0L0)
-                C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
-                Backend.current().clear_allocation_pool()
+    with asection(f"Resample C0L0 and C0L1"):
+        C0L0 = resample_C0L0(C0L0, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
+        C0L1 = resample_C0L1(C0L1, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
+        Backend.current().clear_allocation_pool()
 
-        with timeit(f"Resample C0L0 and C0L1"):
-            C0L0 = resample_C0L0(C0L0, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
-            C0L1 = resample_C0L1(C0L1, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
+    from napari import gui_qt, Viewer
+    with gui_qt():
+        def _c(array):
+            return Backend.to_numpy(array)
+        viewer = Viewer()
+        viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000))
+        viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000))
+
+    with asection(f"Register C0L0 and C0L1"):
+
+        C0L0 = C0L0.astype(dtype=numpy.float32)
+        C0L1 = C0L1.astype(dtype=numpy.float32)
+
+        if registration_model is None:
+            aprint("No registration model provided, running registration now")
+            registration_method = register_translation_maxproj_nd if registration_mode=='projection' else register_translation_nd
+            registration_model = register_warp_multiscale_nd(C0L0, C0L1,
+                                                             num_iterations=5,
+                                                             confidence_threshold=0.3,
+                                                             edge_filter=registration_edge_filter,
+                                                             registration_method=registration_method,
+                                                             denoise_input_sigma=1)
+
+        aprint(f"Registration model: {registration_model}")
+
+        C0L0, C0L1 = registration_model.apply(C0L0, C0L1)
+
+        C0L0 = C0L0.astype(dtype=numpy.float16)
+        C0L1 = C0L1.astype(dtype=numpy.float16)
+        Backend.current().clear_allocation_pool()
+
+    if equalise:
+        with asection(f"Equalise intensity of C0L0 relative to C0L1 ..."):
+            C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
+                                                   zero_level=zero_level,
+                                                   copy=False)
+
+            aprint(f"Equalisation ratio: {ratio}")
+
+    with asection(f"Fuse detection views C0lx and C1Lx..."):
+        C1Lx = fuse_illumination_views(C0L0, C0L1,
+                                       mode=fusion,
+                                       bias_exponent=fusion_bias_exponent,
+                                       bias_strength=fusion_bias_strength)
+        Backend.current().clear_allocation_pool()
+
+    if dehaze_size > 0:
+        with asection(f"Dehaze CxLx ..."):
+            C1Lx = dehaze(C1Lx, size=dehaze_size, minimal_zero_level=0)
             Backend.current().clear_allocation_pool()
 
-        with timeit(f"Register C0L0 and C0L1"):
-
-            C0L0 = C0L0.astype(dtype=numpy.float32)
-            C0L1 = C0L1.astype(dtype=numpy.float32)
-
-            if registration_model is None:
-                registration_model = register_warp_multiscale_nd(C0L0, C0L1,
-                                                                 num_iterations=5,
-                                                                 confidence_threshold=0.3,
-                                                                 edge_filter=False,
-                                                                 denoise_input_sigma=1)
-
-            print(f"Registration model: {registration_model}")
-
-            C0L0, C0L1 = registration_model.apply(C0L0, C0L1)
-
-            C0L0 = C0L0.astype(dtype=numpy.float16)
-            C0L1 = C0L1.astype(dtype=numpy.float16)
+    if dark_denoise_threshold > 0:
+        with asection(f"Denoise dark regions of CxLx..."):
+            C1Lx = clean_dark_regions(C1Lx,
+                                      size=dark_denoise_size,
+                                      threshold=dark_denoise_threshold)
             Backend.current().clear_allocation_pool()
 
-        if equalise:
-            with timeit(f"Equalise intensity of C0L0 relative to C0L1 ..."):
-                C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
-                                                       zero_level=zero_level,
-                                                       copy=False)
 
-                print(f"Equalisation ratio: {ratio}")
 
-        with timeit(f"Fuse detection views C0lx and C1Lx..."):
-
-            C1Lx = fuse_illumination_views(C0L0, C0L1,
-                                           mode=fusion,
-                                           bias_exponent=fusion_bias_exponent,
-                                           bias_strength=fusion_bias_strength)
-            Backend.current().clear_allocation_pool()
-
-        if dehaze_size > 0:
-            with timeit(f"Dehaze CxLx ..."):
-                C1Lx = dehaze(C1Lx, size=dehaze_size, minimal_zero_level=0)
-                Backend.current().clear_allocation_pool()
-
-        if dark_denoise_threshold > 0:
-            with timeit(f"Denoise dark regions of CxLx..."):
-                C1Lx = clean_dark_regions(C1Lx,
-                                          size=dark_denoise_size,
-                                          threshold=dark_denoise_threshold)
-                Backend.current().clear_allocation_pool()
-
-        # from napari import gui_qt, Viewer
-        # with gui_qt():
-        #     def _c(array):
-        #         return backend.to_numpy(array)
-        #     viewer = Viewer()
-        #     viewer.add_image(_c(CxLx), name='CxLx', contrast_limits=(0, 1000))
-        #     viewer.add_image(_c(CxLx), name='CxLx_dehazed', contrast_limits=(0, 1000))
-        #     #viewer.add_image(_c(CxLx_denoised), name='CxLx_denoised', contrast_limits=(0, 1000))
-
-        if 0 < butterworth_filter_cutoff < 1:
-            with timeit(f"Filter output using a Butterworth filter"):
-                cutoffs = (butterworth_filter_cutoff,) * C1Lx.ndim
-                C1Lx = butterworth_filter(C1Lx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
-                gc.collect()
-
-        with timeit(f"Converting back to original dtype..."):
-            if original_dtype is numpy.uint16:
-                C1Lx = xp.clip(C1Lx, 0, None, out=C1Lx)
-            C1Lx = C1Lx.astype(dtype=original_dtype, copy=False)
+    if 0 < butterworth_filter_cutoff < 1:
+        with asection(f"Filter output using a Butterworth filter"):
+            cutoffs = (butterworth_filter_cutoff,) * C1Lx.ndim
+            C1Lx = butterworth_filter(C1Lx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
             gc.collect()
+
+    with asection(f"Convert back to original dtype..."):
+        if original_dtype is numpy.uint16:
+            C1Lx = xp.clip(C1Lx, 0, None, out=C1Lx)
+        C1Lx = C1Lx.astype(dtype=original_dtype, copy=False)
+        gc.collect()
 
     return C1Lx, registration_model
 

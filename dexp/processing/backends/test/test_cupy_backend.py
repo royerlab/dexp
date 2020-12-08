@@ -22,6 +22,9 @@ def test_list_devices():
     try:
         # Test list devices:
 
+        # this will fail if cupy is not available:
+        import cupy
+
         available = CupyBackend.available_devices()
         print(f"Available devices: {available}")
         assert len(available) > 0

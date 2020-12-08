@@ -7,6 +7,7 @@ from typing import Tuple, Sequence, Any, Union
 
 import dask
 import zarr
+from arbol.arbol import aprint
 from numcodecs import blosc
 from zarr import open_group, convenience, CopyError, Blosc, Group
 
@@ -54,55 +55,55 @@ class ZDataset(BaseDataset):
         if exists(path) and mode == 'w-':
             raise ValueError(f"ERROR -- Storage '{path}' already exists, add option '-w' to force overwrite!")
         elif exists(path) and mode == 'w':
-            print(f"Deleting '{path}' for overwrite!")
+            aprint(f"Deleting '{path}' for overwrite!")
             if isdir(path):
                 shutil.rmtree(path, ignore_errors=True)
             elif isfile(path):
                 os.remove(path)
 
-        print(f"Initialising Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
+        aprint(f"Initialising Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
         if exists(path):
-            print(f"Path exists, opening zarr storage...")
+            aprint(f"Path exists, opening zarr storage...")
             if isfile(path) and (path.endswith('.zarr.zip') or store == 'zip'):
-                print(f"Opening as ZIP store")
+                aprint(f"Opening as ZIP store")
                 self._store = zarr.storage.ZipStore(path)
             elif isdir(path) and ((path.endswith('.nested.zarr') or path.endswith('.nested.zarr/') or store == 'ndir')):
-                print(f"Opening as Nested Directory store")
+                aprint(f"Opening as Nested Directory store")
                 self._store = zarr.storage.NestedDirectoryStore(path)
             elif isdir(path) and ((path.endswith('.zarr') or path.endswith('.zarr/') or store == 'dir')):
-                print(f"Opening as Directory store")
+                aprint(f"Opening as Directory store")
                 self._store = zarr.storage.DirectoryStore(path)
 
-            print(f"Opening with mode: {mode}")
+            aprint(f"Opening with mode: {mode}")
             self._root_group = open_group(self._store, mode=mode)
             self._initialise_existing(path)
         elif 'a' in mode or 'w' in mode:
             try:
-                print(f"Path does not exist, creating zarr storage...")
+                aprint(f"Path does not exist, creating zarr storage...")
                 store_type = None
                 if path.endswith('.zarr.zip') or store == 'zip':
-                    print(f"Opening as ZIP store")
+                    aprint(f"Opening as ZIP store")
                     # correcting path to adhere to convention:
                     path = path + '.zip' if path.endswith('.zarr') else path
                     path = path if path.endswith('.zarr.zip') else path + 'zarr.zip'
                     self._store = zarr.storage.ZipStore(path)
                     store_type = 'zip'
                 elif path.endswith('.nested.zarr') or path.endswith('.nested.zarr/') or store == 'ndir':
-                    print(f"Opening as Nested Directory store")
+                    aprint(f"Opening as Nested Directory store")
                     # correcting path to adhere to convention:
                     path = path if path.endswith('.nested.zarr') else path + '.nested.zarr'
                     self._store = zarr.storage.NestedDirectoryStore(path)
                     store_type = 'ndir'
                 elif path.endswith('.zarr') or path.endswith('.zarr/') or store == 'dir':
-                    print(f"Opening as Directory store")
+                    aprint(f"Opening as Directory store")
                     # correcting path to adhere to convention:
                     path = path if path.endswith('.zarr') else path + '.zarr'
                     self._store = zarr.storage.DirectoryStore(path)
                     store_type = 'dir'
 
                 else:
-                    print(f'Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr` or `.nested.zarr` for nested folders), or a zipped zarr file (file that ends with `.zarr.zip`)')
-                print(f"Opening Zarr storage with mode='{mode}'")
+                    aprint(f'Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr` or `.nested.zarr` for nested folders), or a zipped zarr file (file that ends with `.zarr.zip`)')
+                aprint(f"Opening Zarr storage with mode='{mode}'")
                 self._root_group = zarr.convenience.open(self._store, mode=mode)
                 self._root_group.attrs['store_type'] = store_type
                 # print(self._root_group.tree())
@@ -144,17 +145,17 @@ class ZDataset(BaseDataset):
                 pass
 
     def check_integrity(self, channels: Sequence[str] = None) -> bool:
-        print(f"Checking integrity of zarr storage, might take some time.")
+        aprint(f"Checking integrity of zarr storage, might take some time.")
         if channels is None:
             channels = self.channels()
         for channel in channels:
-            print(f"Checking integrity of channel '{channel}'...")
+            aprint(f"Checking integrity of channel '{channel}'...")
             array = self.get_array(channel, wrap_with_dask=False)
             if array.nchunks_initialized < array.nchunks:
-                print(f"WARNING! not all chunks initialised! (dtype={array.dtype})")
+                aprint(f"WARNING! not all chunks initialised! (dtype={array.dtype})")
                 return False
             else:
-                print(f"Channel '{channel}' seems ok!")
+                aprint(f"Channel '{channel}' seems ok!")
                 return True
 
     def channels(self) -> Sequence[str]:
@@ -235,12 +236,12 @@ class ZDataset(BaseDataset):
         if chunks is None:
             chunks = BaseDataset._default_chunks[0: len(shape)]
 
-        print(f"chunks={chunks}")
+        aprint(f"chunks={chunks}")
 
         # Choosing the fill value to the largest value:
         fill_value = self._get_largest_dtype_value(dtype)
 
-        print(f"Adding channel: '{name}' of shape: {shape}, chunks:{chunks}, dtype: {dtype}, fill_value: {fill_value}, codec: {codec}, clevel: {clevel} ")
+        aprint(f"Adding channel: '{name}' of shape: {shape}, chunks:{chunks}, dtype: {dtype}, fill_value: {fill_value}, codec: {codec}, clevel: {clevel} ")
         compressor = Blosc(cname=codec, clevel=clevel, shuffle=Blosc.BITSHUFFLE)
         filters = []
 
@@ -284,7 +285,7 @@ class ZDataset(BaseDataset):
         zdataset = ZDataset(path, 'a', store)
         root = zdataset._root_group
 
-        print(f"Existing channels: {zdataset.channels()}")
+        aprint(f"Existing channels: {zdataset.channels()}")
 
         for channel, new_name in zip(channels, rename):
             try:
@@ -292,13 +293,13 @@ class ZDataset(BaseDataset):
                 source_group = self._get_group_for_channel(channel)
                 source_array = tuple((a for n, a in source_group.items() if n == channel))[0]
 
-                print(f"Creating group for channel {channel} of new name {new_name}.")
+                aprint(f"Creating group for channel {channel} of new name {new_name}.")
                 if new_name not in root.group_keys():
                     dest_group = root.create_group(new_name)
                 else:
                     dest_group = root[new_name]
 
-                print(f"Fast copying channel {channel} renamed to {new_name} of shape {array.shape} and dtype {array.dtype} ")
+                aprint(f"Fast copying channel {channel} renamed to {new_name} of shape {array.shape} and dtype {array.dtype} ")
                 convenience.copy(source_array, dest_group, if_exists='replace' if overwrite else 'raise')
             except CopyError | NotImplementedError:
-                print(f"Channel already exists, set option '-w' to force overwriting! ")
+                aprint(f"Channel already exists, set option '-w' to force overwriting! ")

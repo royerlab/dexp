@@ -120,7 +120,7 @@ def register_translation_nd(image_a,
     # with gui_qt():
     #     print(f"shift = {shift_vector}, confidence = {confidence} ")
     #     def _c(array):
-    #         return backend.to_numpy(array)
+    #         return Backend.to_numpy(array)
     #     viewer = Viewer()
     #     viewer.add_image(_c(image_a), name='image_a')
     #     viewer.add_image(_c(image_b), name='image_b')

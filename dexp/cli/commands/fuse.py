@@ -1,10 +1,10 @@
 import click
+from arbol.arbol import section, aprint, asection
 
 from dexp.cli.main import _default_codec, _default_store, _default_clevel
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing, _parse_devices
 from dexp.datasets.operations.fuse import dataset_fuse
 from dexp.utils.timeit import timeit
-
 
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
@@ -47,32 +47,34 @@ def fuse(input_path,
          devices,
          check):
     input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path, ".fused")
+    output_path = _get_output_path(input_path, output_path, "_fused")
 
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
     devices = _parse_devices(devices)
 
-    with timeit(f""):
+    with asection(f"Fusing dataset: {input_path}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "):
+        aprint(f"Microscope type: {microscope}, fusion type: {fusion}")
+        aprint(f"Devices used: {devices}, workers: {workers} ")
         dataset_fuse(input_dataset,
-                     output_path,
-                     channels=channels,
-                     slicing=slicing,
-                     store=store,
-                     compression=codec,
-                     compression_level=clevel,
-                     overwrite=overwrite,
-                     microscope=microscope,
-                     equalise=equalise,
-                     zero_level=zerolevel,
-                     fusion=fusion,
-                     fusion_bias_strength=fusion_bias_strength,
-                     dehaze_size=dehaze_size,
-                     dark_denoise_threshold=dark_denoise_threshold,
-                     load_shifts=loadshifts,
-                     workers=workers,
-                     devices=devices,
-                     check=check,
-                     )
-    input_dataset.close()
-    print("Done!")
+                         output_path,
+                         channels=channels,
+                         slicing=slicing,
+                         store=store,
+                         compression=codec,
+                         compression_level=clevel,
+                         overwrite=overwrite,
+                         microscope=microscope,
+                         equalise=equalise,
+                         zero_level=zerolevel,
+                         fusion=fusion,
+                         fusion_bias_strength=fusion_bias_strength,
+                         dehaze_size=dehaze_size,
+                         dark_denoise_threshold=dark_denoise_threshold,
+                         load_shifts=loadshifts,
+                         workers=workers,
+                         devices=devices,
+                         check=check,
+                         )
+        input_dataset.close()
+        aprint("Done!")
