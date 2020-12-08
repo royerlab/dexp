@@ -1,6 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
+
 from dexp.processing.utils.mkl_util import set_mkl_threads
 
 _default_store = 'dir'
@@ -59,6 +60,7 @@ from dexp.cli.commands.render import render
 from dexp.cli.commands.blend import blend
 from dexp.cli.commands.stack import stack
 from dexp.cli.commands.mp4 import mp4
+from dexp.cli.commands.speedtest import speedtest
 
 cli.add_command(check)
 cli.add_command(copy)
@@ -73,3 +75,5 @@ cli.add_command(render)
 cli.add_command(blend)
 cli.add_command(stack)
 cli.add_command(mp4)
+
+cli.add_command(speedtest)
