@@ -1,8 +1,7 @@
 from dexp.processing.backends.backend import Backend
 
 
-def binary_blobs(backend: Backend,
-                 length=512, blob_size_fraction=0.1, n_dim=2,
+def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2,
                  volume_fraction=0.5, seed=None):
     """
     Generate synthetic binary image with several rounded blob-like objects.
@@ -47,8 +46,8 @@ def binary_blobs(backend: Backend,
     Code adapted from scikit-image
     """
 
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     rs = xp.random.RandomState(seed)
     shape = tuple([length] * n_dim)

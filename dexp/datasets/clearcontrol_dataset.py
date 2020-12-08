@@ -6,6 +6,7 @@ from typing import Sequence
 
 import numcodecs
 import numpy
+from arbol.arbol import aprint
 from cachey import Cache
 from dask import array, delayed
 from numpy import uint16, frombuffer
@@ -82,7 +83,7 @@ class CCDataset(BaseDataset):
 
         try:
             with open(file_name, 'rb') as my_file:
-                print(f"Accessing file: {file_name}")
+                aprint(f"Accessing file: {file_name}")
                 buffer = my_file.read()
 
                 dt = numpy.dtype(uint16)
@@ -96,14 +97,14 @@ class CCDataset(BaseDataset):
             return array
 
         except FileNotFoundError:
-            print(f"Could  not find file: {file_name} for array of shape: {shape}")
+            aprint(f"Could not find file: {file_name} for array of shape: {shape}")
             return numpy.zeros(shape, dtype=uint16)
 
     def _get_slice_array_for_stack_file_and_z(self, file_name, shape, z):
 
         try:
             with open(file_name, 'rb') as file:
-                print(f"Accessing file: {file_name} at z={z}")
+                aprint(f"Accessing file: {file_name} at z={z}")
 
                 length = shape[1] * shape[2] * numpy.dtype(uint16).itemsize
                 offset = z * length
@@ -117,7 +118,7 @@ class CCDataset(BaseDataset):
                 return array
 
         except FileNotFoundError:
-            print(f"Could  not find file: {file_name} for array of shape: {shape} at z={z}")
+            aprint(f"Could  not find file: {file_name} for array of shape: {shape} at z={z}")
             return numpy.zeros(shape[1:], dtype=uint16)
 
     def close(self):
@@ -153,6 +154,10 @@ class CCDataset(BaseDataset):
             return info_str
         else:
             return self.tree()
+
+    def get_metadata(self):
+        # TODO: implement this!
+        return {}
 
     def get_array(self, channel: str, per_z_slice: bool = True, wrap_with_dask: bool = False):
 
@@ -204,6 +209,6 @@ class CCDataset(BaseDataset):
 
         return stack
 
-    def check_integrity(self) -> bool:
+    def check_integrity(self, channels: Sequence[str]) -> bool:
         # TODO: actually implement!
         return True

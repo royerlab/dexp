@@ -1,23 +1,28 @@
 import numpy
-from numpy.linalg import norm
+from arbol import section
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.registration.reg_trans_2d import register_translation_2d_dexp
 
 
-def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register_translation_2d=register_translation_2d_dexp, gamma=2):
+def register_translation_maxproj_nd(image_a, image_b,
+                                    register_translation_2d=register_translation_2d_dexp,
+                                    gamma: float = 1,
+                                    drop_worse: bool = True,
+                                    internal_dtype=None,
+                                    **kwargs):
     """
     Registers two nD (n=2 or 3) images using just a translation-only model.
     This method uses max projections along 2 or 3 axis and then performs phase correlation.
 
     Parameters
     ----------
-    backend : backend for computation
     image_a : First image to register
     image_b : Second image to register
     register_translation_2d : 2d registration method to use
     gamma : gamma correstion on max projections as a preprocessing before phase correlation.
+    internal_dtype : internal dtype for computation
 
 
     Returns
@@ -26,40 +31,58 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
 
     """
 
+    xp = Backend.get_xp_module()
+
     if image_a.ndim != image_b.ndim:
         raise ValueError("Images must have the same number of dimensions")
 
-    xp = backend.get_xp_module()
-
-    image_a = backend.to_backend(image_a)
-    image_b = backend.to_backend(image_b)
+    image_a = Backend.to_backend(image_a)
+    image_b = Backend.to_backend(image_b)
 
     if image_a.ndim == 2:
-        shifts, error = register_translation_2d(backend, image_a, image_b)
+        image_a = _preprocess_image(image_a, gamma=gamma, in_place=False, dtype=internal_dtype)
+        image_b = _preprocess_image(image_b, gamma=gamma, in_place=False, dtype=internal_dtype)
+        shifts, confidence = register_translation_2d(image_a, image_b, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
 
     elif image_a.ndim == 3:
-        iap0 = _normalised_projection(backend, image_a, axis=0, dtype=xp.float32, gamma=gamma)
-        iap1 = _normalised_projection(backend, image_a, axis=1, dtype=xp.float32, gamma=gamma)
-        iap2 = _normalised_projection(backend, image_a, axis=2, dtype=xp.float32, gamma=gamma)
+        iap0 = _project_preprocess_image(image_a, axis=0, dtype=xp.float32, gamma=gamma)
+        iap1 = _project_preprocess_image(image_a, axis=1, dtype=xp.float32, gamma=gamma)
+        iap2 = _project_preprocess_image(image_a, axis=2, dtype=xp.float32, gamma=gamma)
 
-        ibp0 = _normalised_projection(backend, image_b, axis=0, dtype=xp.float32, gamma=gamma)
-        ibp1 = _normalised_projection(backend, image_b, axis=1, dtype=xp.float32, gamma=gamma)
-        ibp2 = _normalised_projection(backend, image_b, axis=2, dtype=xp.float32, gamma=gamma)
+        ibp0 = _project_preprocess_image(image_b, axis=0, dtype=xp.float32, gamma=gamma)
+        ibp1 = _project_preprocess_image(image_b, axis=1, dtype=xp.float32, gamma=gamma)
+        ibp2 = _project_preprocess_image(image_b, axis=2, dtype=xp.float32, gamma=gamma)
 
-        shifts_p0, error_p0 = register_translation_2d(backend, iap0, ibp0).get_shift_and_error()
-        shifts_p1, error_p1 = register_translation_2d(backend, iap1, ibp1).get_shift_and_error()
-        shifts_p2, error_p2 = register_translation_2d(backend, iap2, ibp2).get_shift_and_error()
-
-        shifts_p0 = numpy.asarray([0, shifts_p0[0], shifts_p0[1]])
-        shifts_p1 = numpy.asarray([shifts_p1[0], 0, shifts_p1[1]])
-        shifts_p2 = numpy.asarray([shifts_p2[0], shifts_p2[1], 0])
+        shifts_p0, confidence_p0 = register_translation_2d(iap0, ibp0, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
+        shifts_p1, confidence_p1 = register_translation_2d(iap1, ibp1, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
+        shifts_p2, confidence_p2 = register_translation_2d(iap2, ibp2, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
 
         # print(shifts_p0)
         # print(shifts_p1)
         # print(shifts_p2)
 
-        shifts = (shifts_p0 + shifts_p1 + shifts_p2) / 2
-        error = norm([error_p0, error_p1, error_p2])
+        if drop_worse:
+            worse_index = numpy.argmin(numpy.asarray([confidence_p0, confidence_p1, confidence_p2]))
+
+            if worse_index == 0:
+                shifts = numpy.asarray([0.5 * (shifts_p1[0] + shifts_p2[0]), shifts_p2[1], shifts_p1[1]])
+                confidence = (confidence_p1 * confidence_p2) ** 0.5
+            elif worse_index == 1:
+                shifts = numpy.asarray([shifts_p2[0], 0.5 * (shifts_p0[0] + shifts_p2[1]), shifts_p0[1]])
+                confidence = (confidence_p0 * confidence_p2) ** 0.5
+            elif worse_index == 2:
+                shifts = numpy.asarray([shifts_p1[0], shifts_p0[0], 0.5 * (shifts_p0[1] + shifts_p1[1])])
+                confidence = (confidence_p0 * confidence_p1) ** 0.5
+
+        else:
+            shifts_p0 = numpy.asarray([0, shifts_p0[0], shifts_p0[1]])
+            shifts_p1 = numpy.asarray([shifts_p1[0], 0, shifts_p1[1]])
+            shifts_p2 = numpy.asarray([shifts_p2[0], shifts_p2[1], 0])
+            shifts = (shifts_p0 + shifts_p1 + shifts_p2) / 2
+            confidence = (confidence_p0 * confidence_p1 * confidence_p2) ** 0.33
+
+        # if confidence>0.1:
+        #     print(f"shift={shifts}, confidence={confidence}")
 
         # from napari import Viewer, gui_qt
         # with gui_qt():
@@ -73,31 +96,72 @@ def register_translation_maxproj_nd(backend: Backend, image_a, image_b, register
         #     viewer.add_image(_c(ibp1), name='ibp1')
         #     viewer.add_image(_c(iap2), name='iap2')
         #     viewer.add_image(_c(ibp2), name='ibp2')
+    else:
+        raise ValueError(f'Unsupported number of dimensions ({image_a.ndim}) for registartion.')
 
-    return TranslationRegistrationModel(shift_vector=shifts, error=error)
+    return TranslationRegistrationModel(shift_vector=shifts, confidence=confidence)
 
 
-def _normalised_projection(backend: Backend, image, axis, dtype=None, gamma=3, quantile=1):
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
-    image = backend.to_backend(image)
-    projection = xp.max(image, axis=axis)
-    projection = projection.astype(dtype, copy=False)
-    smoothed_projection = projection.copy()
-    # smoothed_projection = sp.ndimage.gaussian_filter(smoothed_projection, sigma=1)
-    min_value = xp.percentile(smoothed_projection, q=quantile)
-    max_value = xp.percentile(smoothed_projection, q=100 - quantile)
+def _project_preprocess_image(image,
+                              axis: int,
+                              smoothing: float = 0,
+                              quantile: int = None,
+                              gamma: float = 1,
+                              dtype=None):
+    image_projected = _project_image(image, axis=axis)
+    image_projected_processed = _preprocess_image(image_projected,
+                                                  smoothing=smoothing,
+                                                  quantile=quantile,
+                                                  gamma=gamma,
+                                                  dtype=dtype)
+
+    return image_projected_processed
+
+
+def _project_image(image, axis: int):
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
+    image = Backend.to_backend(image)
+    projection = xp.max(image, axis=axis) - xp.min(image, axis=axis)
+    return projection
+
+
+def _preprocess_image(image,
+                      smoothing: float = 0,
+                      quantile: int = None,
+                      gamma: float = 1,
+                      in_place: bool = True,
+                      dtype=None):
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
+
+    processed_image = Backend.to_backend(image, dtype=dtype, force_copy=not in_place)
+
+    if smoothing > 0:
+        processed_image = sp.ndimage.gaussian_filter(processed_image, sigma=smoothing)
+
+    if quantile is None:
+        min_value = processed_image.min()
+        max_value = processed_image.max()
+    else:
+        min_value = xp.percentile(processed_image, q=100 * quantile)
+        max_value = xp.percentile(processed_image, q=100 * (1 - quantile))
+
+    alpha = max_value - min_value
+    if alpha > 0:
+        processed_image -= min_value
+        processed_image /= alpha
+        processed_image = xp.clip(processed_image, 0, 1, out=processed_image)
+
+    if gamma != 1:
+        processed_image **= gamma
+
     # from napari import Viewer, gui_qt
     # with gui_qt():
     #     def _c(array):
     #         return backend.to_numpy(array)
     #     viewer = Viewer()
     #     viewer.add_image(_c(image), name='image')
-    #     viewer.add_image(_c(smoothed_projection), name='smoothed_projection')
-    #     viewer.add_image(_c(projection), name='projection')
+    #     viewer.add_image(_c(processed_image), name='processed_image')
 
-    projection -= min_value
-    projection *= 1 / (max_value - min_value)
-    projection = xp.clip(projection, 0, 1, out=projection)
-    projection **= gamma
-    return projection
+    return processed_image

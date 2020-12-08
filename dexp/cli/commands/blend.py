@@ -1,13 +1,12 @@
 import os
 from os import listdir
 from os.path import exists, isfile, join
-from timeit import timeit
 
 import click
 import imageio
 import numpy
+from arbol.arbol import asection, aprint, section
 from scipy import special
-
 
 @click.command()
 @click.argument('input_paths', nargs=-1)
@@ -25,6 +24,7 @@ def blend(input_paths, output_path, blending, overwrite, workers):
 
     os.makedirs(output_path, exist_ok=True)
 
+
     if overwrite or not exists(output_path):
 
         first_folder = input_paths[0]
@@ -34,20 +34,20 @@ def blend(input_paths, output_path, blending, overwrite, workers):
         from joblib import Parallel, delayed
 
         def process(pngfile):
-            with timeit('Elapsed time: '):
+            with asection(f'processing file: {pngfile}'):
                 blended_image_array = None
                 original_dtype = None
 
                 for path in input_paths:
 
-                    print(f"Reading file: {pngfile} from path: {path}")
+                    aprint(f"Reading file: {pngfile} from path: {path}")
                     try:
                         if isfile(path):
                             image_array = imageio.imread(path)
                         else:
                             image_array = imageio.imread(join(path, pngfile))
                     except FileNotFoundError:
-                        print(f"WARNING: file {join(path, pngfile)} (or {path}) not found! using blank frame instead!")
+                        aprint(f"WARNING: file {join(path, pngfile)} (or {path}) not found! using blank frame instead!")
                         image_array = numpy.zeros_like(blended_image_array)
 
                     if blended_image_array is None:
@@ -56,20 +56,21 @@ def blend(input_paths, output_path, blending, overwrite, workers):
 
                     else:
                         if blending == 'max':
-                            print(f"Blending using max mode.")
+                            aprint(f"Blending using max mode.")
                             blended_image_array = numpy.maximum(blended_image_array, image_array)
                         elif blending == 'add' or blending == 'addclip':
-                            print(f"Blending using add mode (clipped).")
+                            aprint(f"Blending using add mode (clipped).")
                             blended_image_array = numpy.clip(blended_image_array + image_array, 0, 255)
                         elif blending == 'adderf':
-                            print(f"Blending using add mode (erf saturation).")
+                            aprint(f"Blending using add mode (erf saturation).")
                             blended_image_array = 255 * special.erf(blended_image_array + image_array / 255)
 
-                print(f"Writing file: {pngfile} in folder: {output_path}")
+                aprint(f"Writing file: {pngfile} in folder: {output_path}")
                 imageio.imwrite(join(output_path, pngfile), blended_image_array.astype(original_dtype))
 
-        Parallel(n_jobs=workers)(delayed(process)(pngfile) for pngfile in pngfiles)
-
+        with asection(f"Blending  {input_paths}, saving to {output_path}, mode: {blending}"):
+            Parallel(n_jobs=workers, backend='threading')(delayed(process)(pngfile) for pngfile in pngfiles)
+            aprint(f"Done!")
 
     else:
-        print(f"Folder: {output_path} already exists! use -w option to force overwrite...")
+        aprint(f"Folder: {output_path} already exists! use -w option to force overwrite...")

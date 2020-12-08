@@ -1,8 +1,9 @@
-from time import time
-
 import click
+from arbol.arbol import asection, aprint, section
 
-from dexp.cli.main import _get_dataset_from_path
+from dexp.cli.utils import _get_dataset_from_path, _parse_channels
+from dexp.utils.timeit import timeit
+
 
 
 @click.command()
@@ -10,23 +11,14 @@ from dexp.cli.main import _get_dataset_from_path
 @click.option('--channels', '-c', default=None, help='List of channels, all channels when ommited.')
 def check(input_path, channels):
     input_dataset = _get_dataset_from_path(input_path)
+    channels = _parse_channels(input_dataset, channels)
 
-    if channels is None:
-        selected_channels = input_dataset.channels()
-    else:
-        channels = channels.split(',')
-        selected_channels = list(set(channels) & set(input_dataset.channels()))
+    with asection(f"checking integrity of: {input_path}, channels: {channels}"):
+        result = input_dataset.check_integrity(channels)
+        if result:
+            aprint(f"No problem detected.")
+        else:
+            aprint(f"!!! PROBLEM DETECTED, CORRUPTION LIKELY !!!")
 
-    print(f"Available channel(s)    : {input_dataset.channels()}")
-    print(f"Requested channel(s)    : {channels}")
-    print(f"Selected channel(s)     : {selected_channels}")
-
-    time_start = time()
-    result = input_dataset.check_integrity()
-    time_stop = time()
-    print(f"Elapsed time: {time_stop - time_start} seconds")
-    if not result:
-        print(f"!!! PROBLEM DETECTED, CORRUPTION LIKELY !!!")
-    print("Done!")
-
-    input_dataset.close()
+        input_dataset.close()
+        aprint("Done!")

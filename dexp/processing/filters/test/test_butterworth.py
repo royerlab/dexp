@@ -4,28 +4,28 @@ from skimage.util import random_noise
 
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.filters.butterworth import butterworth_filter
+from dexp.processing.filters.butterworth_filter import butterworth_filter
 
 
 def test_butterworth_numpy():
-    backend = NumpyBackend()
-    _test_butterworth(backend)
+    with NumpyBackend():
+        _test_butterworth()
 
 
 def test_butterworth_cupy():
     try:
-        backend = CupyBackend()
-        _test_butterworth(backend)
+        with CupyBackend():
+            _test_butterworth()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _test_butterworth(backend):
+def _test_butterworth():
     image = camera().astype(numpy.float32) / 255
     noisy = random_noise(image.copy(), mode="gaussian", var=0.005, seed=0, clip=False)
     # noisy = random_noise(noisy, mode="s&p", amount=0.03, seed=0, clip=False)
 
-    filtered = butterworth_filter(backend, noisy)
+    filtered = butterworth_filter(noisy)
 
     assert filtered.shape == noisy.shape
     assert filtered.dtype == noisy.dtype

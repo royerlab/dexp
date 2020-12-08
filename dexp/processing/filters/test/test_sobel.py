@@ -1,29 +1,28 @@
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.filters.sobel import sobel_magnitude_filter
+from dexp.processing.filters.sobel_filter import sobel_filter
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 
 
 def test_sobel_numpy():
-    backend = NumpyBackend()
-    _sobel(backend)
+    with NumpyBackend():
+        _sobel()
 
 
 def test_sobel_cupy():
     try:
-        backend = CupyBackend()
-        _sobel(backend)
+        with CupyBackend():
+            _sobel()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _sobel(backend, length_xy=128):
-    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(backend,
-                                                                                       length_xy=length_xy,
+def _sobel(length_xy=128):
+    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(length_xy=length_xy,
                                                                                        add_noise=False)
 
-    tenengrad_image1 = sobel_magnitude_filter(backend, image1)
-    tenengrad_image2 = sobel_magnitude_filter(backend, image2)
+    tenengrad_image1 = sobel_filter(image1)
+    tenengrad_image2 = sobel_filter(image2)
 
     assert tenengrad_image1.shape == image1.shape
     assert tenengrad_image2.shape == image2.shape

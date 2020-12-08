@@ -1,12 +1,6 @@
 # Run this to create a new env:
 #conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; ./install_osx.sh
 
-
-
-
-
-
-
 conda config --add channels anaconda
 conda install -y -c anaconda numpy libblas=*=*mkl
 conda install -y -c anaconda scipy
@@ -36,6 +30,7 @@ pip install pyopencl --upgrade
 pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install spimagine --upgrade
-pip install -U nvgpu
+pip install gputil
+pip install arbol colorama ansicolors
 
 pip install -e .

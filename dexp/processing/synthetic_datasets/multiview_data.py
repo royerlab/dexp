@@ -8,8 +8,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.utils.timeit import timeit
 
 
-def generate_fusion_test_data(backend: Backend,
-                              length_xy: Optional[int] = 320,
+def generate_fusion_test_data(length_xy: Optional[int] = 320,
                               length_z_factor: Optional[int] = 4,
                               add_noise: Optional[bool] = True,
                               shift: Optional[Tuple[int, ...]] = None,
@@ -17,19 +16,39 @@ def generate_fusion_test_data(backend: Backend,
                               amount_low: Optional[float] = 1,
                               zero_level: Optional[float] = 95,
                               odd_dimension: Optional[float] = True,
-                              z_overlap: Optional[float] = None):
-    xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
+                              z_overlap: Optional[float] = None,
+                              dtype=numpy.float32):
+    """
+
+    Parameters
+    ----------
+    length_xy
+    length_z_factor
+    add_noise
+    shift
+    volume_fraction
+    amount_low
+    zero_level
+    odd_dimension
+    z_overlap
+    dtype
+
+    Returns
+    -------
+
+    """
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     with timeit("generate blob images"):
-        image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype('f4')
-        blend_a = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype('f4')
-        blend_b = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype('f4')
+        image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype(dtype)
+        blend_a = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype(dtype)
+        blend_b = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype(dtype)
 
     with timeit("convert blob images to backend"):
-        image_gt = backend.to_backend(image_gt)
-        blend_a = backend.to_backend(blend_a)
-        blend_b = backend.to_backend(blend_b)
+        image_gt = Backend.to_backend(image_gt)
+        blend_a = Backend.to_backend(blend_a)
+        blend_b = Backend.to_backend(blend_b)
 
     with timeit("prepare high/low image pair"):
         image_gt = sp.ndimage.gaussian_filter(image_gt, sigma=1)
@@ -76,12 +95,12 @@ def generate_fusion_test_data(backend: Backend,
 
     if add_noise:
         with timeit("add noise"):
-            image1 = backend.to_numpy(image1)
-            image2 = backend.to_numpy(image2)
+            image1 = Backend.to_numpy(image1)
+            image2 = Backend.to_numpy(image2)
             image1 = random_noise(image1, mode='speckle', var=0.5)
             image2 = random_noise(image2, mode='speckle', var=0.5)
-            image1 = backend.to_backend(image1)
-            image2 = backend.to_backend(image2)
+            image1 = Backend.to_backend(image1)
+            image2 = Backend.to_backend(image2)
 
     if shift is not None:
         with timeit("Shift second view relative to first"):
@@ -93,9 +112,9 @@ def generate_fusion_test_data(backend: Backend,
         image_gt = zero_level + 300 * image_gt
         image_lowq = zero_level + 300 * image_lowq
 
-    return image_gt.astype('f4', copy=False), \
-           image_lowq.astype('f4', copy=False), \
-           blend_a.astype('f4', copy=False), \
-           blend_b.astype('f4', copy=False), \
-           image1.astype('f4', copy=False), \
-           image2.astype('f4', copy=False)
+    return image_gt.astype(dtype, copy=False), \
+           image_lowq.astype(dtype, copy=False), \
+           blend_a.astype(dtype, copy=False), \
+           blend_b.astype(dtype, copy=False), \
+           image1.astype(dtype, copy=False), \
+           image2.astype(dtype, copy=False)

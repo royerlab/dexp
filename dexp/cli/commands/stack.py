@@ -5,7 +5,9 @@ from os.path import exists, isfile, join
 import click
 import imageio
 import numpy
+from arbol.arbol import section, aprint, asection
 
+from dexp.utils.timeit import timeit
 
 @click.command()
 @click.argument('input_paths', nargs=-1)
@@ -23,48 +25,49 @@ def stack(input_paths, output_path, orientation, overwrite, workers):
 
     os.makedirs(output_path, exist_ok=True)
 
-    if overwrite or not exists(output_path):
+    if not overwrite and exists(output_path):
+        aprint(f"Folder: {output_path} already exists! use -w option to force overwrite...")
+        return
 
-        first_folder = input_paths[0]
-        pngfiles = [f for f in listdir(first_folder) if isfile(join(first_folder, f)) and f.endswith('.png')]
-        pngfiles.sort()
+    first_folder = input_paths[0]
+    pngfiles = [f for f in listdir(first_folder) if isfile(join(first_folder, f)) and f.endswith('.png')]
+    pngfiles.sort()
 
-        from joblib import Parallel, delayed
+    from joblib import Parallel, delayed
 
-        def process(pngfile):
-            with timeit('Elapsed time: '):
-                stacked_image_array = None
-                original_dtype = None
 
-                for path in input_paths:
+    def process(pngfile):
+            stacked_image_array = None
+            original_dtype = None
 
-                    print(f"Reading file: {pngfile} from folder: {path}")
-                    try:
-                        if isfile(path):
-                            image_array = imageio.imread(path)
-                        else:
-                            image_array = imageio.imread(join(path, pngfile))
-                    except FileNotFoundError:
-                        print(f"WARNING: file {join(path, pngfile)} (or {path}) not found! using blank frame instead!")
-                        image_array = numpy.zeros_like(stacked_image_array)
-
-                    if stacked_image_array is None:
-                        original_dtype = image_array.dtype
-                        stacked_image_array = image_array.astype(numpy.float32)
-
+            for path in input_paths:
+                aprint(f"Reading file: {pngfile} from folder: {path}")
+                try:
+                    if isfile(path):
+                        image_array = imageio.imread(path)
                     else:
-                        if orientation == 'horiz':
-                            print(f"Stacks frames horizontally.")
-                            stacked_image_array = numpy.hstack((stacked_image_array, image_array))
-                        elif orientation == 'vert':
-                            print(f"Stacks frames vertically.")
-                            stacked_image_array = numpy.vstack((stacked_image_array, image_array))
+                        image_array = imageio.imread(join(path, pngfile))
+                except FileNotFoundError:
+                    aprint(f"WARNING: file {join(path, pngfile)} (or {path}) not found! using blank frame instead!")
+                    image_array = numpy.zeros_like(stacked_image_array)
 
-                print(f"Writing file: {pngfile} in folder: {output_path}")
-                imageio.imwrite(join(output_path, pngfile), stacked_image_array.astype(original_dtype))
+                if stacked_image_array is None:
+                    original_dtype = image_array.dtype
+                    stacked_image_array = image_array.astype(numpy.float32)
 
+                else:
+                    if orientation == 'horiz':
+                        aprint(f"Stacks frames horizontally.")
+                        stacked_image_array = numpy.hstack((stacked_image_array, image_array))
+                    elif orientation == 'vert':
+                        aprint(f"Stacks frames vertically.")
+                        stacked_image_array = numpy.vstack((stacked_image_array, image_array))
+
+            aprint(f"Writing file: {pngfile} in folder: {output_path}")
+            imageio.imwrite(join(output_path, pngfile), stacked_image_array.astype(original_dtype))
+
+    with asection(f"stacking PNGs: {input_paths}, saving to: {output_path}, orientation: {orientation}"):
         Parallel(n_jobs=workers)(delayed(process)(pngfile) for pngfile in pngfiles)
+        aprint("Done!")
 
 
-    else:
-        print(f"Folder: {output_path} already exists! use -w option to force overwrite...")

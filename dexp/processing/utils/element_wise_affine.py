@@ -5,37 +5,45 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def element_wise_affine(backend: Backend, array, alpha, beta, out=None):
+def element_wise_affine(array, alpha, beta, sum_first=False, out=None):
     """
-    Applies the affine function: alpha*x + beta to every value x of a given array.
+    Applies the affine function: alpha*x + beta to every value x of a given array. If sum_first is True, then alpha*(x + beta) is computed instead.
 
     Parameters
     ----------
-    backend : backend to use
     array : array to apply function to
     alpha : 'scale'
     beta : 'offset'
+    sum_first : If True then alpha*(x + beta) is computed instead.
     out : if specified, element_wise_affine _might_ use the specified array as output for in-place operation.
           this is not garanteed, so you should always use the pattern: result = element_wise_affine(backend, a, array, alpha, beta, out=result).
 
 
     Returns
     -------
-    Array: alpha*array + beta
+    Array: alpha*array + beta (or alpha*array + beta if sum_first is True)
 
     """
-    array = backend.to_backend(array)
 
-    if type(backend) is NumpyBackend:
-        a = array
-        u = alpha
-        v = beta
-        return numexpr.evaluate("u*a+v", casting='same_kind', out=out)
+    array = Backend.to_backend(array)
 
-    elif type(backend) is CupyBackend:
+    if type(Backend.current()) is NumpyBackend:
+        if sum_first:
+            return numexpr.evaluate("alpha*(array+beta)", casting='same_kind', out=out)
+        else:
+            return numexpr.evaluate("alpha*array+beta", casting='same_kind', out=out)
+
+    elif type(Backend.current()) is CupyBackend:
         import cupy
-        @cupy.fuse()
-        def affine_function(a, u, v):
-            return u * a + v
+        if sum_first:
+            @cupy.fuse()
+            def affine_function(_array, _alpha, _beta):
+                return _alpha * (_array + _beta)
 
-        return affine_function(array, alpha, beta)
+            return affine_function(array, alpha, beta)
+        else:
+            @cupy.fuse()
+            def affine_function(_array, _alpha, _beta):
+                return _alpha * _array + _beta
+
+            return affine_function(array, alpha, beta)

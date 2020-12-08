@@ -2,6 +2,7 @@ import os
 from os.path import join
 
 import numpy
+from arbol.arbol import aprint
 from tifffile import TiffWriter
 
 from dexp.io.io import tiff_save
@@ -9,7 +10,7 @@ from dexp.utils.timeit import timeit
 
 
 def dataset_tiff(dataset,
-                 path,
+                 output_path,
                  channels,
                  slicing,
                  overwrite,
@@ -19,30 +20,30 @@ def dataset_tiff(dataset,
                  workers):
     selected_channels = dataset._selected_channels(channels)
 
-    print(f"getting Dask arrays for channels {selected_channels}")
+    aprint(f"getting Dask arrays for channels {selected_channels}")
     arrays = list([dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for channel in selected_channels])
 
     if slicing is not None:
-        print(f"Slicing with: {slicing}")
+        aprint(f"Slicing with: {slicing}")
         arrays = list([array[slicing] for array in arrays])
-        print(f"Done slicing.")
+        aprint(f"Done slicing.")
 
     if project:
         # project is the axis for projection, but here we are not considering the T dimension anymore...
-        print(f"Projecting along axis {project}")
+        aprint(f"Projecting along axis {project}")
         arrays = list([array.max(axis=project) for array in arrays])
 
     if one_file_per_first_dim:
-        print(f"Saving one TIFF file for each tp (or Z if already sliced) to: {path}.")
+        aprint(f"Saving one TIFF file for each tp (or Z if already sliced) to: {output_path}.")
 
-        os.makedirs(path, exist_ok=True)
+        os.makedirs(output_path, exist_ok=True)
 
         from joblib import Parallel, delayed
 
         def process(tp):
             with timeit('Elapsed time: '):
                 for channel, array in zip(selected_channels, arrays):
-                    tiff_file_path = join(path, f"file{tp}_{channel}.tiff")
+                    tiff_file_path = join(output_path, f"file{tp}_{channel}.tiff")
                     if overwrite or not os.path.exists(tiff_file_path):
                         stack = array[tp].compute()
                         print(f"Writing time point: {tp} of shape: {stack.shape}, dtype:{stack.dtype} as TIFF file: '{tiff_file_path}', with compression: {clevel}")
@@ -57,16 +58,16 @@ def dataset_tiff(dataset,
     else:
         array = numpy.stack(arrays)
 
-        if not overwrite and os.path.exists(path):
-            print(f"File {path} already exists! Set option -w to overwrite.")
+        if not overwrite and os.path.exists(output_path):
+            aprint(f"File {output_path} already exists! Set option -w to overwrite.")
             return
 
-        print(f"Creating memory mapped TIFF file at: {path}.")
-        with TiffWriter(path, bigtiff=True, imagej=True) as tif:
+        aprint(f"Creating memory mapped TIFF file at: {output_path}.")
+        with TiffWriter(output_path, bigtiff=True, imagej=True) as tif:
             tp = 0
             for stack in array:
                 with timeit('Elapsed time: '):
-                    print(f"Writing time point: {tp} ")
+                    aprint(f"Writing time point: {tp} ")
                     stack = stack.compute()
                     tif.save(stack)
                     tp += 1

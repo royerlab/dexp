@@ -1,21 +1,13 @@
-from os.path import join, exists
-
 import click
-from numpy import s_
+from arbol.arbol import aprint, asection
 
-from dexp.datasets.clearcontrol_dataset import CCDataset
-from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.utils.mkl_util import set_mkl_threads
 
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-
-_default_store = 'dir'
+_default_store = 'ndir'
 _default_clevel = 3
 _default_codec = 'zstd'
 
 set_mkl_threads()
-
-import sys
 
 
 def log_uncaught_exceptions(exception_type, exception, tb):
@@ -24,38 +16,32 @@ def log_uncaught_exceptions(exception_type, exception, tb):
     print('{0}: {1}'.format(exception_type, exception))
 
 
+import sys
+
 sys.excepthook = log_uncaught_exceptions
 
-
-def _get_dataset_from_path(input_path):
-    if exists(join(input_path, 'stacks')):
-        input_dataset = CCDataset(input_path)
-    else:
-        input_dataset = ZDataset(input_path)
-    return input_dataset
-
-
-def _get_folder_name_without_end_slash(input_path):
-    if input_path.endswith('/') or input_path.endswith('\\'):
-        input_path = input_path[:-1]
-    return input_path
-
-
-def _parse_slicing(slicing: str):
-    if slicing is not None:
-        print(f"Slicing: {slicing}")
-        dummy = s_[1, 2]
-        slicing = eval(f"s_{slicing}")
-    return slicing
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 @click.group()
 def cli():
-    print("------------------------------------------")
-    print("  DEXP -- Data EXploration & Processing   ")
-    print("  Royer lab                               ")
-    print("------------------------------------------")
-    print("")
+    aprint("__________________________________________")
+    aprint("  DEXP -- Data EXploration & Processing   ")
+    aprint("  Royer lab                               ")
+    aprint("__________________________________________")
+    aprint("")
+
+    try:
+        from dexp.processing.backends.cupy_backend import CupyBackend
+        available = CupyBackend.available_devices()
+        with asection(f"Available GPU devices: {available}"):
+            for device_id in available:
+                backend = CupyBackend(device_id)
+                aprint(backend)
+
+    except (ModuleNotFoundError, NotImplementedError):
+        aprint("'cupy' module not found! ignored!")
+
     pass
 
 

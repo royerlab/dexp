@@ -3,33 +3,34 @@ from numpy.linalg import norm
 from skimage.data import camera
 from skimage.util import random_noise
 
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.restoration.lipshitz_correction import lipschitz_continuity_correction
 from dexp.utils.timeit import timeit
 
 
-def test_aap_correction_numpy():
-    backend = NumpyBackend()
-    _test_aap_correction(backend)
+def test_lipschitz_continuity_correction_numpy():
+    with NumpyBackend():
+        _test_lipschitz_continuity_correction()
 
 
-def test_aap_correction_cupy():
+def test_lipschitz_continuity_correction_cupy():
     try:
-        backend = CupyBackend()
-        _test_aap_correction(backend)
+        with CupyBackend():
+            _test_lipschitz_continuity_correction()
     except (ModuleNotFoundError, NotImplementedError):
         print("Cupy module not found! ignored!")
 
 
-def _test_aap_correction(backend, length_xy=128):
+def _test_lipschitz_continuity_correction(length_xy=128):
     image = camera().astype(numpy.float32) / 255
     noisy = random_noise(image.copy(), mode="gaussian", var=0.005, seed=0, clip=False)
     noisy = random_noise(noisy, mode="s&p", amount=0.03, seed=0, clip=False)
 
     with timeit('lipschitz_continuity_correction'):
-        corrected = lipschitz_continuity_correction(backend, image, lipschitz=0.15)
-        corrected = backend.to_numpy(corrected)
+        corrected = lipschitz_continuity_correction(image, lipschitz=0.15, in_place=False)
+        corrected = Backend.to_numpy(corrected)
 
     assert corrected is not image
     assert corrected.shape == image.shape

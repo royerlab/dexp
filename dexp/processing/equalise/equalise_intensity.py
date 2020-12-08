@@ -1,27 +1,30 @@
+import math
+
 import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def equalise_intensity(backend: Backend,
-                       image1,
+def equalise_intensity(image1,
                        image2,
                        zero_level=90,
-                       quantile=0.99,
-                       max_voxels=1e6,
+                       quantile_low=0.01,
+                       quantile_high=0.99,
+                       project_axis: int = 0,
+                       max_voxels: int = 1e7,
                        copy: bool = True,
-                       internal_dtype=numpy.float16):
+                       internal_dtype=None):
     """
     Equalise intensity between two images
 
     Parameters
     ----------
-    backend : backend to use
     image1 : first image to equalise
     image2 : second image to equalise
     zero_level : zero level -- removes this value if that's the minimal voxel value expected for both images
-    quantile : quantile for computinmg the robust min and max values in image
+    quantile_low, quantile_high : quantile for computing the robust min and max values in image
+    project_axis : Axis over which to project image to speed up computation
     max_voxels : maximal number of voxels to use to compute min and max values.
     copy : Set to True to force copy of images.
     internal_dtype : dtype to use internally for computation.
@@ -31,28 +34,35 @@ def equalise_intensity(backend: Backend,
     The two arrays intensity equalised.
 
     """
+
     if image1.dtype != image2.dtype:
         raise ValueError("Two images must have same dtype!")
 
-    if type(backend) is NumpyBackend:
+    if internal_dtype is None:
+        internal_dtype = image1.dtype
+
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image1.dtype
-    image1 = backend.to_backend(image1, dtype=internal_dtype, force_copy=copy)
-    image2 = backend.to_backend(image2, dtype=internal_dtype, force_copy=copy)
+    image1 = Backend.to_backend(image1, dtype=internal_dtype, force_copy=copy)
+    image2 = Backend.to_backend(image2, dtype=internal_dtype, force_copy=copy)
 
-    xp = backend.get_xp_module()
+    xp = Backend.get_xp_module()
 
-    reduction = max(1, 4 * (int(image1.size / max_voxels) // 4))
+    proj_image1 = xp.max(image1, axis=project_axis)
+    proj_image2 = xp.max(image2, axis=project_axis)
 
-    strided_image1 = image1.ravel()[::reduction].astype(numpy.float32, copy=False)
-    strided_image2 = image2.ravel()[::reduction].astype(numpy.float32, copy=False)
+    reduction = max(1, 4 * (int(proj_image1.size / max_voxels) // 4))
 
-    highvalue1 = xp.percentile(strided_image1, q=quantile * 100)
-    highvalue2 = xp.percentile(strided_image2, q=quantile * 100)
+    strided_image1 = proj_image1.ravel()[::reduction].astype(numpy.float32, copy=False)
+    strided_image2 = proj_image2.ravel()[::reduction].astype(numpy.float32, copy=False)
 
-    lowvalue1 = xp.percentile(strided_image1, q=(1 - quantile) * 100)
-    lowvalue2 = xp.percentile(strided_image2, q=(1 - quantile) * 100)
+    highvalue1 = xp.percentile(strided_image1, q=quantile_high * 100)
+    highvalue2 = xp.percentile(strided_image2, q=quantile_high * 100)
+
+    lowvalue1 = xp.percentile(strided_image1, q=quantile_low * 100)
+    lowvalue2 = xp.percentile(strided_image2, q=quantile_low * 100)
 
     mask1 = strided_image1 >= highvalue1
     mask2 = strided_image2 >= highvalue2
@@ -62,7 +72,16 @@ def equalise_intensity(backend: Backend,
     highvalues1 = strided_image1[mask]
     highvalues2 = strided_image2[mask]
 
-    ratios = (highvalues1 - lowvalue1) / (highvalues2 - lowvalue2)
+    # compute ratios:
+    range1 = highvalues1 - lowvalue1
+    range2 = highvalues2 - lowvalue2
+    ratios = (range1 / range2)
+
+    # keep only valid ratios:
+    valid = xp.logical_and(range1 != 0, range2 != 0)
+    ratios = ratios[valid]
+
+    # Free memory:
     del mask, mask1, mask2, highvalues1, highvalues2, strided_image1, strided_image2
 
     nb_values = ratios.size

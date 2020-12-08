@@ -5,23 +5,23 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.utils.fit_shape import fit_to_shape
 
 
-def dehaze(backend: Backend,
-           image,
+def dehaze(image,
            size: int = 21,
            downscale: int = 4,
            minimal_zero_level: float = 0,
-           internal_dtype=numpy.float16
+           in_place: bool = True,
+           internal_dtype=None
            ):
     """
     Dehazes an image by means of a non-linear low-pass rejection filter.
 
     Parameters
     ----------
-    backend : Backend to use for computation
     image : image to filter
     size : filter size
     downscale : downscale factor for speeding up computation of the haze map.
     minimal_zero_level : minimal zero level to substract
+    in_place : True if the input image may be modified in-place.
     internal_dtype : internal dtype for computation
 
     Returns
@@ -29,17 +29,20 @@ def dehaze(backend: Backend,
     Dehazed image
 
     """
-    sp = backend.get_sp_module()
-    xp = backend.get_xp_module()
+    sp = Backend.get_sp_module()
+    xp = Backend.get_xp_module()
 
-    if type(backend) is NumpyBackend:
+    if internal_dtype is None:
+        internal_dtype = image.dtype
+
+    if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = backend.to_backend(image, dtype=internal_dtype, force_copy=True)
+    image = Backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
     # original_image = image.copy()
 
-    minimal_zero_level = backend.to_backend(numpy.asarray(minimal_zero_level), dtype=internal_dtype)
+    minimal_zero_level = Backend.to_backend(numpy.asarray(minimal_zero_level), dtype=internal_dtype)
 
     # get rid of low values due to noise:
     image_zero_level = sp.ndimage.filters.maximum_filter(image, size=3)
@@ -60,14 +63,17 @@ def dehaze(backend: Backend,
     image_zero_level = sp.ndimage.zoom(image_zero_level, zoom=downscale, order=1)
 
     # Padding to recover original image size:
-    image_zero_level = fit_to_shape(backend, image_zero_level, shape=image.shape)
+    image_zero_level = fit_to_shape(image_zero_level, shape=image.shape)
 
     # Ensure that we remove at least the minimum zero level:
     if minimal_zero_level > 0:
         image_zero_level = xp.maximum(image_zero_level, minimal_zero_level)
 
     # remove zero level:
-    image = xp.maximum(image - image_zero_level, 0, out=image)
+    image -= image_zero_level
+
+    # clip:
+    image = xp.maximum(image, 0, out=image)
 
     # convert back to original dtype
     image = image.astype(dtype=original_dtype, copy=False)

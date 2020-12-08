@@ -1,47 +1,48 @@
+import numpy
+
+from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
-
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 from dexp.utils.timeit import timeit
 
 
 def test_clean_dark_regions_numpy():
-    backend = NumpyBackend()
-    _test_clean_dark_regions(backend)
+    with NumpyBackend():
+        _test_clean_dark_regions()
 
 
 def test_clean_dark_regions_cupy():
     try:
-        backend = CupyBackend()
-        _test_clean_dark_regions(backend)
+        with CupyBackend():
+            _test_clean_dark_regions()
     except (ModuleNotFoundError, NotImplementedError):
         print("Cupy module not found! ignored!")
 
 
-def _test_clean_dark_regions(backend, length_xy=128):
-    xp = backend.get_xp_module()
+def _test_clean_dark_regions(length_xy=128):
+    xp = Backend.get_xp_module()
 
     with timeit("generate data"):
-        image_gt, background, image = generate_nuclei_background_data(backend,
-                                                                      add_noise=True,
+        image_gt, background, image = generate_nuclei_background_data(add_noise=True,
                                                                       length_xy=length_xy,
-                                                                      length_z_factor=4,
+                                                                      length_z_factor=1,
                                                                       independent_haze=False,
-                                                                      background_stength=0.05)
+                                                                      background_stength=0.05,
+                                                                      dtype=numpy.float32)
 
     # remove zero level
-    image -= 95
-    image_gt -= 95
+    image = xp.clip(image - 95, 0, None)
 
     with timeit('clean_dark_regions'):
-        cleaned = clean_dark_regions(backend, image, size=3, threshold=100)
+        cleaned = clean_dark_regions(image, size=3, threshold=10, in_place=False)
 
     assert cleaned is not image
     assert cleaned.shape == image.shape
     assert cleaned.dtype == image.dtype
 
-    # compute [ercentage of haze removed:
+    # compute percentage of haze removed:
     background_voxels_image = (1 - image_gt) * image
     background_voxels_dehazed = (1 - image_gt) * cleaned
     total_haze = xp.sum(background_voxels_image)

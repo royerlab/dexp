@@ -1,85 +1,73 @@
-from time import time
-
 import click
+from arbol.arbol import section, aprint, asection
 
-from dexp.cli.main import _get_dataset_from_path, _get_folder_name_without_end_slash, _parse_slicing, _default_store, _default_codec, _default_clevel
+from dexp.cli.main import _default_store, _default_codec, _default_clevel
+from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing, _parse_devices
 from dexp.datasets.operations.deconv import dataset_deconv
-
+from dexp.utils.timeit import timeit
 
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')
 @click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')
-@click.option('--store', '-st', default=_default_store, help='Store: ‘dir’, ‘zip’', show_default=True)
+@click.option('--store', '-st', default=_default_store, help='Zarr store: ‘dir’, ‘ndir’, or ‘zip’', show_default=True)
 @click.option('--codec', '-z', default=_default_codec, help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ', show_default=True)
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)
-@click.option('--workers', '-k', default=1, help='Number of worker threads to spawn, recommended: 1 (unless you know what you are doing)', show_default=True)
 @click.option('--chunksize', '-cs', type=int, default=512, help='Chunk size for tiled computation', show_default=True)
 @click.option('--method', '-m', type=str, default='lr', help='Deconvolution method: for now only lr (Lucy Richardson)', show_default=True)
 @click.option('--iterations', '-i', type=int, default=20, help='Number of deconvolution iterations. More iterations takes longer, will be sharper, but might also be potentially more noisy depending on method.', show_default=True)
 @click.option('--maxcorrection', '-mc', type=int, default=16, help='Max correction in folds per iteration.',
               show_default=True)
 @click.option('--power', '-pw', type=float, default=1.0, help='Correction exponent, default for standard LR is 1, set to >1 for acceleration.', show_default=True)
-@click.option('--blindspot', '-bs', type=int, default=3, help='Blindspot based noise reduction. Provide size of kernel to use, must be an odd number: 3(recommended), 5, 7. 0 means no blindspot. ', show_default=True)
+@click.option('--blindspot', '-bs', type=int, default=0, help='Blindspot based noise reduction. Provide size of kernel to use, must be an odd number: 3(recommended), 5, 7. 0 means no blindspot. ', show_default=True)
+@click.option('--backprojection', '-bp', type=str, default='tpsf', help='Back projection operator, can be: ‘tpsf’ (transposed PSF = classic) or ‘wb’ (Wiener-Butterworth =  accelerated) ', show_default=True)
 @click.option('--objective', '-obj', type=str, default='nikon16x08na', help='Microscope objective to use for computing psf, can be: nikon16x08na or olympus20x10na', show_default=True)
 @click.option('--dxy', '-dxy', type=float, default=0.485, help='Voxel size along x and y in microns', show_default=True)
 @click.option('--dz', '-dz', type=float, default=4 * 0.485, help='Voxel size along z in microns', show_default=True)
-@click.option('--xysize', '-sxy', type=int, default=17, help='Voxel size along xy in microns', show_default=True)
-@click.option('--zsize', '-sz', type=int, default=17, help='Voxel size along z in microns', show_default=True)
+@click.option('--xysize', '-sxy', type=int, default=17, help='PSF size along xy in voxels', show_default=True)
+@click.option('--zsize', '-sz', type=int, default=17, help='PSF size along z in voxels', show_default=True)
 @click.option('--downscalexy2', '-d', is_flag=False, help='Downscales along x and y for faster deconvolution (but worse quality of course)', show_default=True)  #
-@click.option('--device', '-d', type=int, default=0, help='Sets the CUDA device id', show_default=True)  #
+@click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)
+@click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
-def deconv(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, workers, chunksize,
-           method, iterations, maxcorrection, power, blindspot, objective, dxy, dz, xysize, zsize, downscalexy2,
-           device, check):
+def deconv(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, chunksize,
+           method, iterations, maxcorrection, power, blindspot, backprojection, objective, dxy, dz, xysize, zsize, downscalexy2,
+           workers, devices, check):
     input_dataset = _get_dataset_from_path(input_path)
-
-    print(f"Available Channels: {input_dataset.channels()}")
-    for channel in input_dataset.channels():
-        print(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
-
-    if output_path is None or not output_path.strip():
-        output_path = _get_folder_name_without_end_slash(input_path) + '.zarr'
+    output_path = _get_output_path(input_path, output_path, "_deconv")
 
     slicing = _parse_slicing(slicing)
-    print(f"Requested slicing: {slicing} ")
+    channels = _parse_channels(input_dataset, channels)
+    devices = _parse_devices(devices)
 
-    print(f"Requested channel(s)  {channels if channels else '--All--'} ")
-    if not channels is None:
-        channels = channels.split(',')
-    print(f"Selected channel(s): '{channels}' and slice: {slicing}")
+    with asection(f"Deconvolving dataset: {input_path}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "):
+        dataset_deconv(input_dataset,
+                       output_path,
+                       channels=channels,
+                       slicing=slicing,
+                       store=store,
+                       compression=codec,
+                       compression_level=clevel,
+                       overwrite=overwrite,
+                       chunksize=chunksize,
+                       method=method,
+                       num_iterations=iterations,
+                       max_correction=maxcorrection,
+                       power=power,
+                       blind_spot=blindspot,
+                       back_projection=backprojection,
+                       objective=objective,
+                       dxy=dxy,
+                       dz=dz,
+                       xy_size=xysize,
+                       z_size=zsize,
+                       downscalexy2=downscalexy2,
+                       workers=workers,
+                       devices=devices,
+                       check=check
+                       )
 
-    print("Fusing dataset.")
-    print(f"Saving dataset to: {output_path} with zarr format... ")
-    time_start = time()
-    dataset_deconv(input_dataset,
-                   output_path,
-                   channels=channels,
-                   slicing=slicing,
-                   store=store,
-                   compression=codec,
-                   compression_level=clevel,
-                   overwrite=overwrite,
-                   workers=workers,
-                   chunksize=chunksize,
-                   method=method,
-                   num_iterations=iterations,
-                   max_correction=maxcorrection,
-                   power=power,
-                   blind_spot=blindspot,
-                   objective=objective,
-                   dxy=dxy,
-                   dz=dz,
-                   xy_size=xysize,
-                   z_size=zsize,
-                   downscalexy2=downscalexy2,
-                   device=device,
-                   check=check
-                   )
-
-    time_stop = time()
-    print(f"Elapsed time to write dataset: {time_stop - time_start} seconds")
-    input_dataset.close()
-    print("Done!")
+        input_dataset.close()
+        aprint("Done!")

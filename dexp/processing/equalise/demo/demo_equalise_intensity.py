@@ -11,19 +11,19 @@ from dexp.utils.timeit import timeit
 
 
 def demo_equalise_intensity_numpy():
-    backend = NumpyBackend()
-    _equalise_intensity(backend)
+    with NumpyBackend():
+        _equalise_intensity()
 
 
 def demo_equalise_intensity_cupy():
     try:
-        backend = CupyBackend()
-        _equalise_intensity(backend)
+        with CupyBackend():
+            _equalise_intensity()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _equalise_intensity(backend: Backend, length=512):
+def _equalise_intensity(length=512):
     with timeit("generate demo dataset"):
         ratio_gt = 1.77
 
@@ -36,9 +36,9 @@ def _equalise_intensity(backend: Backend, length=512):
 
     org_image_1, org_image_2 = image_1.copy(), image_2.copy()
     with timeit("equalise intensity"):
-        equ_image_1, equ_image_2, corr_ratio = equalise_intensity(backend, image_1, image_2)
+        equ_image_1, equ_image_2, corr_ratio = equalise_intensity(image_1, image_2)
 
-    corr_ratio = backend.to_numpy(corr_ratio)
+    corr_ratio = Backend.to_numpy(corr_ratio)
 
     print(f" Ratio:{1 / corr_ratio}")
 
@@ -48,7 +48,7 @@ def _equalise_intensity(backend: Backend, length=512):
     import napari
     with napari.gui_qt():
         def _c(array):
-            return backend.to_numpy(array)
+            return Backend.to_numpy(array)
 
         viewer = Viewer()
         viewer.add_image(_c(image_1), name='image_1')
@@ -59,5 +59,6 @@ def _equalise_intensity(backend: Backend, length=512):
         viewer.add_image(_c(equ_image_2), name='equ_image_2', contrast_limits=(0, 700))
 
 
-demo_equalise_intensity_numpy()
-demo_equalise_intensity_cupy()
+if __name__ == "__main__":
+    demo_equalise_intensity_numpy()
+    demo_equalise_intensity_cupy()
