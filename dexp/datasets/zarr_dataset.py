@@ -227,6 +227,7 @@ class ZDataset(BaseDataset):
 
 
         """
+        print(chunks)
 
         # check if channel exists:
         if name in self.channels():
