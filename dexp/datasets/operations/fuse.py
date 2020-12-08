@@ -25,6 +25,7 @@ def dataset_fuse(dataset,
                  dark_denoise_threshold,
                  load_shifts,
                  workers,
+                 workersbackend,
                  devices,
                  check):
     if microscope == 'simview':
@@ -54,22 +55,22 @@ def dataset_fuse(dataset,
         aprint(f"Loading registration shifts from existing file! ({registration_models_file.name})")
 
     def process(tp, device):
-        aprint(f"Writing time point: {tp} ")
-
-        views_tp = tuple(view[tp].compute() for view in views)
-
-        model = None
-        if load_shifts:
-            try:
-                line = registration_models_file.readline().strip()
-                model = from_json(line)
-                aprint(f"loaded model: {line} ")
-            except ValueError:
-                aprint(f"Cannot read model from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
-
-        aprint(f'Fusing...')
-
         with CupyBackend(device):
+            aprint(f"Writing time point: {tp} ")
+
+            views_tp = tuple(view[tp].compute() for view in views)
+
+            model = None
+            if load_shifts:
+                try:
+                    line = registration_models_file.readline().strip()
+                    model = from_json(line)
+                    aprint(f"loaded model: {line} ")
+                except ValueError:
+                    aprint(f"Cannot read model from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
+
+            aprint(f'Fusing...')
+
             if microscope == 'simview':
                 array, model = simview_fuse_2C2L(*views_tp,
                                                  registration_model=model,
@@ -116,7 +117,7 @@ def dataset_fuse(dataset,
     aprint(f"workers={workers}")
 
     if workers > 1:
-        Parallel(n_jobs=workers, backend='threading')(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
+        Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
     else:
         for tp in range(0, shape[0]):
             process(tp, devices[0])

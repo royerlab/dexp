@@ -1,10 +1,11 @@
 import click
-from arbol.arbol import section, aprint, asection
+from arbol.arbol import aprint, asection
 
 from dexp.cli.main import _default_codec, _default_store, _default_clevel
+from dexp.cli.main import _default_workers_backend
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing, _parse_devices
 from dexp.datasets.operations.fuse import dataset_fuse
-from dexp.utils.timeit import timeit
+
 
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
@@ -25,6 +26,7 @@ from dexp.utils.timeit import timeit
 @click.option('--dark_denoise_threshold', '-ddt', type=int, default=0, help='Threshold for denoises the dark pixels of the image -- helps increase compression ratio. Set to zero to deactivate.', show_default=True)  #
 @click.option('--loadshifts', '-ls', is_flag=True, help='Turn on to load the registration parameters (i.e translation shifts) from another run', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
+@click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def fuse(input_path,
@@ -44,6 +46,7 @@ def fuse(input_path,
          dark_denoise_threshold,
          loadshifts,
          workers,
+         workersbackend,
          devices,
          check):
     input_dataset = _get_dataset_from_path(input_path)
@@ -57,24 +60,25 @@ def fuse(input_path,
         aprint(f"Microscope type: {microscope}, fusion type: {fusion}")
         aprint(f"Devices used: {devices}, workers: {workers} ")
         dataset_fuse(input_dataset,
-                         output_path,
-                         channels=channels,
-                         slicing=slicing,
-                         store=store,
-                         compression=codec,
-                         compression_level=clevel,
-                         overwrite=overwrite,
-                         microscope=microscope,
-                         equalise=equalise,
-                         zero_level=zerolevel,
-                         fusion=fusion,
-                         fusion_bias_strength=fusion_bias_strength,
-                         dehaze_size=dehaze_size,
-                         dark_denoise_threshold=dark_denoise_threshold,
-                         load_shifts=loadshifts,
-                         workers=workers,
-                         devices=devices,
-                         check=check,
-                         )
+                     output_path,
+                     channels=channels,
+                     slicing=slicing,
+                     store=store,
+                     compression=codec,
+                     compression_level=clevel,
+                     overwrite=overwrite,
+                     microscope=microscope,
+                     equalise=equalise,
+                     zero_level=zerolevel,
+                     fusion=fusion,
+                     fusion_bias_strength=fusion_bias_strength,
+                     dehaze_size=dehaze_size,
+                     dark_denoise_threshold=dark_denoise_threshold,
+                     load_shifts=loadshifts,
+                     workers=workers,
+                     workersbackend=workersbackend,
+                     devices=devices,
+                     check=check,
+                     )
         input_dataset.close()
         aprint("Done!")

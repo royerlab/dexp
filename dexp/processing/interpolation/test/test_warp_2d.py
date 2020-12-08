@@ -41,7 +41,7 @@ def _test_warp_2d(grid_size=8):
     # from napari import Viewer, gui_qt
     # with gui_qt():
     #     def _c(array):
-    #         return backend.to_numpy(array)
+    #         return Backend.to_numpy(array)
     #
     #     viewer = Viewer()
     #     viewer.add_image(_c(image), name='image')

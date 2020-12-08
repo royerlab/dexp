@@ -1,6 +1,5 @@
 from typing import Tuple
 
-
 import numpy
 
 from dexp.processing.backends.backend import Backend

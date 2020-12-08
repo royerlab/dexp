@@ -1,10 +1,10 @@
 import click
-from arbol.arbol import section, aprint, asection
+from arbol.arbol import aprint, asection
 
 from dexp.cli.main import _default_clevel
+from dexp.cli.main import _default_workers_backend
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing
 from dexp.datasets.operations.tiff import dataset_tiff
-from dexp.utils.timeit import timeit
 
 
 @click.command()
@@ -17,7 +17,17 @@ from dexp.utils.timeit import timeit
 @click.option('--split', is_flag=True, help='Splits dataset along first dimension, be carefull, if you slice to a single time point this will split along z!')  # , help='dataset slice'
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level, 0 means no compression, max is 9', show_default=True)  # , help='dataset slice'
 @click.option('--workers', '-k', default=1, help='Number of worker threads to spawn.', show_default=True)  #
-def tiff(input_path, output_path, channels, slicing, overwrite, project, split, clevel, workers):
+@click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)
+def tiff(input_path,
+         output_path,
+         channels,
+         slicing,
+         overwrite,
+         project,
+         split,
+         clevel,
+         workers,
+         workersbackend):
     input_dataset = _get_dataset_from_path(input_path)
     output_path = _get_output_path(input_path, output_path)
     slicing = _parse_slicing(slicing)
@@ -32,7 +42,8 @@ def tiff(input_path, output_path, channels, slicing, overwrite, project, split, 
                      project=project,
                      one_file_per_first_dim=split,
                      clevel=clevel,
-                     workers=workers
+                     workers=workers,
+                     workersbackend=workersbackend
                      )
 
         input_dataset.close()

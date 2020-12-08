@@ -32,6 +32,7 @@ def dataset_deconv(dataset,
                    z_size,
                    downscalexy2,
                    workers,
+                   workersbackend,
                    devices,
                    check):
     from dexp.datasets.zarr_dataset import ZDataset
@@ -115,7 +116,7 @@ def dataset_deconv(dataset,
             workers = len(devices)
 
         if workers > 1:
-            Parallel(n_jobs=workers, backend='threading')(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
+            Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
         else:
             for tp in range(0, shape[0]):
                 process(tp, devices[0])

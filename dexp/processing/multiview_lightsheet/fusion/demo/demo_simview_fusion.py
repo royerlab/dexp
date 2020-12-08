@@ -1,7 +1,6 @@
 # You need to point to a tiff file with 4 views as first dim,
 # as produced for example by: dexp tiff -w -s [128:129] dataset.zarr -o /home/royer/Desktop/test_data/test_data.tiff
 
-import numpy
 from arbol import asection, aprint
 from napari import gui_qt, Viewer
 from tifffile import imread
@@ -10,9 +9,9 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2C2L
-from dexp.utils.timeit import timeit
 
 filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'
+
 
 
 def demo_simview_fusion_numpy():

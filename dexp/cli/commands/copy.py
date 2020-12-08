@@ -1,10 +1,10 @@
 import click
-from arbol.arbol import section, aprint, asection
+from arbol.arbol import aprint, asection
 
 from dexp.cli.main import _default_clevel, _default_codec, _default_store
+from dexp.cli.main import _default_workers_backend
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing
 from dexp.datasets.operations.copy import dataset_copy
-from dexp.utils.timeit import timeit
 
 
 @click.command()
@@ -17,9 +17,10 @@ from dexp.utils.timeit import timeit
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='Forces overwrite of target', show_default=True)
 @click.option('--project', '-p', type=int, default=None, help='max projection over given axis (0->T, 1->Z, 2->Y, 3->X)')
-@click.option('--workers', '-k', default=1, help='Number of worker threads to spawn.', show_default=True)  #
+@click.option('--workers', '-wk', default=1, help='Number of worker threads to spawn.', show_default=True)  #
+@click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
-def copy(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, project, workers, check):
+def copy(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, project, workers, workersbackend, check):
     input_dataset = _get_dataset_from_path(input_path)
     output_path = _get_output_path(input_path, output_path, '_copy')
     slicing = _parse_slicing(slicing)
@@ -36,6 +37,7 @@ def copy(input_path, output_path, channels, slicing, store, codec, clevel, overw
                      overwrite=overwrite,
                      project=project,
                      workers=workers,
+                     workersbackend=workersbackend,
                      check=check)
 
         input_dataset.close()

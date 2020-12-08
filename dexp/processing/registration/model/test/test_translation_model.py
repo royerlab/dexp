@@ -67,5 +67,6 @@ def _test_translation_model(length_xy=128):
 
     json_str = model.to_json()
     new_model = from_json(json_str)
-    assert new_model.shift_vector == model.shift_vector
+    assert (new_model.shift_vector == model.shift_vector).all()
+    assert (new_model.confidence == model.confidence).all()
     assert new_model.integral == model.integral

@@ -1,5 +1,5 @@
 import click
-from arbol.arbol import section, aprint, asection
+from arbol.arbol import aprint, asection
 
 from dexp.cli.utils import _get_dataset_from_path
 

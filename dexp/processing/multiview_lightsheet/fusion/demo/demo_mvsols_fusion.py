@@ -7,10 +7,10 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
-from dexp.utils.timeit import timeit
 
-#dataset_path = '/mnt/raid0/pisces_datasets/data2_fish_TL100_range1300um_step0.31_6um_20ms_dualv_300tp_2_first10tp.zarr'
+# dataset_path = '/mnt/raid0/pisces_datasets/data2_fish_TL100_range1300um_step0.31_6um_20ms_dualv_300tp_2_first10tp.zarr'
 dataset_path = '/mnt/raid0/dexp_datasets/tail/raw.zarr'
+
 
 def demo_mvsols_resample_numpy():
     with NumpyBackend():

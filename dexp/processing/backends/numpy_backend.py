@@ -31,9 +31,9 @@ class NumpyBackend(Backend):
         if dtype:
             return array.astype(dtype, copy=force_copy)
         elif force_copy:
-            return array.copy()
+            return numpy.asarray(array.copy())
         else:
-            return array
+            return numpy.asarray(array)
 
     def _to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
         if dtype:

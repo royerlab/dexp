@@ -5,7 +5,7 @@ from arbol import asection, aprint, section
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
 from dexp.processing.registration.reg_warp_nd import register_warp_nd
-from dexp.utils.timeit import timeit
+
 
 @section("register_warp_multiscale_nd")
 def register_warp_multiscale_nd(image_a,

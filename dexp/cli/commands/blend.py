@@ -5,8 +5,11 @@ from os.path import exists, isfile, join
 import click
 import imageio
 import numpy
-from arbol.arbol import asection, aprint, section
+from arbol.arbol import asection, aprint
 from scipy import special
+
+from dexp.cli.main import _default_workers_backend
+
 
 @click.command()
 @click.argument('input_paths', nargs=-1)
@@ -14,7 +17,8 @@ from scipy import special
 @click.option('--blending', '-b', type=str, default='max', help='Blending mode: max, add, addclip, adderf (add stands for addclip).', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, set to -1 for maximum number of workers', show_default=True)  #
-def blend(input_paths, output_path, blending, overwrite, workers):
+@click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
+def blend(input_paths, output_path, blending, overwrite, workers, workersbackend):
     if workers <= 0:
         workers = os.cpu_count() // 2
 
@@ -23,7 +27,6 @@ def blend(input_paths, output_path, blending, overwrite, workers):
         output_path = 'frames_' + basename
 
     os.makedirs(output_path, exist_ok=True)
-
 
     if overwrite or not exists(output_path):
 
@@ -69,7 +72,7 @@ def blend(input_paths, output_path, blending, overwrite, workers):
                 imageio.imwrite(join(output_path, pngfile), blended_image_array.astype(original_dtype))
 
         with asection(f"Blending  {input_paths}, saving to {output_path}, mode: {blending}"):
-            Parallel(n_jobs=workers, backend='threading')(delayed(process)(pngfile) for pngfile in pngfiles)
+            Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(pngfile) for pngfile in pngfiles)
             aprint(f"Done!")
 
     else:

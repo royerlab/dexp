@@ -17,9 +17,9 @@ from dexp.processing.registration.reg_trans_nd_maxproj import register_translati
 from dexp.processing.registration.reg_warp_multiscale_nd import register_warp_multiscale_nd
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
-from dexp.utils.timeit import timeit
 
-@section("mvSOLS 2D1L fusion")
+
+@section("mvSOLS 1C2L fusion")
 def msols_fuse_1C2L(C0L0, C0L1,
                     dz: float,
                     dx: float,
@@ -112,7 +112,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
-
     original_dtype = C0L0.dtype
 
     with asection(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):
@@ -135,6 +134,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
     with gui_qt():
         def _c(array):
             return Backend.to_numpy(array)
+
         viewer = Viewer()
         viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000))
         viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000))
@@ -146,7 +146,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
         if registration_model is None:
             aprint("No registration model provided, running registration now")
-            registration_method = register_translation_maxproj_nd if registration_mode=='projection' else register_translation_nd
+            registration_method = register_translation_maxproj_nd if registration_mode == 'projection' else register_translation_nd
             registration_model = register_warp_multiscale_nd(C0L0, C0L1,
                                                              num_iterations=5,
                                                              confidence_threshold=0.3,
@@ -188,8 +188,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
                                       size=dark_denoise_size,
                                       threshold=dark_denoise_threshold)
             Backend.current().clear_allocation_pool()
-
-
 
     if 0 < butterworth_filter_cutoff < 1:
         with asection(f"Filter output using a Butterworth filter"):

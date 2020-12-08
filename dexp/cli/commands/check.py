@@ -1,9 +1,7 @@
 import click
-from arbol.arbol import asection, aprint, section
+from arbol.arbol import asection, aprint
 
 from dexp.cli.utils import _get_dataset_from_path, _parse_channels
-from dexp.utils.timeit import timeit
-
 
 
 @click.command()

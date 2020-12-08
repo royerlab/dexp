@@ -1,5 +1,3 @@
-
-
 from dexp.processing.backends._cupy.texture.texture import create_cuda_texture
 from dexp.processing.backends.cupy_backend import CupyBackend
 

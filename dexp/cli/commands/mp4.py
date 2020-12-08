@@ -2,7 +2,7 @@ import os
 from os.path import exists
 
 import click
-from arbol.arbol import section, aprint, asection
+from arbol.arbol import aprint, asection
 
 
 @click.command()

@@ -234,4 +234,3 @@ def render(input_path, output_path, channels=None, slicing=None, overwrite=False
     raise SystemExit
     import sys
     sys.exit()
-

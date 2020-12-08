@@ -2,6 +2,7 @@ import math
 from functools import reduce
 
 import numpy
+from arbol import aprint
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -16,6 +17,7 @@ def register_translation_nd(image_a,
                             decimate: int = 16,
                             quantile: float = 0.999,
                             sigma: float = 1.0,
+                            log_compression: bool = False,
                             edge_filter: bool = True,
                             internal_dtype=None) -> TranslationRegistrationModel:
     """
@@ -32,6 +34,7 @@ def register_translation_nd(image_a,
     decimate : How much to decimate when computing floor level
     quantile : Quantile to use for robust min and max
     sigma : sigma for Gaussian smoothing of phase correlogram
+    log_compression : Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)
     edge_filter : apply sobel edge filter to input images.
     internal_dtype : internal dtype for computation
 
@@ -58,6 +61,10 @@ def register_translation_nd(image_a,
     if denoise_input_sigma is not None:
         image_a = sp.ndimage.filters.gaussian_filter(image_a, sigma=denoise_input_sigma)
         image_b = sp.ndimage.filters.gaussian_filter(image_b, sigma=denoise_input_sigma)
+
+    if log_compression:
+        image_a = xp.log1p(image_a)
+        image_b = xp.log1p(image_b)
 
     if edge_filter:
         image_a = sobel_filter(image_a,
@@ -105,7 +112,7 @@ def register_translation_nd(image_a,
 
     # Compute confidence:
     masked_correlation = correlation.copy()
-    mask_size = tuple(max(8, math.sqrt(s) // 4) for s in masked_correlation.shape)
+    mask_size = tuple(max(8, int(s ** 0.9) // 8) for s in masked_correlation.shape)
     masked_correlation[tuple(slice(rs - s, rs + s) for rs, s in zip(rough_shift, mask_size))] = 0
     background_correlation_max = xp.max(masked_correlation)
     epsilon = 1e-6
@@ -115,19 +122,21 @@ def register_translation_nd(image_a,
     # shift vector:
     shift_vector = list(shift_vector)
 
-    # # DO NOT DELETE, INSTRUMENTATION CODE FOR DEBUGGING
-    # from napari import gui_qt, Viewer
-    # with gui_qt():
-    #     print(f"shift = {shift_vector}, confidence = {confidence} ")
-    #     def _c(array):
-    #         return Backend.to_numpy(array)
-    #     viewer = Viewer()
-    #     viewer.add_image(_c(image_a), name='image_a')
-    #     viewer.add_image(_c(image_b), name='image_b')
-    #     viewer.add_image(_c(raw_correlation), name='raw_correlation', colormap='viridis')
-    #     viewer.add_image(_c(correlation), name='correlation', colormap='viridis')
-    #     viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='bop orange', blending='additive')
-    #     viewer.grid_view(2,3,1)
+    # DO NOT DELETE, INSTRUMENTATION CODE FOR DEBUGGING
+    from napari import gui_qt, Viewer
+    with gui_qt():
+        aprint(f"shift = {shift_vector}, confidence = {confidence} ")
+
+        def _c(array):
+            return Backend.to_numpy(array)
+
+        viewer = Viewer()
+        viewer.add_image(_c(image_a), name='image_a')
+        viewer.add_image(_c(image_b), name='image_b')
+        viewer.add_image(_c(raw_correlation), name='raw_correlation', colormap='viridis')
+        viewer.add_image(_c(correlation), name='correlation', colormap='viridis')
+        viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='bop orange', blending='additive')
+        viewer.grid_view(2, 3, 1)
 
     return TranslationRegistrationModel(shift_vector=shift_vector, confidence=confidence)
 

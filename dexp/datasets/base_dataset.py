@@ -2,11 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Sequence
 
 import numpy
-from arbol.arbol import aprint
 
 
 class BaseDataset(ABC):
-    _default_chunks = (1, 32, 512, 512)
+    _default_chunks = (1, 128, 512, 512)
 
     def __init__(self, dask_backed=False):
         """ Instanciates a Base Dataset

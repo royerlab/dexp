@@ -1,10 +1,11 @@
 import click
-from arbol.arbol import section, aprint, asection
+from arbol.arbol import aprint, asection
 
 from dexp.cli.main import _default_store, _default_codec, _default_clevel
+from dexp.cli.main import _default_workers_backend
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing, _parse_devices
 from dexp.datasets.operations.deconv import dataset_deconv
-from dexp.utils.timeit import timeit
+
 
 @click.command()
 @click.argument('input_path')  # ,  help='input path'
@@ -30,11 +31,32 @@ from dexp.utils.timeit import timeit
 @click.option('--zsize', '-sz', type=int, default=17, help='PSF size along z in voxels', show_default=True)
 @click.option('--downscalexy2', '-d', is_flag=False, help='Downscales along x and y for faster deconvolution (but worse quality of course)', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)
+@click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
-def deconv(input_path, output_path, channels, slicing, store, codec, clevel, overwrite, chunksize,
-           method, iterations, maxcorrection, power, blindspot, backprojection, objective, dxy, dz, xysize, zsize, downscalexy2,
-           workers, devices, check):
+def deconv(input_path,
+           output_path,
+           channels,
+           slicing,
+           store,
+           codec,
+           clevel,
+           overwrite,
+           chunksize,
+           method,
+           iterations,
+           maxcorrection,
+           power,
+           blindspot,
+           backprojection,
+           objective,
+           dxy, dz,
+           xysize, zsize,
+           downscalexy2,
+           workers,
+           workersbackend,
+           devices,
+           check):
     input_dataset = _get_dataset_from_path(input_path)
     output_path = _get_output_path(input_path, output_path, "_deconv")
 
@@ -65,6 +87,7 @@ def deconv(input_path, output_path, channels, slicing, store, codec, clevel, ove
                        z_size=zsize,
                        downscalexy2=downscalexy2,
                        workers=workers,
+                       workersbackend=workersbackend,
                        devices=devices,
                        check=check
                        )

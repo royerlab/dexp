@@ -17,7 +17,8 @@ def dataset_tiff(dataset,
                  project,
                  one_file_per_first_dim,
                  clevel,
-                 workers):
+                 workers,
+                 workersbackend):
     selected_channels = dataset._selected_channels(channels)
 
     aprint(f"getting Dask arrays for channels {selected_channels}")
@@ -52,7 +53,7 @@ def dataset_tiff(dataset,
                     else:
                         print(f"File for time point (or z slice): {tp} already exists.")
 
-        Parallel(n_jobs=workers)(delayed(process)(tp) for tp in range(0, arrays[0].shape[0]))
+        Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp) for tp in range(0, arrays[0].shape[0]))
 
 
     else:

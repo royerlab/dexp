@@ -3,9 +3,10 @@ from arbol.arbol import aprint, asection
 
 from dexp.processing.utils.mkl_util import set_mkl_threads
 
-_default_store = 'ndir'
+_default_store = 'dir'
 _default_clevel = 3
 _default_codec = 'zstd'
+_default_workers_backend = 'threading'
 
 set_mkl_threads()
 

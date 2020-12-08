@@ -1,10 +1,11 @@
 import click
 import dask
 import numpy
-from arbol.arbol import section, aprint, asection
+from arbol.arbol import aprint, asection
 from napari._qt.qthreading import thread_worker
 
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _parse_slicing
+
 
 @click.command()
 @click.argument('input_path')

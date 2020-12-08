@@ -25,15 +25,15 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
 
         """
         super().__init__()
-        self.shift_vector = list(shift_vector)
-        self.confidence = confidence
+        self.shift_vector = Backend.to_numpy(shift_vector)
+        self.confidence = Backend.to_numpy(confidence)
         self.integral = integral
 
     def __str__(self):
         return f"TranslationRegistrationModel(shift={self.shift_vector}, confidence={self.confidence}, integral={self.integral})"
 
     def to_json(self) -> str:
-        return json.dumps({'type': 'translation', 'translation': self.shift_vector, 'integral': self.integral, 'confidence': self.confidence})
+        return json.dumps({'type': 'translation', 'translation': self.shift_vector.tolist(), 'integral': self.integral, 'confidence': self.confidence.tolist()})
 
     def get_shift_and_confidence(self):
         return self.shift_vector, self.confidence
