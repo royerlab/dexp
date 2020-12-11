@@ -27,6 +27,7 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         return json.dumps({'type': 'warp', 'vector_field': (Backend.to_numpy(self.vector_field)).tolist(), 'confidence': (Backend.to_numpy(self.confidence)).tolist()})
 
     def clean(self,
+              max_shift: float = None,
               confidence_threshold: float = 0.1,
               mode: str = 'mean'):
         """
@@ -36,23 +37,35 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         confidence_threshold : confidence threshold below which a vector is deamed unreliable.
         mode : How to propagate high-confidence values, can be 'mean' or 'median'
         """
+        xp = Backend.get_xp_module()
         sp = Backend.get_sp_module()
-        num_iterations = 1 + numpy.max(self.confidence.shape)
-        mask = self.confidence > confidence_threshold
-        vector_field = self.vector_field.copy()
+
+        # First we take care of excessive shifts above the 'max_shift' limit:
+        vector_field = Backend.to_backend(self.vector_field, force_copy=True)
+        original_vector_field = Backend.to_backend(self.vector_field, force_copy=True)
+        confidence = Backend.to_backend(self.confidence, force_copy=True)
+
+        if max_shift is not None:
+            model_vector_field_norm = xp.linalg.norm(vector_field, axis=-1)
+            too_much = model_vector_field_norm > max_shift
+            confidence[too_much] = 0.00013579  # close to zero but recognisable
+
+        # Second we fill out low confidence entries:
+        num_iterations = 2 * numpy.sum(confidence.shape)  # enough iterations to reach a steady-state
+        mask = confidence > confidence_threshold
         vector_field[~mask] = 0
-        vector_field = Backend.to_backend(vector_field)
         for i in range(num_iterations):
             if mode == 'median':
-                vector_field = sp.ndimage.median_filter(vector_field, size=(3,) * (self.confidence.ndim) + (1,))
+                vector_field = sp.ndimage.median_filter(vector_field, size=(3,) * (confidence.ndim) + (1,), mode='nearest')
             elif mode == 'mean':
-                vector_field = sp.ndimage.uniform_filter(vector_field, size=(3,) * (self.confidence.ndim) + (1,))
+                vector_field = sp.ndimage.uniform_filter(vector_field, size=(3,) * (confidence.ndim) + (1,), mode='nearest')
             else:
                 raise ValueError("Unsupported mode")
             # we make sure to keep the high-confidence vectors unchanged:
-            vector_field[mask] = self.vector_field[mask]
+            vector_field[mask] = original_vector_field[mask]
 
         self.vector_field = vector_field
+        self.confidence = confidence
 
     def apply(self,
               image_a, image_b,

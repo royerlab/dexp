@@ -99,7 +99,6 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
 
-
     original_dtype = C0L0.dtype
 
     with asection(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):

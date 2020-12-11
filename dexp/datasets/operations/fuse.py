@@ -1,4 +1,4 @@
-from arbol.arbol import aprint
+from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
@@ -56,9 +56,9 @@ def dataset_fuse(dataset,
 
     def process(tp, device):
         with CupyBackend(device):
-            aprint(f"Writing time point: {tp} ")
 
-            views_tp = tuple(view[tp].compute() for view in views)
+            with asection(f"Loading channels {channels} for time point {tp}"):
+                views_tp = tuple(view[tp].compute() for view in views)
 
             model = None
             if load_shifts:
@@ -68,8 +68,6 @@ def dataset_fuse(dataset,
                     aprint(f"loaded model: {line} ")
                 except ValueError:
                     aprint(f"Cannot read model from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
-
-            aprint(f'Fusing...')
 
             if microscope == 'simview':
                 array, model = simview_fuse_2C2L(*views_tp,
@@ -109,7 +107,8 @@ def dataset_fuse(dataset,
                                      codec=compression,
                                      clevel=compression_level)
 
-        dest_dataset.get_array('fused')[tp] = array
+        with asection(f"Saving fused image"):
+            dest_dataset.get_array('fused')[tp] = array
 
     if workers == -1:
         workers = len(devices)

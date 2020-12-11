@@ -30,7 +30,11 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     clip_too_high: int = 2048,
                     fusion='tg',
                     fusion_bias_exponent: int = 2,
-                    fusion_bias_strength: float = 0.1,
+                    fusion_bias_strength: float = 0,
+                    z_pad: int = 0,
+                    z_apodise: int = 0,
+                    registration_confidence_threshold: float = 0.3,
+                    registration_max_residual_shift: int = 64,
                     registration_mode: str = 'projection',
                     registration_edge_filter: bool = False,
                     registration_model: PairwiseRegistrationModel = None,
@@ -69,6 +73,14 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     fusion_bias_strength : Strength of fusion bias, set to zero to deactivate
 
+    z_pad : Padding length along Z (scanning direction), usefull in conjunction with z_apodise
+
+    z_apodise : apodises along Z (direction) to suppress discontinuities (views cropping the sample) that disrupt fusion.
+
+    registration_confidence_threshold : Confidence threshold within [0, 1]: zero means low confidence, 1 max confidence.
+
+    registration_max_residual_shift : After teh first registration round, if a shift vector norm is larger than this provided limitRegistration
+
     registration_mode : Registration mode, can be: 'projection' or 'full'.
     Projection mode is faster but might have occasionally  issues for certain samples. Full mode is slower and is only recomended as a last resort.
 
@@ -102,6 +114,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     """
     xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     if C0L0.dtype != C0L1.dtype:
         raise ValueError("The two views must have same dtype!")
@@ -125,19 +138,45 @@ def msols_fuse_1C2L(C0L0, C0L1,
             C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
             Backend.current().clear_allocation_pool()
 
+    if z_pad > 0 or z_apodise > 0:
+        with asection(f"Pad and apodise C0L0 and C0L1 along scanning direction:"):
+
+            if z_pad > 0:
+                C0L0[0] = sp.ndimage.gaussian_filter(C0L0[0], sigma=4)
+                C0L0[-1] = sp.ndimage.gaussian_filter(C0L0[-1], sigma=4)
+                C0L0 = xp.pad(C0L0, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode='edge')
+
+                C0L1[0] = sp.ndimage.gaussian_filter(C0L1[0], sigma=4)
+                C0L1[-1] = sp.ndimage.gaussian_filter(C0L1[-1], sigma=4)
+                C0L1 = xp.pad(C0L1, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode='edge')
+
+            if z_apodise > 0:
+                depth = C0L0.shape[0]
+                apodise_left = xp.linspace(0, 1, num=z_apodise, dtype=internal_dtype)
+                apodise_left **= 3
+                apodise_center = xp.ones(shape=(depth - 2 * z_apodise,), dtype=internal_dtype)
+                apodise_right = xp.linspace(1, 0, num=z_apodise, dtype=internal_dtype) ** 0.5
+                apodise_right **= 3
+                apodise = xp.concatenate((apodise_left, apodise_center, apodise_right))
+                apodise = apodise[:, xp.newaxis, xp.newaxis]
+                apodise = apodise.astype(dtype=internal_dtype, copy=False)
+
+            C0L0 *= apodise
+            C0L1 *= apodise
+
+    # from napari import gui_qt, Viewer
+    # with gui_qt():
+    #     def _c(array):
+    #         return Backend.to_numpy(array)
+    #
+    #     viewer = Viewer()
+    #     viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000))
+    #     viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000))
+
     with asection(f"Resample C0L0 and C0L1"):
         C0L0 = resample_C0L0(C0L0, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
         C0L1 = resample_C0L1(C0L1, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
         Backend.current().clear_allocation_pool()
-
-    from napari import gui_qt, Viewer
-    with gui_qt():
-        def _c(array):
-            return Backend.to_numpy(array)
-
-        viewer = Viewer()
-        viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000))
-        viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000))
 
     with asection(f"Register C0L0 and C0L1"):
 
@@ -149,7 +188,8 @@ def msols_fuse_1C2L(C0L0, C0L1,
             registration_method = register_translation_maxproj_nd if registration_mode == 'projection' else register_translation_nd
             registration_model = register_warp_multiscale_nd(C0L0, C0L1,
                                                              num_iterations=5,
-                                                             confidence_threshold=0.3,
+                                                             confidence_threshold=registration_confidence_threshold,
+                                                             max_residual_shift=registration_max_residual_shift,
                                                              edge_filter=registration_edge_filter,
                                                              registration_method=registration_method,
                                                              denoise_input_sigma=1)
@@ -169,6 +209,15 @@ def msols_fuse_1C2L(C0L0, C0L1,
                                                    copy=False)
 
             aprint(f"Equalisation ratio: {ratio}")
+
+    from napari import Viewer, gui_qt
+    with gui_qt():
+        def _c(array):
+            return Backend.to_numpy(array)
+
+        viewer = Viewer()
+        viewer.add_image(_c(C0L0), name='C0L0', colormap='bop blue', blending='additive')
+        viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
 
     with asection(f"Fuse detection views C0lx and C1Lx..."):
         C1Lx = fuse_illumination_views(C0L0, C0L1,

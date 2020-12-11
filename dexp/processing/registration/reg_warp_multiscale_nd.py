@@ -12,6 +12,7 @@ def register_warp_multiscale_nd(image_a,
                                 image_b,
                                 num_iterations: int = 3,
                                 confidence_threshold: float = 0.5,
+                                max_residual_shift: float = None,
                                 margin_ratios: Union[float, Tuple[float, ...]] = 0.2,
                                 min_chunk: int = 32,
                                 min_margin: int = 4,
@@ -26,6 +27,10 @@ def register_warp_multiscale_nd(image_a,
     image_b : Second image to register
     num_iterations : Number of iterations: each iteration subdivides chunks by a factor 2.
     confidence_threshold : confidence threshold for chunk registration
+    max_residual_shift : max shift in pixels for all iterations except the first.
+    margin_ratios : ratio that determines the margin size relative to the chunk size.
+    min_chunk : minimal chunk size
+    min_margin : minimum margin size
     all additional kwargs are passed to register_warp_nd
 
     Returns
@@ -48,6 +53,7 @@ def register_warp_multiscale_nd(image_a,
     confidence = None
 
     with asection(f"Starting multi-scale registration with num_iterations={num_iterations}"):
+        aprint(f"Confidence threshold: {confidence_threshold}, max residual shif: {max_residual_shift}")
         for i in range(num_iterations):
 
             # Clear memory allocation cache:
@@ -69,10 +75,31 @@ def register_warp_multiscale_nd(image_a,
                 model = register_warp_nd(image_a, image, chunks=chunks, margins=margins, **kwargs)
                 aprint(f"mean confidence: {model.mean_confidence()}")
                 aprint(f"median shift magnitude: {model.median_shift_magnitude()}")
-                model.clean(confidence_threshold=confidence_threshold)
+
+                eff_max_shift = max_residual_shift if (i > 0 and max_residual_shift is not None) else None
+                model.clean(mode='median', confidence_threshold=confidence_threshold,
+                            max_shift=eff_max_shift)
 
                 model_vector_field = Backend.to_backend(model.vector_field)
                 model_confidence = Backend.to_backend(model.confidence)
+
+            # if True:
+            #     scale_factors = tuple(ims / mcs for ims, mcs in zip(image.shape, model_confidence.shape))
+            #     aprint(f"scale_factors: {scale_factors}")
+            #     model_confidence_n = Backend.to_numpy(model_confidence)
+            #     import scipy
+            #     _scaled_model_confidence_n = scipy.ndimage.zoom(model_confidence_n, zoom=scale_factors, order=0)
+            #
+            #     from napari import Viewer, gui_qt
+            #     with gui_qt():
+            #         def _c(array):
+            #             return Backend.to_numpy(array)
+            #
+            #         viewer = Viewer()
+            #         viewer.add_image(_c(image_a), name='image_a', colormap='bop orange', blending='additive')
+            #         viewer.add_image(_c(image_b), name='image_b', colormap='bop blue', blending='additive', visible=False)
+            #         viewer.add_image(_c(image), name='image', colormap='bop blue', blending='additive')
+            #         viewer.add_image(_c(_scaled_model_confidence_n), name='_scaled_model_confidence_n', colormap='viridis', blending='additive', opacity=0.3)
 
             if vector_field is None:
                 splits = tuple(s // max(min_chunk, -(-s // (2 ** (num_iterations - 1)))) for s in image_a.shape)

@@ -1,4 +1,4 @@
-from arbol.arbol import aprint
+from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 from skimage.transform import downscale_local_mean
 
@@ -7,7 +7,6 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
-from dexp.utils.timeit import timeit
 
 
 def dataset_deconv(dataset,
@@ -75,8 +74,9 @@ def dataset_deconv(dataset,
 
             with CupyBackend(device):
                 try:
-                    aprint(f"Starting to process time point: {tp} ...")
-                    tp_array = array[tp].compute()
+
+                    with asection(f"Loading channel: {channel} for time point {tp}"):
+                        tp_array = array[tp].compute()
                     if downscalexy2:
                         tp_array = downscale_local_mean(tp_array, factors=(1, 2, 2)).astype(tp_array.dtype)
 
@@ -97,13 +97,15 @@ def dataset_deconv(dataset,
                                                                  back_projection=back_projection
                                                                  )
 
-                        with timeit("lucy_richardson_deconvolution"):
-                            tp_array = scatter_gather_i2i(f, tp_array, chunks=chunksize, margins=max(xy_size, z_size))
+                        margins = max(xy_size, z_size)
+                        with asection(f"Deconvolution of image of shape: {tp_array}, with chunk size: {chunksize}, margins: {margins} "):
+                            tp_array = scatter_gather_i2i(f, tp_array, chunks=chunksize, margins=margins)
                     else:
                         raise ValueError(f"Unknown deconvolution mode: {method}")
 
                     tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
-                    dest_array[tp] = tp_array
+                    with asection(f"Saving deconvolved image"):
+                        dest_array[tp] = tp_array
                     aprint(f"Done processing time point: {tp} .")
 
                 except Exception as error:

@@ -53,8 +53,12 @@ def _mvsols_resample():
                                   angle=angle,
                                   dx=res,
                                   dz=dz,
-                                  equalise=False,
-                                  fusion_bias_strength=0)
+                                  equalise=True,
+                                  fusion_bias_strength=0,
+                                  registration_confidence_threshold=0.6,
+                                  registration_max_residual_shift=64,
+                                  z_pad=8,
+                                  z_apodise=96)
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -62,8 +66,8 @@ def _mvsols_resample():
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(C0L0), name='C0L0', colormap='bop blue', blending='additive')
-        viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
+        # viewer.add_image(_c(C0L0), name='C0L0', colormap='bop blue', blending='additive')
+        # viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
         viewer.add_image(_c(C0Lx), name='C0Lx', colormap='bop blue', blending='additive')
 
 

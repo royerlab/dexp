@@ -13,7 +13,6 @@ from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2C2
 filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'
 
 
-
 def demo_simview_fusion_numpy():
     with NumpyBackend():
         simview_fusion()

@@ -1,7 +1,6 @@
 import click
 from arbol.arbol import aprint, asection
 
-
 from dexp.processing.utils.mkl_util import set_mkl_threads
 
 _default_store = 'dir'

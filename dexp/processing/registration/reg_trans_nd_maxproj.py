@@ -8,7 +8,7 @@ from dexp.processing.registration.reg_trans_2d import register_translation_2d_de
 def register_translation_maxproj_nd(image_a, image_b,
                                     register_translation_2d=register_translation_2d_dexp,
                                     gamma: float = 1,
-                                    log_compression: bool = True,
+                                    log_compression: bool = False,
                                     drop_worse: bool = True,
                                     internal_dtype=None,
                                     **kwargs):

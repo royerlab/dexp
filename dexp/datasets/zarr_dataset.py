@@ -14,12 +14,15 @@ from zarr import open_group, convenience, CopyError, Blosc, Group
 from dexp.datasets.base_dataset import BaseDataset
 
 # Configure multithreading for Dask:
-nb_threads = max(1, multiprocessing.cpu_count() // 2)
+_cpu_count = multiprocessing.cpu_count() // 2
+aprint(f"Number of cores on system: {_cpu_count}")
+_nb_threads = max(1, _cpu_count)
 dask.config.set(scheduler='threads')
-dask.config.set(pool=ThreadPool(nb_threads))
+dask.config.set(pool=ThreadPool(_nb_threads))
 
 # Configure multithreading for Blosc:
-blosc.set_nthreads(nb_threads // 2 - 1)
+blosc.set_nthreads(_nb_threads)
+aprint(f"Number of threads used by BLOSC: {blosc.get_nthreads()}")
 
 
 class ZDataset(BaseDataset):

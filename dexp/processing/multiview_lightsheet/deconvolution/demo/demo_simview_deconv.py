@@ -67,13 +67,14 @@ def simview_deconv():
 
     parameters_wb = {'back_projection': 'wb',
                      'wb_cutoffs': 0.9,
-                     'wb_order': 5,
-                     'wb_beta': 0.01, }
+                     'wb_order': 2,
+                     'wb_beta': 0.05, }
 
-    # with timeit("lucy_richardson_deconvolution"):
-    #     def f(_image):
-    #         return lucy_richardson_deconvolution(backend, image=_image, num_iterations=50, **parameters)
-    #     view_dehazed_darkdenoised_deconvolved = scatter_gather_i2i(backend, f, view_dehazed_darkcleaned, chunks=320, margins=psf_size, clip=False, to_numpy=True)
+    with timeit("lucy_richardson_deconvolution"):
+        def f(_image):
+            return lucy_richardson_deconvolution(image=_image, num_iterations=10, **parameters)
+
+        view_dehazed_deconvolved = scatter_gather_i2i(f, view_dehazed, chunks=320, margins=psf_size, clip=False, to_numpy=True)
 
     with timeit("lucy_richardson_deconvolution_wb"):
         def f(_image):
@@ -90,7 +91,9 @@ def simview_deconv():
                          contrast_limits=(0, 2000), scale=(4, 1, 1), visible=False)
         viewer.add_image(_c(view_dehazed), name='dehazed',
                          contrast_limits=(0, 2000), scale=(4, 1, 1), colormap='bop purple', blending='additive', visible=False)
-        viewer.add_image(_c(view_dehazed_deconvolved_wb), name='deconvolved_wb',
+        viewer.add_image(_c(view_dehazed_deconvolved), name='view_dehazed_deconvolved',
+                         contrast_limits=(0, 13000), scale=(4, 1, 1), colormap='bop blue', blending='additive')
+        viewer.add_image(_c(view_dehazed_deconvolved_wb), name='view_dehazed_deconvolved_wb',
                          contrast_limits=(0, 13000), scale=(4, 1, 1), colormap='bop blue', blending='additive')
 
 

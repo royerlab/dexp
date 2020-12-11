@@ -1,8 +1,6 @@
-import math
 from functools import reduce
 
 import numpy
-from arbol import aprint
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -122,21 +120,21 @@ def register_translation_nd(image_a,
     # shift vector:
     shift_vector = list(shift_vector)
 
-    # DO NOT DELETE, INSTRUMENTATION CODE FOR DEBUGGING
-    from napari import gui_qt, Viewer
-    with gui_qt():
-        aprint(f"shift = {shift_vector}, confidence = {confidence} ")
-
-        def _c(array):
-            return Backend.to_numpy(array)
-
-        viewer = Viewer()
-        viewer.add_image(_c(image_a), name='image_a')
-        viewer.add_image(_c(image_b), name='image_b')
-        viewer.add_image(_c(raw_correlation), name='raw_correlation', colormap='viridis')
-        viewer.add_image(_c(correlation), name='correlation', colormap='viridis')
-        viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='bop orange', blending='additive')
-        viewer.grid_view(2, 3, 1)
+    # # DO NOT DELETE, INSTRUMENTATION CODE FOR DEBUGGING
+    # from napari import gui_qt, Viewer
+    # with gui_qt():
+    #     aprint(f"shift = {shift_vector}, confidence = {confidence} ")
+    #
+    #     def _c(array):
+    #         return Backend.to_numpy(array)
+    #
+    #     viewer = Viewer()
+    #     viewer.add_image(_c(image_a), name='image_a')
+    #     viewer.add_image(_c(image_b), name='image_b')
+    #     viewer.add_image(_c(raw_correlation), name='raw_correlation', colormap='viridis')
+    #     viewer.add_image(_c(correlation), name='correlation', colormap='viridis')
+    #     viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='bop orange', blending='additive')
+    #     viewer.grid_view(2, 3, 1)
 
     return TranslationRegistrationModel(shift_vector=shift_vector, confidence=confidence)
 

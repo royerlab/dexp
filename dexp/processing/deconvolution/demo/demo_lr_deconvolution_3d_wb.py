@@ -53,8 +53,8 @@ def _demo_lr_deconvolution(length_xy=128):
 
     iterations_wb = 5
     wb_cutoffs = 0.9
-    wb_order = 4
-    wb_beta = 0.001
+    wb_order = 2
+    wb_beta = 0.05
 
     with timeit("deconvolved_wb"):
         deconvolved_wb = lucy_richardson_deconvolution(noisy, psf,
