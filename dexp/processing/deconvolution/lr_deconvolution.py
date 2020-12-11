@@ -14,7 +14,7 @@ from dexp.processing.utils.normalise import normalise_functions
 
 def lucy_richardson_deconvolution(image,
                                   psf,
-                                  num_iterations: int = 50,
+                                  num_iterations: int = None,
                                   max_correction: float = None,
                                   power: float = 1.0,
                                   back_projection='tpsf',
@@ -121,6 +121,13 @@ def lucy_richardson_deconvolution(image,
         #     viewer.add_image(_c(psf), name='psf')
         #     viewer.add_image(_c(sp.ndimage.convolve(psf, full_kernel)), name='psf_for_backproj')
         #     viewer.add_image(_c(back_projector), name='psf')
+
+    if num_iterations is None:
+        if back_projection == 'tpsf':
+            num_iterations = 20
+        elif back_projection == 'wb':
+            num_iterations = 3
+
 
     if back_projection == 'tpsf':
         back_projector = xp.flip(psf)

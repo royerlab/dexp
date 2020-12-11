@@ -18,7 +18,8 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)
 @click.option('--chunksize', '-cs', type=int, default=512, help='Chunk size for tiled computation', show_default=True)
 @click.option('--method', '-m', type=str, default='lr', help='Deconvolution method: for now only lr (Lucy Richardson)', show_default=True)
-@click.option('--iterations', '-i', type=int, default=20, help='Number of deconvolution iterations. More iterations takes longer, will be sharper, but might also be potentially more noisy depending on method.', show_default=True)
+@click.option('--iterations', '-i', type=int, default=None, help='Number of deconvolution iterations. More iterations takes longer, will be sharper, but might also be potentially more noisy depending on method. '
+                                                                 'The default number of iterations depends on the other parameters, in particular it depends on the choice of backprojection operator. For ‘wb’ as little as 3 iterations suffice. ', show_default=True)
 @click.option('--maxcorrection', '-mc', type=int, default=16, help='Max correction in folds per iteration.',
               show_default=True)
 @click.option('--power', '-pw', type=float, default=1.0, help='Correction exponent, default for standard LR is 1, set to >1 for acceleration.', show_default=True)
