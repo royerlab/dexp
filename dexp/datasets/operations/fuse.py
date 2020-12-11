@@ -4,9 +4,10 @@ from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
 from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2C2L
-from dexp.processing.registration.model.model_factory import from_json
+from dexp.processing.registration.model.model_io import model_list_from_file, model_list_to_file
 
 
 def dataset_fuse(dataset,
@@ -20,11 +21,12 @@ def dataset_fuse(dataset,
                  microscope,
                  equalise,
                  zero_level,
+                 clip_too_high,
                  fusion,
                  fusion_bias_strength,
                  dehaze_size,
                  dark_denoise_threshold,
-                 load_shifts,
+                 loadreg,
                  workers,
                  workersbackend,
                  devices,
@@ -51,71 +53,75 @@ def dataset_fuse(dataset,
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(output_path, mode, store)
 
-    registration_models_file = open("registration_models.txt", "r" if load_shifts else 'w')
-    if load_shifts:
-        aprint(f"Loading registration shifts from existing file! ({registration_models_file.name})")
+    with NumpyBackend():
+        model_list_filename = "registration_models.txt"
+        if loadreg:
+            aprint(f"Loading registration shifts from existing file! ({model_list_filename})")
+            models = model_list_from_file(model_list_filename)
+        else:
+            models = [None, ] * shape[0]
 
     def process(tp, device):
-
-        with CupyBackend(device):
+        try:
 
             with asection(f"Loading channels {channels} for time point {tp}"):
                 views_tp = tuple(view[tp].compute() for view in views)
 
-            model = None
-            if load_shifts:
-                try:
-                    line = registration_models_file.readline().strip()
-                    model = from_json(line)
-                    aprint(f"loaded model: {line} ")
-                except ValueError:
-                    aprint(f"Cannot read model from line: {line}, most likely we have reached the end of the shifts file, have the channels a different number of time points?")
+            with CupyBackend(device):
 
-            if microscope == 'simview':
-                array, model = simview_fuse_2C2L(*views_tp,
-                                                 registration_model=model,
-                                                 equalise=equalise,
-                                                 zero_level=zero_level,
-                                                 fusion=fusion,
-                                                 fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
-                                                 fusion_bias_strength=fusion_bias_strength,
-                                                 dehaze_size=dehaze_size,
-                                                 dark_denoise_threshold=dark_denoise_threshold)
-            elif microscope == 'mvsols':
-                metadata = dataset.get_metadata()
-                angle = metadata['angle']
-                channel = metadata['channel']
-                dz = metadata['dz']
-                res = metadata['res']
+                model = models[tp]
 
-                array, model = msols_fuse_1C2L(*views_tp,
-                                               equalise=equalise,
-                                               zero_level=0,
-                                               angle=angle,
-                                               dx=res,
-                                               dz=dz)
+                if microscope == 'simview':
+                    array, model = simview_fuse_2C2L(*views_tp,
+                                                     registration_model=model,
+                                                     equalise=equalise,
+                                                     zero_level=zero_level,
+                                                     clip_too_high=clip_too_high,
+                                                     fusion=fusion,
+                                                     fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
+                                                     fusion_bias_strength=fusion_bias_strength,
+                                                     dehaze_size=dehaze_size,
+                                                     dark_denoise_threshold=dark_denoise_threshold)
+                elif microscope == 'mvsols':
+                    metadata = dataset.get_metadata()
+                    angle = metadata['angle']
+                    channel = metadata['channel']
+                    dz = metadata['dz']
+                    res = metadata['res']
 
-            array = Backend.to_numpy(array, dtype=dtype, force_copy=False)
+                    array, model = msols_fuse_1C2L(*views_tp,
+                                                   equalise=equalise,
+                                                   zero_level=0,
+                                                   angle=angle,
+                                                   dx=res,
+                                                   dz=dz)
 
-            if not load_shifts:
-                json_text = model.to_json()
-                registration_models_file.write(json_text + '\n')
+                array = Backend.to_numpy(array, dtype=dtype, force_copy=False)
 
-        aprint(f'Writing array of dtype: {array.dtype}')
-        if 'fused' not in dest_dataset.channels():
-            dest_dataset.add_channel('fused',
-                                     shape=(shape[0],) + array.shape,
-                                     dtype=dtype,
-                                     codec=compression,
-                                     clevel=compression_level)
+                if not loadreg:
+                    models[tp] = model
 
-        with asection(f"Saving fused image"):
-            dest_dataset.get_array('fused')[tp] = array
+            if 'fused' not in dest_dataset.channels():
+                dest_dataset.add_channel('fused',
+                                         shape=(shape[0],) + array.shape,
+                                         dtype=dtype,
+                                         codec=compression,
+                                         clevel=compression_level)
+
+            with asection(f"Saving fused stack for time point {tp}, shape:{array.shape}, dtype:{array.dtype}"):
+                dest_dataset.get_array('fused')[tp] = array
+
+            aprint(f"Done processing time point: {tp} .")
+
+        except Exception as error:
+            aprint(error)
+            aprint(f"Error occurred while processing time point {tp} !")
+            import traceback
+            traceback.print_exc()
 
     if workers == -1:
         workers = len(devices)
-
-    aprint(f"workers={workers}")
+    aprint(f"Number of workers: {workers}")
 
     if workers > 1:
         Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
@@ -123,7 +129,8 @@ def dataset_fuse(dataset,
         for tp in range(0, shape[0]):
             process(tp, devices[0])
 
-    registration_models_file.close()
+    if not loadreg:
+        model_list_to_file(model_list_filename, models)
 
     aprint(dest_dataset.info())
     if check:

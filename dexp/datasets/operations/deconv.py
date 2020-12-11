@@ -75,10 +75,11 @@ def dataset_deconv(dataset,
 
         def process(tp, device):
 
-            with CupyBackend(device):
-                try:
-                    with asection(f"Loading channel: {channel} for time point {tp}"):
-                        tp_array = array[tp].compute()
+            try:
+                with asection(f"Loading channel: {channel} for time point {tp}"):
+                    tp_array = array[tp].compute()
+
+                with CupyBackend(device, exclusive=True):
 
                     if downscalexy2:
                         tp_array = downscale_local_mean(tp_array, factors=(1, 2, 2)).astype(tp_array.dtype)
@@ -108,19 +109,21 @@ def dataset_deconv(dataset,
                         raise ValueError(f"Unknown deconvolution mode: {method}")
 
                     tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
-                    with asection(f"Saving deconvolved image"):
-                        dest_array[tp] = tp_array
 
-                    aprint(f"Done processing time point: {tp} .")
+                with asection(f"Saving deconvolved stack for time point {tp}, shape:{array.shape}, dtype:{array.dtype}"):
+                    dest_array[tp] = tp_array
 
-                except Exception as error:
-                    aprint(error)
-                    aprint(f"Error occurred while copying time point {tp} !")
-                    import traceback
-                    traceback.print_exc()
+                aprint(f"Done processing time point: {tp} .")
+
+            except Exception as error:
+                aprint(error)
+                aprint(f"Error occurred while processing time point {tp} !")
+                import traceback
+                traceback.print_exc()
 
         if workers == -1:
             workers = len(devices)
+        aprint(f"Number of workers: {workers}")
 
         if workers > 1:
             Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))

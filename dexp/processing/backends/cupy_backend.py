@@ -1,4 +1,5 @@
 import os
+import threading
 from typing import Any
 
 import numpy
@@ -17,8 +18,11 @@ class CupyBackend(Backend):
         import GPUtil
         return GPUtil.getAvailable(order='first', limit=numpy.Inf, maxLoad=0.5, maxMemory=0.5, includeNan=False, excludeID=[], excludeUUID=[])
 
+    device_locks = tuple(threading.Lock() for _ in available_devices.__func__())
+
     def __init__(self,
                  device_id=0,
+                 exclusive: bool = False,
                  enable_streaming: bool = True,
                  enable_memory_pool: bool = True,
                  enable_cub: bool = True,
@@ -33,6 +37,7 @@ class CupyBackend(Backend):
         Parameters
         ----------
         device_id : CUDA device id to use for allocation and compute
+        exclusive : If True the access to this device is exclusive, no other backend context can access it (when using the context manager idiom)
         enable_memory_pool : Enables cupy memory pool. By default disabled, when enabled cupy tends to return out-of-memory exceptions when handling large arrays.
         enable_cub : enables CUB accelerator
         enable_cutensor : enables cuTensor accelerator
@@ -43,6 +48,7 @@ class CupyBackend(Backend):
 
         super().__init__()
         self.device_id = device_id
+        self.exclusive = exclusive
         self.enable_streaming = enable_streaming
 
         import cupy
@@ -82,6 +88,8 @@ class CupyBackend(Backend):
                 f"compute:{self.cupy_device.compute_capability}, pci-bus-id:'{self.cupy_device.pci_bus_id}']")
 
     def __enter__(self):
+        if self.exclusive:
+            CupyBackend.device_locks[self.device_id].acquire(blocking=True)
         self.cupy_device.__enter__()
         if self.enable_streaming:
             import cupy
@@ -95,6 +103,8 @@ class CupyBackend(Backend):
             self.stream.__exit__()
         self.cupy_device.__exit__()
         self.clear_allocation_pool()
+        if self.exclusive:
+            CupyBackend.device_locks[self.device_id].release()
 
     def synchronise(self):
         self.stream.synchronize()

@@ -52,7 +52,11 @@ def _parse_channels(input_dataset, channels):
 
 
 def _parse_devices(devices):
-    aprint(f"Requested devices    :  '{devices if devices else '--All--'}' ")
-    if devices is not None:
+    aprint(f"Requested devices    :  '{'--All--' if 'all' in devices else devices}' ")
+    if 'all' in devices:
+        from dexp.processing.backends.cupy_backend import CupyBackend
+        devices = list(range(len(CupyBackend.available_devices())))
+    else:
         devices = tuple(device.strip() for device in devices.split(','))
+
     return devices

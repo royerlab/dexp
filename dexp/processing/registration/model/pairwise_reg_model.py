@@ -15,6 +15,10 @@ class PairwiseRegistrationModel(ABC):
         pass
 
     @abstractmethod
+    def to_json(self) -> str:
+        pass
+
+    @abstractmethod
     def apply(self, image_a, image_b, pad: bool = False) -> numpy.ndarray:
         """ Applies this pairwise registration model to the two given images.
         Two images will be returned as there might be need to pad both images.

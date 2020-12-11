@@ -1,6 +1,7 @@
-import time
+from time import time, sleep
 
 import numpy
+from arbol import aprint, asection
 from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
@@ -12,10 +13,10 @@ def test_cupy_basics():
         import cupy
         with cupy.cuda.Device(1):
             array = cupy.array([1, 2, 3])
-            print("\nWorked!")
+            aprint("\nWorked!")
 
     except (ModuleNotFoundError, NotImplementedError):
-        print("Cupy module not found! ignored!")
+        aprint("Cupy module not found! ignored!")
 
 
 def test_list_devices():
@@ -26,12 +27,12 @@ def test_list_devices():
         import cupy
 
         available = CupyBackend.available_devices()
-        print(f"Available devices: {available}")
+        aprint(f"Available devices: {available}")
         assert len(available) > 0
 
         for device_id in available:
             with CupyBackend(device_id) as backend:
-                print(backend)
+                aprint(backend)
                 xp = Backend.get_xp_module()
 
                 array1 = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
@@ -41,7 +42,7 @@ def test_list_devices():
                 array2 = Backend.to_backend(array2, numpy.float32)
 
     except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
+        aprint("Cupy module not found! Test passes nevertheless!")
 
 
 def test_allocation_pool():
@@ -55,23 +56,23 @@ def test_allocation_pool():
             import cupy
             mempool = cupy.get_default_memory_pool()
             in_pool_before = mempool.total_bytes() - mempool.used_bytes()
-            print(f"in_pool_before={in_pool_before}")
+            aprint(f"in_pool_before={in_pool_before}")
 
             for i in range(10):
                 array = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
 
-            time.sleep(2)
+            sleep(2)
             backend.synchronise()
 
             in_pool_after = mempool.total_bytes() - mempool.used_bytes()
-            print(f"in_pool_after={in_pool_after}")
+            aprint(f"in_pool_after={in_pool_after}")
 
             assert in_pool_after > in_pool_before
 
             backend.clear_allocation_pool()
 
             in_pool_after_clear = mempool.total_bytes() - mempool.used_bytes()
-            print(f"in_pool_after_clear={in_pool_after_clear}")
+            aprint(f"in_pool_after_clear={in_pool_after_clear}")
 
             assert in_pool_after_clear <= in_pool_before
 
@@ -79,18 +80,18 @@ def test_allocation_pool():
                 array = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
 
             in_pool_after_reallocation = mempool.total_bytes() - mempool.used_bytes()
-            print(f"in_pool_after_reallocation={in_pool_after_reallocation}")
+            aprint(f"in_pool_after_reallocation={in_pool_after_reallocation}")
 
             assert in_pool_after_reallocation > in_pool_after_clear
 
         in_pool_after_context = mempool.total_bytes() - mempool.used_bytes()
-        print(f"in_pool_after_context={in_pool_after_clear}")
+        aprint(f"in_pool_after_context={in_pool_after_clear}")
 
         assert in_pool_after_context == in_pool_after_clear
 
 
     except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
+        aprint("Cupy module not found! Test passes nevertheless!")
 
 
 def test_paralell():
@@ -98,14 +99,46 @@ def test_paralell():
 
         def f(id):
             with CupyBackend(id):
-                print(f"Begin: Job on device #{id}")
+                aprint(f"Begin: Job on device #{id}")
                 xp = Backend.get_xp_module()
                 array = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
                 array += 1
-                print(f"End: Job on device #{id}")
+                aprint(f"End: Job on device #{id}")
 
         n_jobs = 2
         Parallel(n_jobs=n_jobs, backend='threading')(delayed(f)(id) for id in range(n_jobs))
 
     except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
+        aprint("Cupy module not found! Test passes nevertheless!")
+
+
+def test_paralell_with_exclusive():
+    try:
+        num_devices = len(CupyBackend.available_devices())
+
+        job_duration = 2
+
+        def f(id, device):
+            aprint(f"Job #{id} waiting to gain access to device {device} to start ...")
+            with CupyBackend(device, exclusive=True):
+                with asection(f"Begin: Job #{id} on device #{device}"):
+                    xp = Backend.get_xp_module()
+                    array = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
+                    array += 1
+                    sleep(job_duration)
+                    aprint(f"End: Job #{id} on device #{device}")
+
+        n_jobs = 2 * num_devices
+
+        start = time()
+        with asection(f"Start jobs"):
+            Parallel(n_jobs=n_jobs, backend='threading')(delayed(f)(id, id % num_devices) for id in range(n_jobs))
+        elapsed_time = time() - start
+        aprint(f"elapsed_time={elapsed_time}")
+
+        # the fact that we have only 'num_devices' available, enforce exclusive access to devices, and spawning more jobs than devices, makes the
+        # total elapsed time predictable and testable:
+        assert num_devices * job_duration < elapsed_time < (num_devices + 0.5) * job_duration
+
+    except ModuleNotFoundError:
+        aprint("Cupy module not found! Test passes nevertheless!")

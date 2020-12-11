@@ -19,15 +19,16 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--microscope', '-m', type=str, default='simview', help='Microscope objective to use for computing psf, can be: simview or mvsols', show_default=True)
 @click.option('--equalise/--no-equalise', '-eq/-neq', default=True, help='Equalise intensity of views before fusion, or not.', show_default=True)
 @click.option('--zerolevel', '-zl', type=int, default=110, help='\'zero-level\' i.e. the pixel values in the restoration (to be substracted)', show_default=True)  #
+@click.option('--cliphigh', '-ch', type=int, default=1024, help='Clips voxel values above the given value, if zero no clipping is done', show_default=True)  #
 @click.option('--fusion', '-f', type=str, default='tg', help="Fusion mode, can be: 'tg' or 'dct'.  ", show_default=True)  #
 @click.option('--fusion_bias_strength', '-fbs', type=float, default=0.1, help='Fusion bias strength, set to 0 if fusing a cropped region', show_default=True)  #
 @click.option('--dehaze_size', '-dhs', type=int, default=65, help='Filter size (scale) for dehazing the final regsitered and fused image to reduce effect of scattered and out-of-focus light. Set to zero to deactivate.',
               show_default=True)  #
 @click.option('--dark_denoise_threshold', '-ddt', type=int, default=0, help='Threshold for denoises the dark pixels of the image -- helps increase compression ratio. Set to zero to deactivate.', show_default=True)  #
-@click.option('--loadshifts', '-ls', is_flag=True, help='Turn on to load the registration parameters (i.e translation shifts) from another run', show_default=True)  #
+@click.option('--loadreg', '-lr', is_flag=True, help='Turn on to load the registration parameters from a previous run', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
-@click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2', show_default=True)  #
+@click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def fuse(input_path,
          output_path,
@@ -40,11 +41,12 @@ def fuse(input_path,
          microscope,
          equalise,
          zerolevel,
+         cliphigh,
          fusion,
          fusion_bias_strength,
          dehaze_size,
          dark_denoise_threshold,
-         loadshifts,
+         loadreg,
          workers,
          workersbackend,
          devices,
@@ -70,11 +72,12 @@ def fuse(input_path,
                      microscope=microscope,
                      equalise=equalise,
                      zero_level=zerolevel,
+                     clip_too_high=cliphigh,
                      fusion=fusion,
                      fusion_bias_strength=fusion_bias_strength,
                      dehaze_size=dehaze_size,
                      dark_denoise_threshold=dark_denoise_threshold,
-                     load_shifts=loadshifts,
+                     loadreg=loadreg,
                      workers=workers,
                      workersbackend=workersbackend,
                      devices=devices,

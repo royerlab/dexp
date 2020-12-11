@@ -19,7 +19,8 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--chunksize', '-cs', type=int, default=512, help='Chunk size for tiled computation', show_default=True)
 @click.option('--method', '-m', type=str, default='lr', help='Deconvolution method: for now only lr (Lucy Richardson)', show_default=True)
 @click.option('--iterations', '-i', type=int, default=None, help='Number of deconvolution iterations. More iterations takes longer, will be sharper, but might also be potentially more noisy depending on method. '
-                                                                 'The default number of iterations depends on the other parameters, in particular it depends on the choice of backprojection operator. For ‘wb’ as little as 3 iterations suffice. ', show_default=True)
+                                                                 'The default number of iterations depends on the other parameters, in particular it depends on the choice of backprojection operator. For ‘wb’ as little as 3 iterations suffice. ',
+              show_default=True)
 @click.option('--maxcorrection', '-mc', type=int, default=None, help='Max correction in folds per iteration. By default there is no limit',
               show_default=True)
 @click.option('--power', '-pw', type=float, default=1.0, help='Correction exponent, default for standard LR is 1, set to >1 for acceleration.', show_default=True)
@@ -33,7 +34,7 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--downscalexy2', '-d', is_flag=False, help='Downscales along x and y for faster deconvolution (but worse quality of course)', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
-@click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2', show_default=True)  #
+@click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def deconv(input_path,
            output_path,

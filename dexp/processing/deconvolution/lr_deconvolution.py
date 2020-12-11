@@ -128,7 +128,6 @@ def lucy_richardson_deconvolution(image,
         elif back_projection == 'wb':
             num_iterations = 3
 
-
     if back_projection == 'tpsf':
         back_projector = xp.flip(psf)
     elif back_projection == 'wb':

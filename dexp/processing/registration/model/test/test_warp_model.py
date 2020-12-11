@@ -3,7 +3,6 @@ import numpy
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.model.model_factory import from_json
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 from dexp.utils.timeit import timeit
@@ -63,10 +62,3 @@ def _test_warp_model(length_xy=128, warp_grid_size=3):
 
     assert dewarped_error < warped_error
     assert dewarped_error < 55
-
-    json_str = model.to_json()
-    new_model = from_json(json_str)
-    vf1 = Backend.to_numpy(new_model.vector_field)
-    vf2 = Backend.to_numpy(model.vector_field)
-    error = numpy.mean(numpy.absolute(vf1 - vf2))
-    print(f"error = {error}")

@@ -25,7 +25,7 @@ def register_translation_2d():
 
     image, shifted, unshifted, model = _register_translation_2d(display=False)
 
-    shifts = model.shift_vector
+    shifts = Backend.to_numpy(model.shift_vector)
     assert shifts[0] == approx(-13, abs=0.5)
     assert shifts[1] == approx(5, abs=0.5)
 

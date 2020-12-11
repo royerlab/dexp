@@ -1,5 +1,3 @@
-import numpy
-
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.registration.reg_trans_2d import register_translation_2d_dexp
@@ -63,22 +61,22 @@ def register_translation_maxproj_nd(image_a, image_b,
         # print(shifts_p2)
 
         if drop_worse:
-            worse_index = numpy.argmin(numpy.asarray([confidence_p0, confidence_p1, confidence_p2]))
+            worse_index = xp.argmin(xp.asarray([confidence_p0, confidence_p1, confidence_p2]))
 
             if worse_index == 0:
-                shifts = numpy.asarray([0.5 * (shifts_p1[0] + shifts_p2[0]), shifts_p2[1], shifts_p1[1]])
+                shifts = xp.asarray([0.5 * (shifts_p1[0] + shifts_p2[0]), shifts_p2[1], shifts_p1[1]])
                 confidence = (confidence_p1 * confidence_p2) ** 0.5
             elif worse_index == 1:
-                shifts = numpy.asarray([shifts_p2[0], 0.5 * (shifts_p0[0] + shifts_p2[1]), shifts_p0[1]])
+                shifts = xp.asarray([shifts_p2[0], 0.5 * (shifts_p0[0] + shifts_p2[1]), shifts_p0[1]])
                 confidence = (confidence_p0 * confidence_p2) ** 0.5
             elif worse_index == 2:
-                shifts = numpy.asarray([shifts_p1[0], shifts_p0[0], 0.5 * (shifts_p0[1] + shifts_p1[1])])
+                shifts = xp.asarray([shifts_p1[0], shifts_p0[0], 0.5 * (shifts_p0[1] + shifts_p1[1])])
                 confidence = (confidence_p0 * confidence_p1) ** 0.5
 
         else:
-            shifts_p0 = numpy.asarray([0, shifts_p0[0], shifts_p0[1]])
-            shifts_p1 = numpy.asarray([shifts_p1[0], 0, shifts_p1[1]])
-            shifts_p2 = numpy.asarray([shifts_p2[0], shifts_p2[1], 0])
+            shifts_p0 = xp.asarray([0, shifts_p0[0], shifts_p0[1]])
+            shifts_p1 = xp.asarray([shifts_p1[0], 0, shifts_p1[1]])
+            shifts_p2 = xp.asarray([shifts_p2[0], shifts_p2[1], 0])
             shifts = (shifts_p0 + shifts_p1 + shifts_p2) / 2
             confidence = (confidence_p0 * confidence_p1 * confidence_p2) ** 0.33
 

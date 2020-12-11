@@ -17,11 +17,18 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
 
         """
         super().__init__()
-        self.vector_field = vector_field
-        self.confidence = confidence
+        xp = Backend.get_xp_module()
+        self.vector_field = xp.asarray(0 if vector_field is None else vector_field)
+        self.confidence = xp.asarray(0 if confidence is None else confidence)
 
     def __str__(self):
         return f"WarpRegistrationModel(vector_field_shape={self.vector_field.shape}, confidence_shape={self.confidence.shape})"
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return (self.vector_field == other.vector_field).all() and (self.confidence == other.confidence).all()
+        else:
+            return False
 
     def to_json(self) -> str:
         return json.dumps({'type': 'warp', 'vector_field': (Backend.to_numpy(self.vector_field)).tolist(), 'confidence': (Backend.to_numpy(self.confidence)).tolist()})
@@ -138,4 +145,9 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         xp = Backend.get_xp_module(self.confidence)
         norms = xp.linalg.norm(self.vector_field, axis=-1)
         norms = norms[self.confidence > confidence_threshold]
-        return xp.median(norms)
+        if norms.size == 0:
+            return 0
+        elif norms.size == 1:
+            return float(norms)
+        else:
+            return xp.median(norms)

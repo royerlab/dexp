@@ -12,7 +12,7 @@ def normalise_functions(image,
                         high: float = 1.,
                         minmax: Tuple[float, float] = None,
                         quantile: float = 0,
-                        clip: bool = True,
+                        clip: bool = False,
                         do_normalise: bool = True,
                         in_place: bool = True,
                         dtype=None):
@@ -26,7 +26,7 @@ def normalise_functions(image,
     low, high : normal;isation range
     minmax : min and max values of the image if already known.
     quantile : if quantile>0 then quantile normalisation is used to find the min and max values.
-    clip : clip  after normalisation
+    clip : clip after normalisation/denormalisation
     do_normalise : If False, the returned functions are pass-thrpough identity functions.
     in_place : In-place computation is allowed and inputs may be modified
     dtype : dtype to normalise to.

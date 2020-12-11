@@ -1,7 +1,6 @@
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.model.model_factory import from_json
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 
@@ -64,9 +63,3 @@ def _test_translation_model(length_xy=128):
 
     assert average_error < 11
     assert average_error_pad < 11
-
-    json_str = model.to_json()
-    new_model = from_json(json_str)
-    assert (new_model.shift_vector == model.shift_vector).all()
-    assert (new_model.confidence == model.confidence).all()
-    assert new_model.integral == model.integral

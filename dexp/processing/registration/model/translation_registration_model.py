@@ -11,7 +11,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
 
     def __init__(self,
                  shift_vector: Union[Sequence[float], numpy.ndarray],
-                 confidence: float = 1,
+                 confidence: Union[numpy.ndarray, float] = 1,
                  integral: bool = False):
 
         """ Instantiates a translation registration model
@@ -25,12 +25,19 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
 
         """
         super().__init__()
-        self.shift_vector = Backend.to_numpy(shift_vector)
-        self.confidence = Backend.to_numpy(confidence)
+        xp = Backend.get_xp_module()
+        self.shift_vector = xp.asarray(shift_vector)
+        self.confidence = xp.asarray(confidence)
         self.integral = integral
 
     def __str__(self):
         return f"TranslationRegistrationModel(shift={self.shift_vector}, confidence={self.confidence}, integral={self.integral})"
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return (self.shift_vector == other.shift_vector).all() and (self.confidence == other.confidence).all() and self.integral == other.integral
+        else:
+            return False
 
     def to_json(self) -> str:
         return json.dumps({'type': 'translation', 'translation': self.shift_vector.tolist(), 'integral': self.integral, 'confidence': self.confidence.tolist()})
@@ -43,7 +50,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
         xp = Backend.get_xp_module()
         sp = Backend.get_sp_module()
 
-        integral_shift_vector = tuple(int(round(shift)) for shift in self.shift_vector)
+        integral_shift_vector = tuple(int(round(float(shift))) for shift in self.shift_vector)
 
         if pad:
             padding_a = tuple(((0, abs(s)) if s >= 0 else (abs(s), 0)) for s in integral_shift_vector)

@@ -12,7 +12,7 @@ def scatter_gather_i2i(function,
                        chunks: Union[int, Tuple[int, ...]],
                        margins: Union[int, Tuple[int, ...]] = None,
                        normalise: bool = True,
-                       clip: bool = True,
+                       clip: bool = False,
                        to_numpy: bool = True,
                        internal_dtype=None):
     """
@@ -29,6 +29,7 @@ def scatter_gather_i2i(function,
     chunks : chunk sizes to cut input image into, can be a single integer or a tuple of integers.
     margins : margins to add to each chunk, can be a single integer or a tuple of integers.
     normalise : normalises  the input image.
+    clip : clip after normalisation/denormalisation
     to_numpy : should the result be a numpy array? Very usefull when the compute backend cannot hold the whole input and output images in memory.
     internal_dtype : internal dtype for computation
 

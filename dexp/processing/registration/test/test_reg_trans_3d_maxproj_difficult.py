@@ -32,7 +32,7 @@ def register_translation_3d_maxproj_diff(reg_trans_2d, length_xy=128):
     sp = Backend.get_sp_module()
 
     image, shifted, unshifted, model = _register_translation_3d_maxproj_diff(length_xy=length_xy, display=False)
-    shifts = model.shift_vector
+    shifts = Backend.to_numpy(model.shift_vector)
     assert shifts[0] == approx(-1, abs=0.2)
     assert shifts[1] == approx(-5, abs=0.2)
     assert shifts[2] == approx(13, abs=0.2)
