@@ -101,7 +101,7 @@ def dataset_deconv(dataset,
                                                                  )
 
                         margins = max(xy_size, z_size)
-                        with asection(f"LR Deconvolution of image of shape: {tp_array}, with chunk size: {chunksize}, margins: {margins} "):
+                        with asection(f"LR Deconvolution of image of shape: {tp_array.shape}, with chunk size: {chunksize}, margins: {margins} "):
                             aprint(f"Number of iterations: {num_iterations}, back_projection:{back_projection}, ")
                             tp_array = scatter_gather_i2i(f, tp_array, chunks=chunksize, margins=margins)
                     else:
