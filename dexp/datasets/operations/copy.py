@@ -51,6 +51,7 @@ def dataset_copy(dataset,
             def process(tp):
                 try:
                     aprint(f"Processing time point: {tp} ...")
+
                     tp_array = array[tp].compute()
                     if project:
                         # project is the axis for projection, but here we are not considering the T dimension anymore...

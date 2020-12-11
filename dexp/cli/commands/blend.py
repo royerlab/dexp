@@ -6,6 +6,7 @@ import click
 import imageio
 import numpy
 from arbol.arbol import asection, aprint
+from joblib import Parallel
 from scipy import special
 
 from dexp.cli.main import _default_workers_backend
@@ -33,8 +34,6 @@ def blend(input_paths, output_path, blending, overwrite, workers, workersbackend
         first_folder = input_paths[0]
         pngfiles = [f for f in listdir(first_folder) if isfile(join(first_folder, f)) and f.endswith('.png')]
         pngfiles.sort()
-
-        from joblib import Parallel, delayed
 
         def process(pngfile):
             with asection(f'processing file: {pngfile}'):

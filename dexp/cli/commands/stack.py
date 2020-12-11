@@ -6,6 +6,7 @@ import click
 import imageio
 import numpy
 from arbol.arbol import aprint, asection
+from joblib import Parallel
 
 from dexp.cli.main import _default_workers_backend
 
@@ -34,8 +35,6 @@ def stack(input_paths, output_path, orientation, overwrite, workers, workersback
     first_folder = input_paths[0]
     pngfiles = [f for f in listdir(first_folder) if isfile(join(first_folder, f)) and f.endswith('.png')]
     pngfiles.sort()
-
-    from joblib import Parallel, delayed
 
     def process(pngfile):
         stacked_image_array = None

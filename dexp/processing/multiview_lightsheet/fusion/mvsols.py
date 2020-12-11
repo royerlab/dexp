@@ -1,7 +1,7 @@
 import gc
 
 import numpy
-from arbol import asection, aprint, section
+from arbol.arbol import asection, aprint, section
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -35,6 +35,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     z_apodise: int = 0,
                     registration_confidence_threshold: float = 0.3,
                     registration_max_residual_shift: int = 64,
+
                     registration_mode: str = 'projection',
                     registration_edge_filter: bool = False,
                     registration_model: PairwiseRegistrationModel = None,

@@ -54,6 +54,7 @@ def register_warp_multiscale_nd(image_a,
 
     with asection(f"Starting multi-scale registration with num_iterations={num_iterations}"):
         aprint(f"Confidence threshold: {confidence_threshold}, max residual shif: {max_residual_shift}")
+
         for i in range(num_iterations):
 
             # Clear memory allocation cache:
@@ -75,7 +76,6 @@ def register_warp_multiscale_nd(image_a,
                 model = register_warp_nd(image_a, image, chunks=chunks, margins=margins, **kwargs)
                 aprint(f"mean confidence: {model.mean_confidence()}")
                 aprint(f"median shift magnitude: {model.median_shift_magnitude()}")
-
                 eff_max_shift = max_residual_shift if (i > 0 and max_residual_shift is not None) else None
                 model.clean(mode='median', confidence_threshold=confidence_threshold,
                             max_shift=eff_max_shift)

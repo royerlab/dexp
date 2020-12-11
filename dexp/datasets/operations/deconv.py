@@ -1,4 +1,5 @@
-from arbol.arbol import aprint, asection
+from arbol.arbol import aprint
+from arbol.arbol import asection
 from joblib import Parallel, delayed
 from skimage.transform import downscale_local_mean
 
@@ -74,9 +75,9 @@ def dataset_deconv(dataset,
 
             with CupyBackend(device):
                 try:
-
                     with asection(f"Loading channel: {channel} for time point {tp}"):
                         tp_array = array[tp].compute()
+
                     if downscalexy2:
                         tp_array = downscale_local_mean(tp_array, factors=(1, 2, 2)).astype(tp_array.dtype)
 
@@ -106,6 +107,7 @@ def dataset_deconv(dataset,
                     tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
                     with asection(f"Saving deconvolved image"):
                         dest_array[tp] = tp_array
+
                     aprint(f"Done processing time point: {tp} .")
 
                 except Exception as error:

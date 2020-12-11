@@ -1,4 +1,5 @@
-from arbol.arbol import aprint, asection
+from arbol.arbol import aprint
+from arbol.arbol import asection
 from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
@@ -55,6 +56,7 @@ def dataset_fuse(dataset,
         aprint(f"Loading registration shifts from existing file! ({registration_models_file.name})")
 
     def process(tp, device):
+
         with CupyBackend(device):
 
             with asection(f"Loading channels {channels} for time point {tp}"):

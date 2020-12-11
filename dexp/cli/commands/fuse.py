@@ -78,7 +78,7 @@ def fuse(input_path,
                      workers=workers,
                      workersbackend=workersbackend,
                      devices=devices,
-                     check=check,
-                     )
+                     check=check)
+
         input_dataset.close()
         aprint("Done!")

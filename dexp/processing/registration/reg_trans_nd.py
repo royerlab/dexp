@@ -127,7 +127,6 @@ def register_translation_nd(image_a,
     #
     #     def _c(array):
     #         return Backend.to_numpy(array)
-    #
     #     viewer = Viewer()
     #     viewer.add_image(_c(image_a), name='image_a')
     #     viewer.add_image(_c(image_b), name='image_b')

@@ -1,6 +1,7 @@
 # You need to point to a tiff file with 4 views as first dim,
 # as produced for example by: dexp tiff -w -s [128:129] dataset.zarr -o /home/royer/Desktop/test_data/test_data.tiff
 from arbol import asection, aprint
+from napari import Viewer
 
 from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.backends.backend import Backend
@@ -60,7 +61,7 @@ def _mvsols_resample():
                                   z_pad=8,
                                   z_apodise=96)
 
-    from napari import Viewer, gui_qt
+    from napari import gui_qt
     with gui_qt():
         def _c(array):
             return Backend.to_numpy(array)
