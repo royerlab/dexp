@@ -20,7 +20,7 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--method', '-m', type=str, default='lr', help='Deconvolution method: for now only lr (Lucy Richardson)', show_default=True)
 @click.option('--iterations', '-i', type=int, default=None, help='Number of deconvolution iterations. More iterations takes longer, will be sharper, but might also be potentially more noisy depending on method. '
                                                                  'The default number of iterations depends on the other parameters, in particular it depends on the choice of backprojection operator. For ‘wb’ as little as 3 iterations suffice. ', show_default=True)
-@click.option('--maxcorrection', '-mc', type=int, default=16, help='Max correction in folds per iteration.',
+@click.option('--maxcorrection', '-mc', type=int, default=None, help='Max correction in folds per iteration. By default there is no limit',
               show_default=True)
 @click.option('--power', '-pw', type=float, default=1.0, help='Correction exponent, default for standard LR is 1, set to >1 for acceleration.', show_default=True)
 @click.option('--blindspot', '-bs', type=int, default=0, help='Blindspot based noise reduction. Provide size of kernel to use, must be an odd number: 3(recommended), 5, 7. 0 means no blindspot. ', show_default=True)
@@ -28,8 +28,8 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--objective', '-obj', type=str, default='nikon16x08na', help='Microscope objective to use for computing psf, can be: nikon16x08na or olympus20x10na', show_default=True)
 @click.option('--dxy', '-dxy', type=float, default=0.485, help='Voxel size along x and y in microns', show_default=True)
 @click.option('--dz', '-dz', type=float, default=4 * 0.485, help='Voxel size along z in microns', show_default=True)
-@click.option('--xysize', '-sxy', type=int, default=17, help='PSF size along xy in voxels', show_default=True)
-@click.option('--zsize', '-sz', type=int, default=17, help='PSF size along z in voxels', show_default=True)
+@click.option('--xysize', '-sxy', type=int, default=31, help='PSF size along xy in voxels', show_default=True)
+@click.option('--zsize', '-sz', type=int, default=31, help='PSF size along z in voxels', show_default=True)
 @click.option('--downscalexy2', '-d', is_flag=False, help='Downscales along x and y for faster deconvolution (but worse quality of course)', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #

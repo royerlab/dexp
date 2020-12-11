@@ -25,7 +25,7 @@ def lucy_richardson_deconvolution(image,
                                   padding_mode: str = 'edge',
                                   normalise_input: bool = True,
                                   normalise_minmax: Tuple[float, float] = None,
-                                  clip_output: bool = True,
+                                  clip_output: bool = False,
                                   blind_spot: int = 0,
                                   blind_spot_mode: str = 'median+uniform',
                                   blind_spot_axis_exclusion: Union[str, Tuple[int, ...]] = None,
@@ -51,7 +51,7 @@ def lucy_richardson_deconvolution(image,
     blind_spot_axis_exclusion : if None no axis is excluded from the blind-spot support kernel, otherwise if a tuple of ints is provided, these refer to the
     then the support kernel is clipped along these axis. For example for a 3D stack where the sampling along z (first axis) is poor, use: (0,) so that blind-spot kernel does not extend in z.
     convolve_method : convolution method to use
-    clip_output : By default the output is clipped to the input image range.
+    clip_output : Clip output to input range, or not
     internal_dtype : dtype to use internally for computation.
 
     Returns
