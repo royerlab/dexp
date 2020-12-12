@@ -1,10 +1,8 @@
 import click
-import dask
-import numpy
 from arbol.arbol import aprint, asection
-from napari._qt.qthreading import thread_worker
 
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _parse_slicing
+from dexp.datasets.operations.view import dataset_view
 
 
 @click.command()
@@ -17,72 +15,34 @@ from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _parse_slici
 @click.option('--windowsize', '-ws', type=int, default=1536, help='Sets the napari window size. i.e. -ws 400 sets the window to 400x400', show_default=True)
 @click.option('--clim', '-cl', type=str, default=None, help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]', show_default=True)
 def view(input_path, channels=None, slicing=None, volume=False, aspect=None, colormap='viridis', windowsize=1536, clim=None):
-    from napari import Viewer, gui_qt
 
-    input_dataset = _get_dataset_from_path(input_path)
-    channels = _parse_channels(input_dataset, channels)
-    slicing = _parse_slicing(slicing)
+    if 'http' in input_path:
+        if channels is None:
+            aprint("Channel(s) must be specified!")
+            return
 
-    with asection(f"Viewing dataset at: {input_path}, channels: {channels}, slicing: {slicing}, aspect:{aspect} "):
+        with asection(f"Viewing remote dataset at: {input_path}, channel(s): {channels}"):
+            channels = tuple(channel.strip() for channel in channels.split(','))
+            channels = list(set(channels))
 
-        # Annoying napari induced warnings:
-        import warnings
-        warnings.filterwarnings("ignore")
+            from napari import Viewer, gui_qt
 
-        with gui_qt():
-            viewer = Viewer(title=f"DEXP | viewing with napari: {input_path} ", ndisplay=3 if volume else 2)
+            with gui_qt():
+                viewer = Viewer()
+                for channel in channels:
+                    import dask.array as da
+                    array = da.from_zarr(f"{input_path}/{channel}/{channel}")
+                    viewer.add_image(array, name='channel', visible=True)
+    else:
 
-            viewer.window.resize(windowsize + 256, windowsize)
+        input_dataset = _get_dataset_from_path(input_path)
+        channels = _parse_channels(input_dataset, channels)
+        slicing = _parse_slicing(slicing)
 
-            for channel in channels:
-                aprint(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
-                aprint(input_dataset.info(channel))
+        with asection(f"Viewing dataset at: {input_path}, channels: {channels}, slicing: {slicing}, aspect:{aspect} "):
 
-                array = input_dataset.get_array(channel, wrap_with_dask=True)
+            dataset_view(aspect, channels, clim, colormap, input_dataset, input_path, slicing, volume, windowsize)
+            input_dataset.close()
+            aprint("Done!")
 
-                if slicing:
-                    array = array[slicing]
 
-                aprint(f"Adding array of shape={array.shape} and dtype={array.dtype} for channel '{channel}'.")
-
-                if clim is None:
-                    aprint(f"Computing min and max from first stack...")
-                    first_stack = numpy.array(input_dataset.get_stack(channel, 0, per_z_slice=False))[::8]
-                    first_stack_proj = numpy.max(first_stack, axis=0)
-                    min_value = numpy.percentile(first_stack_proj[::4], q=0.1)
-                    max_value = numpy.percentile(first_stack_proj[::4], q=99.99)
-                    aprint(f"min={min_value} and max={max_value}.")
-                    contrast_limits = [max(0, min_value - 32), max_value + 32]
-                else:
-                    aprint(f"provided min and max for contrast limits: {clim}")
-                    min_value, max_value = (float(strvalue) for strvalue in clim.split(','))
-                    contrast_limits = [min_value, max_value]
-
-                # flip x for second camera:
-                if 'C1' in channel:
-                    array = dask.array.flip(array, -1)
-
-                layer = viewer.add_image(array,
-                                         name=channel,
-                                         contrast_limits=contrast_limits,
-                                         blending='additive',
-                                         colormap=colormap,
-                                         attenuation=0.04,
-                                         rendering='attenuated_mip')
-
-                if not aspect is None:
-                    layer.scale = (1, aspect, 1, 1) if array.ndim == 4 else (aspect, 1, 1)
-                    aprint(f"Setting aspect ratio to {aspect} (layer.scale={layer.scale})")
-
-                # For some reason spome parameters refuse to be set, this solves it:
-                @thread_worker
-                def workaround_for_recalcitrant_parameters():
-                    aprint("Setting 3D rendering parameters")
-                    layer.attenuation = 0.02
-                    layer.rendering = 'attenuated_mip'
-
-                worker = workaround_for_recalcitrant_parameters()
-                worker.start()
-
-        input_dataset.close()
-        aprint("Done!")

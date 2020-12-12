@@ -55,6 +55,15 @@ class ZDataset(BaseDataset):
         self._root_group = None
         self._arrays = {}
 
+        if 'http' in path:
+            aprint(f"Opening a remote store at: {path}")
+            from fsspec import get_mapper
+            self.store = get_mapper(path)
+            self._root_group = zarr.open(self.store, mode=mode)
+            self._initialise_existing()
+            return
+
+
         if exists(path) and mode == 'w-':
             raise ValueError(f"ERROR -- Storage '{path}' already exists, add option '-w' to force overwrite!")
         elif exists(path) and mode == 'w':
@@ -79,7 +88,7 @@ class ZDataset(BaseDataset):
 
             aprint(f"Opening with mode: {mode}")
             self._root_group = open_group(self._store, mode=mode)
-            self._initialise_existing(path)
+            self._initialise_existing()
         elif 'a' in mode or 'w' in mode:
             try:
                 aprint(f"Path does not exist, creating zarr storage...")
@@ -115,17 +124,17 @@ class ZDataset(BaseDataset):
         else:
             raise ValueError(f"Invalid read/write mode or invalid path: {path} (check path!)")
 
-    def _initialise_existing(self, path: str):
+    def _initialise_existing(self):
         self._channels = [channel for channel, _ in self._root_group.groups()]
 
-        # print(f"Exploring Zarr hierarchy...")
+        aprint(f"Exploring Zarr hierarchy...")
         for channel, channel_group in self._root_group.groups():
-            # print(f"Found channel: {channel}")
+            aprint(f"Found channel: {channel}")
 
             channel_items = channel_group.items()
 
             for item_name, array in channel_items:
-                # print(f"Found array: {item_name}")
+                aprint(f"Found array: {item_name}")
 
                 if item_name == channel or item_name == 'fused':
                     # print(f'Opening array at {path}:{channel}/{item_name} ')

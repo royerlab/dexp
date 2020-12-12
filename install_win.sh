@@ -32,5 +32,6 @@ pip install cachey --upgrade
 pip install spimagine --upgrade
 pip install gputil
 pip install arbol colorama ansicolors
+pip install simple-zarr-server requests aiohttp
 
 pip install -e .

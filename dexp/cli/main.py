@@ -55,11 +55,16 @@ from dexp.cli.commands.isonet import isonet
 from dexp.cli.commands.info import info
 from dexp.cli.commands.tiff import tiff
 from dexp.cli.commands.view import view
+from dexp.cli.commands.serve import serve
+
 from dexp.cli.commands.render import render
 from dexp.cli.commands.blend import blend
 from dexp.cli.commands.stack import stack
 from dexp.cli.commands.mp4 import mp4
+
 from dexp.cli.commands.speedtest import speedtest
+
+
 
 cli.add_command(check)
 cli.add_command(copy)
@@ -70,9 +75,12 @@ cli.add_command(isonet)
 cli.add_command(info)
 cli.add_command(tiff)
 cli.add_command(view)
+cli.add_command(serve)
+
 cli.add_command(render)
 cli.add_command(blend)
 cli.add_command(stack)
 cli.add_command(mp4)
 
 cli.add_command(speedtest)
+
