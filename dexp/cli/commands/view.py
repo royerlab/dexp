@@ -31,7 +31,10 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
                 viewer = Viewer()
                 for channel in channels:
                     import dask.array as da
-                    array = da.from_zarr(f"{input_path}/{channel}/{channel}")
+                    if '/' in channel:
+                        array = da.from_zarr(f"{input_path}/{channel}")
+                    else:
+                        array = da.from_zarr(f"{input_path}/{channel}/{channel}")
                     viewer.add_image(array, name='channel', visible=True)
     else:
 
