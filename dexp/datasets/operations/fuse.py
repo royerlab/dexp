@@ -1,6 +1,7 @@
 from arbol.arbol import aprint
 from arbol.arbol import asection
 from joblib import Parallel, delayed
+from zarr.errors import ContainsArrayError
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
@@ -88,7 +89,7 @@ def dataset_fuse(dataset,
                                                      zero_level=zero_level,
                                                      clip_too_high=clip_too_high,
                                                      fusion=fusion,
-                                                     fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
+                                                     fusion_bias_exponent=2,
                                                      fusion_bias_strength_i=fusion_bias_strength_i,
                                                      fusion_bias_strength_d=fusion_bias_strength_d,
                                                      dehaze_size=dehaze_size,
@@ -116,11 +117,15 @@ def dataset_fuse(dataset,
                 models[tp] = model
 
             if 'fused' not in dest_dataset.channels():
-                dest_dataset.add_channel('fused',
-                                         shape=(shape[0],) + array.shape,
-                                         dtype=dtype,
-                                         codec=compression,
-                                         clevel=compression_level)
+                try:
+                    dest_dataset.add_channel('fused',
+                                             shape=(shape[0],) + array.shape,
+                                             dtype=dtype,
+                                             codec=compression,
+                                             clevel=compression_level)
+                except ContainsArrayError:
+                    aprint(f"Other thread/process created channel before...")
+
 
             with asection(f"Saving fused stack for time point {tp}, shape:{array.shape}, dtype:{array.dtype}"):
                 dest_dataset.get_array('fused')[tp] = array
