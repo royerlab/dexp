@@ -44,14 +44,16 @@ def simview_fusion():
         CxLx = Backend.to_numpy(CxLx)
 
     with gui_qt():
+        xp = Backend.get_xp_module()
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
         viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
         viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
-        viewer.add_image(_c(C1L0), name='C1L0', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
-        viewer.add_image(_c(C1L1), name='C1L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
+        viewer.add_image(_c(xp.flip(C1L0, -1)), name='C1L0', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
+        viewer.add_image(_c(xp.flip(C1L1, -1)), name='C1L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
         viewer.add_image(_c(CxLx), name='CxLx', contrast_limits=(0, 1200), scale=(4, 1, 1), blending='additive', colormap='viridis')
         # viewer.add_image(_c(CxLx_deconvolved), name='CxLx_deconvolved', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', colormap='viridis')
 

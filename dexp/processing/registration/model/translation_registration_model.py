@@ -42,6 +42,12 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
     def to_json(self) -> str:
         return json.dumps({'type': 'translation', 'translation': self.shift_vector.tolist(), 'integral': self.integral, 'confidence': self.confidence.tolist()})
 
+    def overall_confidence(self) -> float:
+        return float(self.confidence)
+
+    def change_relative_to(self, other) -> float:
+        return float(numpy.linalg.norm(Backend.to_numpy(other.shift_vector) - Backend.to_numpy(self.shift_vector)))
+
     def get_shift_and_confidence(self):
         return self.shift_vector, self.confidence
 

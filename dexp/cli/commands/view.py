@@ -48,4 +48,3 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
             input_dataset.close()
             aprint("Done!")
 
-

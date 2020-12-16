@@ -1,6 +1,6 @@
 import dask
 import numpy
-from arbol.arbol import aprint
+from arbol import aprint
 from napari import gui_qt, Viewer
 from napari._qt.qthreading import thread_worker
 

@@ -33,6 +33,14 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
     def to_json(self) -> str:
         return json.dumps({'type': 'warp', 'vector_field': (Backend.to_numpy(self.vector_field)).tolist(), 'confidence': (Backend.to_numpy(self.confidence)).tolist()})
 
+    def overall_confidence(self) -> float:
+        return float(self.median_confidence())
+
+    def change_relative_to(self, other) -> float:
+        ndim = self.shift_vector.ndim
+        robust_average = numpy.median(numpy.linalg.norm(Backend.to_numpy(other.shift_vector) - Backend.to_numpy(self.shift_vector), axis=ndim - 1))
+        return float(robust_average)
+
     def clean(self,
               max_shift: float = None,
               confidence_threshold: float = 0.1,

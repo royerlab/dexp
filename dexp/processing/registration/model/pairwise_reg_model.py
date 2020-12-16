@@ -19,6 +19,10 @@ class PairwiseRegistrationModel(ABC):
         pass
 
     @abstractmethod
+    def change_relative_to(self, other) -> float:
+        pass
+
+    @abstractmethod
     def apply(self, image_a, image_b, pad: bool = False) -> numpy.ndarray:
         """ Applies this pairwise registration model to the two given images.
         Two images will be returned as there might be need to pad both images.

@@ -23,10 +23,13 @@ def dataset_fuse(dataset,
                  zero_level,
                  clip_too_high,
                  fusion,
-                 fusion_bias_strength,
+                 fusion_bias_strength_i,
+                 fusion_bias_strength_d,
                  dehaze_size,
                  dark_denoise_threshold,
                  loadreg,
+                 min_confidence,
+                 max_change,
                  workers,
                  workersbackend,
                  devices,
@@ -61,7 +64,7 @@ def dataset_fuse(dataset,
         else:
             models = [None, ] * shape[0]
 
-    def process(tp, device):
+    def process(tp, device, workers):
         try:
 
             with asection(f"Loading channels {channels} for time point {tp}"):
@@ -71,15 +74,23 @@ def dataset_fuse(dataset,
 
                 model = models[tp]
 
+                # If we don't have a model for that timepoint we load one from a previous timepoint
+                if model is None and tp >= workers:
+                    model = models[tp - workers]
+
                 if microscope == 'simview':
                     array, model = simview_fuse_2C2L(*views_tp,
+                                                     registration_force_model=loadreg,
                                                      registration_model=model,
+                                                     registration_min_confidence=min_confidence,
+                                                     registration_max_change=max_change,
                                                      equalise=equalise,
                                                      zero_level=zero_level,
                                                      clip_too_high=clip_too_high,
                                                      fusion=fusion,
                                                      fusion_bias_exponent=2 if fusion_bias_strength > 0 else 1,
-                                                     fusion_bias_strength=fusion_bias_strength,
+                                                     fusion_bias_strength_i=fusion_bias_strength_i,
+                                                     fusion_bias_strength_d=fusion_bias_strength_d,
                                                      dehaze_size=dehaze_size,
                                                      dark_denoise_threshold=dark_denoise_threshold)
                 elif microscope == 'mvsols':
@@ -90,16 +101,19 @@ def dataset_fuse(dataset,
                     res = metadata['res']
 
                     array, model = msols_fuse_1C2L(*views_tp,
+                                                   registration_force_model=loadreg,
+                                                   registration_model=model,
+                                                   registration_min_confidence=min_confidence,
+                                                   registration_max_change=max_change,
                                                    equalise=equalise,
-                                                   zero_level=0,
+                                                   zero_level=zero_level,
                                                    angle=angle,
                                                    dx=res,
                                                    dz=dz)
 
                 array = Backend.to_numpy(array, dtype=dtype, force_copy=False)
 
-                if not loadreg:
-                    models[tp] = model
+                models[tp] = model
 
             if 'fused' not in dest_dataset.channels():
                 dest_dataset.add_channel('fused',
@@ -124,7 +138,7 @@ def dataset_fuse(dataset,
     aprint(f"Number of workers: {workers}")
 
     if workers > 1:
-        Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
+        Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)], workers) for tp in range(0, shape[0]))
     else:
         for tp in range(0, shape[0]):
             process(tp, devices[0])

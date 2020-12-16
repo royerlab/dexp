@@ -9,6 +9,7 @@ def dehaze(image,
            size: int = 21,
            downscale: int = 4,
            minimal_zero_level: float = 0,
+           correct_max_level: bool = True,
            in_place: bool = True,
            internal_dtype=None
            ):
@@ -42,16 +43,16 @@ def dehaze(image,
     image = Backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
     # original_image = image.copy()
 
-    minimal_zero_level = Backend.to_backend(numpy.asarray(minimal_zero_level), dtype=internal_dtype)
+    minimal_zero_level = xp.asarray(minimal_zero_level, dtype=internal_dtype)
 
     # get rid of low values due to noise:
     image_zero_level = sp.ndimage.filters.maximum_filter(image, size=3)
 
     # downscale to speed up the rest of the computation:
-    image_zero_level = sp.ndimage.interpolation.zoom(image_zero_level, zoom=1 / downscale, order=0)
+    downscaled_image = sp.ndimage.interpolation.zoom(image_zero_level, zoom=1 / downscale, order=0)
 
     # find min values:
-    image_zero_level = sp.ndimage.filters.minimum_filter(image_zero_level, size=max(1, size // downscale))
+    image_zero_level = sp.ndimage.filters.minimum_filter(downscaled_image, size=max(1, size // downscale))
 
     # expand reach of these min values:
     image_zero_level = sp.ndimage.filters.maximum_filter(image_zero_level, size=max(1, size // downscale))
@@ -71,9 +72,31 @@ def dehaze(image,
 
     # remove zero level:
     image -= image_zero_level
+    del image_zero_level
 
     # clip:
     image = xp.maximum(image, 0, out=image)
+
+    if correct_max_level:
+        # get image max level before:
+        # factor two is to match the extent reached for the zero_level image (see above conbination of min then max filters)
+        image_max_level_before = sp.ndimage.filters.maximum_filter(downscaled_image, size=max(1, 2 * size // downscale))
+
+        # get image max level after:
+        downscaled_image_after = sp.ndimage.filters.maximum_filter(image, size=3)
+        downscaled_image_after = sp.ndimage.interpolation.zoom(downscaled_image_after, zoom=1 / downscale, order=0)
+        image_max_level_after = sp.ndimage.filters.maximum_filter(downscaled_image_after, size=max(1, 2 * size // downscale))
+
+        # Correction ratio:
+        epsilon = xp.asarray(1e-6, dtype=internal_dtype)
+        correction_ratio = image_max_level_before
+        correction_ratio /= (image_max_level_after + epsilon)
+        del image_max_level_after
+        correction_ratio = sp.ndimage.zoom(correction_ratio, zoom=downscale, order=1)
+        correction_ratio = fit_to_shape(correction_ratio, shape=image.shape)
+
+        image *= correction_ratio
+        del correction_ratio
 
     # convert back to original dtype
     image = image.astype(dtype=original_dtype, copy=False)

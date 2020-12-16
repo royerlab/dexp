@@ -7,6 +7,8 @@ from dexp.processing.utils.normalise import normalise_functions
 
 def sobel_filter(image,
                  exponent: int = 2,
+                 gamma: float = 1,
+                 log_compression: bool = True,
                  normalise_input: bool = True,
                  in_place_normalisation: bool = False,
                  internal_dtype=None):
@@ -18,7 +20,7 @@ def sobel_filter(image,
     algorithms where it creates an image emphasising edges. It is named after Irwin Sobel
     and Gary Feldman, colleagues at the Stanford Artificial Intelligence Laboratory (SAIL).
     Sobel and Feldman presented the idea of an "Isotropic 3x3 Image Gradient Operator" at
-    a talk at SAIL in 1968.[1] Technically, it is a discrete differentiation operator,
+    a talk at SAIL in 1968. Technically, it is a discrete differentiation operator,
     computing an approximation of the gradient of the image intensity function.
     At each point in the image, the result of the Sobel–Feldman operator is either the
     corresponding gradient vector or the norm of this vector. The Sobel–Feldman operator
@@ -33,6 +35,8 @@ def sobel_filter(image,
     ----------
     image : image to apply filter on
     exponent : Exponent to use for the magnitude (norm) of the gradient, 2 for L2, and 1 for L1...
+    gamma : After normalisation, applies thte given gamma value.
+    log_compression : Before normalisation, applies log compression -- usefull to reduce the impact of high intensity values versus contrast.
     normalise_input : True to normalise input image between 0 and 1 before applying filter
     in_place_normalisation : If True then input image can be modified during normalisation.
     internal_dtype : dtype for internal computation.
@@ -53,11 +57,18 @@ def sobel_filter(image,
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
-    image = Backend.to_backend(image, dtype=internal_dtype, force_copy=normalise_input and not in_place_normalisation)
+    force_copy = normalise_input and not in_place_normalisation
+    image = Backend.to_backend(image, dtype=internal_dtype, force_copy=force_copy)
+
+    if log_compression:
+        image = xp.log1p(image, out=image if force_copy else None)
 
     norm_fun, denorm_fun = normalise_functions(image, do_normalise=normalise_input, dtype=internal_dtype)
 
     image = norm_fun(image)
+
+    if gamma != 1:
+        image **= gamma
 
     sobel_image = xp.zeros_like(image)
 

@@ -22,11 +22,18 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                       clip_too_high: int = 1024,
                       fusion='tg',
                       fusion_bias_exponent: int = 2,
-                      fusion_bias_strength: float = 0.1,
+                      fusion_bias_strength_i: float = 0.5,
+                      fusion_bias_strength_d: float = 0.02,
                       registration_mode: str = 'projection',
                       registration_edge_filter: bool = False,
+                      registration_crop_factor_along_z: float = 0.3,
+                      registration_force_model: bool = False,
                       registration_model: PairwiseRegistrationModel = None,
-                      dehaze_size: int = 65,
+                      registration_min_confidence: float = 0.5,
+                      registration_max_change: int = 16,
+                      dehaze_before_fusion: bool = True,
+                      dehaze_size: int = 32,
+                      dehaze_correct_max_level: bool = True,
                       dark_denoise_threshold: int = 0,
                       dark_denoise_size: int = 9,
                       butterworth_filter_cutoff: float = 1,
@@ -54,19 +61,29 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
 
     fusion_bias_exponent : Exponent for fusion bias
 
-    fusion_bias_strength : Strength of fusion bias, set to zero to deactivate
+    fusion_bias_strength_i, fusion_bias_strength_d : Strength of fusion bias for fusing views of different _i_llumination, and of different _d_etections. Set to zero to deactivate
 
     registration_mode : Registration mode, can be: 'projection' or 'full'.
     Projection mode is faster but might have occasionally  issues for certain samples. Full mode is slower and is only recomended as a last resort.
 
     registration_edge_filter : apply edge filter to help registration
 
-    registration_model : registration model to use the two camera views (C0Lx and C1Lx),
-    if None, the two camera views are registered, and the registration model is returned.
+    registration_crop_factor_along_z : How much to center-crop along z to estimate registration parameters between the two fused camera views. A value of 0.3 means cropping by 30% on both ends.
+
+    registration_force_model : Forces the use of the provided model (see below)
+
+    registration_model : Suggested registration model to use the two camera views (C0Lx and C1Lx) -- typically from a previous time-point or another wavelength.
+    Used only if its confidence score is higher than that of the computed registration parameters.
+
+    registration_min_confidence : Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.
+
+    registration_max_displacement : Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.
 
     dehaze_size : After all fusion and registration, the final image is dehazed to remove
     large-scale background light caused by scattered illumination and out-of-focus light.
     This parameter controls the scale of the low-pass filter used.
+
+    dehaze_correct_max_level : Standard dehazing only removes the local 'zero-level', correcting max level rescales pixels intensities so that the original max level is preserved.
 
     dark_denoise_threshold : After all fusion and registration, the final image is processed
     to remove any remaining noise in the dark background region (= hurts compression!).
@@ -120,11 +137,48 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             Backend.current().clear_allocation_pool()
             aprint(f"Equalisation ratio: {ratio}")
 
+    if dehaze_size > 0 and dehaze_before_fusion:
+        with asection(f"Dehaze C0L0 and C0L1 ..."):
+            C0L0 = dehaze(C0L0.copy(),
+                          size=dehaze_size,
+                          minimal_zero_level=0,
+                          correct_max_level=dehaze_correct_max_level)
+            C0L1 = dehaze(C0L1.copy(),
+                          size=dehaze_size,
+                          minimal_zero_level=0,
+                          correct_max_level=dehaze_correct_max_level)
+
+            # from napari import gui_qt, Viewer
+            # with gui_qt():
+            #     def _c(array):
+            #         return Backend.to_numpy(array)
+            #
+            #     viewer = Viewer()
+            #     viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000))
+            #     viewer.add_image(_c(C0L0_dh), name='C0L0_dh', contrast_limits=(0, 1000))
+            #     viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000))
+            #     viewer.add_image(_c(C0L1_dh), name='C0L1_dh', contrast_limits=(0, 1000))
+            #
+            # C0L0 = C0L0_dh
+            # C0L1 = C0L1_dh
+            Backend.current().clear_allocation_pool()
+
     with asection(f"Fuse illumination views C0L0 and C0L1..."):
         C0lx = fuse_illumination_views(C0L0, C0L1,
                                        mode=fusion,
                                        bias_exponent=fusion_bias_exponent,
-                                       bias_strength=fusion_bias_strength)
+                                       bias_strength=fusion_bias_strength_i)
+
+        # from napari import gui_qt, Viewer
+        # with gui_qt():
+        #     def _c(array):
+        #         return Backend.to_numpy(array)
+        #
+        #     viewer = Viewer()
+        #     viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000))
+        #     viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000))
+        #     viewer.add_image(_c(C0lx), name='C0lx', contrast_limits=(0, 1000))
+
         del C0L0
         del C0L1
         Backend.current().clear_allocation_pool()
@@ -136,7 +190,6 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
         C1L1 = Backend.to_backend(C1L1, dtype=internal_dtype, force_copy=False)
         if flip_camera1:
             C1L1 = xp.flip(C1L1, -1)
-
         Backend.current().clear_allocation_pool()
 
     if clip_too_high > 0:
@@ -153,11 +206,34 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             Backend.current().clear_allocation_pool()
             aprint(f"Equalisation ratio: {ratio}")
 
+    if dehaze_size > 0 and dehaze_before_fusion:
+        with asection(f"Dehaze C1L0 and C1L1 ..."):
+            C1L0 = dehaze(C1L0,
+                          size=dehaze_size,
+                          minimal_zero_level=0,
+                          correct_max_level=dehaze_correct_max_level)
+            C1L1 = dehaze(C1L1,
+                          size=dehaze_size,
+                          minimal_zero_level=0,
+                          correct_max_level=dehaze_correct_max_level)
+            Backend.current().clear_allocation_pool()
+
     with asection(f"Fuse illumination views C1L0 and C1L1..."):
         C1Lx = fuse_illumination_views(C1L0, C1L1,
                                        mode=fusion,
                                        bias_exponent=fusion_bias_exponent,
-                                       bias_strength=fusion_bias_strength)
+                                       bias_strength=fusion_bias_strength_i)
+
+        # from napari import gui_qt, Viewer
+        # with gui_qt():
+        #     def _c(array):
+        #         return Backend.to_numpy(array)
+        #
+        #     viewer = Viewer()
+        #     viewer.add_image(_c(C1L0), name='C1L0', contrast_limits=(0, 1000))
+        #     viewer.add_image(_c(C1L1), name='C1L1', contrast_limits=(0, 1000))
+        #     viewer.add_image(_c(C1Lx), name='C1Lx', contrast_limits=(0, 1000))
+
         del C1L0
         del C1L1
         Backend.current().clear_allocation_pool()
@@ -172,22 +248,28 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
         C0lx, C1Lx, registration_model = register_detection_views(C0lx, C1Lx,
                                                                   mode=registration_mode,
                                                                   edge_filter=registration_edge_filter,
-                                                                  model=registration_model)
-        aprint(f"Registration model: {registration_model}")
+                                                                  provided_model=registration_model,
+                                                                  force_model=registration_force_model,
+                                                                  min_confidence=registration_min_confidence,
+                                                                  max_change=registration_max_change,
+                                                                  crop_factor_along_z=registration_crop_factor_along_z)
         Backend.current().clear_allocation_pool()
 
     with asection(f"Fuse detection views C0lx and C1Lx..."):
         CxLx = fuse_detection_views(C0lx, C1Lx,
                                     mode=fusion,
                                     bias_exponent=fusion_bias_exponent,
-                                    bias_strength=fusion_bias_strength)
+                                    bias_strength=fusion_bias_strength_d)
         del C0lx
         del C1Lx
         Backend.current().clear_allocation_pool()
 
-    if dehaze_size > 0:
+    if dehaze_size > 0 and not dehaze_before_fusion:
         with asection(f"Dehaze CxLx ..."):
-            CxLx = dehaze(CxLx, size=dehaze_size, minimal_zero_level=0)
+            CxLx = dehaze(CxLx,
+                          size=dehaze_size,
+                          minimal_zero_level=0,
+                          correct_max_level=dehaze_correct_max_level)
             Backend.current().clear_allocation_pool()
 
     if dark_denoise_threshold > 0:
@@ -254,25 +336,39 @@ def register_detection_views(C0Lx, C1Lx,
                              mode='projection',
                              edge_filter=False,
                              integral=True,
-                             model=None,
+                             provided_model=None,
+                             force_model=False,
+                             min_confidence=0.5,
+                             max_change=16,
                              crop_factor_along_z=0.3):
     C0Lx = Backend.to_backend(C0Lx)
     C1Lx = Backend.to_backend(C1Lx)
 
-    # we need to register if we don't have already a provided model:
-    if model is None:
+    aprint(f"Provided registration model: {provided_model}, overall confidence: {0 if provided_model is None else provided_model.overall_confidence()}")
+
+    if force_model and provided_model is not None:
+        model = provided_model
+    else:
+
         depth = C0Lx.shape[0]
         crop = int(depth * crop_factor_along_z)
         C0Lx_c = C0Lx[crop:-crop]
         C1Lx_c = C1Lx[crop:-crop]
 
         if mode == 'projection':
-            model = register_translation_maxproj_nd(C0Lx_c, C1Lx_c, edge_filter=edge_filter)
+            new_model = register_translation_maxproj_nd(C0Lx_c, C1Lx_c, edge_filter=edge_filter)
         elif mode == 'full':
-            model = register_translation_nd(C0Lx_c, C1Lx_c, edge_filter=edge_filter)
+            new_model = register_translation_nd(C0Lx_c, C1Lx_c, edge_filter=edge_filter)
 
-        model.integral = integral
+        new_model.integral = integral
 
+        aprint(f"Computed registration model: {new_model}, overall confidence: {new_model.overall_confidence()}")
+
+        if provided_model is None or (new_model.overall_confidence() >= min_confidence or new_model.change_relative_to(provided_model) <= max_change):
+            model = new_model
+        else:
+            model = provided_model
+
+    aprint(f"Applying registration model: {model}, overall confidence: {model.overall_confidence()}")
     C0Lx_reg, C1Lx_reg = model.apply(C0Lx, C1Lx)
-
     return C0Lx_reg, C1Lx_reg, model

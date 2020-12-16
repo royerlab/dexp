@@ -35,10 +35,12 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     z_apodise: int = 0,
                     registration_confidence_threshold: float = 0.3,
                     registration_max_residual_shift: int = 64,
-
                     registration_mode: str = 'projection',
                     registration_edge_filter: bool = False,
+                    registration_force_model: bool = False,
                     registration_model: PairwiseRegistrationModel = None,
+                    registration_min_confidence: float = 0.5,
+                    registration_max_change: int = 16,
                     dehaze_size: int = 65,
                     dark_denoise_threshold: int = 0,
                     dark_denoise_size: int = 9,
@@ -87,8 +89,14 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     registration_edge_filter : apply edge filter to help registration
 
+    registration_force_model : Forces the use of the provided model (see below)
+
     registration_model : registration model to use the two camera views (C0Lx and C1Lx),
     if None, the two camera views are registered, and the registration model is returned.
+
+    registration_min_confidence : Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.
+
+    registration_max_change : Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.
 
     dehaze_size : After all fusion and registration, the final image is dehazed to remove
     large-scale background light caused by scattered illumination and out-of-focus light.
@@ -184,23 +192,31 @@ def msols_fuse_1C2L(C0L0, C0L1,
         C0L0 = C0L0.astype(dtype=numpy.float32)
         C0L1 = C0L1.astype(dtype=numpy.float32)
 
-        if registration_model is None:
-            aprint("No registration model provided, running registration now")
+        aprint(f"Provided registration model: {registration_model}, overall confidence: {0 if registration_model is None else registration_model.overall_confidence()}")
+
+        if registration_force_model and registration_model is not None:
+            model = registration_model
+        else:
+            aprint("No registration model enforced, running registration now")
             registration_method = register_translation_maxproj_nd if registration_mode == 'projection' else register_translation_nd
-            registration_model = register_warp_multiscale_nd(C0L0, C0L1,
-                                                             num_iterations=5,
-                                                             confidence_threshold=registration_confidence_threshold,
-                                                             max_residual_shift=registration_max_residual_shift,
-                                                             edge_filter=registration_edge_filter,
-                                                             registration_method=registration_method,
-                                                             denoise_input_sigma=1)
+            new_model = register_warp_multiscale_nd(C0L0, C0L1,
+                                                    num_iterations=5,
+                                                    confidence_threshold=registration_confidence_threshold,
+                                                    max_residual_shift=registration_max_residual_shift,
+                                                    edge_filter=registration_edge_filter,
+                                                    registration_method=registration_method,
+                                                    denoise_input_sigma=1)
+            aprint(f"Computed registration model: {new_model}, overall confidence: {new_model.overall_confidence()}")
 
-        aprint(f"Registration model: {registration_model}")
+            if registration_model is None or (new_model.overall_confidence() >= registration_min_confidence or new_model.change_relative_to(registration_model) <= registration_max_change):
+                model = new_model
+            else:
+                model = registration_model
 
-        C0L0, C0L1 = registration_model.apply(C0L0, C0L1)
-
-        C0L0 = C0L0.astype(dtype=numpy.float16)
-        C0L1 = C0L1.astype(dtype=numpy.float16)
+        aprint(f"Applying registration model: {model}, overall confidence: {model.overall_confidence()}")
+        C0L0, C0L1 = model.apply(C0L0, C0L1)
+        C0L0 = C0L0.astype(dtype=numpy.float16, copy=False)
+        C0L1 = C0L1.astype(dtype=numpy.float16, copy=False)
         Backend.current().clear_allocation_pool()
 
     if equalise:

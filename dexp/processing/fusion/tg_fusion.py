@@ -22,7 +22,8 @@ def fuse_tg_nd(image_a,
     """
     Fuses two images by picking regions from one or the other image based on the local image quality
     measured by using the magnitude of the Sobel gradient -- similarly as in the Tenengrad focus metric.
-    A smooth blend map is computed that blends the two images based on local image quality.
+    A smooth blend map is computed that blends the two images based on local image quality. A bias can be
+    introduced to favor one side of an axis versus another.
 
 
     Parameters
@@ -30,17 +31,17 @@ def fuse_tg_nd(image_a,
     image_a : First image to fuse
     image_b : Second image to fuse
     downscale : How much to downscale the two images in order to compute the blend map.
-    A value of 2 is good to acheive both coarse denoising and reduce compute load.
-    sharpness : How 'sharp' should be the chpoice between the two images.
+    A value of 2 is good to achieve both coarse denoising and reduce compute load.
+    sharpness : How 'sharp' should be the choice between the two images.
     A large value makes sure that most of the time the voxel values of one or the other image
     are picked with very little mixing even if local image quality between .
-    tenengrad_smoothing
-    blend_map_smoothing
-    bias_axis
-    bias_exponent
-    bias_strength
-    clip
-    internal_dtype
+    tenengrad_smoothing : How much to smooth the tenengrad map
+    blend_map_smoothing : How much to smooth the blend map
+    bias_axis : Along which axis should a bias be introduced in the blend map. None for no bias.
+    bias_exponent : Exponent for the bias
+    bias_strength : Bias strength -- zero means no bias
+    clip : clip output to input images min and max values.
+    internal_dtype : dtype for internal computation
 
     Returns
     -------
@@ -65,7 +66,6 @@ def fuse_tg_nd(image_a,
 
     image_a = Backend.to_backend(image_a, dtype=internal_dtype)
     image_b = Backend.to_backend(image_b, dtype=internal_dtype)
-    # gc.collect()
 
     min_a, max_a = xp.min(image_a), xp.max(image_a)
     min_b, max_b = xp.min(image_b), xp.max(image_b)
@@ -80,23 +80,19 @@ def fuse_tg_nd(image_a,
     # Denoise further:
     d_image_a = sp.ndimage.gaussian_filter(d_image_a, sigma=1.5)
     d_image_b = sp.ndimage.gaussian_filter(d_image_b, sigma=1.5)
-    # gc.collect()
 
     # Compute Tenengrad filter:
     t_image_a = sobel_filter(d_image_a, exponent=1, normalise_input=False, in_place_normalisation=True)
     t_image_b = sobel_filter(d_image_b, exponent=1, normalise_input=False, in_place_normalisation=True)
     del d_image_a, d_image_b
-    # gc.collect()
 
     # Apply maximum filter:
     t_image_a = sp.ndimage.maximum_filter(t_image_a, size=tenengrad_smoothing)
     t_image_b = sp.ndimage.maximum_filter(t_image_b, size=tenengrad_smoothing)
-    # gc.collect()
 
     # Apply smoothing filter:
     t_image_a = sp.ndimage.uniform_filter(t_image_a, size=max(1, tenengrad_smoothing))
     t_image_b = sp.ndimage.uniform_filter(t_image_b, size=max(1, tenengrad_smoothing))
-    # gc.collect()
 
     # Normalise:
 
@@ -109,7 +105,7 @@ def fuse_tg_nd(image_a,
     del t_min_value, t_max_value
 
     # Add bias:
-    if bias_axis is not None:
+    if bias_axis is not None and bias_strength != 0:
         length = t_image_a.shape[bias_axis]
         bias_vector = xp.linspace(-1, 1, num=length)
         bias_vector = xp.sign(bias_vector) * (xp.absolute(bias_vector) ** bias_exponent)
@@ -123,36 +119,30 @@ def fuse_tg_nd(image_a,
     diff = t_image_a
     diff -= t_image_b
     del t_image_b
-    # gc.collect()
+
     sgn_diff = xp.sign(diff)
     abs_diff = xp.absolute(diff, out=diff)
     abs_diff **= 1 / sharpness
     del diff
-    # gc.collect()
 
     # compute blending map:
     blend_map = abs_diff
     blend_map *= sgn_diff
     blend_map = element_wise_affine(blend_map, 0.5, 0.5, out=blend_map)
     del sgn_diff
-    # gc.collect()
 
     # Upscale blending map back to original size:
     blend_map = sp.ndimage.zoom(blend_map, zoom=downscale, order=1)
-    # gc.collect()
 
     # Padding to recover original image size:
     blend_map = fit_to_shape(blend_map, shape=image_a.shape)
-    # gc.collect()
 
     # Smooth blend map to have less seams:
     blend_map = sp.ndimage.filters.uniform_filter(blend_map, size=blend_map_smoothing)
-    # gc.collect()
 
     # Fuse using blending map:
     image_fused = blend_images(image_a, image_b, blend_map)
     del image_a, image_b, blend_map
-    # gc.collect()
 
     if clip:
         image_fused = xp.clip(image_fused, min_value, max_value, out=image_fused)
@@ -163,7 +153,7 @@ def fuse_tg_nd(image_a,
     # from napari import Viewer, gui_qt
     # with gui_qt():
     #     def _c(array):
-    #         return backend.to_numpy(array)
+    #         return Backend.to_numpy(array)
     #     viewer = Viewer()
     #     viewer.add_image(_c(image_a), name='image_a', contrast_limits=(0,600))
     #     viewer.add_image(_c(image_b), name='image_b', contrast_limits=(0,600))

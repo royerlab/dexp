@@ -32,9 +32,9 @@ def demo_dehaze_data(length_xy=320):
                                                                       dtype=numpy.float32)
 
     with timeit('dehaze'):
-        dehazed = dehaze(image, size=25, in_place=False)
+        dehazed = dehaze(image, size=25, in_place=False, correct_max_level=True)
 
-    # compute [ercentage of haze removed:
+    # compute percentage of haze removed:
     background_voxels_image = (1 - image_gt) * image
     background_voxels_dehazed = (1 - image_gt) * dehazed
     total_haze = xp.sum(background_voxels_image)
