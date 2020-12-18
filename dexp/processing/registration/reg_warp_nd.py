@@ -14,6 +14,7 @@ def register_warp_nd(image_a,
                      chunks: Union[int, Tuple[int, ...]],
                      margins: Union[int, Tuple[int, ...]] = None,
                      registration_method=register_translation_maxproj_nd,
+                     force_numpy: bool = False,
                      **kwargs) -> WarpRegistrationModel:
     """
     Registers two nD images using warp model (piece-wise translation model).
@@ -26,6 +27,7 @@ def register_warp_nd(image_a,
     chunks : Chunk sizes to divide image into
     margins : Margins to add along each dimension per chunk
     registration_method : registration method to use per tile, must return a TranslationRegistrationModel.
+    force_numpy: Forces output model to be allocated with numpy arrays.
     all additional kwargs are passed to the registration method (by default register_translation_maxproj_nd)
 
     Returns
@@ -40,7 +42,7 @@ def register_warp_nd(image_a,
     sp = Backend.get_sp_module()
 
     def f(x, y):
-        model = registration_method(x, y, **kwargs)
+        model = registration_method(x, y, force_numpy=force_numpy, **kwargs)
         aprint(f"model: {model} {'' if model.confidence > 0.3 else '(LOW QUALITY!)'}")
         shift, confidence = model.get_shift_and_confidence()
         return xp.asarray(shift), xp.asarray(confidence)
@@ -50,4 +52,6 @@ def register_warp_nd(image_a,
                                                   chunks=chunks,
                                                   margins=margins)
 
-    return WarpRegistrationModel(vector_field=vector_field, confidence=confidence)
+    model = WarpRegistrationModel(vector_field=vector_field, confidence=confidence, force_numpy=force_numpy)
+
+    return model

@@ -32,7 +32,7 @@ def warp(image,
     image_to_backend : By default one can directly copy a numpy array to texture memory,
     if needed, this option let's one first more the data to a cupy array before moving to texture memory. Not recommended.
 
-    internal_dtype : internal dtype
+    internal_dtype : internal dtype. Right now the dtype must be float32 because of CUDa texture dtype limitations.
 
     Returns
     -------
@@ -44,7 +44,7 @@ def warp(image,
         raise ValueError("Vector field must have one additional dimension")
 
     if internal_dtype is None:
-        internal_dtype = image.dtype
+        internal_dtype = numpy.float32
 
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32

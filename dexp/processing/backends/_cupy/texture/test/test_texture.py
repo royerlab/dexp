@@ -1,3 +1,7 @@
+import gc
+
+from arbol import asection, aprint
+
 from dexp.processing.backends._cupy.texture.texture import create_cuda_texture
 from dexp.processing.backends.cupy_backend import CupyBackend
 
@@ -229,5 +233,25 @@ def test_basic_cupy_texture():
 
             # test outcome
             assert cupy.allclose(real_output, expected_output)
+    except ModuleNotFoundError:
+        print("Cupy module not found! Test passes nevertheless!")
+
+
+def test_basic_cupy_texture_leak():
+    try:
+        import cupy
+        with CupyBackend():
+            # allocate input/output arrays
+            length = 512
+            tex_data = cupy.arange(length**3, dtype=cupy.float32).reshape(length, length, length)
+
+            with asection("loop"):
+                for i in range(100):
+                    aprint(f"i={i}")
+                    texobj = create_cuda_texture(tex_data,
+                                                 num_channels=1,
+                                                 sampling_mode='linear',
+                                                 dtype=cupy.float32)
+
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")

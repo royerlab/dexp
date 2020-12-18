@@ -25,7 +25,9 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--dehaze_size', '-dhs', type=int, default=65, help='Filter size (scale) for dehazing the final regsitered and fused image to reduce effect of scattered and out-of-focus light. Set to zero to deactivate.',
               show_default=True)  #
 @click.option('--dark_denoise_threshold', '-ddt', type=int, default=0, help='Threshold for denoises the dark pixels of the image -- helps increase compression ratio. Set to zero to deactivate.', show_default=True)  #
+@click.option('--zpadapodise', '-zpa', type=(int, int), default=(8, 96), help='Pads and apodises the views along z before fusion: (pad, apo), where pad is a padding length, and apo is apodisation length, both in voxels. If pad=apo, no original voxel is modified and only added voxels are apodised.', show_default=True)  #
 @click.option('--loadreg', '-lr', is_flag=True, help='Turn on to load the registration parameters from a previous run', show_default=True)  #
+@click.option('--warpregiter', '-wri', type=int, default=4, help='Number of iterations for warp registration (if applicable).', show_default=True)  #
 @click.option('--minconfidence', '-mc', type=float, default=0.5, help='Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.', show_default=True)  #
 @click.option('--maxchange', '-md', type=float, default=16, help='Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
@@ -48,7 +50,9 @@ def fuse(input_path,
          fusion_bias_strength,
          dehaze_size,
          dark_denoise_threshold,
+         zpadapodise,
          loadreg,
+         warpregiter,
          minconfidence,
          maxchange,
          workers,
@@ -82,7 +86,9 @@ def fuse(input_path,
                      fusion_bias_strength_d=fusion_bias_strength[1],
                      dehaze_size=dehaze_size,
                      dark_denoise_threshold=dark_denoise_threshold,
+                     z_pad_apodise=zpadapodise,
                      loadreg=loadreg,
+                     warpreg_num_iterations=warpregiter,
                      min_confidence=minconfidence,
                      max_change=maxchange,
                      workers=workers,

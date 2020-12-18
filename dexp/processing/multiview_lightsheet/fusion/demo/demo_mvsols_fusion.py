@@ -55,7 +55,6 @@ def _mvsols_resample():
                                   dx=res,
                                   dz=dz,
                                   equalise=True,
-                                  fusion_bias_strength=0,
                                   registration_confidence_threshold=0.6,
                                   registration_max_residual_shift=64,
                                   z_pad=8,

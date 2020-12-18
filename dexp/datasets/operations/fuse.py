@@ -28,7 +28,9 @@ def dataset_fuse(dataset,
                  fusion_bias_strength_d,
                  dehaze_size,
                  dark_denoise_threshold,
+                 z_pad_apodise,
                  loadreg,
+                 warpreg_num_iterations,
                  min_confidence,
                  max_change,
                  workers,
@@ -43,6 +45,11 @@ def dataset_fuse(dataset,
             channels = ('C0L0', 'C0L1')
 
     views = tuple(dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for channel in channels)
+
+    with asection(f"views:"):
+        for view, channel in zip(views, channels):
+            aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
+
 
     if slicing is not None:
         aprint(f"Slicing with: {slicing}")
@@ -71,7 +78,7 @@ def dataset_fuse(dataset,
             with asection(f"Loading channels {channels} for time point {tp}"):
                 views_tp = tuple(view[tp].compute() for view in views)
 
-            with CupyBackend(device):
+            with CupyBackend(device, exclusive=True, enable_unified_memory=True):
 
                 model = models[tp]
 
@@ -102,12 +109,19 @@ def dataset_fuse(dataset,
                     res = metadata['res']
 
                     array, model = msols_fuse_1C2L(*views_tp,
+                                                   z_pad=z_pad_apodise[0],
+                                                   z_apodise=z_pad_apodise[1],
+                                                   registration_num_iterations=warpreg_num_iterations,
                                                    registration_force_model=loadreg,
                                                    registration_model=model,
                                                    registration_min_confidence=min_confidence,
                                                    registration_max_change=max_change,
                                                    equalise=equalise,
                                                    zero_level=zero_level,
+                                                   clip_too_high=clip_too_high,
+                                                   fusion=fusion,
+                                                   dehaze_size=dehaze_size,
+                                                   dark_denoise_threshold=dark_denoise_threshold,
                                                    angle=angle,
                                                    dx=res,
                                                    dz=dz)
@@ -146,7 +160,7 @@ def dataset_fuse(dataset,
         Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)], workers) for tp in range(0, shape[0]))
     else:
         for tp in range(0, shape[0]):
-            process(tp, devices[0])
+            process(tp, devices[0], workers)
 
     if not loadreg:
         model_list_to_file(model_list_filename, models)

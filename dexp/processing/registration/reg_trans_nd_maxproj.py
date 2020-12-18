@@ -1,13 +1,16 @@
+from typing import Callable
+
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.registration.reg_trans_2d import register_translation_2d_dexp
 
 
 def register_translation_maxproj_nd(image_a, image_b,
-                                    register_translation_2d=register_translation_2d_dexp,
+                                    register_translation_2d: Callable = register_translation_2d_dexp,
                                     gamma: float = 1,
                                     log_compression: bool = False,
                                     drop_worse: bool = True,
+                                    force_numpy: bool = False,
                                     internal_dtype=None,
                                     **kwargs):
     """
@@ -21,7 +24,8 @@ def register_translation_maxproj_nd(image_a, image_b,
     register_translation_2d : 2d registration method to use
     gamma : gamma correction on max projections as a preprocessing before phase correlation.
     log_compression : Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)
-    internal_dtype : internal dtype for computation
+    force_numpy : Forces output model to be allocated with numpy arrays.
+    internal_dtype : Internal dtype for computation
 
 
     Returns
@@ -39,9 +43,20 @@ def register_translation_maxproj_nd(image_a, image_b,
     image_b = Backend.to_backend(image_b)
 
     if image_a.ndim == 2:
-        image_a = _preprocess_image(image_a, gamma=gamma, log_compression=log_compression, in_place=False, dtype=internal_dtype)
-        image_b = _preprocess_image(image_b, gamma=gamma, log_compression=log_compression, in_place=False, dtype=internal_dtype)
-        shifts, confidence = register_translation_2d(image_a, image_b, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
+        image_a = _preprocess_image(image_a,
+                                    gamma=gamma,
+                                    log_compression=log_compression,
+                                    in_place=False,
+                                    dtype=internal_dtype)
+        image_b = _preprocess_image(image_b,
+                                    gamma=gamma,
+                                    log_compression=log_compression,
+                                    in_place=False,
+                                    dtype=internal_dtype)
+        shifts, confidence = register_translation_2d(image_a, image_b,
+                                                     force_numpy=force_numpy,
+                                                     internal_dtype=internal_dtype,
+                                                     **kwargs).get_shift_and_confidence()
 
     elif image_a.ndim == 3:
         iap0 = _project_preprocess_image(image_a, axis=0, dtype=xp.float32, gamma=gamma, log_compression=log_compression)
@@ -52,9 +67,20 @@ def register_translation_maxproj_nd(image_a, image_b,
         ibp1 = _project_preprocess_image(image_b, axis=1, dtype=xp.float32, gamma=gamma, log_compression=log_compression)
         ibp2 = _project_preprocess_image(image_b, axis=2, dtype=xp.float32, gamma=gamma, log_compression=log_compression)
 
-        shifts_p0, confidence_p0 = register_translation_2d(iap0, ibp0, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
-        shifts_p1, confidence_p1 = register_translation_2d(iap1, ibp1, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
-        shifts_p2, confidence_p2 = register_translation_2d(iap2, ibp2, internal_dtype=internal_dtype, **kwargs).get_shift_and_confidence()
+        shifts_p0, confidence_p0 = register_translation_2d(iap0, ibp0,
+                                                           force_numpy=force_numpy,
+                                                           internal_dtype=internal_dtype,
+                                                           **kwargs).get_shift_and_confidence()
+
+        shifts_p1, confidence_p1 = register_translation_2d(iap1, ibp1,
+                                                           force_numpy=force_numpy,
+                                                           internal_dtype=internal_dtype,
+                                                           **kwargs).get_shift_and_confidence()
+
+        shifts_p2, confidence_p2 = register_translation_2d(iap2, ibp2,
+                                                           force_numpy=force_numpy,
+                                                           internal_dtype=internal_dtype,
+                                                           **kwargs).get_shift_and_confidence()
 
         # print(shifts_p0)
         # print(shifts_p1)
@@ -98,7 +124,9 @@ def register_translation_maxproj_nd(image_a, image_b,
     else:
         raise ValueError(f'Unsupported number of dimensions ({image_a.ndim}) for registartion.')
 
-    return TranslationRegistrationModel(shift_vector=shifts, confidence=confidence)
+    model = TranslationRegistrationModel(shift_vector=shifts, confidence=confidence, force_numpy=force_numpy)
+
+    return model
 
 
 def _project_preprocess_image(image,

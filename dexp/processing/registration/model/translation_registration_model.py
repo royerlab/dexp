@@ -12,7 +12,8 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
     def __init__(self,
                  shift_vector: Union[Sequence[float], numpy.ndarray],
                  confidence: Union[numpy.ndarray, float] = 1,
-                 integral: bool = False):
+                 integral: bool = False,
+                 force_numpy: bool = True):
 
         """ Instantiates a translation registration model
 
@@ -21,13 +22,20 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
         shift_vector : Relative shift between two images
         confidence : registration confidence: a float within [0, 1] which conveys how confident is the registration.
         A value of 0 means no confidence, a value of 1 means perfectly confident.
+        force_numpy : when creating this object, you have the option of forcing the use of numpy array instead of the current backend arrays.
         integral : True if shifts are snapped to integer values, False otherwise
 
         """
         super().__init__()
         xp = Backend.get_xp_module()
-        self.shift_vector = xp.asarray(shift_vector)
-        self.confidence = xp.asarray(confidence)
+
+        if force_numpy:
+            self.shift_vector = Backend.to_numpy(0 if shift_vector is None else shift_vector)
+            self.confidence = Backend.to_numpy(0 if confidence is None else confidence)
+        else:
+            self.shift_vector = xp.asarray(0 if shift_vector is None else shift_vector)
+            self.confidence = xp.asarray(0 if confidence is None else confidence)
+
         self.integral = integral
 
     def __str__(self):

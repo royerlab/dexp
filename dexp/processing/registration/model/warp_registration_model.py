@@ -12,14 +12,30 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
 
     def __init__(self,
                  vector_field,
-                 confidence=None):
-        """ Instantiates a translation registration model
+                 confidence=None,
+                 force_numpy: bool = False):
+        """ Warp registration model.
+        A warp registration model consists in a vector field of shape (w,1), (h,w,2), or (d,h,w,3) and a confidence matrix of shape (w), (h,w), or (d,h,w),
+        The vector field represents a warp transform, and the confidence matrix the confidence score -- within [0, 1] -- of each vector in the vector field.
 
+        Parameters
+        ----------
+        vector_field : vector field for the warp transform
+        confidence : confidence matrix
+        force_numpy : when creating this object, you have the option of forcing the use of numpy array instead of the current backend arrays.
+        This is usefull to avoid memory fragmentation (e.g. on GPU).
         """
         super().__init__()
+
         xp = Backend.get_xp_module()
-        self.vector_field = xp.asarray(0 if vector_field is None else vector_field)
-        self.confidence = xp.asarray(0 if confidence is None else confidence)
+
+        if force_numpy:
+            self.vector_field = Backend.to_numpy(0 if vector_field is None else vector_field)
+            self.confidence = Backend.to_numpy(0 if confidence is None else confidence)
+        else:
+            self.vector_field = xp.asarray(0 if vector_field is None else vector_field)
+            self.confidence = xp.asarray(0 if confidence is None else confidence)
+
 
     def __str__(self):
         return f"WarpRegistrationModel(vector_field_shape={self.vector_field.shape}, confidence_shape={self.confidence.shape})"
@@ -102,6 +118,7 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         -------
 
         """
+
         image_b_warped = warp(image=image_b,
                               vector_field=self.vector_field,
                               vector_field_upsampling=vector_field_upsampling,
@@ -138,7 +155,7 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         xp = Backend.get_xp_module(self.confidence)
         return xp.mean(self.confidence)
 
-    def median_shift_magnitude(self, confidence_threshold: float = 0.7):
+    def median_shift_magnitude(self, confidence_threshold: float = 0.5):
         """
 
         Parameters
@@ -151,8 +168,11 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
 
         """
         xp = Backend.get_xp_module(self.confidence)
-        norms = xp.linalg.norm(self.vector_field, axis=-1)
-        norms = norms[self.confidence > confidence_threshold]
+        ndim = self.vector_field.ndim
+        vector_field = self.vector_field.astype(dtype=numpy.float32)
+        norms = xp.linalg.norm(vector_field, axis=ndim-1)
+        confidence = self.confidence
+        norms = norms[confidence > confidence_threshold]
         if norms.size == 0:
             return 0
         elif norms.size == 1:

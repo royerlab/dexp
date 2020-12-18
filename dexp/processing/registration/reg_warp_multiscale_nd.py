@@ -16,6 +16,8 @@ def register_warp_multiscale_nd(image_a,
                                 margin_ratios: Union[float, Tuple[float, ...]] = 0.2,
                                 min_chunk: int = 32,
                                 min_margin: int = 4,
+                                save_memory: bool = True,
+                                force_numpy: bool = False,
                                 **kwargs) -> WarpRegistrationModel:
     """
     Registers image_b to image_a using a multi-scale warp approach.
@@ -31,6 +33,8 @@ def register_warp_multiscale_nd(image_a,
     margin_ratios : ratio that determines the margin size relative to the chunk size.
     min_chunk : minimal chunk size
     min_margin : minimum margin size
+    save_memory : Moves data out of device memory as soon as ppossible during iterations to avoid memory overflows for very lareg images, incurs a largely negligible performance cost.
+    force_numpy: Forces output model to be allocated with numpy arrays.
     all additional kwargs are passed to register_warp_nd
 
     Returns
@@ -62,8 +66,10 @@ def register_warp_multiscale_nd(image_a,
 
             # pre-apply transform from previous iterations:
             if vector_field is not None:
-                model = WarpRegistrationModel(vector_field)
+                model = WarpRegistrationModel(vector_field, force_numpy=force_numpy)
                 _, image = model.apply(image_a, image_b)
+                if save_memory:
+                    image = Backend.to_numpy(image)
             else:
                 image = image_b
 
@@ -73,9 +79,9 @@ def register_warp_multiscale_nd(image_a,
                 chunks = tuple(max(min_chunk, -(-s // nb_div)) for s in image_a.shape)
                 margins = tuple(max(min_margin, int(c * r)) for c, r in zip(chunks, margin_ratios))
                 aprint(f"register iteration: {i}, div= {nb_div}, chunks={chunks}, margins={margins}")
-                model = register_warp_nd(image_a, image, chunks=chunks, margins=margins, **kwargs)
+                model = register_warp_nd(image_a, image, chunks=chunks, margins=margins,force_numpy=force_numpy,  **kwargs)
                 aprint(f"median confidence: {model.median_confidence()}")
-                aprint(f"median shift magnitude: {model.median_shift_magnitude()}")
+                aprint(f"median shift magnitude: {model.median_shift_magnitude(confidence_threshold=confidence_threshold)}")
                 eff_max_shift = max_residual_shift if (i > 0 and max_residual_shift is not None) else None
                 model.clean(mode='median', confidence_threshold=confidence_threshold,
                             max_shift=eff_max_shift)
@@ -121,6 +127,7 @@ def register_warp_multiscale_nd(image_a,
                 break
 
     model = WarpRegistrationModel(vector_field=vector_field,
-                                  confidence=confidence)
+                                  confidence=confidence,
+                                  force_numpy=force_numpy)
 
     return model

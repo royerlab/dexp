@@ -1,8 +1,10 @@
+import gc
 import os
 import threading
 from typing import Any
 
 import numpy
+from arbol import aprint, section, asection
 
 from dexp.processing.backends.backend import Backend
 
@@ -25,6 +27,7 @@ class CupyBackend(Backend):
                  exclusive: bool = False,
                  enable_streaming: bool = True,
                  enable_memory_pool: bool = True,
+                 enable_unified_memory: bool = False,
                  enable_cub: bool = True,
                  enable_cutensor: bool = True,
                  enable_fft_planning: bool = True,
@@ -50,6 +53,7 @@ class CupyBackend(Backend):
         self.device_id = device_id
         self.exclusive = exclusive
         self.enable_streaming = enable_streaming
+        self.enable_unified_memory = enable_unified_memory
 
         import cupy
         self.cupy_device: cupy.cuda.Device = cupy.cuda.Device(self.device_id)
@@ -64,6 +68,8 @@ class CupyBackend(Backend):
             set_allocator(None)
             # Disable memory pool for pinned memory (CPU).
             set_pinned_memory_allocator(None)
+        else:
+            self.mempool = None
 
         if not enable_fft_planning:
             import cupy
@@ -95,14 +101,28 @@ class CupyBackend(Backend):
             import cupy
             self.stream = cupy.cuda.stream.Stream(non_blocking=True)
             self.stream.__enter__()
+
+        import cupy
+        self.mempool = cupy.cuda.MemoryPool(cupy.cuda.memory.malloc_managed if self.enable_unified_memory else None)
+        from cupy.cuda import memory
+        self._previous_allocator = memory._get_thread_local_allocator()
+        memory._set_thread_local_allocator(self.mempool.malloc)
+
         return super().__enter__()
 
     def __exit__(self, type, value, traceback):
         super().__exit__(type, value, traceback)
+
+        gc.collect()
+        self.clear_allocation_pool()
+        if self._previous_allocator is not None:
+            from cupy.cuda import memory
+            memory._set_thread_local_allocator(self._previous_allocator)
+        self.mempool = None
+
         if self.enable_streaming:
             self.stream.__exit__()
         self.cupy_device.__exit__()
-        self.clear_allocation_pool()
         if self.exclusive:
             CupyBackend.device_locks[self.device_id].release()
 
@@ -111,12 +131,26 @@ class CupyBackend(Backend):
 
     def clear_allocation_pool(self):
         import cupy
-        mempool = cupy.get_default_memory_pool()
-        pinned_mempool = cupy.get_default_pinned_memory_pool()
-        if mempool is not None:
-            mempool.free_all_blocks()
-        if pinned_mempool is not None:
-            pinned_mempool.free_all_blocks()
+
+        with asection("Clear Cupy allocation pool:"):
+
+            if self.mempool is not None:
+                aprint(f"Number of free blocks before release: {self.mempool.n_free_blocks()}, used:{self.mempool.used_bytes()//1e9}GB, total:{self.mempool.total_bytes()//1e9}GB ")
+                gc.collect()
+                self.mempool.free_all_blocks()
+                aprint(f"Number of free blocks after release: {self.mempool.n_free_blocks()}, used:{self.mempool.used_bytes()//1e9}GB, total:{self.mempool.total_bytes()//1e9}GB ")
+            else:
+                aprint("Warning: default cupy memory pool is 'None'")
+
+            pinned_mempool = cupy.get_default_pinned_memory_pool()
+            if pinned_mempool is not None:
+                #aprint(f"Number of free blocks before release: {pinned_mempool.n_free_blocks()}")
+                gc.collect()
+                pinned_mempool.free_all_blocks()
+                #aprint(f"Number of free blocks after release: {pinned_mempool.n_free_blocks()}")
+            #else:
+                #aprint("Warning: default cupy pinned memory pool is 'None'")
+
         super().clear_allocation_pool()
 
     def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
@@ -125,7 +159,7 @@ class CupyBackend(Backend):
             array = cupy.asnumpy(array)
 
         if dtype:
-            return array.astype(dtype, copy=force_copy)
+            return numpy.asarray(array).astype(dtype, copy=force_copy)
         elif force_copy:
             return numpy.asarray(array.copy())
         else:

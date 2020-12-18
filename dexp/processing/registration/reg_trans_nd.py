@@ -17,6 +17,7 @@ def register_translation_nd(image_a,
                             sigma: float = 1.0,
                             log_compression: bool = False,
                             edge_filter: bool = True,
+                            force_numpy: bool = False,
                             internal_dtype=None) -> TranslationRegistrationModel:
     """
     Registers two nD images using just a translation-only model.
@@ -34,6 +35,7 @@ def register_translation_nd(image_a,
     sigma : sigma for Gaussian smoothing of phase correlogram
     log_compression : Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)
     edge_filter : apply sobel edge filter to input images.
+    force_numpy : Forces output model to be allocated with numpy arrays.
     internal_dtype : internal dtype for computation
 
     Returns
@@ -135,7 +137,7 @@ def register_translation_nd(image_a,
     #     viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='bop orange', blending='additive')
     #     viewer.grid_view(2, 3, 1)
 
-    return TranslationRegistrationModel(shift_vector=shift_vector, confidence=confidence)
+    return TranslationRegistrationModel(shift_vector=shift_vector, confidence=confidence, force_numpy=force_numpy)
 
 
 def _center_of_mass(image):

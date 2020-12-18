@@ -3,6 +3,7 @@ import numpy
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.utils.fit_shape import fit_to_shape
+from dexp.processing.utils.nan_to_zero import nan_to_zero
 
 
 def dehaze(image,
@@ -91,6 +92,7 @@ def dehaze(image,
         epsilon = xp.asarray(1e-6, dtype=internal_dtype)
         correction_ratio = image_max_level_before
         correction_ratio /= (image_max_level_after + epsilon)
+        correction_ratio = nan_to_zero(correction_ratio, copy=False)
         del image_max_level_after
         correction_ratio = sp.ndimage.zoom(correction_ratio, zoom=downscale, order=1)
         correction_ratio = fit_to_shape(correction_ratio, shape=image.shape)

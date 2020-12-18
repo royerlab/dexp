@@ -57,6 +57,6 @@ def _parse_devices(devices):
         from dexp.processing.backends.cupy_backend import CupyBackend
         devices = list(range(len(CupyBackend.available_devices())))
     else:
-        devices = tuple(device.strip() for device in devices.split(','))
+        devices = tuple(int(device.strip()) for device in devices.split(','))
 
     return devices

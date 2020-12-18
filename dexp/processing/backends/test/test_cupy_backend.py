@@ -1,3 +1,5 @@
+import gc
+from functools import reduce
 from time import time, sleep
 
 import numpy
@@ -48,47 +50,66 @@ def test_list_devices():
 def test_allocation_pool():
     try:
 
-        with CupyBackend(enable_memory_pool=True) as backend:
-            backend.clear_allocation_pool()
+        with CupyBackend(enable_memory_pool=True) as root_backend:
+            with CupyBackend(enable_memory_pool=True) as backend:
+                gc.collect()
+                backend.clear_allocation_pool()
+                gc.collect()
 
-            xp = backend.get_xp_module()
+                xp = backend.get_xp_module()
 
-            import cupy
-            mempool = cupy.get_default_memory_pool()
-            in_pool_before = mempool.total_bytes() - mempool.used_bytes()
-            aprint(f"in_pool_before={in_pool_before}")
+                import cupy
 
-            for i in range(10):
-                array = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
+                in_pool_before = backend.mempool.total_bytes() - backend.mempool.used_bytes()
+                aprint(f"in_pool_before={in_pool_before}")
 
-            sleep(2)
-            backend.synchronise()
+                for i in range(10):
+                    array = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
 
-            in_pool_after = mempool.total_bytes() - mempool.used_bytes()
-            aprint(f"in_pool_after={in_pool_after}")
+                sleep(2)
+                backend.synchronise()
 
-            assert in_pool_after > in_pool_before
+                in_pool_after = backend.mempool.total_bytes() - backend.mempool.used_bytes()
+                aprint(f"in_pool_after={in_pool_after}")
 
-            backend.clear_allocation_pool()
+                assert in_pool_after > in_pool_before
 
-            in_pool_after_clear = mempool.total_bytes() - mempool.used_bytes()
-            aprint(f"in_pool_after_clear={in_pool_after_clear}")
+                backend.clear_allocation_pool()
 
-            assert in_pool_after_clear <= in_pool_before
+                in_pool_after_clear = backend.mempool.total_bytes() - backend.mempool.used_bytes()
+                aprint(f"in_pool_after_clear={in_pool_after_clear}")
 
-            for i in range(10):
-                array = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
+                assert in_pool_after_clear <= in_pool_before
 
-            in_pool_after_reallocation = mempool.total_bytes() - mempool.used_bytes()
-            aprint(f"in_pool_after_reallocation={in_pool_after_reallocation}")
+                for i in range(10):
+                    array = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
 
-            assert in_pool_after_reallocation > in_pool_after_clear
+                in_pool_after_reallocation = backend.mempool.total_bytes() - backend.mempool.used_bytes()
+                aprint(f"in_pool_after_reallocation={in_pool_after_reallocation}")
 
-        in_pool_after_context = mempool.total_bytes() - mempool.used_bytes()
-        aprint(f"in_pool_after_context={in_pool_after_clear}")
+                assert in_pool_after_reallocation > in_pool_after_clear
 
-        assert in_pool_after_context == in_pool_after_clear
+            in_pool_after_context = root_backend.mempool.total_bytes() - root_backend.mempool.used_bytes()
+            aprint(f"in_pool_after_context={in_pool_after_clear}")
 
+            assert in_pool_after_context == in_pool_after_clear
+
+
+    except ModuleNotFoundError:
+        aprint("Cupy module not found! Test passes nevertheless!")
+
+def test_unified_memory():
+    try:
+
+        with CupyBackend(enable_memory_pool=True, enable_unified_memory=True):
+            xp = Backend.get_xp_module()
+
+            # a lot of arrays...
+            arrays = tuple(xp.random.uniform(0, 1, size=(512,) * 3) for i in range(30))
+
+            sum = reduce((lambda x, y: x + y), arrays)
+
+            aprint(sum)
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! Test passes nevertheless!")

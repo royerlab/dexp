@@ -7,6 +7,7 @@ from dexp.processing.registration.reg_trans_nd import register_translation_nd
 
 def register_translation_2d_skimage(image_a, image_b,
                                     upsample_factor: int = 16,
+                                    force_numpy: bool = False,
                                     internal_dtype=None,
                                     **kwargs) -> TranslationRegistrationModel:
     """
@@ -18,6 +19,7 @@ def register_translation_2d_skimage(image_a, image_b,
     image_a : First image
     image_b : Second Image
     upsample_factor : Upsampling factor for sub-pixel accuracy
+    force_numpy : Forces output model to be allocated with numpy arrays.
     internal_dtype : internal dtype for computation
     kwargs : additional optional parameters
 
@@ -29,7 +31,7 @@ def register_translation_2d_skimage(image_a, image_b,
     image_a = Backend.to_numpy(image_a, dtype=internal_dtype)
     image_b = Backend.to_numpy(image_b, dtype=internal_dtype)
     shifts, error, _ = phase_cross_correlation(image_a, image_b, upsample_factor=upsample_factor, **kwargs)
-    return TranslationRegistrationModel(shift_vector=shifts, confidence=error)
+    return TranslationRegistrationModel(shift_vector=shifts, confidence=error, force_numpy=force_numpy)
 
 
 def register_translation_2d_dexp(image_a, image_b,

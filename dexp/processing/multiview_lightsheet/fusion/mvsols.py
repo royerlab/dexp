@@ -29,18 +29,18 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     zero_level: float = 120,
                     clip_too_high: int = 2048,
                     fusion='tg',
-                    fusion_bias_exponent: int = 2,
-                    fusion_bias_strength: float = 0,
                     z_pad: int = 0,
                     z_apodise: int = 0,
+                    registration_num_iterations: int = 4,
                     registration_confidence_threshold: float = 0.3,
-                    registration_max_residual_shift: int = 64,
+                    registration_max_residual_shift: int = 32,
                     registration_mode: str = 'projection',
                     registration_edge_filter: bool = False,
                     registration_force_model: bool = False,
                     registration_model: PairwiseRegistrationModel = None,
                     registration_min_confidence: float = 0.5,
                     registration_max_change: int = 16,
+                    dehaze_before_fusion: bool = True,
                     dehaze_size: int = 65,
                     dark_denoise_threshold: int = 0,
                     dark_denoise_size: int = 9,
@@ -72,10 +72,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     fusion : Fusion mode, can be 'tg', 'dct', 'dft'
 
-    fusion_bias_exponent : Exponent for fusion bias
-
-    fusion_bias_strength : Strength of fusion bias, set to zero to deactivate
-
     z_pad : Padding length along Z (scanning direction), usefull in conjunction with z_apodise
 
     z_apodise : apodises along Z (direction) to suppress discontinuities (views cropping the sample) that disrupt fusion.
@@ -97,6 +93,8 @@ def msols_fuse_1C2L(C0L0, C0L1,
     registration_min_confidence : Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.
 
     registration_max_change : Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.
+
+    dehaze_before_fusion : Whether to dehaze the views before fusion or to dehaze the fully fused and registered final image.
 
     dehaze_size : After all fusion and registration, the final image is dehazed to remove
     large-scale background light caused by scattered illumination and out-of-focus light.
@@ -173,6 +171,8 @@ def msols_fuse_1C2L(C0L0, C0L1,
             C0L0 *= apodise
             C0L1 *= apodise
 
+            del apodise, apodise_left, apodise_right
+
     # from napari import gui_qt, Viewer
     # with gui_qt():
     #     def _c(array):
@@ -185,12 +185,34 @@ def msols_fuse_1C2L(C0L0, C0L1,
     with asection(f"Resample C0L0 and C0L1"):
         C0L0 = resample_C0L0(C0L0, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
         C0L1 = resample_C0L1(C0L1, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
+        aprint(f"Shape and dtype of C0L0 after resampling: {C0L0.shape}, {C0L0.dtype}")
+        aprint(f"Shape and dtype of C0L1 after resampling: {C0L1.shape}, {C0L1.dtype}")
         Backend.current().clear_allocation_pool()
 
-    with asection(f"Register C0L0 and C0L1"):
+    if dehaze_size > 0 and dehaze_before_fusion:
+        with asection(f"Dehaze C0L0 & C0L1 ..."):
+            C0L0 = dehaze(C0L0,
+                          size=dehaze_size,
+                          minimal_zero_level=zero_level,
+                          correct_max_level=True)
+            C0L1 = dehaze(C0L1,
+                          size=dehaze_size,
+                          minimal_zero_level=zero_level,
+                          correct_max_level=True)
+            C0L0 = Backend.to_numpy(C0L0)
+            C0L1 = Backend.to_numpy(C0L1)
+            Backend.current().clear_allocation_pool()
 
-        C0L0 = C0L0.astype(dtype=numpy.float32)
-        C0L1 = C0L1.astype(dtype=numpy.float32)
+    # from napari import Viewer, gui_qt
+    # with gui_qt():
+    #     def _c(array):
+    #         return Backend.to_numpy(array)
+    #
+    #     viewer = Viewer()
+    #     viewer.add_image(_c(C0L0), name='C0L0', colormap='bop blue', blending='additive')
+    #     viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
+
+    with asection(f"Register C0L0 and C0L1"):
 
         aprint(f"Provided registration model: {registration_model}, overall confidence: {0 if registration_model is None else registration_model.overall_confidence()}")
 
@@ -200,12 +222,14 @@ def msols_fuse_1C2L(C0L0, C0L1,
             aprint("No registration model enforced, running registration now")
             registration_method = register_translation_maxproj_nd if registration_mode == 'projection' else register_translation_nd
             new_model = register_warp_multiscale_nd(C0L0, C0L1,
-                                                    num_iterations=5,
+                                                    num_iterations=registration_num_iterations,
                                                     confidence_threshold=registration_confidence_threshold,
                                                     max_residual_shift=registration_max_residual_shift,
                                                     edge_filter=registration_edge_filter,
                                                     registration_method=registration_method,
                                                     denoise_input_sigma=1)
+
+            Backend.current().clear_allocation_pool()
             aprint(f"Computed registration model: {new_model}, overall confidence: {new_model.overall_confidence()}")
 
             if registration_model is None or (new_model.overall_confidence() >= registration_min_confidence or new_model.change_relative_to(registration_model) <= registration_max_change):
@@ -215,37 +239,45 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
         aprint(f"Applying registration model: {model}, overall confidence: {model.overall_confidence()}")
         C0L0, C0L1 = model.apply(C0L0, C0L1)
-        C0L0 = C0L0.astype(dtype=numpy.float16, copy=False)
-        C0L1 = C0L1.astype(dtype=numpy.float16, copy=False)
         Backend.current().clear_allocation_pool()
+
+    # from napari import Viewer, gui_qt
+    # with gui_qt():
+    #     def _c(array):
+    #         return Backend.to_numpy(array)
+    #
+    #     viewer = Viewer()
+    #     viewer.add_image(_c(C0L0), name='C0L0', colormap='bop blue', blending='additive')
+    #     viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
 
     if equalise:
         with asection(f"Equalise intensity of C0L0 relative to C0L1 ..."):
             C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
-                                                   zero_level=zero_level,
+                                                   zero_level=0 if dehaze_before_fusion else zero_level,
                                                    copy=False)
 
             aprint(f"Equalisation ratio: {ratio}")
 
-    from napari import Viewer, gui_qt
-    with gui_qt():
-        def _c(array):
-            return Backend.to_numpy(array)
-
-        viewer = Viewer()
-        viewer.add_image(_c(C0L0), name='C0L0', colormap='bop blue', blending='additive')
-        viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
+    # from napari import Viewer, gui_qt
+    # with gui_qt():
+    #     def _c(array):
+    #         return Backend.to_numpy(array)
+    #
+    #     viewer = Viewer()
+    #     viewer.add_image(_c(C0L0), name='C0L0', colormap='bop blue', blending='additive')
+    #     viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
 
     with asection(f"Fuse detection views C0lx and C1Lx..."):
         C1Lx = fuse_illumination_views(C0L0, C0L1,
-                                       mode=fusion,
-                                       bias_exponent=fusion_bias_exponent,
-                                       bias_strength=fusion_bias_strength)
+                                       mode=fusion)
         Backend.current().clear_allocation_pool()
 
-    if dehaze_size > 0:
+    if dehaze_size > 0 and not dehaze_before_fusion:
         with asection(f"Dehaze CxLx ..."):
-            C1Lx = dehaze(C1Lx, size=dehaze_size, minimal_zero_level=0)
+            C1Lx = dehaze(C1Lx,
+                          size=dehaze_size,
+                          minimal_zero_level=0,
+                          correct_max_level=True)
             Backend.current().clear_allocation_pool()
 
     if dark_denoise_threshold > 0:
@@ -259,24 +291,25 @@ def msols_fuse_1C2L(C0L0, C0L1,
         with asection(f"Filter output using a Butterworth filter"):
             cutoffs = (butterworth_filter_cutoff,) * C1Lx.ndim
             C1Lx = butterworth_filter(C1Lx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
-            gc.collect()
+            Backend.current().clear_allocation_pool()
 
     with asection(f"Convert back to original dtype..."):
         if original_dtype is numpy.uint16:
             C1Lx = xp.clip(C1Lx, 0, None, out=C1Lx)
         C1Lx = C1Lx.astype(dtype=original_dtype, copy=False)
-        gc.collect()
+        Backend.current().clear_allocation_pool()
+
+    gc.collect()
+    Backend.current().clear_allocation_pool()
 
     return C1Lx, registration_model
 
 
 def fuse_illumination_views(CxL0, CxL1,
                             mode: str = 'tg',
-                            smoothing: int = 12,
-                            bias_exponent: int = 2,
-                            bias_strength: float = 0.1):
+                            smoothing: int = 12):
     if mode == 'tg':
-        fused = fuse_tg_nd(CxL0, CxL1, downscale=2, tenengrad_smoothing=smoothing, bias_axis=2, bias_exponent=bias_exponent, bias_strength=bias_strength)
+        fused = fuse_tg_nd(CxL0, CxL1, downscale=2, tenengrad_smoothing=smoothing, bias_axis=None, bias_exponent=0, bias_strength=0)
     elif mode == 'dct':
         fused = fuse_dct_nd(CxL0, CxL1)
     elif mode == 'dft':

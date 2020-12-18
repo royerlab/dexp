@@ -1,3 +1,5 @@
+import gc
+
 import numpy
 from arbol import asection, section, aprint
 
@@ -33,7 +35,6 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                       registration_max_change: int = 16,
                       dehaze_before_fusion: bool = True,
                       dehaze_size: int = 32,
-                      dehaze_correct_max_level: bool = True,
                       dark_denoise_threshold: int = 0,
                       dark_denoise_size: int = 9,
                       butterworth_filter_cutoff: float = 1,
@@ -79,11 +80,11 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
 
     registration_max_displacement : Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.
 
+    dehaze_before_fusion : Whether to dehaze the views before fusion or to dehaze the fully fused and registered final image.
+
     dehaze_size : After all fusion and registration, the final image is dehazed to remove
     large-scale background light caused by scattered illumination and out-of-focus light.
     This parameter controls the scale of the low-pass filter used.
-
-    dehaze_correct_max_level : Standard dehazing only removes the local 'zero-level', correcting max level rescales pixels intensities so that the original max level is preserved.
 
     dark_denoise_threshold : After all fusion and registration, the final image is processed
     to remove any remaining noise in the dark background region (= hurts compression!).
@@ -142,11 +143,11 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             C0L0 = dehaze(C0L0.copy(),
                           size=dehaze_size,
                           minimal_zero_level=0,
-                          correct_max_level=dehaze_correct_max_level)
+                          correct_max_level=True)
             C0L1 = dehaze(C0L1.copy(),
                           size=dehaze_size,
                           minimal_zero_level=0,
-                          correct_max_level=dehaze_correct_max_level)
+                          correct_max_level=True)
 
             # from napari import gui_qt, Viewer
             # with gui_qt():
@@ -211,11 +212,11 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             C1L0 = dehaze(C1L0,
                           size=dehaze_size,
                           minimal_zero_level=0,
-                          correct_max_level=dehaze_correct_max_level)
+                          correct_max_level=True)
             C1L1 = dehaze(C1L1,
                           size=dehaze_size,
                           minimal_zero_level=0,
-                          correct_max_level=dehaze_correct_max_level)
+                          correct_max_level=True)
             Backend.current().clear_allocation_pool()
 
     with asection(f"Fuse illumination views C1L0 and C1L1..."):
@@ -269,7 +270,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             CxLx = dehaze(CxLx,
                           size=dehaze_size,
                           minimal_zero_level=0,
-                          correct_max_level=dehaze_correct_max_level)
+                          correct_max_level=True)
             Backend.current().clear_allocation_pool()
 
     if dark_denoise_threshold > 0:
@@ -299,6 +300,9 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             CxLx = xp.clip(CxLx, 0, None, out=CxLx)
         CxLx = CxLx.astype(dtype=original_dtype, copy=False)
         Backend.current().clear_allocation_pool()
+
+    gc.collect()
+    Backend.current().clear_allocation_pool()
 
     return CxLx, registration_model
 

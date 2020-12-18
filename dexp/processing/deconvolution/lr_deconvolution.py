@@ -96,13 +96,13 @@ def lucy_richardson_deconvolution(image,
             full_kernel[slicing_n] = 0
             full_kernel[slicing_p] = 0
 
-        full_kernel = full_kernel / full_kernel.sum()
+        full_kernel /= full_kernel.sum()
         donut_kernel = full_kernel.copy()
         donut_kernel[(slice(blind_spot // 2, blind_spot // 2 + 1, None),) * image.ndim] = 0
-        donut_kernel = donut_kernel / donut_kernel.sum()
+        donut_kernel /= donut_kernel.sum()
         # psf_original = psf.copy()
         psf = sp.ndimage.convolve(psf, donut_kernel)
-        psf = psf / psf.sum()
+        psf /= psf.sum()
 
         if 'median' in blind_spot_mode:
             image = sp.ndimage.filters.median_filter(image, footprint=full_kernel)
