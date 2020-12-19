@@ -132,24 +132,22 @@ class CupyBackend(Backend):
     def clear_allocation_pool(self):
         import cupy
 
-        with asection("Clear Cupy allocation pool:"):
+        if self.mempool is not None:
+            aprint(f"Number of free blocks before release: {self.mempool.n_free_blocks()}, used:{self.mempool.used_bytes()//1e9}GB, total:{self.mempool.total_bytes()//1e9}GB ")
+            gc.collect()
+            self.mempool.free_all_blocks()
+            aprint(f"Number of free blocks after release: {self.mempool.n_free_blocks()}, used:{self.mempool.used_bytes()//1e9}GB, total:{self.mempool.total_bytes()//1e9}GB ")
+        else:
+            aprint("Warning: default cupy memory pool is 'None'")
 
-            if self.mempool is not None:
-                aprint(f"Number of free blocks before release: {self.mempool.n_free_blocks()}, used:{self.mempool.used_bytes()//1e9}GB, total:{self.mempool.total_bytes()//1e9}GB ")
-                gc.collect()
-                self.mempool.free_all_blocks()
-                aprint(f"Number of free blocks after release: {self.mempool.n_free_blocks()}, used:{self.mempool.used_bytes()//1e9}GB, total:{self.mempool.total_bytes()//1e9}GB ")
-            else:
-                aprint("Warning: default cupy memory pool is 'None'")
-
-            pinned_mempool = cupy.get_default_pinned_memory_pool()
-            if pinned_mempool is not None:
-                #aprint(f"Number of free blocks before release: {pinned_mempool.n_free_blocks()}")
-                gc.collect()
-                pinned_mempool.free_all_blocks()
-                #aprint(f"Number of free blocks after release: {pinned_mempool.n_free_blocks()}")
-            #else:
-                #aprint("Warning: default cupy pinned memory pool is 'None'")
+        pinned_mempool = cupy.get_default_pinned_memory_pool()
+        if pinned_mempool is not None:
+            #aprint(f"Number of free blocks before release: {pinned_mempool.n_free_blocks()}")
+            gc.collect()
+            pinned_mempool.free_all_blocks()
+            #aprint(f"Number of free blocks after release: {pinned_mempool.n_free_blocks()}")
+        #else:
+            #aprint("Warning: default cupy pinned memory pool is 'None'")
 
         super().clear_allocation_pool()
 

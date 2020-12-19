@@ -4,7 +4,7 @@ from os.path import exists, join
 
 import click
 import numpy
-from arbol.arbol import section, aprint
+from arbol.arbol import section, aprint, asection
 
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _parse_slicing
 
@@ -28,8 +28,9 @@ def render(input_path, output_path, channels=None, slicing=None, overwrite=False
     aprint(f"Volumetric rendering of: {input_path} to {output_path} for channels: {channels}, slicing: {slicing} ")
 
     for channel in channels:
-        aprint(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
-        print(input_dataset.info(channel))
+
+        with asection(f"Channel '{channel}' shape: {input_dataset.shape(channel)}:"):
+            aprint(input_dataset.info(channel))
 
         array = input_dataset.get_array(channel, wrap_with_dask=True)
         dtype = array.dtype
@@ -77,7 +78,7 @@ def render(input_path, output_path, channels=None, slicing=None, overwrite=False
         normrange = float(options['normrange']) if 'normrange' in options else 1024
         videofilename = options['name'] if 'name' in options else 'video.mp4'
 
-        while section("Options:"):
+        with asection("Options:"):
             aprint(f"Video filename          : {videofilename}")
             aprint(f"Number of time points   : {nbtp}")
             aprint(f"Number of frames        : {nbframes}  \toption: nbframes: \tint")

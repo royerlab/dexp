@@ -29,6 +29,8 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     zero_level: float = 120,
                     clip_too_high: int = 2048,
                     fusion='tg',
+                    fusion_bias_exponent: int = 2,
+                    fusion_bias_strength_x: float = 0.1,
                     z_pad: int = 0,
                     z_apodise: int = 0,
                     registration_num_iterations: int = 4,
@@ -72,7 +74,11 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     fusion : Fusion mode, can be 'tg', 'dct', 'dft'
 
-    z_pad : Padding length along Z (scanning direction), usefull in conjunction with z_apodise
+    fusion_bias_exponent : Exponent for fusion bias
+
+    fusion_bias_strength_x : Strength of fusion bias for fusing views along x axis (after resampling/deskewing) . Set to zero to deactivate
+
+    z_pad : Padding length along Z (scanning direction) for input stacks, usefull in conjunction with z_apodise
 
     z_apodise : apodises along Z (direction) to suppress discontinuities (views cropping the sample) that disrupt fusion.
 
@@ -199,8 +205,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
                           size=dehaze_size,
                           minimal_zero_level=zero_level,
                           correct_max_level=True)
-            C0L0 = Backend.to_numpy(C0L0)
-            C0L1 = Backend.to_numpy(C0L1)
             Backend.current().clear_allocation_pool()
 
     # from napari import Viewer, gui_qt
@@ -269,7 +273,9 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     with asection(f"Fuse detection views C0lx and C1Lx..."):
         C1Lx = fuse_illumination_views(C0L0, C0L1,
-                                       mode=fusion)
+                                       mode=fusion,
+                                       bias_exponent=fusion_bias_exponent,
+                                       bias_strength=fusion_bias_strength_x)
         Backend.current().clear_allocation_pool()
 
     if dehaze_size > 0 and not dehaze_before_fusion:
@@ -306,10 +312,17 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
 
 def fuse_illumination_views(CxL0, CxL1,
-                            mode: str = 'tg',
+                            mode,
+                            bias_exponent,
+                            bias_strength,
                             smoothing: int = 12):
     if mode == 'tg':
-        fused = fuse_tg_nd(CxL0, CxL1, downscale=2, tenengrad_smoothing=smoothing, bias_axis=None, bias_exponent=0, bias_strength=0)
+        fused = fuse_tg_nd(CxL0, CxL1,
+                           downscale=2,
+                           tenengrad_smoothing=smoothing,
+                           bias_axis=2,
+                           bias_exponent=bias_exponent,
+                           bias_strength=bias_strength)
     elif mode == 'dct':
         fused = fuse_dct_nd(CxL0, CxL1)
     elif mode == 'dft':

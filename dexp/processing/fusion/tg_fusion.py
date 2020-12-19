@@ -18,7 +18,8 @@ def fuse_tg_nd(image_a,
                bias_exponent: Optional[float] = 3,
                bias_strength: Optional[float] = 2,
                clip: Optional[bool] = True,
-               internal_dtype=None):
+               internal_dtype=None,
+               _display_blend_map: bool = True):
     """
     Fuses two images by picking regions from one or the other image based on the local image quality
     measured by using the magnitude of the Sobel gradient -- similarly as in the Tenengrad focus metric.
@@ -142,7 +143,8 @@ def fuse_tg_nd(image_a,
 
     # Fuse using blending map:
     image_fused = blend_images(image_a, image_b, blend_map)
-    del image_a, image_b, blend_map
+    if not _display_blend_map:
+        del image_a, image_b, blend_map
 
     if clip:
         image_fused = xp.clip(image_fused, min_value, max_value, out=image_fused)
@@ -150,14 +152,15 @@ def fuse_tg_nd(image_a,
     # Adjust type:
     image_fused = image_fused.astype(original_dtype, copy=False)
 
-    # from napari import Viewer, gui_qt
-    # with gui_qt():
-    #     def _c(array):
-    #         return Backend.to_numpy(array)
-    #     viewer = Viewer()
-    #     viewer.add_image(_c(image_a), name='image_a', contrast_limits=(0,600))
-    #     viewer.add_image(_c(image_b), name='image_b', contrast_limits=(0,600))
-    #     viewer.add_image(_c(blend_map), name='blend_map')
-    #     viewer.add_image(_c(image_fused), name='image_fused', contrast_limits=(0,600))
+    if _display_blend_map:
+        from napari import Viewer, gui_qt
+        with gui_qt():
+            def _c(array):
+                return Backend.to_numpy(array)
+            viewer = Viewer()
+            viewer.add_image(_c(image_a), name='image_a', contrast_limits=(0,600))
+            viewer.add_image(_c(image_b), name='image_b', contrast_limits=(0,600))
+            viewer.add_image(_c(blend_map), name='blend_map')
+            viewer.add_image(_c(image_fused), name='image_fused', contrast_limits=(0,600))
 
     return image_fused
