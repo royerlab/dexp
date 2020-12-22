@@ -53,8 +53,15 @@ def dataset_tiff(dataset,
                     else:
                         print(f"File for time point (or z slice): {tp} already exists.")
 
-        Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp) for tp in range(0, arrays[0].shape[0]))
+        if workers == -1:
+            workers = os.cpu_count() // 2
+        aprint(f"Number of workers: {workers}")
 
+        if workers > 1:
+            Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp) for tp in range(0, arrays[0].shape[0]))
+        else:
+            for tp in range(0, arrays[0].shape[0]):
+                process(tp)
 
     else:
         array = numpy.stack(arrays)

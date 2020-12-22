@@ -101,4 +101,6 @@ def dataset_isonet(dataset,
         aprint(dest_dataset.info())
         if check:
             dest_dataset.check_integrity()
+
+        # close destination dataset:
         dest_dataset.close()

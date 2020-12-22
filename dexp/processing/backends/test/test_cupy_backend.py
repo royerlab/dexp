@@ -98,6 +98,7 @@ def test_allocation_pool():
     except ModuleNotFoundError:
         aprint("Cupy module not found! Test passes nevertheless!")
 
+
 def test_unified_memory():
     try:
 

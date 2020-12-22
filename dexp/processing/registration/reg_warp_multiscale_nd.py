@@ -79,7 +79,7 @@ def register_warp_multiscale_nd(image_a,
                 chunks = tuple(max(min_chunk, -(-s // nb_div)) for s in image_a.shape)
                 margins = tuple(max(min_margin, int(c * r)) for c, r in zip(chunks, margin_ratios))
                 aprint(f"register iteration: {i}, div= {nb_div}, chunks={chunks}, margins={margins}")
-                model = register_warp_nd(image_a, image, chunks=chunks, margins=margins,force_numpy=force_numpy,  **kwargs)
+                model = register_warp_nd(image_a, image, chunks=chunks, margins=margins, force_numpy=force_numpy, **kwargs)
                 aprint(f"median confidence: {model.median_confidence()}")
                 aprint(f"median shift magnitude: {model.median_shift_magnitude(confidence_threshold=confidence_threshold)}")
                 eff_max_shift = max_residual_shift if (i > 0 and max_residual_shift is not None) else None

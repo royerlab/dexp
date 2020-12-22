@@ -18,7 +18,9 @@ def register_translation_nd(image_a,
                             log_compression: bool = False,
                             edge_filter: bool = True,
                             force_numpy: bool = False,
-                            internal_dtype=None) -> TranslationRegistrationModel:
+                            internal_dtype=None,
+                            _display_phase_correlation: bool = False,
+                            ) -> TranslationRegistrationModel:
     """
     Registers two nD images using just a translation-only model.
     This uses a full nD robust phase correlation based approach.
@@ -37,6 +39,8 @@ def register_translation_nd(image_a,
     edge_filter : apply sobel edge filter to input images.
     force_numpy : Forces output model to be allocated with numpy arrays.
     internal_dtype : internal dtype for computation
+
+    _display_phase_correlation : For debugging purposes the phase correlation can be displayed with napari
 
     Returns
     -------
@@ -122,20 +126,22 @@ def register_translation_nd(image_a,
     # shift vector:
     shift_vector = list(shift_vector)
 
-    # # DO NOT DELETE, INSTRUMENTATION CODE FOR DEBUGGING
-    # from napari import gui_qt, Viewer
-    # with gui_qt():
-    #     aprint(f"shift = {shift_vector}, confidence = {confidence} ")
-    #
-    #     def _c(array):
-    #         return Backend.to_numpy(array)
-    #     viewer = Viewer()
-    #     viewer.add_image(_c(image_a), name='image_a')
-    #     viewer.add_image(_c(image_b), name='image_b')
-    #     viewer.add_image(_c(raw_correlation), name='raw_correlation', colormap='viridis')
-    #     viewer.add_image(_c(correlation), name='correlation', colormap='viridis')
-    #     viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='bop orange', blending='additive')
-    #     viewer.grid_view(2, 3, 1)
+    if _display_phase_correlation:
+        # DO NOT DELETE, INSTRUMENTATION CODE FOR DEBUGGING
+        from napari import gui_qt, Viewer
+        with gui_qt():
+            aprint(f"shift = {shift_vector}, confidence = {confidence} ")
+
+            def _c(array):
+                return Backend.to_numpy(array)
+
+            viewer = Viewer()
+            viewer.add_image(_c(image_a), name='image_a')
+            viewer.add_image(_c(image_b), name='image_b')
+            viewer.add_image(_c(raw_correlation), name='raw_correlation', colormap='viridis')
+            viewer.add_image(_c(correlation), name='correlation', colormap='viridis')
+            viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='bop orange', blending='additive')
+            viewer.grid_view(2, 3, 1)
 
     return TranslationRegistrationModel(shift_vector=shift_vector, confidence=confidence, force_numpy=force_numpy)
 

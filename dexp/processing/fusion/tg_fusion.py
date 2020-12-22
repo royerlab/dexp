@@ -19,7 +19,7 @@ def fuse_tg_nd(image_a,
                bias_strength: Optional[float] = 2,
                clip: Optional[bool] = True,
                internal_dtype=None,
-               _display_blend_map: bool = True):
+               _display_blend_map: bool = False):
     """
     Fuses two images by picking regions from one or the other image based on the local image quality
     measured by using the magnitude of the Sobel gradient -- similarly as in the Tenengrad focus metric.
@@ -43,6 +43,8 @@ def fuse_tg_nd(image_a,
     bias_strength : Bias strength -- zero means no bias
     clip : clip output to input images min and max values.
     internal_dtype : dtype for internal computation
+
+    _display_blend_map : For debugging purposes, we can display the images to fuse, the blend map and result.
 
     Returns
     -------
@@ -157,10 +159,11 @@ def fuse_tg_nd(image_a,
         with gui_qt():
             def _c(array):
                 return Backend.to_numpy(array)
+
             viewer = Viewer()
-            viewer.add_image(_c(image_a), name='image_a', contrast_limits=(0,600))
-            viewer.add_image(_c(image_b), name='image_b', contrast_limits=(0,600))
+            viewer.add_image(_c(image_a), name='image_a', contrast_limits=(0, 600))
+            viewer.add_image(_c(image_b), name='image_b', contrast_limits=(0, 600))
             viewer.add_image(_c(blend_map), name='blend_map')
-            viewer.add_image(_c(image_fused), name='image_fused', contrast_limits=(0,600))
+            viewer.add_image(_c(image_fused), name='image_fused', contrast_limits=(0, 600))
 
     return image_fused

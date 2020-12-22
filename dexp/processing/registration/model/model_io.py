@@ -31,7 +31,7 @@ def model_list_from_file(file_path: str):
         with asection(f"Loading {len(lines)} models from file: {file_path}"):
             for line in lines:
                 line = line.strip()
-                model = from_json(line)
+                model = None if line == 'None' else from_json(line)
                 model_list.append(model)
 
         return model_list
@@ -43,7 +43,7 @@ def model_list_to_file(file_path: str, model_list: Sequence[PairwiseRegistration
 
         with asection(f"Writing {len(model_list)} models to file: {file_path}"):
             for model in model_list:
-                line = model.to_json()
+                line = 'None' if model is None else model.to_json()
                 lines.append(line + '\n')
 
             models_file.writelines(lines)

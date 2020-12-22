@@ -308,7 +308,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
     gc.collect()
     Backend.current().clear_allocation_pool()
 
-    return C1Lx, registration_model
+    return C1Lx, model
 
 
 def fuse_illumination_views(CxL0, CxL1,

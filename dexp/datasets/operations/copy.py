@@ -15,10 +15,12 @@ def dataset_copy(dataset,
                  workers,
                  workersbackend,
                  check):
+    # Create destination dataset:
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(path, mode, store)
 
+    # Process each channel:
     for channel in dataset._selected_channels(channels):
 
         with asection(f"Copying channel {channel}:"):
@@ -65,7 +67,7 @@ def dataset_copy(dataset,
 
             from joblib import Parallel, delayed
 
-            if workers is None:
+            if workers == -1:
                 workers = os.cpu_count() // 2
 
             aprint(f"Number of workers: {workers}")
@@ -74,4 +76,6 @@ def dataset_copy(dataset,
     aprint(dest_dataset.info())
     if check:
         dest_dataset.check_integrity()
+
+    # close destination dataset:
     dest_dataset.close()

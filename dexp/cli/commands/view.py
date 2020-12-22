@@ -15,7 +15,6 @@ from dexp.datasets.operations.view import dataset_view
 @click.option('--windowsize', '-ws', type=int, default=1536, help='Sets the napari window size. i.e. -ws 400 sets the window to 400x400', show_default=True)
 @click.option('--clim', '-cl', type=str, default=None, help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]', show_default=True)
 def view(input_path, channels=None, slicing=None, volume=False, aspect=None, colormap='viridis', windowsize=1536, clim=None):
-
     if 'http' in input_path:
         if channels is None:
             aprint("Channel(s) must be specified!")
@@ -47,4 +46,3 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
             dataset_view(aspect, channels, clim, colormap, input_dataset, input_path, slicing, volume, windowsize)
             input_dataset.close()
             aprint("Done!")
-
