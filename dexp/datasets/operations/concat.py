@@ -28,7 +28,7 @@ def dataset_concat(channels,
             aprint(f"shapes: {shapes}")
             aprint(f"dtypes: {dtypes}")
             for shape, dtype in zip(shapes, dtypes):
-                if shape[0:-1] != shapes[0][0:-1] or dtype != dtypes[0]:
+                if shape[1:] != shapes[0][1:] or dtype != dtypes[0]:
                     raise ValueError("Error: can't concatenate arrays of different shape!")
 
             # deciding of shape and dtype of concatenateed array:
