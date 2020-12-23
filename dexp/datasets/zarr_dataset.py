@@ -15,14 +15,16 @@ from dexp.datasets.base_dataset import BaseDataset
 
 # Configure multithreading for Dask:
 _cpu_count = multiprocessing.cpu_count() // 2
-#aprint(f"Number of cores on system: {_cpu_count}")
+# aprint(f"Number of cores on system: {_cpu_count}")
 _nb_threads = max(1, _cpu_count)
 dask.config.set(scheduler='threads')
 dask.config.set(pool=ThreadPool(_nb_threads))
 
 # Configure multithreading for Blosc:
 blosc.set_nthreads(_nb_threads)
-#aprint(f"Number of threads used by BLOSC: {blosc.get_nthreads()}")
+
+
+# aprint(f"Number of threads used by BLOSC: {blosc.get_nthreads()}")
 
 
 class ZDataset(BaseDataset):
@@ -55,6 +57,7 @@ class ZDataset(BaseDataset):
         self._root_group = None
         self._arrays = {}
 
+        # Open remote store:
         if 'http' in path:
             aprint(f"Opening a remote store at: {path}")
             from fsspec import get_mapper
@@ -63,9 +66,19 @@ class ZDataset(BaseDataset):
             self._initialise_existing()
             return
 
+        # Correct path to adhere to convention:
+        if 'a' in mode or 'w' in mode:
+            if path.endswith('.zarr.zip') or store == 'zip':
+                path = path + '.zip' if path.endswith('.zarr') else path
+                path = path if path.endswith('.zarr.zip') else path + 'zarr.zip'
+            elif path.endswith('.nested.zarr') or path.endswith('.nested.zarr/') or store == 'ndir':
+                path = path if path.endswith('.nested.zarr') else path + '.nested.zarr'
+            elif path.endswith('.zarr') or path.endswith('.zarr/') or store == 'dir':
+                path = path if path.endswith('.zarr') else path + '.zarr'
 
+        # if exists and overwrite then delete!
         if exists(path) and mode == 'w-':
-            raise ValueError(f"ERROR -- Storage '{path}' already exists, add option '-w' to force overwrite!")
+            raise ValueError(f"Storage '{path}' already exists, add option '-w' to force overwrite!")
         elif exists(path) and mode == 'w':
             aprint(f"Deleting '{path}' for overwrite!")
             if isdir(path):
@@ -73,6 +86,7 @@ class ZDataset(BaseDataset):
             elif isfile(path):
                 os.remove(path)
 
+        # Initialise Zarr storage:
         aprint(f"Initialising Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
         if exists(path):
             aprint(f"Path exists, opening zarr storage...")
@@ -92,33 +106,21 @@ class ZDataset(BaseDataset):
         elif 'a' in mode or 'w' in mode:
             try:
                 aprint(f"Path does not exist, creating zarr storage...")
-                store_type = None
                 if path.endswith('.zarr.zip') or store == 'zip':
                     aprint(f"Opening as ZIP store")
-                    # correcting path to adhere to convention:
-                    path = path + '.zip' if path.endswith('.zarr') else path
-                    path = path if path.endswith('.zarr.zip') else path + 'zarr.zip'
                     self._store = zarr.storage.ZipStore(path)
-                    store_type = 'zip'
                 elif path.endswith('.nested.zarr') or path.endswith('.nested.zarr/') or store == 'ndir':
                     aprint(f"Opening as Nested Directory store")
-                    # correcting path to adhere to convention:
-                    path = path if path.endswith('.nested.zarr') else path + '.nested.zarr'
                     self._store = zarr.storage.NestedDirectoryStore(path)
-                    store_type = 'ndir'
                 elif path.endswith('.zarr') or path.endswith('.zarr/') or store == 'dir':
                     aprint(f"Opening as Directory store")
-                    # correcting path to adhere to convention:
-                    path = path if path.endswith('.zarr') else path + '.zarr'
                     self._store = zarr.storage.DirectoryStore(path)
-                    store_type = 'dir'
-
                 else:
                     aprint(f'Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr` or `.nested.zarr` for nested folders), or a zipped zarr file (file that ends with `.zarr.zip`)')
+
                 aprint(f"Opening Zarr storage with mode='{mode}'")
                 self._root_group = zarr.convenience.open(self._store, mode=mode)
-                self._root_group.attrs['store_type'] = store_type
-                # print(self._root_group.tree())
+
             except Exception as e:
                 raise ValueError(f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect: {path}")
         else:

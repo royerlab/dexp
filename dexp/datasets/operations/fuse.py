@@ -50,7 +50,6 @@ def dataset_fuse(dataset,
         for view, channel in zip(views, channels):
             aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 
-
     if slicing is not None:
         aprint(f"Slicing with: {slicing}")
         views = tuple(view[slicing] for view in views)
@@ -120,6 +119,8 @@ def dataset_fuse(dataset,
                                                    zero_level=zero_level,
                                                    clip_too_high=clip_too_high,
                                                    fusion=fusion,
+                                                   fusion_bias_exponent=2,
+                                                   fusion_bias_strength_x=fusion_bias_strength_i,
                                                    dehaze_size=dehaze_size,
                                                    dark_denoise_threshold=dark_denoise_threshold,
                                                    angle=angle,
@@ -139,7 +140,6 @@ def dataset_fuse(dataset,
                                              clevel=compression_level)
                 except ContainsArrayError:
                     aprint(f"Other thread/process created channel before...")
-
 
             with asection(f"Saving fused stack for time point {tp}, shape:{array.shape}, dtype:{array.dtype}"):
                 dest_dataset.get_array('fused')[tp] = array
@@ -168,4 +168,6 @@ def dataset_fuse(dataset,
     aprint(dest_dataset.info())
     if check:
         dest_dataset.check_integrity()
+
+    # close destination dataset:
     dest_dataset.close()

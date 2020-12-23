@@ -14,7 +14,6 @@ def dataset_view(aspect,
                  slicing,
                  volume,
                  windowsize):
-
     # Annoying napari induced warnings:
     import warnings
     warnings.filterwarnings("ignore")

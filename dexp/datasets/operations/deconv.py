@@ -133,4 +133,6 @@ def dataset_deconv(dataset,
     aprint(dest_dataset.info())
     if check:
         dest_dataset.check_integrity()
+
+    # close destination dataset:
     dest_dataset.close()

@@ -98,6 +98,7 @@ def test_allocation_pool():
     except ModuleNotFoundError:
         aprint("Cupy module not found! Test passes nevertheless!")
 
+
 def test_unified_memory():
     try:
 
@@ -136,6 +137,7 @@ def test_paralell():
 def test_paralell_with_exclusive():
     try:
         num_devices = len(CupyBackend.available_devices())
+        aprint(f"num_devices = {num_devices}")
 
         job_duration = 2
 
@@ -150,6 +152,7 @@ def test_paralell_with_exclusive():
                     aprint(f"End: Job #{id} on device #{device}")
 
         n_jobs = 2 * num_devices
+        aprint(f"n_jobs = {n_jobs}")
 
         start = time()
         with asection(f"Start jobs"):

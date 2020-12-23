@@ -18,14 +18,16 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--microscope', '-m', type=str, default='simview', help='Microscope objective to use for computing psf, can be: simview or mvsols', show_default=True)
 @click.option('--equalise/--no-equalise', '-eq/-neq', default=True, help='Equalise intensity of views before fusion, or not.', show_default=True)
-@click.option('--zerolevel', '-zl', type=int, default=110, help='\'zero-level\' i.e. the pixel values in the restoration (to be substracted)', show_default=True)  #
+@click.option('--zerolevel', '-zl', type=int, default=110, help="‘zero-level’ i.e. the pixel values in the restoration (to be substracted)", show_default=True)  #
 @click.option('--cliphigh', '-ch', type=int, default=1024, help='Clips voxel values above the given value, if zero no clipping is done', show_default=True)  #
-@click.option('--fusion', '-f', type=str, default='tg', help="Fusion mode, can be: 'tg' or 'dct'.  ", show_default=True)  #
-@click.option('--fusion_bias_strength', '-fbs', type=(float, float), default=(0.5, 0.02), help='Fusion bias strength for illumination and detection (fbs_i, fbs_d), set to (0, 0) if fusing a cropped region', show_default=True)  #
+@click.option('--fusion', '-f', type=str, default='tg', help="Fusion mode, can be: ‘tg’ or ‘dct’.  ", show_default=True)  #
+@click.option('--fusion_bias_strength', '-fbs', type=(float, float), default=(0.5, 0.02), help='Fusion bias strength for illumination and detection ‘fbs_i fbs_d’, set to ‘0 0’) if fusing a cropped region', show_default=True)  #
 @click.option('--dehaze_size', '-dhs', type=int, default=65, help='Filter size (scale) for dehazing the final regsitered and fused image to reduce effect of scattered and out-of-focus light. Set to zero to deactivate.',
               show_default=True)  #
 @click.option('--dark_denoise_threshold', '-ddt', type=int, default=0, help='Threshold for denoises the dark pixels of the image -- helps increase compression ratio. Set to zero to deactivate.', show_default=True)  #
-@click.option('--zpadapodise', '-zpa', type=(int, int), default=(8, 96), help='Pads and apodises the views along z before fusion: (pad, apo), where pad is a padding length, and apo is apodisation length, both in voxels. If pad=apo, no original voxel is modified and only added voxels are apodised.', show_default=True)  #
+@click.option('--zpadapodise', '-zpa', type=(int, int), default=(8, 96),
+              help='Pads and apodises the views along z before fusion: ‘pad apo’, where pad is a padding length, and apo is apodisation length, both in voxels. If pad=apo, no original voxel is modified and only added voxels are apodised.',
+              show_default=True)  #
 @click.option('--loadreg', '-lr', is_flag=True, help='Turn on to load the registration parameters from a previous run', show_default=True)  #
 @click.option('--warpregiter', '-wri', type=int, default=4, help='Number of iterations for warp registration (if applicable).', show_default=True)  #
 @click.option('--minconfidence', '-mc', type=float, default=0.5, help='Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.', show_default=True)  #

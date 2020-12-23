@@ -1,11 +1,11 @@
 import numpy
+from arbol import aprint, asection
 from skimage.data import camera
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.reg_trans_nd import register_translation_nd
-from dexp.utils.timeit import timeit
 
 
 def demo_register_translation_2d_numpy():
@@ -18,27 +18,27 @@ def demo_register_translation_2d_cupy():
         with CupyBackend():
             _register_translation_2d()
     except ModuleNotFoundError:
-        print("Cupy module not found! demo ignored")
+        aprint("Cupy module not found! demo ignored")
 
 
 def _register_translation_2d(shift=(13, -5), display=True):
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
-    with timeit("generate dataset"):
+    with asection("generate dataset"):
         image = camera().astype(numpy.float32) / 255
         image = Backend.to_backend(image)
         image = image[0:511, 0:501]
 
-    with timeit("shift"):
+    with asection("shift"):
         shifted = sp.ndimage.shift(image, shift=shift)
-        print(f"shift applied: {shift}")
+        aprint(f"shift applied: {shift}")
 
-    with timeit("register_translation_2d"):
+    with asection("register_translation_2d"):
         model = register_translation_nd(image, shifted)
-        print(f"model: {model}")
+        aprint(f"model: {model}")
 
-    with timeit("shift back"):
+    with asection("shift back"):
         _, unshifted = model.apply(image, shifted)
         image1_reg, image2_reg = model.apply(image, shifted, pad=False)
         image1_reg_pad, image2_reg_pad = model.apply(image, shifted, pad=True)
