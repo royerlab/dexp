@@ -62,7 +62,7 @@ def register_warp_multiscale_nd(image_a,
         for i in range(num_iterations):
 
             # Clear memory allocation cache:
-            Backend.current().clear_allocation_pool()
+            # Backend.current().clear_allocation_pool()
 
             # pre-apply transform from previous iterations:
             if vector_field is not None:

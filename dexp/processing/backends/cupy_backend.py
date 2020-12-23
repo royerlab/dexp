@@ -14,11 +14,27 @@ class CupyBackend(Backend):
     _dexp_dask_client = None
 
     @staticmethod
-    def available_devices():
+    def available_devices(order='first', maxLoad=1, maxMemory=1):
+        """
+
+        Parameters
+        ----------
+        order :     first --> select the GPU with the lowest ID (DEFAULT)
+                    last --> select the GPU with the highest ID
+                    random --> select a random available GPU
+                    load --> select the GPU with the lowest load
+                    memory --> select the GPU with the most memory available
+        maxLoad :
+        maxMemory
+
+        Returns
+        -------
+
+        """
         # Set CUDA_DEVICE_ORDER so the IDs assigned by CUDA match those from nvidia-smi
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         import GPUtil
-        return GPUtil.getAvailable(order='first', limit=numpy.Inf, maxLoad=0.5, maxMemory=0.5, includeNan=False, excludeID=[], excludeUUID=[])
+        return GPUtil.getAvailable(order=order, limit=numpy.Inf, maxLoad=maxLoad, maxMemory=maxMemory, includeNan=False, excludeID=[], excludeUUID=[])
 
     device_locks = tuple(threading.Lock() for _ in available_devices.__func__())
 
@@ -35,7 +51,7 @@ class CupyBackend(Backend):
                  enable_dask_cuda_nvlink: bool = False,
                  ):
         """
-        Instantiates a Numpy-based Image Processing backend
+        Instantiates a Cupy-based Image Processing backend
 
         Parameters
         ----------
@@ -52,8 +68,10 @@ class CupyBackend(Backend):
         super().__init__()
         self.device_id = device_id
         self.exclusive = exclusive
+        self.enable_memory_pool = enable_memory_pool
         self.enable_streaming = enable_streaming
         self.enable_unified_memory = enable_unified_memory
+        self.stream = None
 
         import cupy
         self.cupy_device: cupy.cuda.Device = cupy.cuda.Device(self.device_id)
@@ -61,15 +79,6 @@ class CupyBackend(Backend):
         from cupy.cuda import cub, cutensor
         cub.available = enable_cub
         cutensor.available = enable_cutensor
-
-        if not enable_memory_pool:
-            from cupy.cuda import set_allocator, set_pinned_memory_allocator
-            # Disable memory pool for device memory (GPU)
-            set_allocator(None)
-            # Disable memory pool for pinned memory (CPU).
-            set_pinned_memory_allocator(None)
-        else:
-            self.mempool = None
 
         if not enable_fft_planning:
             import cupy
@@ -96,58 +105,58 @@ class CupyBackend(Backend):
     def __enter__(self):
         if self.exclusive:
             CupyBackend.device_locks[self.device_id].acquire(blocking=True)
+
         self.cupy_device.__enter__()
+
+        if self.enable_memory_pool:
+            import cupy
+            from cupy.cuda import set_allocator
+            self.mempool = cupy.cuda.MemoryPool(cupy.cuda.memory.malloc_managed if self.enable_unified_memory else None)
+            from cupy.cuda import memory
+            self._previous_allocator = memory._get_thread_local_allocator()
+            memory._set_thread_local_allocator(self.mempool.malloc)
+        else:
+            from cupy.cuda import memory
+            memory._set_thread_local_allocator(None)
+
         if self.enable_streaming:
             import cupy
             self.stream = cupy.cuda.stream.Stream(non_blocking=True)
             self.stream.__enter__()
-
-        import cupy
-        self.mempool = cupy.cuda.MemoryPool(cupy.cuda.memory.malloc_managed if self.enable_unified_memory else None)
-        from cupy.cuda import memory
-        self._previous_allocator = memory._get_thread_local_allocator()
-        memory._set_thread_local_allocator(self.mempool.malloc)
 
         return super().__enter__()
 
     def __exit__(self, type, value, traceback):
         super().__exit__(type, value, traceback)
 
-        gc.collect()
-        self.clear_allocation_pool()
+        if self.enable_streaming and self.stream is not None:
+            self.stream.__exit__()
+
         if self._previous_allocator is not None:
             from cupy.cuda import memory
             memory._set_thread_local_allocator(self._previous_allocator)
+        gc.collect()
+        self.clear_allocation_pool()
         self.mempool = None
 
-        if self.enable_streaming:
-            self.stream.__exit__()
         self.cupy_device.__exit__()
+
         if self.exclusive:
             CupyBackend.device_locks[self.device_id].release()
 
     def synchronise(self):
-        self.stream.synchronize()
+        if self.stream is not None:
+            self.stream.synchronize()
 
     def clear_allocation_pool(self):
-        import cupy
 
         if self.mempool is not None:
             aprint(f"Number of free blocks before release: {self.mempool.n_free_blocks()}, used:{self.mempool.used_bytes() // 1e9}GB, total:{self.mempool.total_bytes() // 1e9}GB ")
             gc.collect()
-            self.mempool.free_all_blocks()
+            self.mempool.free_all_blocks(self.stream)
             aprint(f"Number of free blocks after release: {self.mempool.n_free_blocks()}, used:{self.mempool.used_bytes() // 1e9}GB, total:{self.mempool.total_bytes() // 1e9}GB ")
         else:
             aprint("Warning: default cupy memory pool is 'None'")
-
-        pinned_mempool = cupy.get_default_pinned_memory_pool()
-        if pinned_mempool is not None:
-            # aprint(f"Number of free blocks before release: {pinned_mempool.n_free_blocks()}")
-            gc.collect()
-            pinned_mempool.free_all_blocks()
-            # aprint(f"Number of free blocks after release: {pinned_mempool.n_free_blocks()}")
-        # else:
-        # aprint("Warning: default cupy pinned memory pool is 'None'")
 
         super().clear_allocation_pool()
 

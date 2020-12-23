@@ -1,5 +1,6 @@
 import numpy
 import scipy
+from arbol import asection, aprint
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
@@ -7,7 +8,6 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.reg_warp_nd import register_warp_nd
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
-from dexp.utils.timeit import timeit
 
 
 def demo_register_warp_3d_numpy():
@@ -37,25 +37,25 @@ def _register_warp_3d(length_xy=256, warp_grid_size=3, reg_grid_size=6, display=
 
     image = image[0:length_xy * 2 - 3, 0:length_xy * 2 - 5, 0:length_xy * 2 - 7]
 
-    with timeit("warp"):
+    with asection("warp"):
         magnitude = 10
         vector_field = numpy.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 3 + (3,))
         warped = warp(image, vector_field, vector_field_upsampling=8)
-        print(f"vector field applied: {vector_field}")
+        aprint(f"vector field applied: {vector_field}")
 
-    with timeit("add noise"):
+    with asection("add noise"):
         image += xp.random.uniform(0, 40, size=image.shape)
         warped += xp.random.uniform(0, 40, size=warped.shape)
 
-    with timeit(f"register_warp_nd"):
+    with asection(f"register_warp_nd"):
         chunks = tuple(s // reg_grid_size for s in image.shape)
         margins = tuple(max(4, c // 3) for c in chunks)
-        print(f"chunks={chunks}, margins={margins}")
+        aprint(f"chunks={chunks}, margins={margins}")
         model = register_warp_nd(image, warped, chunks=chunks, margins=margins)
         model.clean()
         # print(f"vector field found: {vector_field}")
 
-    with timeit("unwarp"):
+    with asection("unwarp"):
         _, unwarped = model.apply(image, warped, vector_field_upsampling=4)
 
     vector_field = scipy.ndimage.zoom(vector_field, zoom=(2, 2, 2, 1), order=1)

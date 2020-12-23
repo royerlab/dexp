@@ -1,10 +1,11 @@
+from arbol import aprint, asection
+
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.reg_trans_nd import register_translation_nd
 from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
-from dexp.utils.timeit import timeit
 
 
 def demo_register_translation_3d_numpy():
@@ -17,26 +18,26 @@ def demo_register_translation_3d_cupy():
         with CupyBackend():
             _register_translation_3d()
     except ModuleNotFoundError:
-        print("Cupy module not found! demo ignored")
+        aprint("Cupy module not found! demo ignored")
 
 
 def _register_translation_3d(length_xy=256, display=True):
-    with timeit("generate dataset"):
+    with asection("generate dataset"):
         image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=False,
                                                                                            shift=(1, 5, -13),
                                                                                            volume_fraction=0.5,
                                                                                            length_xy=length_xy,
                                                                                            length_z_factor=1)
 
-    with timeit("register_translation_nd"):
+    with asection("register_translation_nd"):
         shifts, error = register_translation_nd(image1, image2).get_shift_and_confidence()
-        print(f"shifts: {shifts}, error: {error}")
+        aprint(f"shifts: {shifts}, error: {error}")
 
-    with timeit("register_translation_maxproj_nd"):
+    with asection("register_translation_maxproj_nd"):
         model = register_translation_maxproj_nd(image1, image2)
-        print(f"model: {model}")
+        aprint(f"model: {model}")
 
-    with timeit("shift back"):
+    with asection("shift back"):
         image1_reg, image2_reg = model.apply(image1, image2, pad=False)
         image1_reg_pad, image2_reg_pad = model.apply(image1, image2, pad=True)
 
