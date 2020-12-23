@@ -21,6 +21,9 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
             aprint("Channel(s) must be specified!")
             return
 
+        if ':' not in input_path.replace("http://", ""):
+            input_path = f'{input_path}:8000'
+
         with asection(f"Viewing remote dataset at: {input_path}, channel(s): {channels}"):
             channels = tuple(channel.strip() for channel in channels.split(','))
             channels = list(set(channels))
