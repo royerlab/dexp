@@ -22,7 +22,7 @@ def demo_simview_deconv_numpy():
 
 def demo_simview_deconv_cupy():
     try:
-        with CupyBackend(enable_memory_pool=False):
+        with CupyBackend(enable_unified_memory=True):
             simview_deconv()
     except ModuleNotFoundError:
         print("Cupy module not found! demo ignored")

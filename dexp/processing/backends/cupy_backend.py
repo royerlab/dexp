@@ -43,7 +43,7 @@ class CupyBackend(Backend):
                  exclusive: bool = False,
                  enable_streaming: bool = True,
                  enable_memory_pool: bool = True,
-                 enable_unified_memory: bool = False,
+                 enable_unified_memory: bool = True,
                  enable_cub: bool = True,
                  enable_cutensor: bool = True,
                  enable_fft_planning: bool = True,
@@ -72,6 +72,7 @@ class CupyBackend(Backend):
         self.enable_streaming = enable_streaming
         self.enable_unified_memory = enable_unified_memory
         self.stream = None
+        self._previous_allocator = None
 
         import cupy
         self.cupy_device: cupy.cuda.Device = cupy.cuda.Device(self.device_id)
