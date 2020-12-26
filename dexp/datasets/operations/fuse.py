@@ -129,7 +129,7 @@ def dataset_fuse(dataset,
 
                 array = Backend.to_numpy(array, dtype=dtype, force_copy=False)
 
-                models[tp] = model
+                models[tp] = model.to_numpy()
 
             if 'fused' not in dest_dataset.channels():
                 try:

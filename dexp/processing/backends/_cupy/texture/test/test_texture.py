@@ -37,10 +37,10 @@ def test_cupy_texture_4channels():
             tex_data = cupy.arange(width * height * 4, dtype=cupy.float32).reshape(height, width, 4)
 
             # set up a texture object
-            texobj = create_cuda_texture(tex_data,
-                                         num_channels=4,
-                                         sampling_mode='nearest',
-                                         dtype=cupy.float32)
+            texobj, cuda_array = create_cuda_texture(tex_data,
+                                                     num_channels=4,
+                                                     sampling_mode='nearest',
+                                                     dtype=cupy.float32)
 
             real_output = cupy.zeros_like(tex_data)
             expected_output = tex_data.copy()
@@ -54,6 +54,8 @@ def test_cupy_texture_4channels():
             grid_x = (width + block_x - 1) // block_x
             grid_y = (height + block_y - 1) // block_y
             kernel((grid_x, grid_y), (block_x, block_y), (real_output, texobj, width, height))
+
+            del texobj, cuda_array
 
             # test outcome
             assert cupy.allclose(real_output, expected_output)
@@ -96,11 +98,11 @@ def test_cupy_texture_1channel_normcoord():
             tex_data = cupy.arange(width * height, dtype=cupy.float32).reshape(height, width)
 
             # set up a texture object
-            texobj = create_cuda_texture(tex_data,
-                                         num_channels=1,
-                                         normalised_coords=True,
-                                         sampling_mode='linear',
-                                         dtype=cupy.float32)
+            texobj, cuda_array = create_cuda_texture(tex_data,
+                                                     num_channels=1,
+                                                     normalised_coords=True,
+                                                     sampling_mode='linear',
+                                                     dtype=cupy.float32)
 
             real_output = cupy.zeros_like(tex_data)
             expected_output = tex_data.copy()
@@ -114,6 +116,8 @@ def test_cupy_texture_1channel_normcoord():
             grid_x = (width + block_x - 1) // block_x
             grid_y = (height + block_y - 1) // block_y
             kernel((grid_x, grid_y), (block_x, block_y), (real_output, texobj, width, height))
+
+            del texobj, cuda_array
 
             # test outcome
             assert cupy.allclose(real_output, expected_output)
@@ -154,10 +158,10 @@ def test_cupy_texture_1channel():
             tex_data[1, 2] = 1
 
             # set up a texture object
-            texobj = create_cuda_texture(tex_data,
-                                         num_channels=1,
-                                         sampling_mode='linear',
-                                         dtype=cupy.float32)
+            texobj, cuda_array = create_cuda_texture(tex_data,
+                                                     num_channels=1,
+                                                     sampling_mode='linear',
+                                                     dtype=cupy.float32)
 
             real_output = cupy.zeros_like(tex_data)
             expected_output = tex_data.copy()
@@ -171,6 +175,8 @@ def test_cupy_texture_1channel():
             grid_x = (width + block_x - 1) // block_x
             grid_y = (height + block_y - 1) // block_y
             kernel((grid_x, grid_y), (block_x, block_y), (real_output, texobj, width, height))
+
+            del texobj, cuda_array
 
             # test outcome
             assert cupy.allclose(real_output, expected_output)
@@ -229,6 +235,8 @@ def test_basic_cupy_texture():
             grid_y = (height + block_y - 1) // block_y
             ker((grid_x, grid_y), (block_x, block_y), (real_output, texobj, width, height))
 
+            del texobj, arr2
+
             # test outcome
             assert cupy.allclose(real_output, expected_output)
     except ModuleNotFoundError:
@@ -246,10 +254,10 @@ def test_basic_cupy_texture_leak():
             with asection("loop"):
                 for i in range(100):
                     aprint(f"i={i}")
-                    texobj = create_cuda_texture(tex_data,
-                                                 num_channels=1,
-                                                 sampling_mode='linear',
-                                                 dtype=cupy.float32)
+                    texobj, cuda_array = create_cuda_texture(tex_data,
+                                                             num_channels=1,
+                                                             sampling_mode='linear',
+                                                             dtype=cupy.float32)
 
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")

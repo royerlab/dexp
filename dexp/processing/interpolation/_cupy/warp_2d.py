@@ -67,17 +67,17 @@ def _warp_2d_cupy(image,
         raise ValueError("image or vector field has wrong number of dimensions!")
 
     # set up textures:
-    input_image_tex = create_cuda_texture(image,
-                                          num_channels=1,
-                                          normalised_coords=False,
-                                          sampling_mode='linear',
-                                          address_mode=mode, )
+    input_image_tex, input_image_cudarr = create_cuda_texture(image,
+                                                              num_channels=1,
+                                                              normalised_coords=False,
+                                                              sampling_mode='linear',
+                                                              address_mode=mode, )
 
-    vector_field_tex = create_cuda_texture(vector_field,
-                                           num_channels=2,
-                                           normalised_coords=True,
-                                           sampling_mode='linear',
-                                           address_mode='clamp')
+    vector_field_tex, vector_field_cudarr = create_cuda_texture(vector_field,
+                                                                num_channels=2,
+                                                                normalised_coords=True,
+                                                                sampling_mode='linear',
+                                                                address_mode='clamp')
 
     # Set up resulting image:
     warped_image = xp.empty(shape=image.shape, dtype=image.dtype)
@@ -93,5 +93,7 @@ def _warp_2d_cupy(image,
     warp_2d_kernel((grid_x, grid_y),
                    (block_size,) * 2,
                    (warped_image, input_image_tex, vector_field_tex, width, height))
+
+    del input_image_tex, input_image_cudarr, vector_field_tex, vector_field_cudarr
 
     return warped_image

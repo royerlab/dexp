@@ -24,7 +24,7 @@ class NumpyBackend(Backend):
     def __exit__(self, type, value, traceback):
         super().__exit__(type, value, traceback)
 
-    def clear_allocation_pool(self):
+    def clear_memory_pool(self):
         pass
 
     def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:

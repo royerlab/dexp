@@ -50,6 +50,11 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
     def to_json(self) -> str:
         return json.dumps({'type': 'translation', 'translation': self.shift_vector.tolist(), 'integral': self.integral, 'confidence': self.confidence.tolist()})
 
+    def to_numpy(self) -> 'TranslationRegistrationModel':
+        self.shift_vector = Backend.to_numpy(self.shift_vector)
+        self.confidence = Backend.to_numpy(self.confidence)
+        return self
+
     def overall_confidence(self) -> float:
         return float(self.confidence)
 

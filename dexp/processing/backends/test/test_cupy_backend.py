@@ -8,6 +8,7 @@ from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.interpolation.warp import warp
 
 
 def test_cupy_basics():
@@ -53,7 +54,7 @@ def test_allocation_pool():
         with CupyBackend(enable_memory_pool=True) as root_backend:
             with CupyBackend(enable_memory_pool=True) as backend:
                 gc.collect()
-                backend.clear_allocation_pool()
+                backend.clear_memory_pool()
                 gc.collect()
 
                 xp = backend.get_xp_module()
@@ -74,7 +75,7 @@ def test_allocation_pool():
 
                 assert in_pool_after > in_pool_before
 
-                backend.clear_allocation_pool()
+                backend.clear_memory_pool()
 
                 in_pool_after_clear = backend.mempool.total_bytes() - backend.mempool.used_bytes()
                 aprint(f"in_pool_after_clear={in_pool_after_clear}")
@@ -163,6 +164,43 @@ def test_paralell_with_exclusive():
         # the fact that we have only 'num_devices' available, enforce exclusive access to devices, and spawning more jobs than devices, makes the
         # total elapsed time predictable and testable:
         assert num_devices * job_duration < elapsed_time < (num_devices + 0.5) * job_duration
+
+    except ModuleNotFoundError:
+        aprint("Cupy module not found! Test passes nevertheless!")
+
+
+def test_stress():
+    try:
+        size = 320
+
+        num_devices = len(CupyBackend.available_devices())
+        aprint(f"num_devices = {num_devices}")
+
+        def f(id, device):
+            aprint(f"Job #{id} waiting to gain access to device {device} to start ...")
+            with CupyBackend(device, exclusive=True, enable_unified_memory=True) as backend:
+                with asection(f"Begin: Job #{id} on device #{device}"):
+                    xp = Backend.get_xp_module()
+                    array = xp.random.uniform(0, 1, size=(size,) * 3)
+                    array += xp.random.uniform(0, 1, size=(size,) * 3)
+
+                    # Let's have some texture memory allocated too:
+                    vector_field = numpy.random.uniform(low=-5, high=+5, size=(8,) * 3 + (3,))
+                    for i in range(10):
+                        array = warp(array, vector_field, vector_field_upsampling=4)
+                        array += xp.random.uniform(0, 1, size=(size,) * 3)
+
+                    backend.clear_memory_pool()
+                    array *= 0.1
+
+                    aprint(f"End: Job #{id} on device #{device}")
+
+        n_jobs = 10 * num_devices
+        aprint(f"n_jobs = {n_jobs}")
+
+        with asection(f"Start jobs"):
+            Parallel(n_jobs=n_jobs, backend='threading')(delayed(f)(id, id % num_devices) for id in range(n_jobs))
+
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! Test passes nevertheless!")

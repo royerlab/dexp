@@ -19,6 +19,10 @@ class PairwiseRegistrationModel(ABC):
         pass
 
     @abstractmethod
+    def to_numpy(self):
+        pass
+
+    @abstractmethod
     def change_relative_to(self, other) -> float:
         pass
 

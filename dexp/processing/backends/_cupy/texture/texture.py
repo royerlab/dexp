@@ -128,4 +128,6 @@ def create_cuda_texture(array,
     cuda_array.copy_from(array, stream=Backend.current().stream)
     # Backend.current().synchronise()
 
-    return texture_object
+    del format_descriptor, texture_descriptor, ressource_descriptor
+
+    return texture_object, cuda_array

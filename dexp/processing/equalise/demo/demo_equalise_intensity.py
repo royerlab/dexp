@@ -23,16 +23,16 @@ def demo_equalise_intensity_cupy():
         print("Cupy module not found! Test passes nevertheless!")
 
 
-def _equalise_intensity(length=512):
+def _equalise_intensity(length=256):
     with timeit("generate demo dataset"):
-        ratio_gt = 1.77
+        ratio_gt = 2.77
 
         image_1 = 300 * binary_blobs(length=length, n_dim=3, blob_size_fraction=0.04, volume_fraction=0.01).astype('f4')
         image_1 = gaussian(image_1, sigma=1)
         image_2 = image_1.copy() * ratio_gt
 
-        image_1 = 95 + random_noise(image_1, mode='gaussian', var=0.2, clip=False)
-        image_2 = 95 + random_noise(image_2, mode='gaussian', var=0.2, clip=False)
+        image_1 = 95 + 30 * random_noise(image_1, mode='gaussian', var=0.2, clip=False)
+        image_2 = 95 + 30 * random_noise(image_2, mode='gaussian', var=0.2, clip=False)
 
     org_image_1, org_image_2 = image_1.copy(), image_2.copy()
     with timeit("equalise intensity"):

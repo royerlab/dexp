@@ -1,5 +1,3 @@
-import gc
-
 import numpy
 from arbol.arbol import asection, aprint, section
 
@@ -143,13 +141,13 @@ def msols_fuse_1C2L(C0L0, C0L1,
     with asection(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):
         C0L0 = Backend.to_backend(C0L0, dtype=internal_dtype, force_copy=False)
         C0L1 = Backend.to_backend(C0L1, dtype=internal_dtype, force_copy=False)
-        Backend.current().clear_allocation_pool()
+        # Backend.current().clear_memory_pool()
 
     if clip_too_high > 0:
         with asection(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
             C0L0 = xp.clip(C0L0, a_min=0, a_max=clip_too_high, out=C0L0)
             C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
-            Backend.current().clear_allocation_pool()
+            # Backend.current().clear_memory_pool()
 
     if z_pad > 0 or z_apodise > 0:
         with asection(f"Pad and apodise C0L0 and C0L1 along scanning direction:"):
@@ -193,7 +191,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
         C0L1 = resample_C0L1(C0L1, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
         aprint(f"Shape and dtype of C0L0 after resampling: {C0L0.shape}, {C0L0.dtype}")
         aprint(f"Shape and dtype of C0L1 after resampling: {C0L1.shape}, {C0L1.dtype}")
-        Backend.current().clear_allocation_pool()
+        # Backend.current().clear_memory_pool()
 
     if dehaze_size > 0 and dehaze_before_fusion:
         with asection(f"Dehaze C0L0 & C0L1 ..."):
@@ -205,7 +203,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                           size=dehaze_size,
                           minimal_zero_level=zero_level,
                           correct_max_level=True)
-            Backend.current().clear_allocation_pool()
+            # Backend.current().clear_memory_pool()
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -233,7 +231,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                                                     registration_method=registration_method,
                                                     denoise_input_sigma=1)
 
-            Backend.current().clear_allocation_pool()
+            # Backend.current().clear_memory_pool()
             aprint(f"Computed registration model: {new_model}, overall confidence: {new_model.overall_confidence()}")
 
             if registration_model is None or (new_model.overall_confidence() >= registration_min_confidence or new_model.change_relative_to(registration_model) <= registration_max_change):
@@ -243,7 +241,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
         aprint(f"Applying registration model: {model}, overall confidence: {model.overall_confidence()}")
         C0L0, C0L1 = model.apply(C0L0, C0L1)
-        Backend.current().clear_allocation_pool()
+        # Backend.current().clear_memory_pool()
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -276,7 +274,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                                        mode=fusion,
                                        bias_exponent=fusion_bias_exponent,
                                        bias_strength=fusion_bias_strength_x)
-        Backend.current().clear_allocation_pool()
+        # Backend.current().clear_memory_pool()
 
     if dehaze_size > 0 and not dehaze_before_fusion:
         with asection(f"Dehaze CxLx ..."):
@@ -284,29 +282,29 @@ def msols_fuse_1C2L(C0L0, C0L1,
                           size=dehaze_size,
                           minimal_zero_level=0,
                           correct_max_level=True)
-            Backend.current().clear_allocation_pool()
+            # Backend.current().clear_memory_pool()
 
     if dark_denoise_threshold > 0:
         with asection(f"Denoise dark regions of CxLx..."):
             C1Lx = clean_dark_regions(C1Lx,
                                       size=dark_denoise_size,
                                       threshold=dark_denoise_threshold)
-            Backend.current().clear_allocation_pool()
+            # Backend.current().clear_memory_pool()
 
     if 0 < butterworth_filter_cutoff < 1:
         with asection(f"Filter output using a Butterworth filter"):
             cutoffs = (butterworth_filter_cutoff,) * C1Lx.ndim
             C1Lx = butterworth_filter(C1Lx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
-            Backend.current().clear_allocation_pool()
+            # Backend.current().clear_memory_pool()
 
     with asection(f"Convert back to original dtype..."):
         if original_dtype is numpy.uint16:
             C1Lx = xp.clip(C1Lx, 0, None, out=C1Lx)
         C1Lx = C1Lx.astype(dtype=original_dtype, copy=False)
-        Backend.current().clear_allocation_pool()
+        # Backend.current().clear_memory_pool()
 
-    gc.collect()
-    Backend.current().clear_allocation_pool()
+    # gc.collect()
+    # Backend.current().clear_memory_pool()
 
     return C1Lx, model
 
@@ -336,7 +334,7 @@ def resample_C0L0(image,
                   dz: float,
                   angle: float,
                   mode: str = 'yang',
-                  num_split: int = 4):
+                  num_split: int = 8):
     return resample_view(image,
                          flip=True,
                          dx=dx,
@@ -351,7 +349,7 @@ def resample_C0L1(image,
                   dz: float,
                   angle: float,
                   mode: str = 'yang',
-                  num_split: int = 4):
+                  num_split: int = 8):
     return resample_view(image,
                          flip=False,
                          dx=dx,
@@ -377,7 +375,7 @@ def resample_view(image,
     dz     : float, scanning step (stage or galvo scanning step, not the same as the distance between the slices)
     dx     : float, pixel size of the camera
     angle  : float, incident angle of the light sheet, angle between the light sheet and the optical axis
-    num_split
+    num_split : number of splits to break down the data into pieces (along y, axis=2) to fit into the memory of GPU
 
     Returns
     -------
@@ -432,13 +430,16 @@ def resampling_vertical_split(image,
     """
     xp = Backend.get_xp_module()
 
-    data_gpu_splits = xp.array_split(image, num_split, axis=1)
-    for k in range(num_split):
-        data_resampled = resampling_vertical(data_gpu_splits[k], dz, dx, angle=angle)
-        if k == 0:
-            output = Backend.to_numpy(data_resampled)
-        else:
-            output = numpy.concatenate((output, Backend.to_numpy(data_resampled)), axis=1)
+    if num_split == 1:
+        output = resampling_vertical(image, dz, dx, angle=angle)
+    else:
+        data_gpu_splits = xp.array_split(image, num_split, axis=1)
+        for k in range(num_split):
+            data_resampled = resampling_vertical(data_gpu_splits[k], dz, dx, angle=angle)
+            if k == 0:
+                output = Backend.to_numpy(data_resampled)
+            else:
+                output = numpy.concatenate((output, Backend.to_numpy(data_resampled)), axis=1)
 
     return output
 

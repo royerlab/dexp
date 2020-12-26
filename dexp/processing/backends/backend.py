@@ -79,7 +79,7 @@ class Backend(ABC):
         pass
 
     @abstractmethod
-    def clear_allocation_pool(self):
+    def clear_memory_pool(self):
         import gc
         gc.collect()
 
@@ -87,7 +87,7 @@ class Backend(ABC):
         """ Releases all ressources allocated/cached by backend (if can be done safely)
 
         """
-        self.clear_allocation_pool()
+        self.clear_memory_pool()
 
     @abstractmethod
     def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:

@@ -23,7 +23,7 @@ def test_equalise_intensity_cupy():
 
 
 def _equalise_intensity(length=128):
-    ratio_gt = 1.77
+    ratio_gt = 2.77
 
     image_1 = 300 * binary_blobs(length=length, n_dim=3, blob_size_fraction=0.04, volume_fraction=0.01).astype('f4')
     image_1 = gaussian(image_1, sigma=1)

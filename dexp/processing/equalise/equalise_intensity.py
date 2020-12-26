@@ -62,8 +62,10 @@ def equalise_intensity(image1,
     lowvalue1 = xp.percentile(strided_image1, q=quantile_low * 100)
     lowvalue2 = xp.percentile(strided_image2, q=quantile_low * 100)
 
-    mask1 = strided_image1 >= highvalue1
-    mask2 = strided_image2 >= highvalue2
+    threshold = min(highvalue1, highvalue2)
+
+    mask1 = strided_image1 >= threshold
+    mask2 = strided_image2 >= threshold
 
     mask = xp.logical_and(mask1, mask2)
 

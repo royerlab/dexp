@@ -48,6 +48,11 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
     def to_json(self) -> str:
         return json.dumps({'type': 'warp', 'vector_field': self.vector_field.tolist(), 'confidence': self.confidence.tolist()})
 
+    def to_numpy(self) -> 'WarpRegistrationModel':
+        self.vector_field = Backend.to_numpy(self.vector_field)
+        self.confidence = Backend.to_numpy(self.confidence)
+        return self
+
     def overall_confidence(self) -> float:
         return float(self.median_confidence())
 
