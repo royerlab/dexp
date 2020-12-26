@@ -70,7 +70,7 @@ class ZDataset(BaseDataset):
         if 'a' in mode or 'w' in mode:
             if path.endswith('.zarr.zip') or store == 'zip':
                 path = path + '.zip' if path.endswith('.zarr') else path
-                path = path if path.endswith('.zarr.zip') else path + 'zarr.zip'
+                path = path if path.endswith('.zarr.zip') else path + '.zarr.zip'
             elif path.endswith('.nested.zarr') or path.endswith('.nested.zarr/') or store == 'ndir':
                 path = path if path.endswith('.nested.zarr') else path + '.nested.zarr'
             elif path.endswith('.zarr') or path.endswith('.zarr/') or store == 'dir':

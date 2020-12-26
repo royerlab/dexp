@@ -16,7 +16,7 @@ def register_warp_multiscale_nd(image_a,
                                 margin_ratios: Union[float, Tuple[float, ...]] = 0.2,
                                 min_chunk: int = 32,
                                 min_margin: int = 4,
-                                save_memory: bool = True,
+                                save_memory: bool = False,
                                 force_numpy: bool = False,
                                 **kwargs) -> WarpRegistrationModel:
     """
@@ -60,9 +60,6 @@ def register_warp_multiscale_nd(image_a,
         aprint(f"Confidence threshold: {confidence_threshold}, max residual shif: {max_residual_shift}")
 
         for i in range(num_iterations):
-
-            # Clear memory allocation cache:
-            # Backend.current().clear_allocation_pool()
 
             # pre-apply transform from previous iterations:
             if vector_field is not None:
