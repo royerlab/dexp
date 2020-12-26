@@ -57,8 +57,8 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         return float(self.median_confidence())
 
     def change_relative_to(self, other) -> float:
-        ndim = self.shift_vector.ndim
-        robust_average = numpy.median(numpy.linalg.norm(Backend.to_numpy(other.shift_vector) - Backend.to_numpy(self.shift_vector), axis=ndim - 1))
+        ndim = self.vector_field.ndim
+        robust_average = numpy.median(numpy.linalg.norm(Backend.to_numpy(other.vector_field) - Backend.to_numpy(self.vector_field), axis=ndim - 1))
         return float(robust_average)
 
     def clean(self,
