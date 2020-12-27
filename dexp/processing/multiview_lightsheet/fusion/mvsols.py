@@ -80,9 +80,9 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     z_apodise : apodises along Z (direction) to suppress discontinuities (views cropping the sample) that disrupt fusion.
 
-    registration_confidence_threshold : Confidence threshold within [0, 1]: zero means low confidence, 1 max confidence.
+    registration_confidence_threshold : Confidence threshold used for each chunk during warp registration, value within [0, 1]: zero means low confidence, 1 max confidence.
 
-    registration_max_residual_shift : After teh first registration round, if a shift vector norm is larger than this provided limitRegistration
+    registration_max_residual_shift : After the first registration round of warp registration, shift vector with norms larger than this value are deemed low confidence.
 
     registration_mode : Registration mode, can be: 'projection' or 'full'.
     Projection mode is faster but might have occasionally  issues for certain samples. Full mode is slower and is only recomended as a last resort.

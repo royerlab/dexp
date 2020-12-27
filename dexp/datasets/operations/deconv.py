@@ -34,7 +34,8 @@ def dataset_deconv(dataset,
                    workers,
                    workersbackend,
                    devices,
-                   check):
+                   check,
+                   stop_at_exception = True):
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(path, mode, store)
@@ -120,6 +121,9 @@ def dataset_deconv(dataset,
                 aprint(f"Error occurred while processing time point {tp} !")
                 import traceback
                 traceback.print_exc()
+
+                if stop_at_exception:
+                    raise error
 
         if workers == -1:
             workers = len(devices)

@@ -36,7 +36,9 @@ def dataset_fuse(dataset,
                  workers,
                  workersbackend,
                  devices,
-                 check):
+                 check,
+                 stop_at_exception = True):
+    
     if microscope == 'simview':
         if channels is None:
             channels = ('C0L0', 'C0L1', 'C1L0', 'C1L1')
@@ -151,6 +153,9 @@ def dataset_fuse(dataset,
             aprint(f"Error occurred while processing time point {tp} !")
             import traceback
             traceback.print_exc()
+
+            if stop_at_exception:
+                raise error
 
     if workers == -1:
         workers = len(devices)
