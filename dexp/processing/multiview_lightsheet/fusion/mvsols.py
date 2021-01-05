@@ -1,3 +1,5 @@
+from typing import Tuple, Sequence
+
 import numpy
 from arbol.arbol import asection, aprint, section
 
@@ -24,6 +26,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     angle: float,
                     resampling_mode: str = 'yang',
                     equalise: bool = True,
+                    equalisation_ratios: Sequence[float] = (None,),
                     zero_level: float = 120,
                     clip_too_high: int = 2048,
                     fusion='tg',
@@ -45,7 +48,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     dark_denoise_threshold: int = 0,
                     dark_denoise_size: int = 9,
                     butterworth_filter_cutoff: float = 1,
-                    internal_dtype=numpy.float16):
+                    internal_dtype=numpy.float16) -> Tuple:
     """
 
     Parameters
@@ -62,6 +65,9 @@ def msols_fuse_1C2L(C0L0, C0L1,
     mode : Resampling mode, can be 'byang' for Bin Yang's resampling ;-)
 
     equalise : Equalise intensity of views before fusion, or not.
+
+    equalisation_ratios: If provided, these ratios are used instead of calculating equalisation values based on the images.
+    There is only one equalisation ratio, therefore this is a singleton tuple: (ratio,)
 
     zero_level : Zero level: that's the minimal detector pixel value floor to substract,
     typically for sCMOS cameras the floor is at around 100 (this is to avoid negative values
@@ -256,9 +262,11 @@ def msols_fuse_1C2L(C0L0, C0L1,
         with asection(f"Equalise intensity of C0L0 relative to C0L1 ..."):
             C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
                                                    zero_level=0 if dehaze_before_fusion else zero_level,
+                                                   correction_ratio=equalisation_ratios[0],
                                                    copy=False)
-
+            equalisation_ratios = (ratio,)
             aprint(f"Equalisation ratio: {ratio}")
+
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -306,7 +314,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
     # gc.collect()
     # Backend.current().clear_memory_pool()
 
-    return C1Lx, model
+    return C1Lx, model, equalisation_ratios
 
 
 def fuse_illumination_views(CxL0, CxL1,

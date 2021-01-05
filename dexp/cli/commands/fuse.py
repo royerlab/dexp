@@ -18,6 +18,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--microscope', '-m', type=str, default='simview', help='Microscope objective to use for computing psf, can be: simview or mvsols', show_default=True)
 @click.option('--equalise/--no-equalise', '-eq/-neq', default=True, help='Equalise intensity of views before fusion, or not.', show_default=True)
+@click.option('--equalisemode', '-eqm', default='first', help='Equalisation modes: compute correction ratios only for first time point: ‘first’ or for all time points: ‘all’.', show_default=True)
 @click.option('--zerolevel', '-zl', type=int, default=110, help="‘zero-level’ i.e. the pixel values in the restoration (to be substracted)", show_default=True)  #
 @click.option('--cliphigh', '-ch', type=int, default=1024, help='Clips voxel values above the given value, if zero no clipping is done', show_default=True)  #
 @click.option('--fusion', '-f', type=str, default='tg', help="Fusion mode, can be: ‘tg’ or ‘dct’.  ", show_default=True)  #
@@ -46,6 +47,7 @@ def fuse(input_path,
          overwrite,
          microscope,
          equalise,
+         equalisemode,
          zerolevel,
          cliphigh,
          fusion,
@@ -81,6 +83,7 @@ def fuse(input_path,
                      overwrite=overwrite,
                      microscope=microscope,
                      equalise=equalise,
+                     equalise_mode=equalisemode,
                      zero_level=zerolevel,
                      clip_too_high=cliphigh,
                      fusion=fusion,

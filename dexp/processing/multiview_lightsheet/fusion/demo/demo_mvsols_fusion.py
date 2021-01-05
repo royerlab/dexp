@@ -49,7 +49,7 @@ def _mvsols_resample():
         dz = metadata['dz']
         res = metadata['res']
 
-        C0Lx, _ = msols_fuse_1C2L(C0L0, C0L1,
+        C0Lx, model, ratios = msols_fuse_1C2L(C0L0, C0L1,
                                   zero_level=0,
                                   angle=angle,
                                   dx=res,
@@ -59,6 +59,8 @@ def _mvsols_resample():
                                   registration_max_residual_shift=64,
                                   z_pad=8,
                                   z_apodise=96)
+
+        print(f"")
 
     from napari import gui_qt
     with gui_qt():

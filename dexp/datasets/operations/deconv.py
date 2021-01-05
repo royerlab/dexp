@@ -35,7 +35,8 @@ def dataset_deconv(dataset,
                    workersbackend,
                    devices,
                    check,
-                   stop_at_exception = True):
+                   stop_at_exception=True):
+
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(path, mode, store)
