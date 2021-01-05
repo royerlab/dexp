@@ -31,7 +31,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
               show_default=True)  #
 @click.option('--loadreg', '-lr', is_flag=True, help='Turn on to load the registration parameters from a previous run', show_default=True)  #
 @click.option('--warpregiter', '-wri', type=int, default=4, help='Number of iterations for warp registration (if applicable).', show_default=True)  #
-@click.option('--minconfidence', '-mc', type=float, default=0.5, help='Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.', show_default=True)  #
+@click.option('--minconfidence', '-mc', type=float, default=0.3, help='Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.', show_default=True)  #
 @click.option('--maxchange', '-md', type=float, default=16, help='Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #

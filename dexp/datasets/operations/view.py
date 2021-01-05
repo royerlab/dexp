@@ -1,9 +1,6 @@
 import dask
 import numpy
 from arbol import aprint
-from napari import gui_qt, Viewer
-from napari._qt.qthreading import thread_worker
-
 
 def dataset_view(aspect,
                  channels,
@@ -17,6 +14,9 @@ def dataset_view(aspect,
     # Annoying napari induced warnings:
     import warnings
     warnings.filterwarnings("ignore")
+
+    from napari import gui_qt, Viewer
+    from napari._qt.qthreading import thread_worker
     with gui_qt():
         viewer = Viewer(title=f"DEXP | viewing with napari: {input_path} ", ndisplay=3 if volume else 2)
 
