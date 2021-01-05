@@ -483,7 +483,24 @@ tmux ls
 ```
 
 To close a session:
-First kill, if needed, the running process within the session by pressing CTRL+C or/and CTRL+Z, and then, simply type the command exit in the termnal within the session. This is another 
+First kill, if needed, the running process within the session by pressing CTRL+C or/and CTRL+Z, and then, simply type the command exit in the termnal within the session. 
+
+Note: you might encounter problems in tmux with text coloring. 
+A solution is to change the default xterm setting:
+
+First, generate a default configuration file for tmux:
+```
+tmux show -g | cat > ~/.tmux.conf
+```
+
+Add the following line at the end of that file (~/.tmux.conf):
+```
+set -g default-terminal "screen-256color"
+```
+
+
+
+
   
  
 
