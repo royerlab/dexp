@@ -108,7 +108,8 @@ def equalise_intensity(image1,
             aprint(f"Warning: too few ratio values ({nb_values}<128) to compute correction ratio! Relax percentile or reduction!")
 
         correction_ratio = xp.percentile(ratios.astype(internal_dtype, copy=False), q=50)
-
+    else:
+        correction_ratio = Backend.to_backend(correction_ratio, dtype=internal_dtype)
 
     # remove zero level an clip:
     if zero_level != 0:
