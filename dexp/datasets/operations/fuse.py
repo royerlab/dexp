@@ -151,7 +151,7 @@ def dataset_fuse(dataset,
                 aprint(f"Last equalisation ratios: {new_equalisation_ratios}")
                 if equalise_mode == 'first' and tp == 0:
                     aprint(f"Equalisation mode: 'first' -> saving equalisation ratios: {new_equalisation_ratios} for subsequent time points")
-                    equalisation_ratios_reference[0] = new_equalisation_ratios
+                    equalisation_ratios_reference[0] = list(float(Backend.to_numpy(ratio)) for ratio in new_equalisation_ratios)
                 elif equalise_mode == 'all':
                     aprint(f"Equalisation mode: 'all' -> recomputing equalisation ratios for each time point.")
                     # No need to save, we need to recompute the ratios for each time point.
