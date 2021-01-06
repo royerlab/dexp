@@ -3,7 +3,7 @@ from typing import Sequence, List
 from arbol.arbol import aprint
 from arbol.arbol import asection
 from joblib import Parallel, delayed
-from zarr.errors import ContainsArrayError
+from zarr.errors import ContainsArrayError, ContainsGroupError
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
@@ -165,7 +165,7 @@ def dataset_fuse(dataset,
                                              dtype=dtype,
                                              codec=compression,
                                              clevel=compression_level)
-                except ContainsArrayError:
+                except (ContainsArrayError, ContainsGroupError):
                     aprint(f"Other thread/process created channel before... ")
 
             with asection(f"Saving fused stack for time point {tp}, shape:{array.shape}, dtype:{array.dtype}"):
