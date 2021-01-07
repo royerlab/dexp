@@ -1,5 +1,6 @@
 import click
 from arbol.arbol import aprint, asection
+from cupy_backends.cuda.api.runtime import CUDARuntimeError
 
 from dexp.processing.utils.mkl_util import set_mkl_threads
 
@@ -37,8 +38,11 @@ def cli():
         available = CupyBackend.available_devices()
         with asection(f"Available GPU devices: {available}"):
             for device_id in available:
-                backend = CupyBackend(device_id)
-                aprint(backend)
+                try:
+                    backend = CupyBackend(device_id)
+                    aprint(backend)
+                except CUDARuntimeError as e:
+                    aprint(f"Error while querying available devices: {e}")
 
     except (ModuleNotFoundError, NotImplementedError):
         aprint("'cupy' module not found! ignored!")
