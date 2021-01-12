@@ -1,4 +1,5 @@
 import gc
+import math
 import os
 import threading
 from typing import Any
@@ -20,7 +21,7 @@ class CupyBackend(Backend):
 
 
     @staticmethod
-    def available_devices(order='first', maxLoad=1, maxMemory=1):
+    def available_devices(order='first', maxLoad=math.inf, maxMemory=math.inf):
         """
 
         Parameters
@@ -40,7 +41,13 @@ class CupyBackend(Backend):
         # Set CUDA_DEVICE_ORDER so the IDs assigned by CUDA match those from nvidia-smi
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         import GPUtil
-        return GPUtil.getAvailable(order=order, limit=numpy.Inf, maxLoad=maxLoad, maxMemory=maxMemory, includeNan=False, excludeID=[], excludeUUID=[])
+        return GPUtil.getAvailable(order=order,
+                                   limit=math.inf,
+                                   maxLoad=maxLoad,
+                                   maxMemory=maxMemory,
+                                   includeNan=False,
+                                   excludeID=[],
+                                   excludeUUID=[])
 
     device_locks = tuple(threading.Lock() for _ in range(num_devices.__func__()))
 
