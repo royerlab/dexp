@@ -42,7 +42,7 @@ class CupyBackend(Backend):
         import GPUtil
         return GPUtil.getAvailable(order=order, limit=numpy.Inf, maxLoad=maxLoad, maxMemory=maxMemory, includeNan=False, excludeID=[], excludeUUID=[])
 
-    device_locks = tuple(threading.Lock() for _ in range(len(num_devices.__func__())))
+    device_locks = tuple(threading.Lock() for _ in range(num_devices.__func__()))
 
     def __init__(self,
                  device_id=0,
