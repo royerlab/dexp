@@ -1,24 +1,25 @@
 import os
 from os.path import join
+from typing import Sequence
 
-import numpy
-from arbol.arbol import aprint
-from tifffile import TiffWriter
+from arbol.arbol import aprint, asection
+from tifffile import TiffWriter, memmap
+from joblib import Parallel, delayed
 
+from dexp.datasets.base_dataset import BaseDataset
 from dexp.io.io import tiff_save
-from dexp.utils.timeit import timeit
 
 
-def dataset_tiff(dataset,
-                 output_path,
-                 channels,
+def dataset_tiff(dataset: BaseDataset,
+                 output_path: str,
+                 channels: Sequence[str],
                  slicing,
-                 overwrite,
-                 project,
-                 one_file_per_first_dim,
-                 clevel,
-                 workers,
-                 workersbackend):
+                 overwrite: bool,
+                 project: bool,
+                 one_file_per_first_dim: bool,
+                 clevel: int,
+                 workers: int,
+                 workersbackend: str):
     selected_channels = dataset._selected_channels(channels)
 
     aprint(f"getting Dask arrays for channels {selected_channels}")
@@ -34,15 +35,18 @@ def dataset_tiff(dataset,
         aprint(f"Projecting along axis {project}")
         arrays = list([array.max(axis=project) for array in arrays])
 
+    if workers == -1:
+        workers = os.cpu_count() // 2
+    aprint(f"Number of workers: {workers}")
+
+
     if one_file_per_first_dim:
         aprint(f"Saving one TIFF file for each tp (or Z if already sliced) to: {output_path}.")
 
         os.makedirs(output_path, exist_ok=True)
 
-        from joblib import Parallel, delayed
-
         def process(tp):
-            with timeit('Elapsed time: '):
+            with asection(f'Saving time point {tp}: '):
                 for channel, array in zip(selected_channels, arrays):
                     tiff_file_path = join(output_path, f"file{tp}_{channel}.tiff")
                     if overwrite or not os.path.exists(tiff_file_path):
@@ -53,10 +57,6 @@ def dataset_tiff(dataset,
                     else:
                         print(f"File for time point (or z slice): {tp} already exists.")
 
-        if workers == -1:
-            workers = os.cpu_count() // 2
-        aprint(f"Number of workers: {workers}")
-
         if workers > 1:
             Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp) for tp in range(0, arrays[0].shape[0]))
         else:
@@ -64,18 +64,32 @@ def dataset_tiff(dataset,
                 process(tp)
 
     else:
-        array = numpy.stack(arrays)
 
-        if not overwrite and os.path.exists(output_path):
-            aprint(f"File {output_path} already exists! Set option -w to overwrite.")
-            return
+        for channel, array in zip(selected_channels, arrays):
+            if len(selected_channels)>1:
+                tiff_file_path = f"{output_path}_{channel}.tiff"
+            else:
+                tiff_file_path = f"{output_path}.tiff"
 
-        aprint(f"Creating memory mapped TIFF file at: {output_path}.")
-        with TiffWriter(output_path, bigtiff=True, imagej=True) as tif:
-            tp = 0
-            for stack in array:
-                with timeit('Elapsed time: '):
-                    aprint(f"Writing time point: {tp} ")
-                    stack = stack.compute()
-                    tif.save(stack)
-                    tp += 1
+            if not overwrite and os.path.exists(tiff_file_path):
+                aprint(f"File {tiff_file_path} already exists! Set option -w to overwrite.")
+                return
+
+            with asection(f"Saving array ({array.shape}, {array.dtype}) for channel {channel} into TIFF file at: {tiff_file_path}:"):
+                memmap_image = memmap(tiff_file_path, shape=array.shape, dtype=array.dtype, bigtiff=True, imagej=True)
+
+                def process(tp):
+                    aprint(f"Processing time point {tp}")
+                    stack = array[tp].compute()
+                    memmap_image[tp] = stack
+
+                if workers > 1:
+                    Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp) for tp in range(0, array.shape[0]))
+                else:
+                    for tp in range(0, array.shape[0]):
+                        process(tp)
+
+
+                memmap_image.flush()
+                del memmap_image
+

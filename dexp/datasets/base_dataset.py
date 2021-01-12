@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Sequence
+from typing import Sequence, Tuple, Any
 
 import numpy
 
@@ -64,11 +64,23 @@ class BaseDataset(ABC):
         pass
 
     @abstractmethod
+    def add_channel(self, name: str, shape: Tuple[int, ...], dtype, enable_projections: bool = True, **kwargs) -> Any:
+        pass
+
+    @abstractmethod
     def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False):
         pass
 
     @abstractmethod
-    def get_stack(self, channel: str, time_point: int, per_z_slice: bool = False):
+    def get_stack(self, channel: str, time_point: int, per_z_slice: bool = False, wrap_with_dask: bool = False):
+        pass
+
+    @abstractmethod
+    def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
+        pass
+
+    @abstractmethod
+    def write_stack(self, channel: str, time_point: int, stack: numpy.ndarray):
         pass
 
     @abstractmethod

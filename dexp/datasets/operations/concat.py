@@ -1,18 +1,21 @@
 import os
+from typing import Tuple, Sequence
 
 from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
+from dexp.datasets.base_dataset import BaseDataset
 
-def dataset_concat(channels,
-                   input_datasets,
-                   output_path,
-                   overwrite,
-                   store,
-                   codec,
-                   clevel,
-                   workers,
-                   workersbackend):
+
+def dataset_concat(channels: Sequence[str],
+                   input_datasets: Tuple[BaseDataset],
+                   output_path: str,
+                   overwrite: bool,
+                   store: str,
+                   codec: str,
+                   clevel: int,
+                   workers: int,
+                   workersbackend: str):
     # Create destination dataset:
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
@@ -44,16 +47,35 @@ def dataset_concat(channels,
                                      codec=codec,
                                      clevel=clevel)
 
-            # get the array:
+            # get the destination array:
             new_array = dest_dataset.get_array(channel, per_z_slice=False)
+            ndim = new_array.ndim - 1
+
+            # get destination projection arrays:
+            new_proj_arrays = tuple(dest_dataset.get_projection_array((channel, axis)) for axis in range(ndim))
 
             # We add copy from the input arrays:
             start = 0
             for i, dataset in enumerate(input_datasets):
-                array = dataset.get_array(channel, per_z_slice=False)
                 num_timepoints = array.shape[0]
                 aprint(f"Adding timepoints: [{start}, {start + num_timepoints}] from dataset #{i} ")
-                new_array[start:start + num_timepoints] = array
+
+                try:
+                    # adding projections:
+                    for axis in range(ndim):
+                        proj_array = dataset.get_projection_array(channel, axis)
+                        new_proj_arrays[start:start + num_timepoints] = proj_array
+
+                    # adding main data:
+                    array = dataset.get_array(channel, per_z_slice=False)
+                    new_array[start:start + num_timepoints] = array
+                except KeyError:
+                    # this happens if we don't have projections, in that case we need to generate the projections:
+                    # slower but necessary...
+                    for tp_src in range(num_timepoints):
+                        tp_dest = start+tp_src
+                        dest_dataset.write_stack(channel, tp_dest, array[tp_src])
+
                 start += num_timepoints
 
     # Workers:

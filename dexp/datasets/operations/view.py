@@ -1,16 +1,21 @@
+from typing import Sequence
+
 import dask
 import numpy
 from arbol import aprint
 
-def dataset_view(aspect,
-                 channels,
-                 clim,
-                 colormap,
-                 input_dataset,
-                 input_path,
+from dexp.datasets.base_dataset import BaseDataset
+
+
+def dataset_view(input_dataset: BaseDataset,
+                 input_path: str,
+                 aspect: float,
+                 channels: Sequence[str],
+                 clim: str,
+                 colormap: str,
                  slicing,
-                 volume,
-                 windowsize):
+                 windowsize: int):
+
     # Annoying napari induced warnings:
     import warnings
     warnings.filterwarnings("ignore")
@@ -18,7 +23,7 @@ def dataset_view(aspect,
     from napari import gui_qt, Viewer
     from napari._qt.qthreading import thread_worker
     with gui_qt():
-        viewer = Viewer(title=f"DEXP | viewing with napari: {input_path} ", ndisplay=3 if volume else 2)
+        viewer = Viewer(title=f"DEXP | viewing with napari: {input_path} ", ndisplay=2)
 
         viewer.window.resize(windowsize + 256, windowsize)
 
@@ -58,11 +63,14 @@ def dataset_view(aspect,
                                      attenuation=0.04,
                                      rendering='attenuated_mip')
 
-            if not aspect is None:
-                layer.scale = (1, aspect, 1, 1) if array.ndim == 4 else (aspect, 1, 1)
+            if aspect is not None:
+                if array.ndim == 3:
+                    layer.scale = (aspect, 1, 1)
+                elif array.ndim == 4:
+                    layer.scale = (1, aspect, 1, 1)
                 aprint(f"Setting aspect ratio to {aspect} (layer.scale={layer.scale})")
 
-            # For some reason spome parameters refuse to be set, this solves it:
+            # For some reason some parameters refuse to be set, this solves it:
             @thread_worker
             def workaround_for_recalcitrant_parameters():
                 aprint("Setting 3D rendering parameters")
@@ -71,3 +79,29 @@ def dataset_view(aspect,
 
             worker = workaround_for_recalcitrant_parameters()
             worker.start()
+
+            try:
+                for axis in range(array.ndim-1):
+                    proj_array = input_dataset.get_projection_array(channel, axis=axis, wrap_with_dask=True)
+                    proj_layer = viewer.add_image(proj_array,
+                                             name=channel+'_proj_'+str(axis),
+                                             contrast_limits=contrast_limits,
+                                             blending='additive',
+                                             colormap=colormap,)
+
+                    if aspect is not None:
+                        if axis == 0:
+                            proj_layer.scale = (1, 1)
+                        elif axis == 1:
+                            proj_layer.scale = (aspect, 1)
+                        elif axis == 2:
+                            proj_layer.scale = (aspect, 1)
+
+                        aprint(f"Setting aspect ratio for projection (layer.scale={proj_layer.scale})")
+
+            except KeyError:
+                aprint("Warning: can't find projections!")
+
+        viewer.grid_view()
+
+

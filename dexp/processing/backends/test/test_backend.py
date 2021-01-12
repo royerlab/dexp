@@ -4,7 +4,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 
 def test_backend_context():
     Backend.reset()
-    assert Backend.current(raise_error_if_none=False) == None
+    assert type(Backend.current(raise_error_if_none=False)) == NumpyBackend
 
     with NumpyBackend() as backend_1:
         backend_c = Backend.current()

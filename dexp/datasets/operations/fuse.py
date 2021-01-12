@@ -101,7 +101,7 @@ def dataset_fuse(dataset,
                     model = models[tp - workers]
 
                 if microscope == 'simview':
-                    array, model, new_equalisation_ratios = simview_fuse_2C2L(*views_tp,
+                    tp_array, model, new_equalisation_ratios = simview_fuse_2C2L(*views_tp,
                                                                              registration_force_model=loadreg,
                                                                              registration_model=model,
                                                                              registration_min_confidence=min_confidence,
@@ -123,7 +123,7 @@ def dataset_fuse(dataset,
                     dz = metadata['dz']
                     res = metadata['res']
 
-                    array, model, new_equalisation_ratios = msols_fuse_1C2L(*views_tp,
+                    tp_array, model, new_equalisation_ratios = msols_fuse_1C2L(*views_tp,
                                                    z_pad=z_pad_apodise[0],
                                                    z_apodise=z_pad_apodise[1],
                                                    registration_num_iterations=warpreg_num_iterations,
@@ -144,7 +144,8 @@ def dataset_fuse(dataset,
                                                    dx=res,
                                                    dz=dz)
 
-                array = Backend.to_numpy(array, dtype=dtype, force_copy=False)
+                with asection(f"Moving array from backend to numpy."):
+                    tp_array = Backend.to_numpy(tp_array, dtype=dtype, force_copy=False)
 
                 models[tp] = model.to_numpy()
 
@@ -161,15 +162,17 @@ def dataset_fuse(dataset,
             if 'fused' not in dest_dataset.channels():
                 try:
                     dest_dataset.add_channel('fused',
-                                             shape=(shape[0],) + array.shape,
+                                             shape=(shape[0],) + tp_array.shape,
                                              dtype=dtype,
                                              codec=compression,
                                              clevel=compression_level)
                 except (ContainsArrayError, ContainsGroupError):
                     aprint(f"Other thread/process created channel before... ")
 
-            with asection(f"Saving fused stack for time point {tp}, shape:{array.shape}, dtype:{array.dtype}"):
-                dest_dataset.get_array('fused')[tp] = array
+            with asection(f"Saving fused stack for time point {tp}, shape:{tp_array.shape}, dtype:{tp_array.dtype}"):
+                dest_dataset.write_stack(channel='fused',
+                                         time_point=tp,
+                                         stack_array=tp_array)
 
             aprint(f"Done processing time point: {tp} .")
 
