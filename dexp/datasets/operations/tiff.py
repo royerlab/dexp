@@ -93,3 +93,12 @@ def dataset_tiff(dataset: BaseDataset,
                 memmap_image.flush()
                 del memmap_image
 
+
+
+## NOTES: color coded max projection:
+# > data = numpy.random.randint(0, 255, (256, 256, 3), 'uint8')
+# >>> imwrite('temp.tif', data, photometric='rgb')
+#
+# https://colorcet.holoviz.org/user_guide/index.html
+# https://github.com/MMesch/cmap_builder
+#
