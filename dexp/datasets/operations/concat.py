@@ -57,7 +57,7 @@ def dataset_concat(channels: Sequence[str],
             # We add copy from the input arrays:
             start = 0
             for i, dataset in enumerate(input_datasets):
-                num_timepoints = array.shape[0]
+                num_timepoints = dataset.shape()[0]
                 aprint(f"Adding timepoints: [{start}, {start + num_timepoints}] from dataset #{i} ")
 
                 try:
