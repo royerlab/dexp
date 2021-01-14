@@ -52,7 +52,7 @@ def dataset_concat(channels: Sequence[str],
             ndim = new_array.ndim - 1
 
             # get destination projection arrays:
-            new_proj_arrays = tuple(dest_dataset.get_projection_array((channel, axis)) for axis in range(ndim))
+            new_proj_arrays = tuple(dest_dataset.get_projection_array(channel, axis) for axis in range(ndim))
 
             # We add copy from the input arrays:
             start = 0
