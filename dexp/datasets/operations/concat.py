@@ -64,12 +64,13 @@ def dataset_concat(channels: Sequence[str],
                     # adding projections:
                     for axis in range(ndim):
                         proj_array = dataset.get_projection_array(channel, axis)
-                        new_proj_arrays[start:start + num_timepoints] = proj_array
+                        new_proj_arrays[axis][start:start + num_timepoints] = proj_array
 
                     # adding main data:
                     array = dataset.get_array(channel, per_z_slice=False)
                     new_array[start:start + num_timepoints] = array
                 except KeyError:
+                    aprint("Projections missing for ")
                     # this happens if we don't have projections, in that case we need to generate the projections:
                     # slower but necessary...
                     for tp_src in range(num_timepoints):
