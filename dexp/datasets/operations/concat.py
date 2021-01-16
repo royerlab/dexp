@@ -58,26 +58,28 @@ def dataset_concat(channels: Sequence[str],
             start = 0
             for i, dataset in enumerate(input_datasets):
                 num_timepoints = dataset.shape(channel)[0]
-                aprint(f"Adding timepoints: [{start}, {start + num_timepoints}] from dataset #{i} ")
+                aprint(f"Adding timepoints: [{start}, {start + num_timepoints}] from dataset #{i}, channel: {channel} ")
 
                 try:
                     # adding projections:
                     for axis in range(ndim):
+                        aprint(f"Adding projection for axis: {axis}")
                         proj_array = dataset.get_projection_array(channel, axis)
                         new_proj_arrays[axis][start:start + num_timepoints] = proj_array
 
-                    # adding main data:
+                    # adding main data -- skipping the generation of the projections that we already have!:
+                    aprint(f"Adding main data...")
                     array = dataset.get_array(channel, per_z_slice=False)
                     new_array[start:start + num_timepoints] = array
                 except KeyError:
-                    aprint("Projections missing for ")
+                    aprint(f"Projections missing for dataset: {i}, channel: {channel}, we generate the projections  ")
                     # this happens if we don't have projections, in that case we need to generate the projections:
                     # slower but necessary...
                     for tp_src in range(num_timepoints):
                         tp_dest = start+tp_src
                         dest_dataset.write_stack(channel, tp_dest, array[tp_src])
-
-                start += num_timepoints
+                finally:
+                    start += num_timepoints
 
     # Workers:
     if workers == -1:
