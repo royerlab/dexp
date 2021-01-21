@@ -6,6 +6,7 @@ from os.path import isfile, isdir, exists
 from typing import Tuple, Sequence, Any, Union
 
 import dask
+import numpy
 import zarr
 from arbol.arbol import aprint
 from numcodecs import blosc
@@ -14,6 +15,8 @@ from zarr import open_group, convenience, CopyError, Blosc, Group
 from dexp.datasets.base_dataset import BaseDataset
 
 # Configure multithreading for Dask:
+from dexp.processing.backends.backend import Backend
+
 _cpu_count = multiprocessing.cpu_count() // 2
 # aprint(f"Number of cores on system: {_cpu_count}")
 _nb_threads = max(1, _cpu_count)
@@ -56,6 +59,7 @@ class ZDataset(BaseDataset):
         self._store = None
         self._root_group = None
         self._arrays = {}
+        self._projections = {}
 
         # Open remote store:
         if 'http' in path:
@@ -142,6 +146,8 @@ class ZDataset(BaseDataset):
                     # print(f'Opening array at {path}:{channel}/{item_name} ')
                     self._arrays[channel] = array
                     # self._arrays[channel] = from_zarr(path, component=f"{channel}/{item_name}")
+                elif (item_name.startswith(channel) or item_name.startswith('fused')) and '_projection_' in item_name:
+                    self._projections[item_name] = array
 
     def _get_group_for_channel(self, channel: str) -> Union[None, Sequence[Group]]:
         groups = [g for c, g in self._root_group.groups() if c == channel]
@@ -220,11 +226,31 @@ class ZDataset(BaseDataset):
         else:
             return array
 
-    def get_stack(self, channel: str, time_point: int, per_z_slice: bool = False):
-        stack_array = self.get_array(channel)[time_point]
+    def get_stack(self, channel: str, time_point: int, per_z_slice: bool = False, wrap_with_dask: bool = False):
+        stack_array = self.get_array(channel, wrap_with_dask)[time_point]
         return stack_array
 
-    def add_channel(self, name: str, shape: Tuple[int, ...], dtype, chunks: Tuple[int, ...] = None, codec: str = 'zstd', clevel: int = 3) -> Any:
+    def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
+        array = self._projections[channel + '_projection_' + str(axis)]
+        if wrap_with_dask:
+            return dask.array.from_array(array, chunks=array.chunks)
+        else:
+            return array
+
+    def write_stack(self, channel: str, time_point: int, stack_array: numpy.ndarray):
+        stack_in_zarr = self.get_array(channel=channel,
+                                       wrap_with_dask=False)
+        stack_in_zarr[time_point] = stack_array
+
+        for axis in range(stack_array.ndim):
+            xp = Backend.get_xp_module()
+            projection = xp.max(stack_array, axis=axis)
+            projection_in_zarr = self.get_projection_array(channel=channel,
+                                                           axis=axis,
+                                                           wrap_with_dask=False)
+            projection_in_zarr[time_point] = projection
+
+    def add_channel(self, name: str, shape: Tuple[int, ...], dtype, enable_projections: bool = True, chunks: Tuple[int, ...] = None, codec: str = 'zstd', clevel: int = 3) -> Any:
         """Adds a channel to this dataset
 
         Parameters
@@ -269,6 +295,27 @@ class ZDataset(BaseDataset):
 
         self._arrays[name] = array
 
+        if enable_projections:
+            ndim = len(shape) - 1
+            for axis in range(ndim):
+                max_0_name = name + '_projection_' + str(axis)
+
+                proj_shape = list(shape)
+                del proj_shape[1+axis]
+                proj_shape = tuple(proj_shape)
+
+                # chunking along time must be 1 to allow parallelism, but no chunking for each projection (not needed!)
+                proj_chunks = (1,) + (None,)*(len(chunks)-2)
+
+                max_0_array = channel_group.full(name=max_0_name,
+                                                 shape=proj_shape,
+                                                 dtype=dtype,
+                                                 chunks=proj_chunks,
+                                                 filters=filters,
+                                                 compressor=compressor,
+                                                 fill_value=fill_value)
+                self._projections[max_0_name] = max_0_array
+
         return array
 
     def add_channels_to(self,
@@ -304,7 +351,7 @@ class ZDataset(BaseDataset):
             try:
                 array = self.get_array(channel, per_z_slice=False)
                 source_group = self._get_group_for_channel(channel)
-                source_array = tuple((a for n, a in source_group.items() if n == channel))[0]
+                source_arrays = source_group.items()
 
                 aprint(f"Creating group for channel {channel} of new name {new_name}.")
                 if new_name not in root.group_keys():
@@ -313,6 +360,10 @@ class ZDataset(BaseDataset):
                     dest_group = root[new_name]
 
                 aprint(f"Fast copying channel {channel} renamed to {new_name} of shape {array.shape} and dtype {array.dtype} ")
-                convenience.copy(source_array, dest_group, if_exists='replace' if overwrite else 'raise')
+
+                for name, array in source_arrays:
+                    aprint(f"Fast copying array {name}")
+                    convenience.copy(array, dest_group, if_exists='replace' if overwrite else 'raise')
+
             except CopyError | NotImplementedError:
                 aprint(f"Channel already exists, set option '-w' to force overwriting! ")

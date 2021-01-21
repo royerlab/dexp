@@ -1,27 +1,30 @@
+from typing import Sequence
+
 import numpy
 from arbol.arbol import aprint
 from skimage.transform import downscale_local_mean
 
+from dexp.datasets.base_dataset import BaseDataset
 from dexp.utils.timeit import timeit
 
 
-def dataset_isonet(dataset,
-                   path,
-                   channel,
+def dataset_isonet(dataset: BaseDataset,
+                   path: str,
+                   channel: Sequence[str],
                    slicing,
-                   store,
-                   compression,
-                   compression_level,
-                   overwrite,
-                   context,
-                   mode,
-                   dxy,
-                   dz,
-                   binning,
-                   sharpening,
-                   training_tp_index,
-                   max_epochs,
-                   check):
+                   store: str,
+                   compression: str,
+                   compression_level: int,
+                   overwrite: bool,
+                   context: str,
+                   mode: str,
+                   dxy: float,
+                   dz: float,
+                   binning: bool,
+                   sharpening: bool,
+                   training_tp_index: int,
+                   max_epochs: int,
+                   check: bool):
     if channel is None:
         channel = 'fused'
 
@@ -67,24 +70,24 @@ def dataset_isonet(dataset,
             with timeit('Elapsed time: '):
 
                 aprint(f"Processing time point: {tp} ...")
-                array_tp = array[tp].compute()
+                tp_array = array[tp].compute()
 
                 aprint("Downscaling image...")
-                array_tp = downscale_local_mean(array_tp, factors=(1, binning, binning))
-                # array_tp_downscaled = zoom(array_tp, zoom=(1, 1.0/binning, 1.0/binning), order=0)
+                tp_array = downscale_local_mean(tp_array, factors=(1, binning, binning))
+                # array_tp_downscaled = zoom(tp_array, zoom=(1, 1.0/binning, 1.0/binning), order=0)
 
                 if sharpening:
                     aprint("Sharpening image...")
                     from dexp.processing.restoration import dehazing
-                    array_tp = dehazing(array_tp, mode='hybrid', min=0, max=1024, margin_pad=False)
+                    tp_array = dehazing(tp_array, mode='hybrid', min=0, max=1024, margin_pad=False)
 
                 aprint("Applying IsoNet to image...")
-                array_tp = isonet.apply(array_tp)
+                tp_array = isonet.apply(tp_array)
 
-                aprint(f'Result: image of shape: {array_tp.shape}, dtype: {array_tp.dtype} ')
+                aprint(f'Result: image of shape: {tp_array.shape}, dtype: {tp_array.dtype} ')
 
                 if zarr_array is None:
-                    shape = (array.shape[0],) + array_tp.shape
+                    shape = (array.shape[0],) + tp_array.shape
                     aprint(f"Creating Zarr array of shape: {shape} ")
                     zarr_array = dest_dataset.add_channel(name=channel,
                                                           shape=shape,
@@ -94,7 +97,9 @@ def dataset_isonet(dataset,
                                                           clevel=compression_level)
 
                 aprint(f'Writing image to Zarr file...')
-                zarr_array[tp] = array_tp.astype(zarr_array.dtype, copy=False)
+                dest_dataset.write_stack(channel=channel,
+                                         time_point=tp,
+                                         stack_array=tp_array)
 
                 aprint(f"Done processing time point: {tp}")
 

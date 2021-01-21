@@ -1,7 +1,9 @@
+from typing import Sequence, List
+
 from arbol.arbol import aprint
 from arbol.arbol import asection
 from joblib import Parallel, delayed
-from zarr.errors import ContainsArrayError
+from zarr.errors import ContainsArrayError, ContainsGroupError
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
@@ -21,6 +23,7 @@ def dataset_fuse(dataset,
                  overwrite,
                  microscope,
                  equalise,
+                 equalise_mode,
                  zero_level,
                  clip_too_high,
                  fusion,
@@ -36,7 +39,9 @@ def dataset_fuse(dataset,
                  workers,
                  workersbackend,
                  devices,
-                 check):
+                 check,
+                 stop_at_exception = True):
+
     if microscope == 'simview':
         if channels is None:
             channels = ('C0L0', 'C0L1', 'C1L0', 'C1L1')
@@ -63,6 +68,7 @@ def dataset_fuse(dataset,
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(output_path, mode, store)
 
+    # load registration models:
     with NumpyBackend():
         model_list_filename = "registration_models.txt"
         if loadreg:
@@ -70,6 +76,14 @@ def dataset_fuse(dataset,
             models = model_list_from_file(model_list_filename)
         else:
             models = [None, ] * shape[0]
+
+    #hold equalisation ratios:
+    equalisation_ratios_reference: List[Sequence[float]] = [[]]
+    if microscope == 'simview':
+        equalisation_ratios_reference[0] = [None, None, None]
+    elif microscope == 'mvsols':
+        equalisation_ratios_reference[0] = [None,]
+
 
     def process(tp, device, workers):
         try:
@@ -83,23 +97,25 @@ def dataset_fuse(dataset,
 
                 # If we don't have a model for that timepoint we load one from a previous timepoint
                 if model is None and tp >= workers:
+                    aprint(f"we don't have a registration model for timepoint {tp} so we load one from a previous timepoint: {tp - workers}")
                     model = models[tp - workers]
 
                 if microscope == 'simview':
-                    array, model = simview_fuse_2C2L(*views_tp,
-                                                     registration_force_model=loadreg,
-                                                     registration_model=model,
-                                                     registration_min_confidence=min_confidence,
-                                                     registration_max_change=max_change,
-                                                     equalise=equalise,
-                                                     zero_level=zero_level,
-                                                     clip_too_high=clip_too_high,
-                                                     fusion=fusion,
-                                                     fusion_bias_exponent=2,
-                                                     fusion_bias_strength_i=fusion_bias_strength_i,
-                                                     fusion_bias_strength_d=fusion_bias_strength_d,
-                                                     dehaze_size=dehaze_size,
-                                                     dark_denoise_threshold=dark_denoise_threshold)
+                    tp_array, model, new_equalisation_ratios = simview_fuse_2C2L(*views_tp,
+                                                                             registration_force_model=loadreg,
+                                                                             registration_model=model,
+                                                                             registration_min_confidence=min_confidence,
+                                                                             registration_max_change=max_change,
+                                                                             equalise=equalise,
+                                                                             equalisation_ratios=equalisation_ratios_reference[0],
+                                                                             zero_level=zero_level,
+                                                                             clip_too_high=clip_too_high,
+                                                                             fusion=fusion,
+                                                                             fusion_bias_exponent=2,
+                                                                             fusion_bias_strength_i=fusion_bias_strength_i,
+                                                                             fusion_bias_strength_d=fusion_bias_strength_d,
+                                                                             dehaze_size=dehaze_size,
+                                                                             dark_denoise_threshold=dark_denoise_threshold)
                 elif microscope == 'mvsols':
                     metadata = dataset.get_metadata()
                     angle = metadata['angle']
@@ -107,7 +123,7 @@ def dataset_fuse(dataset,
                     dz = metadata['dz']
                     res = metadata['res']
 
-                    array, model = msols_fuse_1C2L(*views_tp,
+                    tp_array, model, new_equalisation_ratios = msols_fuse_1C2L(*views_tp,
                                                    z_pad=z_pad_apodise[0],
                                                    z_apodise=z_pad_apodise[1],
                                                    registration_num_iterations=warpreg_num_iterations,
@@ -116,6 +132,7 @@ def dataset_fuse(dataset,
                                                    registration_min_confidence=min_confidence,
                                                    registration_max_change=max_change,
                                                    equalise=equalise,
+                                                   equalisation_ratios=equalisation_ratios_reference[0],
                                                    zero_level=zero_level,
                                                    clip_too_high=clip_too_high,
                                                    fusion=fusion,
@@ -127,22 +144,35 @@ def dataset_fuse(dataset,
                                                    dx=res,
                                                    dz=dz)
 
-                array = Backend.to_numpy(array, dtype=dtype, force_copy=False)
+                with asection(f"Moving array from backend to numpy."):
+                    tp_array = Backend.to_numpy(tp_array, dtype=dtype, force_copy=False)
 
                 models[tp] = model.to_numpy()
+
+                aprint(f"Last equalisation ratios: {new_equalisation_ratios}")
+                if equalise_mode == 'first' and tp == 0:
+                    aprint(f"Equalisation mode: 'first' -> saving equalisation ratios: {new_equalisation_ratios} for subsequent time points")
+                    equalisation_ratios_reference[0] = list(float(Backend.to_numpy(ratio)) for ratio in new_equalisation_ratios)
+                elif equalise_mode == 'all':
+                    aprint(f"Equalisation mode: 'all' -> recomputing equalisation ratios for each time point.")
+                    # No need to save, we need to recompute the ratios for each time point.
+                    pass
+
 
             if 'fused' not in dest_dataset.channels():
                 try:
                     dest_dataset.add_channel('fused',
-                                             shape=(shape[0],) + array.shape,
+                                             shape=(shape[0],) + tp_array.shape,
                                              dtype=dtype,
                                              codec=compression,
                                              clevel=compression_level)
-                except ContainsArrayError:
-                    aprint(f"Other thread/process created channel before...")
+                except (ContainsArrayError, ContainsGroupError):
+                    aprint(f"Other thread/process created channel before... ")
 
-            with asection(f"Saving fused stack for time point {tp}, shape:{array.shape}, dtype:{array.dtype}"):
-                dest_dataset.get_array('fused')[tp] = array
+            with asection(f"Saving fused stack for time point {tp}, shape:{tp_array.shape}, dtype:{tp_array.dtype}"):
+                dest_dataset.write_stack(channel='fused',
+                                         time_point=tp,
+                                         stack_array=tp_array)
 
             aprint(f"Done processing time point: {tp} .")
 
@@ -151,6 +181,9 @@ def dataset_fuse(dataset,
             aprint(f"Error occurred while processing time point {tp} !")
             import traceback
             traceback.print_exc()
+
+            if stop_at_exception:
+                raise error
 
     if workers == -1:
         workers = len(devices)

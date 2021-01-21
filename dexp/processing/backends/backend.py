@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy
 import psutil
+from arbol import aprint
 
 
 class Backend(ABC):
@@ -17,6 +18,7 @@ class Backend(ABC):
     _local = threading.local()
     _pool = ThreadPoolExecutor(max_workers=psutil.cpu_count())
 
+
     @staticmethod
     def reset():
         if hasattr(Backend._local, 'backend_stack'):
@@ -27,7 +29,7 @@ class Backend(ABC):
             Backend._local.backend_stack = []
 
     @staticmethod
-    def current(raise_error_if_none: bool = True):
+    def current(raise_error_if_none: bool = False):
 
         if hasattr(Backend._local, 'backend_stack'):
             backend_stack = Backend._local.backend_stack
@@ -35,14 +37,18 @@ class Backend(ABC):
                 if raise_error_if_none:
                     raise RuntimeError("No backend available in current thread context")
                 else:
-                    return None
+                    aprint("Warning: no backend available in current thread context! falling back to a numpy backend! ")
+                    from dexp.processing.backends.numpy_backend import NumpyBackend
+                    return NumpyBackend()
             backend = backend_stack[-1]
             return backend
         else:
             if raise_error_if_none:
                 raise RuntimeError("No backend available in current thread context")
             else:
-                return None
+                aprint("Warning: no backend available in current thread context! falling back to a numpy backend! ")
+                from dexp.processing.backends.numpy_backend import NumpyBackend
+                return NumpyBackend()
 
     @staticmethod
     def to_numpy(array, dtype=None, force_copy: bool = False) -> numpy.ndarray:

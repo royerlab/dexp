@@ -1,4 +1,5 @@
 import gc
+from typing import Tuple, Sequence
 
 import numpy
 from arbol import asection, section, aprint
@@ -20,6 +21,7 @@ from dexp.processing.restoration.dehazing import dehaze
 @section("SimView 2C2L fusion")
 def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                       equalise: bool = True,
+                      equalisation_ratios: Sequence[float] = (None, None, None),
                       zero_level: float = 120,
                       clip_too_high: int = 1024,
                       fusion='tg',
@@ -50,6 +52,10 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
     C1L1 : Image for Camera 1 lightsheet 1
 
     equalise : Equalise intensity of views before fusion, or not.
+
+    equalisation_ratios: If provided, these ratios are used instead of calculating equalisation values based on the images.
+    When fusingh the four images: C0L0, C0L1, C1L0, C1L1, there are three equalisation ratios: (r0, r1, rc),
+    following the following definitions: C0L0 ~= r0 * C0L1, C1L0 ~= r1 * C1L1, and  C0lx ~= rc * C1Lx.
 
     zero_level : Zero level: that's the minimal detector pixel value floor to substract,
     typically for sCMOS cameras the floor is at around 100 (this is to avoid negative values
@@ -132,11 +138,12 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
 
     if equalise:
         with asection(f"Equalise intensity of C0L0 relative to C0L1 ..."):
-            C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
+            C0L0, C0L1, ratio0 = equalise_intensity(C0L0, C0L1,
                                                    zero_level=zero_level,
+                                                   correction_ratio=equalisation_ratios[0],
                                                    copy=False)
             #Backend.current().clear_memory_pool()
-            aprint(f"Equalisation ratio: {ratio}")
+            aprint(f"Equalisation ratio: {ratio0}")
 
     if dehaze_size > 0 and dehaze_before_fusion:
         with asection(f"Dehaze C0L0 and C0L1 ..."):
@@ -201,11 +208,12 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
 
     if equalise:
         with asection(f"Equalise intensity of C1L0 relative to C1L1 ..."):
-            C1L0, C1L1, ratio = equalise_intensity(C1L0, C1L1,
+            C1L0, C1L1, ratio1 = equalise_intensity(C1L0, C1L1,
                                                    zero_level=zero_level,
+                                                   correction_ratio=equalisation_ratios[1],
                                                    copy=False)
             #Backend.current().clear_memory_pool()
-            aprint(f"Equalisation ratio: {ratio}")
+            aprint(f"Equalisation ratio: {ratio1}")
 
     if dehaze_size > 0 and dehaze_before_fusion:
         with asection(f"Dehaze C1L0 and C1L1 ..."):
@@ -241,9 +249,12 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
 
     if equalise:
         with asection(f"Equalise intensity of C0lx relative to C1Lx ..."):
-            C0lx, C1Lx, ratio = equalise_intensity(C0lx, C1Lx, zero_level=0, copy=False)
+            C0lx, C1Lx, ratioc = equalise_intensity(C0lx, C1Lx,
+                                                   zero_level=0,
+                                                   correction_ratio=equalisation_ratios[2],
+                                                   copy=False)
             #Backend.current().clear_memory_pool()
-            aprint(f"Equalisation ratio: {ratio}")
+            aprint(f"Equalisation ratio: {ratioc}")
 
     with asection(f"Register_stacks C0lx and C1Lx ..."):
         C0lx, C1Lx, registration_model = register_detection_views(C0lx, C1Lx,
@@ -304,7 +315,11 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
     #gc.collect()
     #Backend.current().clear_memory_pool()
 
-    return CxLx, registration_model
+    # equalisation ratios found:
+    if equalisation_ratios is None:
+        equalisation_ratios = (ratio0, ratio1, ratioc)
+
+    return CxLx, registration_model, equalisation_ratios
 
 
 def fuse_illumination_views(CxL0, CxL1,

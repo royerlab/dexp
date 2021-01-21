@@ -1,8 +1,11 @@
+from typing import Sequence, Tuple
+
 from arbol.arbol import aprint
 from arbol.arbol import asection
 from joblib import Parallel, delayed
 from skimage.transform import downscale_local_mean
 
+from dexp.datasets.base_dataset import BaseDataset
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
@@ -10,31 +13,33 @@ from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_decon
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 
 
-def dataset_deconv(dataset,
-                   path,
-                   channels,
+def dataset_deconv(dataset: BaseDataset,
+                   path: str,
+                   channels: Sequence[str],
                    slicing,
-                   store,
-                   compression,
-                   compression_level,
-                   overwrite,
-                   chunksize,
-                   method,
-                   num_iterations,
-                   max_correction,
-                   power,
-                   blind_spot,
-                   back_projection,
-                   objective,
-                   dxy,
-                   dz,
-                   xy_size,
-                   z_size,
-                   downscalexy2,
-                   workers,
-                   workersbackend,
-                   devices,
-                   check):
+                   store: str,
+                   compression: str,
+                   compression_level: int,
+                   overwrite: bool,
+                   chunksize: Tuple[int],
+                   method: str,
+                   num_iterations: int,
+                   max_correction: int,
+                   power: float,
+                   blind_spot: int,
+                   back_projection: str,
+                   objective: str,
+                   dxy: float,
+                   dz: float,
+                   xy_size: int,
+                   z_size: int,
+                   downscalexy2: bool,
+                   workers: int,
+                   workersbackend: str,
+                   devices: Sequence[int],
+                   check: bool,
+                   stop_at_exception: bool=True):
+
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(path, mode, store)
@@ -47,12 +52,7 @@ def dataset_deconv(dataset,
             array = array[slicing]
 
         shape = array.shape
-        dim = len(shape)
-
-        if dim == 3:
-            chunks = dataset._default_chunks[1:]
-        elif dim == 4:
-            chunks = dataset._default_chunks
+        chunks = dataset._default_chunks
 
         dest_array = dest_dataset.add_channel(name=channel,
                                               shape=shape,
@@ -108,10 +108,13 @@ def dataset_deconv(dataset,
                     else:
                         raise ValueError(f"Unknown deconvolution mode: {method}")
 
-                    tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
+                    with asection(f"Moving array from backend to numpy."):
+                        tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
 
                 with asection(f"Saving deconvolved stack for time point {tp}, shape:{array.shape}, dtype:{array.dtype}"):
-                    dest_array[tp] = tp_array
+                    dest_dataset.write_stack(channel=channel,
+                                             time_point=tp,
+                                             stack_array=tp_array)
 
                 aprint(f"Done processing time point: {tp} .")
 
@@ -120,6 +123,9 @@ def dataset_deconv(dataset,
                 aprint(f"Error occurred while processing time point {tp} !")
                 import traceback
                 traceback.print_exc()
+
+                if stop_at_exception:
+                    raise error
 
         if workers == -1:
             workers = len(devices)
