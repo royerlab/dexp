@@ -37,7 +37,7 @@ def view(input_path, channels=None, slicing=None, volume=False, aspect=None, col
                         array = da.from_zarr(f"{input_path}/{channel}")
                     else:
                         array = da.from_zarr(f"{input_path}/{channel}/{channel}")
-                    viewer.add_image(array, name='channel', visible=True)
+                    viewer.add_image(array, name=channel, visible=True)
     else:
 
         input_dataset = _get_dataset_from_path(input_path)
