@@ -6,7 +6,7 @@ import click
 import imageio
 import numpy
 from arbol.arbol import aprint, asection
-from joblib import Parallel
+from joblib import Parallel, delayed
 
 from dexp.cli.main import _default_workers_backend
 
