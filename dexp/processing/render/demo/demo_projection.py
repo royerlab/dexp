@@ -30,13 +30,22 @@ def demo_projection(length_xy=120):
                                                       zoom=2)
 
     with asection("max_projection"):
-        max_projection = rgb_project(image, mode='max', attenuation=0.1)
+        max_projection = rgb_project(image,
+                                     mode='max',
+                                     attenuation=0.05)
 
     with asection("color_max_projection"):
-        color_max_projection = rgb_project(image, mode='colormax', attenuation=0.1)
+        color_max_projection = rgb_project(image,
+                                           mode='colormax',
+                                           attenuation=0.05,
+                                           cmap='turbo')
 
     with asection("color_max_projection_bottom"):
-        color_max_projection_bottom = rgb_project(image, mode='colormax', attenuation=0.1, dir=+1)
+        color_max_projection_bottom = rgb_project(image,
+                                                  mode='colormax',
+                                                  attenuation=0.1,
+                                                  cmap='turbo',
+                                                  dir=+1)
 
     from napari import Viewer, gui_qt
     with gui_qt():
