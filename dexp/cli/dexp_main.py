@@ -1,7 +1,6 @@
 import click
 from arbol.arbol import aprint, asection
 
-
 from dexp.processing.utils.mkl_util import set_mkl_threads
 
 _default_store = 'dir'
@@ -29,6 +28,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 def cli():
     aprint("__________________________________________")
     aprint("  DEXP -- Data EXploration & Processing   ")
+    aprint("  Dataset processing commands             ")
     aprint("  Royer lab                               ")
     aprint("__________________________________________")
     aprint("")
@@ -60,14 +60,10 @@ from dexp.cli.commands.tiff import tiff
 from dexp.cli.commands.view import view
 from dexp.cli.commands.serve import serve
 
+from dexp.cli.commands.deskew import deskew
 from dexp.cli.commands.fuse import fuse
 from dexp.cli.commands.deconv import deconv
 from dexp.cli.commands.isonet import isonet
-
-from dexp.cli.commands.render import render
-from dexp.cli.commands.blend import blend
-from dexp.cli.commands.stack import stack
-from dexp.cli.commands.mp4 import mp4
 
 from dexp.cli.commands.speedtest import speedtest
 
@@ -80,13 +76,9 @@ cli.add_command(tiff)
 cli.add_command(view)
 cli.add_command(serve)
 
+cli.add_command(deskew)
 cli.add_command(fuse)
 cli.add_command(deconv)
 cli.add_command(isonet)
-
-cli.add_command(render)
-cli.add_command(blend)
-cli.add_command(stack)
-cli.add_command(mp4)
 
 cli.add_command(speedtest)

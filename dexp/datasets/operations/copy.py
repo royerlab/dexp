@@ -17,7 +17,6 @@ def dataset_copy(dataset: BaseDataset,
                  workers: int,
                  workersbackend: str,
                  check: bool):
-
     # Create destination dataset:
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
@@ -37,11 +36,11 @@ def dataset_copy(dataset: BaseDataset,
             chunks = dataset._default_chunks
 
             dest_dataset.add_channel(name=channel,
-                                      shape=shape,
-                                      dtype=dtype,
-                                      chunks=chunks,
-                                      codec=compression,
-                                      clevel=compression_level)
+                                     shape=shape,
+                                     dtype=dtype,
+                                     chunks=chunks,
+                                     codec=compression,
+                                     clevel=compression_level)
 
             def process(tp):
                 try:

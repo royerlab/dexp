@@ -15,7 +15,6 @@ def dataset_view(input_dataset: BaseDataset,
                  colormap: str,
                  slicing,
                  windowsize: int):
-
     # Annoying napari induced warnings:
     import warnings
     warnings.filterwarnings("ignore")
@@ -81,13 +80,13 @@ def dataset_view(input_dataset: BaseDataset,
             worker.start()
 
             try:
-                for axis in range(array.ndim-1):
+                for axis in range(array.ndim - 1):
                     proj_array = input_dataset.get_projection_array(channel, axis=axis, wrap_with_dask=True)
                     proj_layer = viewer.add_image(proj_array,
-                                             name=channel+'_proj_'+str(axis),
-                                             contrast_limits=contrast_limits,
-                                             blending='additive',
-                                             colormap=colormap,)
+                                                  name=channel + '_proj_' + str(axis),
+                                                  contrast_limits=contrast_limits,
+                                                  blending='additive',
+                                                  colormap=colormap, )
 
                     if aspect is not None:
                         if axis == 0:
@@ -103,5 +102,3 @@ def dataset_view(input_dataset: BaseDataset,
                 aprint("Warning: can't find projections!")
 
         viewer.grid_view()
-
-

@@ -19,7 +19,6 @@ class CupyBackend(Backend):
         import GPUtil
         return len(GPUtil.getGPUs())
 
-
     @staticmethod
     def available_devices(order='first', maxLoad=math.inf, maxMemory=math.inf):
         """
@@ -133,7 +132,6 @@ class CupyBackend(Backend):
         if self.enable_memory_pool:
             if self.mempool is None:
                 import cupy
-                from cupy.cuda import set_allocator
                 from cupy.cuda.memory import SingleDeviceMemoryPool
                 self.mempool = SingleDeviceMemoryPool(cupy.cuda.memory.malloc_managed if self.enable_unified_memory else None)
                 from cupy.cuda import memory

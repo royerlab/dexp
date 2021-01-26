@@ -30,6 +30,7 @@ setup(
 
     entry_points='''
         [console_scripts]
-        dexp=dexp.cli.main:cli
+        dexp=dexp.cli.dexp_main:cli
+        video=dexp.cli.video_main:cli
     ''',
 )

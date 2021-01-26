@@ -1,8 +1,8 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.main import _default_clevel
-from dexp.cli.main import _default_workers_backend
+from dexp.cli.dexp_main import _default_clevel
+from dexp.cli.dexp_main import _default_workers_backend
 from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing
 from dexp.datasets.operations.tiff import dataset_tiff
 

@@ -20,7 +20,7 @@ from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _parse_slici
 @click.option('--rendersize', '-rs', type=int, default=2048, help='Sets the frame render size. i.e. -ws 400 sets the window to 400x400', show_default=True)
 @click.option('--clim', '-cl', type=str, default='0,1024', help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]')
 @click.option('--options', '-opt', type=str, default=None, help='Render options, e.g: \'gamma=1.2,box=True\'. Important: no white spaces!!! Complete list with defaults will be displayed on first run')
-def render(input_path, output_path, channels=None, slicing=None, overwrite=False, aspect=None, colormap='viridis', rendersize=1536, clim=None, options=None):
+def volrender(input_path, output_path, channels=None, slicing=None, overwrite=False, aspect=None, colormap='viridis', rendersize=1536, clim=None, options=None):
     input_dataset = _get_dataset_from_path(input_path)
     channels = _parse_channels(input_dataset, channels)
     slicing = _parse_slicing(slicing)

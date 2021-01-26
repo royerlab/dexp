@@ -37,8 +37,11 @@ pip install pyopencl --upgrade
 pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install spimagine --upgrade
-pip install gputil
-pip install arbol colorama ansicolors
-pip install simple-zarr-server requests aiohttp
+pip install gputil --upgrade
+pip install arbol colorama ansicolors --upgrade
+pip install simple-zarr-server requests aiohttp --upgrade
+pip install colorcet --upgrade
+pip install python-telegram-bot --upgrade
+pip install PyYAML --upgrade
 
 pip install -e .

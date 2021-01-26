@@ -23,10 +23,9 @@ def speedtest():
             aprint(result.stderr.decode("utf-8").split('\n')[2])
 
         with asection("Read speed with cache clearing:"):
-
-            #clear cache:
+            # clear cache:
             return_code = os.system('sync; echo 3 > /proc/sys/vm/drop_caches')
-            if return_code!=0:
+            if return_code != 0:
                 aprint("you must be root to clear the cache!")
 
             result = subprocess.run(['time', 'sh', '-c', f'dd if="{cwd}/{filename}" of=/dev/null bs=4M count=256 && sync'], capture_output=True)

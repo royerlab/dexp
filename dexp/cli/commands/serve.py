@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.utils import _get_dataset_from_path, _parse_slicing
+from dexp.cli.utils import _get_dataset_from_path
 from dexp.datasets.operations.serve import dataset_serve
 
 

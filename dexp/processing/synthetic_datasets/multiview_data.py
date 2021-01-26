@@ -1,11 +1,11 @@
 from typing import Tuple, Optional
 
 import numpy
+from arbol import asection
 from skimage.data import binary_blobs
 from skimage.util import random_noise
 
 from dexp.processing.backends.backend import Backend
-from dexp.utils.timeit import timeit
 
 
 def generate_fusion_test_data(length_xy: Optional[int] = 320,
@@ -40,31 +40,31 @@ def generate_fusion_test_data(length_xy: Optional[int] = 320,
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
-    with timeit("generate blob images"):
+    with asection("generate blob images"):
         image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype(dtype)
         blend_a = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype(dtype)
         blend_b = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype(dtype)
 
-    with timeit("convert blob images to backend"):
+    with asection("convert blob images to backend"):
         image_gt = Backend.to_backend(image_gt)
         blend_a = Backend.to_backend(blend_a)
         blend_b = Backend.to_backend(blend_b)
 
-    with timeit("prepare high/low image pair"):
+    with asection("prepare high/low image pair"):
         image_gt = sp.ndimage.gaussian_filter(image_gt, sigma=1)
         image_gt = image_gt / xp.max(image_gt)
         image_highq = image_gt.copy()
         image_lowq = image_gt.copy()
         image_lowq = amount_low * sp.ndimage.gaussian_filter(image_lowq, sigma=7)
 
-    with timeit("prepare blend maps"):
+    with asection("prepare blend maps"):
         blend_a = sp.ndimage.gaussian_filter(blend_a, sigma=2)
         blend_a = blend_a / numpy.max(blend_a)
         blend_b = sp.ndimage.gaussian_filter(blend_b, sigma=2)
         blend_b = blend_b / numpy.max(blend_b)
 
     if z_overlap is not None:
-        with timeit("add z bias to blend maps"):
+        with asection("add z bias to blend maps"):
             length = blend_a.shape[0]
             bias_vector = xp.linspace(0, 1, num=length)
             new_shape = tuple(s if i == 0 else 1 for i, s in enumerate(blend_a.shape))
@@ -72,12 +72,12 @@ def generate_fusion_test_data(length_xy: Optional[int] = 320,
             blend_a *= (1 - bias_vector) ** z_overlap
             blend_b *= (bias_vector) ** z_overlap
 
-    with timeit("generate two views via blending"):
+    with asection("generate two views via blending"):
         image1 = image_highq * blend_a + image_lowq * blend_b
         image2 = image_highq * blend_b + image_lowq * blend_a
 
     if length_z_factor != 1:
-        with timeit("downscale along z"):
+        with asection("downscale along z"):
             image_gt = sp.ndimage.zoom(image_gt, zoom=(1 / length_z_factor, 1, 1), order=0)
             image_lowq = sp.ndimage.zoom(image_lowq, zoom=(1 / length_z_factor, 1, 1), order=0)
             blend_a = sp.ndimage.zoom(blend_a, zoom=(1 / length_z_factor, 1, 1), order=0)
@@ -94,7 +94,7 @@ def generate_fusion_test_data(length_xy: Optional[int] = 320,
         image2 = xp.pad(image2, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
 
     if add_noise:
-        with timeit("add noise"):
+        with asection("add noise"):
             image1 = Backend.to_numpy(image1)
             image2 = Backend.to_numpy(image2)
             image1 = random_noise(image1, mode='speckle', var=0.5)
@@ -103,10 +103,10 @@ def generate_fusion_test_data(length_xy: Optional[int] = 320,
             image2 = Backend.to_backend(image2)
 
     if shift is not None:
-        with timeit("Shift second view relative to first"):
+        with asection("Shift second view relative to first"):
             image2 = sp.ndimage.shift(image2, shift=shift, order=1)
 
-    with timeit("scale image intensities"):
+    with asection("scale image intensities"):
         image1 = zero_level + 300 * image1
         image2 = zero_level + 300 * image2
         image_gt = zero_level + 300 * image_gt

@@ -9,7 +9,7 @@ from arbol.arbol import asection, aprint
 from joblib import Parallel
 from scipy import special
 
-from dexp.cli.main import _default_workers_backend
+from dexp.cli.dexp_main import _default_workers_backend
 
 
 @click.command()
