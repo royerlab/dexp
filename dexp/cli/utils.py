@@ -40,13 +40,15 @@ def _parse_slicing(slicing: str):
 
 
 def _parse_channels(input_dataset, channels):
-    aprint(f"Available channel(s) : '{input_dataset.channels()}'")
+    available_channels = frozenset(input_dataset.channels())
+    aprint(f"Available channel(s) : '{available_channels}'")
     aprint(f"Requested channel(s) : '{channels if channels else '--All--'}' ")
     if channels is None:
         channels = input_dataset.channels()
     else:
         channels = tuple(channel.strip() for channel in channels.split(','))
-        channels = list(set(channels) & set(input_dataset.channels()))
+        channels = [channel for channel in channels if channel in available_channels]
+
     aprint(f"Selected channel(s)  : '{channels}'")
     return channels
 

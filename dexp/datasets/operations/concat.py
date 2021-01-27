@@ -76,7 +76,7 @@ def dataset_concat(channels: Sequence[str],
                     # this happens if we don't have projections, in that case we need to generate the projections:
                     # slower but necessary...
                     for tp_src in range(num_timepoints):
-                        tp_dest = start+tp_src
+                        tp_dest = start + tp_src
                         dest_dataset.write_stack(channel, tp_dest, array[tp_src])
                 finally:
                     start += num_timepoints

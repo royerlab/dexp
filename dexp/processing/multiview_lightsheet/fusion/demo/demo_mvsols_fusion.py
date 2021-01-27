@@ -50,15 +50,15 @@ def _mvsols_resample():
         res = metadata['res']
 
         C0Lx, model, ratios = msols_fuse_1C2L(C0L0, C0L1,
-                                  zero_level=0,
-                                  angle=angle,
-                                  dx=res,
-                                  dz=dz,
-                                  equalise=True,
-                                  registration_confidence_threshold=0.6,
-                                  registration_max_residual_shift=64,
-                                  z_pad=8,
-                                  z_apodise=96)
+                                              zero_level=0,
+                                              angle=angle,
+                                              dx=res,
+                                              dz=dz,
+                                              equalise=True,
+                                              registration_confidence_threshold=0.6,
+                                              registration_max_residual_shift=64,
+                                              z_pad=8,
+                                              z_apodise=96)
 
         print(f"")
 

@@ -3,8 +3,8 @@ from os.path import join
 from typing import Sequence
 
 from arbol.arbol import aprint, asection
-from tifffile import TiffWriter, memmap
 from joblib import Parallel, delayed
+from tifffile import memmap
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.io.io import tiff_save
@@ -39,7 +39,6 @@ def dataset_tiff(dataset: BaseDataset,
         workers = os.cpu_count() // 2
     aprint(f"Number of workers: {workers}")
 
-
     if one_file_per_first_dim:
         aprint(f"Saving one TIFF file for each tp (or Z if already sliced) to: {output_path}.")
 
@@ -66,7 +65,7 @@ def dataset_tiff(dataset: BaseDataset,
     else:
 
         for channel, array in zip(selected_channels, arrays):
-            if len(selected_channels)>1:
+            if len(selected_channels) > 1:
                 tiff_file_path = f"{output_path}_{channel}.tiff"
             else:
                 tiff_file_path = f"{output_path}.tiff"
@@ -89,11 +88,8 @@ def dataset_tiff(dataset: BaseDataset,
                     for tp in range(0, array.shape[0]):
                         process(tp)
 
-
                 memmap_image.flush()
                 del memmap_image
-
-
 
 ## NOTES: color coded max projection:
 # > data = numpy.random.randint(0, 255, (256, 256, 3), 'uint8')

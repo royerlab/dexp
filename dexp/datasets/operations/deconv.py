@@ -38,8 +38,7 @@ def dataset_deconv(dataset: BaseDataset,
                    workersbackend: str,
                    devices: Sequence[int],
                    check: bool,
-                   stop_at_exception: bool=True):
-
+                   stop_at_exception: bool = True):
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(path, mode, store)

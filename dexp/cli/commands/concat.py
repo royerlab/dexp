@@ -4,7 +4,7 @@ from functools import reduce
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.main import _default_store, _default_codec, _default_clevel, _default_workers_backend
+from dexp.cli.dexp_main import _default_store, _default_codec, _default_clevel, _default_workers_backend
 from dexp.cli.utils import _get_dataset_from_path, _parse_channels, _get_output_path
 from dexp.datasets.operations.concat import dataset_concat
 

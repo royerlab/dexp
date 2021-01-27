@@ -34,7 +34,6 @@ def test_zarr_dataset_livecycle():
         assert array1 is not None
         assert array2 is not None
 
-
         assert len(zdataset.channels()) == 2
         assert 'first' in zdataset.channels()
         assert 'second' in zdataset.channels()
@@ -53,7 +52,7 @@ def test_zarr_dataset_livecycle():
             xp = backend.get_xp_module()
             for i in range(0, 10):
                 blobs = binary_blobs(length=100, n_dim=3, blob_size_fraction=0.1).astype('f4')
-                blobs = gaussian(blobs, sigma=1+0.1*i)
+                blobs = gaussian(blobs, sigma=1 + 0.1 * i)
                 zdataset.write_stack('first', i, blobs)
 
                 # import napari
@@ -70,7 +69,7 @@ def test_zarr_dataset_livecycle():
 
             for i in range(0, 17):
                 blobs = binary_blobs(length=30, n_dim=3, blob_size_fraction=0.03).astype('f4')
-                blobs = gaussian(blobs, sigma=1+0.1*i)
+                blobs = gaussian(blobs, sigma=1 + 0.1 * i)
                 blobs = blobs[0:10, 0:20, 0:30]
                 zdataset.write_stack('second', i, blobs)
 
@@ -79,12 +78,7 @@ def test_zarr_dataset_livecycle():
                 for axis in range(3):
                     assert xp.all((zdataset.get_projection_array('second', axis=axis)[i] == xp.max(blobs, axis=axis)))
 
-
-
         assert zdataset.check_integrity()
-
-
-
 
         # with napari.gui_qt():
         #     viewer = Viewer()

@@ -13,7 +13,6 @@ from numcodecs import blosc
 from zarr import open_group, convenience, CopyError, Blosc, Group
 
 from dexp.datasets.base_dataset import BaseDataset
-
 # Configure multithreading for Dask:
 from dexp.processing.backends.backend import Backend
 
@@ -301,11 +300,11 @@ class ZDataset(BaseDataset):
                 max_0_name = name + '_projection_' + str(axis)
 
                 proj_shape = list(shape)
-                del proj_shape[1+axis]
+                del proj_shape[1 + axis]
                 proj_shape = tuple(proj_shape)
 
                 # chunking along time must be 1 to allow parallelism, but no chunking for each projection (not needed!)
-                proj_chunks = (1,) + (None,)*(len(chunks)-2)
+                proj_chunks = (1,) + (None,) * (len(chunks) - 2)
 
                 max_0_array = channel_group.full(name=max_0_name,
                                                  shape=proj_shape,

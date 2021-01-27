@@ -23,11 +23,11 @@ def normalise_functions(image,
     Parameters
     ----------
     image : image to normalise
-    low, high : normal;isation range
+    low, high : normalisation range
     minmax : min and max values of the image if already known.
-    quantile : if quantile>0 then quantile normalisation is used to find the min and max values.
+    quantile : if quantile>0 then quantile normalisation is used to find the min and max values. Value must be within [0,1]
     clip : clip after normalisation/denormalisation
-    do_normalise : If False, the returned functions are pass-thrpough identity functions.
+    do_normalise : If False, the returned functions are pass-through identity functions -- usefull to turn on and off normalisation while still using the functions themselves.
     in_place : In-place computation is allowed and inputs may be modified
     dtype : dtype to normalise to.
 

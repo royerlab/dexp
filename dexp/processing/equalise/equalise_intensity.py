@@ -55,7 +55,6 @@ def equalise_intensity(image1,
     image1 = Backend.to_backend(image1, dtype=internal_dtype, force_copy=copy)
     image2 = Backend.to_backend(image2, dtype=internal_dtype, force_copy=copy)
 
-
     # If not provided, compute correction ratio:
     if correction_ratio is None:
 
