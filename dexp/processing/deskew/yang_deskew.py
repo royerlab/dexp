@@ -67,7 +67,8 @@ def resampling_vertical_split(image,
 
     Returns
     -------
-    Resampled image
+    Resampled image.
+    Important note: for scalability reasons, the returned image is always numpy image.
 
     """
 
