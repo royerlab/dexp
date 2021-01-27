@@ -218,17 +218,17 @@ class CupyBackend(Backend):
                 return cupy.asarray(array, dtype=dtype)
 
     def _get_xp_module(self, array=None) -> Any:
-        if array is not None:
-            import cupy
-            return cupy.get_array_module(array)
-        else:
+        if array is None:
             import cupy
             return cupy
+        else:
+            import cupy
+            return cupy.get_array_module(array)
 
     def _get_sp_module(self, array=None) -> Any:
-        if array is not None:
-            import cupyx
-            return cupyx.scipy.get_array_module(array)
-        else:
+        if array is None:
             import cupyx
             return cupyx.scipy
+        else:
+            import cupyx
+            return cupyx.scipy.get_array_module(array)

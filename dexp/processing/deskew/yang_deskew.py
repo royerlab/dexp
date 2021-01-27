@@ -24,10 +24,11 @@ def yang_deskew(image,
     -------
 
     """
-    xp = Backend.get_xp_module()
+    # we don't want to move the image to the backend just now,
+    # as it might be a very large image and we can actually defer moving it to the backend as
+    # after splitting...
+    xp = Backend.get_xp_module(image)
 
-    # move to backend:
-    image = Backend.to_backend(image)
     if flip:
         image = xp.flip(image, axis=0)
 
@@ -43,6 +44,7 @@ def yang_deskew(image,
 
     # flip along axis x
     if flip:
+        xp = Backend.get_xp_module(image)
         image = xp.flip(image, axis=2)
 
     return image
@@ -68,11 +70,12 @@ def resampling_vertical_split(image,
     Resampled image
 
     """
-    xp = Backend.get_xp_module()
+
 
     if num_split == 1:
         output = resampling_vertical(image, dz, dx, angle=angle)
     else:
+        xp = Backend.get_xp_module(image)
         data_gpu_splits = xp.array_split(image, num_split, axis=1)
         for k in range(num_split):
             data_resampled = resampling_vertical(data_gpu_splits[k], dz, dx, angle=angle)
