@@ -30,7 +30,8 @@ conda install pytorch torchvision torchaudio cudatoolkit=11.0 torch-dct -c pytor
 
 #pip install cupy-cuda111
 #pip install cupy-cuda111 -f https://github.com/cupy/cupy/releases/tag/v9.0.0a1
-pip install cupy-cuda111==9.0.0a2
+source  /apps/GCC-6.5.0/setup.GCC-6.5.0
+pip install cupy-cuda111==9.0.0a2 --no-cache-dir
 
 pip install pyopencl --upgrade
 #pip install torch-dct --upgrade
