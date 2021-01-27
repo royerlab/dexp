@@ -30,7 +30,7 @@ pip install pyopencl --upgrade
 pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install spimagine --upgrade
-pip install gputil --upgrade
+pip install gputil gpustat --upgrade
 pip install arbol colorama ansicolors --upgrade
 pip install simple-zarr-server requests aiohttp --upgrade
 pip install colorcet --upgrade

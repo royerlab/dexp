@@ -30,10 +30,11 @@ pip install ./wheels/pyopencl-2019.1.2+cl12-cp37-cp37m-win_amd64.whl
 pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install spimagine --upgrade
-pip install gputil --upgrade
+pip install gputil gpustat --upgrade
 pip install arbol colorama ansicolors --upgrade
 pip install simple-zarr-server requests aiohttp --upgrade
 pip install colorcet --upgrade
 pip install python-telegram-bot --upgrade
+
 
 pip install -e .
