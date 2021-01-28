@@ -235,6 +235,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
         aprint(f"Provided registration model: {registration_model}, overall confidence: {0 if registration_model is None else registration_model.overall_confidence()}")
 
         if huge_dataset_mode:
+            aprint(f"Huge dataset mode is on: moving data to CPU RAM.")
             C0L0 = Backend.to_numpy(C0L0)
             C0L1 = Backend.to_numpy(C0L1)
 
