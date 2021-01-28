@@ -1,3 +1,4 @@
+import gc
 from typing import Tuple, Sequence
 
 import numpy
@@ -49,6 +50,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     dark_denoise_threshold: int = 0,
                     dark_denoise_size: int = 9,
                     butterworth_filter_cutoff: float = 1,
+                    huge_dataset_mode: bool = False,
                     internal_dtype=numpy.float16) -> Tuple:
     """
 
@@ -123,6 +125,8 @@ def msols_fuse_1C2L(C0L0, C0L1,
     frequencies below without any change (that's the point of Butterworth filtering).
     WARNING: Butterworth filtering is currently very slow...
 
+    huge_dataset_mode: optimises memory allocation at the detriment of processing speed to tackle really huge datasets.
+
     internal_dtype : internal dtype
 
 
@@ -148,41 +152,46 @@ def msols_fuse_1C2L(C0L0, C0L1,
     with asection(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):
         C0L0 = Backend.to_backend(C0L0, dtype=internal_dtype, force_copy=False)
         C0L1 = Backend.to_backend(C0L1, dtype=internal_dtype, force_copy=False)
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
     if clip_too_high > 0:
         with asection(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
             C0L0 = xp.clip(C0L0, a_min=0, a_max=clip_too_high, out=C0L0)
             C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
-    if z_pad > 0 or z_apodise > 0:
-        with asection(f"Pad and apodise C0L0 and C0L1 along scanning direction:"):
+    if z_pad > 0:
+        with asection(f"Pad C0L0 and C0L1 along scanning direction:"):
 
-            if z_pad > 0:
-                C0L0[0] = sp.ndimage.gaussian_filter(C0L0[0], sigma=4)
-                C0L0[-1] = sp.ndimage.gaussian_filter(C0L0[-1], sigma=4)
-                C0L0 = xp.pad(C0L0, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode='edge')
+            C0L0[0] = sp.ndimage.gaussian_filter(C0L0[0], sigma=4)
+            C0L0[-1] = sp.ndimage.gaussian_filter(C0L0[-1], sigma=4)
+            C0L0 = xp.pad(C0L0, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode='edge')
+            Backend.current().clear_memory_pool()
 
-                C0L1[0] = sp.ndimage.gaussian_filter(C0L1[0], sigma=4)
-                C0L1[-1] = sp.ndimage.gaussian_filter(C0L1[-1], sigma=4)
-                C0L1 = xp.pad(C0L1, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode='edge')
+            C0L1[0] = sp.ndimage.gaussian_filter(C0L1[0], sigma=4)
+            C0L1[-1] = sp.ndimage.gaussian_filter(C0L1[-1], sigma=4)
+            C0L1 = xp.pad(C0L1, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode='edge')
+            Backend.current().clear_memory_pool()
 
-            if z_apodise > 0:
-                depth = C0L0.shape[0]
-                apodise_left = xp.linspace(0, 1, num=z_apodise, dtype=internal_dtype)
-                apodise_left **= 3
-                apodise_center = xp.ones(shape=(depth - 2 * z_apodise,), dtype=internal_dtype)
-                apodise_right = xp.linspace(1, 0, num=z_apodise, dtype=internal_dtype) ** 0.5
-                apodise_right **= 3
-                apodise = xp.concatenate((apodise_left, apodise_center, apodise_right))
-                apodise = apodise[:, xp.newaxis, xp.newaxis]
-                apodise = apodise.astype(dtype=internal_dtype, copy=False)
+    if z_apodise > 0:
+        with asection(f"apodise C0L0 and C0L1 along scanning direction:"):
+
+            depth = C0L0.shape[0]
+            apodise_left = xp.linspace(0, 1, num=z_apodise, dtype=internal_dtype)
+            apodise_left **= 3
+            apodise_center = xp.ones(shape=(depth - 2 * z_apodise,), dtype=internal_dtype)
+            apodise_right = xp.linspace(1, 0, num=z_apodise, dtype=internal_dtype) ** 0.5
+            apodise_right **= 3
+            apodise = xp.concatenate((apodise_left, apodise_center, apodise_right))
+            apodise = apodise[:, xp.newaxis, xp.newaxis]
+            apodise = apodise.astype(dtype=internal_dtype, copy=False)
 
             C0L0 *= apodise
             C0L1 *= apodise
 
             del apodise, apodise_left, apodise_right
+            Backend.current().clear_memory_pool()
+
 
     # from napari import gui_qt, Viewer
     # with gui_qt():
@@ -195,10 +204,10 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     with asection(f"Resample C0L0 and C0L1"):
         C0L0 = resample_C0L0(C0L0, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
-        C0L1 = resample_C0L1(C0L1, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
         aprint(f"Shape and dtype of C0L0 after resampling: {C0L0.shape}, {C0L0.dtype}")
+        C0L1 = resample_C0L1(C0L1, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
         aprint(f"Shape and dtype of C0L1 after resampling: {C0L1.shape}, {C0L1.dtype}")
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
     if dehaze_size > 0 and dehaze_before_fusion:
         with asection(f"Dehaze C0L0 & C0L1 ..."):
@@ -210,7 +219,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                           size=dehaze_size,
                           minimal_zero_level=zero_level,
                           correct_max_level=True)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -238,7 +247,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                                                     registration_method=registration_method,
                                                     denoise_input_sigma=1)
 
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
             aprint(f"Computed registration model: {new_model}, overall confidence: {new_model.overall_confidence()}")
 
             if registration_model is None or (new_model.overall_confidence() >= registration_min_confidence or new_model.change_relative_to(registration_model) <= registration_max_change):
@@ -248,7 +257,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
         aprint(f"Applying registration model: {model}, overall confidence: {model.overall_confidence()}")
         C0L0, C0L1 = model.apply(C0L0, C0L1)
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -267,6 +276,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                                                    copy=False)
             equalisation_ratios = (ratio,)
             aprint(f"Equalisation ratio: {ratio}")
+            Backend.current().clear_memory_pool()
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -282,7 +292,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                                        mode=fusion,
                                        bias_exponent=fusion_bias_exponent,
                                        bias_strength=fusion_bias_strength_x)
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
     if dehaze_size > 0 and not dehaze_before_fusion:
         with asection(f"Dehaze CxLx ..."):
@@ -290,29 +300,29 @@ def msols_fuse_1C2L(C0L0, C0L1,
                           size=dehaze_size,
                           minimal_zero_level=0,
                           correct_max_level=True)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     if dark_denoise_threshold > 0:
         with asection(f"Denoise dark regions of CxLx..."):
             C1Lx = clean_dark_regions(C1Lx,
                                       size=dark_denoise_size,
                                       threshold=dark_denoise_threshold)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     if 0 < butterworth_filter_cutoff < 1:
         with asection(f"Filter output using a Butterworth filter"):
             cutoffs = (butterworth_filter_cutoff,) * C1Lx.ndim
             C1Lx = butterworth_filter(C1Lx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     with asection(f"Convert back to original dtype..."):
         if original_dtype is numpy.uint16:
             C1Lx = xp.clip(C1Lx, 0, None, out=C1Lx)
         C1Lx = C1Lx.astype(dtype=original_dtype, copy=False)
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
-    # gc.collect()
-    # Backend.current().clear_memory_pool()
+    gc.collect()
+    Backend.current().clear_memory_pool()
 
     return C1Lx, model, equalisation_ratios
 
