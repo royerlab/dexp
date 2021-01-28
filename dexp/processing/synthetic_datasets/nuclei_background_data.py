@@ -16,7 +16,8 @@ def generate_nuclei_background_data(length_xy=320,
                                     independent_haze=False,
                                     sphere: bool = False,
                                     add_offset=True,
-                                    dtype=numpy.float16):
+                                    dtype=numpy.float16,
+                                    internal_dtype=numpy.float16):
     """
 
     Parameters
@@ -31,6 +32,7 @@ def generate_nuclei_background_data(length_xy=320,
     sphere
     add_offset
     dtype
+    internal_dtype
 
     Returns
     -------
@@ -40,13 +42,16 @@ def generate_nuclei_background_data(length_xy=320,
     sp = Backend.get_sp_module()
 
     if type(Backend.current()) is NumpyBackend:
+        internal_dtype = xp.float32
+
+    if type(Backend.current()) is NumpyBackend:
         dtype = numpy.float32
 
     with asection("generate blob images"):
-        image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype(dtype)
+        image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype(internal_dtype)
 
         if independent_haze:
-            background = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=background_scale, volume_fraction=0.5).astype(dtype)
+            background = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=background_scale, volume_fraction=0.5).astype(internal_dtype)
         else:
             background = image_gt.copy()
 
@@ -93,7 +98,7 @@ def generate_nuclei_background_data(length_xy=320,
 
     with asection("scale image intensities"):
         zero_level = (1 if add_offset else 0) * xp.random.uniform(95, 95 + (10 if add_noise else 0), size=image_gt.shape)
-        zero_level = zero_level.astype(dtype, copy=False)
+        zero_level = zero_level.astype(image.dtype, copy=False)
         image *= 300
         image += zero_level
 

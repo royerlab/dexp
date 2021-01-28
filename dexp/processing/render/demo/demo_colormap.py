@@ -1,0 +1,51 @@
+from arbol import asection
+
+from dexp.processing.backends.backend import Backend
+from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.render.colormap import rgb_colormap
+from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+
+
+def demo_colormap_numpy():
+    with NumpyBackend():
+        demo_colormap()
+
+
+def demo_colormap_cupy():
+    try:
+        with CupyBackend():
+            demo_colormap(length_xy=512)
+    except (ModuleNotFoundError, NotImplementedError):
+        print("Cupy module not found! ignored!")
+
+
+def demo_colormap(length_xy=120):
+    with asection("generate data"):
+        _, _, image = generate_nuclei_background_data(add_noise=False,
+                                                      length_xy=length_xy,
+                                                      length_z_factor=1,
+                                                      background_stength=0.001,
+                                                      sphere=True,
+                                                      zoom=2)
+
+        image -= image.min()
+        image /= image.max()
+
+    with asection("rgb_image"):
+        rgb_image = rgb_colormap(image,
+                                 cmap='turbo')
+
+    from napari import Viewer, gui_qt
+    with gui_qt():
+        def _c(array):
+            return Backend.to_numpy(array)
+
+        viewer = Viewer()
+        viewer.add_image(_c(image), name='image')
+        viewer.add_image(_c(rgb_image), name='rgb_image')
+
+
+if __name__ == "__main__":
+    demo_colormap_cupy()
+    demo_colormap_numpy()

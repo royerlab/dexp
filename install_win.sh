@@ -36,5 +36,4 @@ pip install simple-zarr-server requests aiohttp --upgrade
 pip install colorcet --upgrade
 pip install python-telegram-bot --upgrade
 
-
 pip install -e .

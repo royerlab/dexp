@@ -48,18 +48,17 @@ class NumpyBackend(Backend):
             return numpy
         else:
             try:
-                from dexp.processing.backends.cupy_backend import CupyBackend
-                CupyBackend.get_xp_module(array)
+                import cupy
+                return cupy.get_array_module(array)
             except ModuleNotFoundError:
                 return numpy
-
 
     def _get_sp_module(self, array=None) -> Any:
         if array is None:
             return scipy
         else:
             try:
-                from dexp.processing.backends.cupy_backend import CupyBackend
-                CupyBackend.get_sp_module(array)
+                import cupyx
+                return cupyx.scipy.get_array_module(array)
             except ModuleNotFoundError:
                 return numpy

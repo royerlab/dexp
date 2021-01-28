@@ -72,7 +72,6 @@ def resampling_vertical_split(image,
 
     """
 
-
     if num_split == 1:
         output = resampling_vertical(image, dz, dx, angle=angle)
     else:

@@ -1,3 +1,5 @@
+import numpy
+from PIL import Image
 from arbol import asection
 
 from dexp.processing.backends.backend import Backend
@@ -27,12 +29,17 @@ def demo_projection(length_xy=120):
                                                       length_z_factor=1,
                                                       background_stength=0.001,
                                                       sphere=True,
-                                                      zoom=2)
+                                                      zoom=2,
+                                                      dtype=numpy.uint16)
 
     with asection("max_projection"):
         max_projection = rgb_project(image,
-                                     mode='max',
-                                     attenuation=0.05)
+                                     mode='max')
+
+    with asection("max_projection_att"):
+        max_projection_att = rgb_project(image,
+                                         mode='max',
+                                         attenuation=0.05)
 
     with asection("color_max_projection"):
         color_max_projection = rgb_project(image,
@@ -40,12 +47,23 @@ def demo_projection(length_xy=120):
                                            attenuation=0.05,
                                            cmap='turbo')
 
+    with asection("color_max_projection_dg"):
+        color_max_projection_dg = rgb_project(image,
+                                              mode='colormax',
+                                              attenuation=0.05,
+                                              depth_gamma=0.6,
+                                              cmap='turbo')
+
     with asection("color_max_projection_bottom"):
         color_max_projection_bottom = rgb_project(image,
                                                   mode='colormax',
                                                   attenuation=0.1,
                                                   cmap='turbo',
                                                   dir=+1)
+
+    projection = Backend.to_numpy(color_max_projection)
+    png_image = Image.fromarray(projection)
+    png_image.save('test.png')
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -55,10 +73,12 @@ def demo_projection(length_xy=120):
         viewer = Viewer()
         viewer.add_image(_c(image), name='image')
         viewer.add_image(_c(max_projection), name='max_projection', rgb=True)
+        viewer.add_image(_c(max_projection_att), name='max_projection_att', rgb=True)
         viewer.add_image(_c(color_max_projection), name='color_max_projection', rgb=True)
+        viewer.add_image(_c(color_max_projection_dg), name='color_max_projection_dg', rgb=True)
         viewer.add_image(_c(color_max_projection_bottom), name='color_max_projection_bottom', rgb=True)
 
 
 if __name__ == "__main__":
-    # demo_fusion_cupy()
+    demo_projection_cupy()
     demo_projection_numpy()

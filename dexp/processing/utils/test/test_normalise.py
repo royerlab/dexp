@@ -30,7 +30,7 @@ def _test_normalise(length_xy=128):
 
     image = image.astype(numpy.uint16)
 
-    norm_fun, denorm_fun = normalise_functions(image, low=-0.5, high=1, in_place=False, dtype=numpy.float32)
+    norm_fun, denorm_fun = normalise_functions(image, low=-0.5, high=1, in_place=False, clip=True, dtype=numpy.float32)
 
     image_normalised = norm_fun(image)
     image_denormalised = denorm_fun(image_normalised)

@@ -1,10 +1,11 @@
-from typing import Union, Tuple
+from typing import Union, Tuple, Callable
 
 from matplotlib.cm import get_cmap
 from matplotlib.colors import LinearSegmentedColormap
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.render.colormap import rgb_colormap
 from dexp.processing.utils.normalise import normalise_functions
 
 
@@ -15,8 +16,10 @@ def rgb_project(image,
                 attenuation: float = 0,
                 gamma: float = 1,
                 clim: Tuple[float, float] = None,
-                cmap: Union[str, str] = None,
+                cmap: Union[str, Callable] = None,
                 attenuation_filtering: float = 4,
+                depth_gamma: float = 1,
+                rgb_gamma: float = 1,
                 internal_dtype=None):
     """
     Projects an image along a given axis given a specified method (max projection, max projection color-coded depth, ...)
@@ -29,13 +32,15 @@ def rgb_project(image,
     image : Image to project
     axis : axis along which to project
     dir : projection diretion, can be either '-1' for top to botttom or '1' for bottom to top -- assuming top corresponds to the positive direction of the projection axis.
-    mode : projection mode, can be: 'max' for max projection, 'maxcolor' for max color projection, ...
+    mode : projection mode, can be: 'max' for max projection, 'colormax' for max color projection, ...
     attenuation : How much to attenuate when projecting.
     gamma: Gamma correction to apply
     clim : color limits for applying the colormap.
+    cmap: Color map to use, can be a string or a cmap object
     attenuation_filtering: standard deviation of the gaussian filter used to preprocess the image for the purpose of computing the attenuation map.
     Important: this does not affect sharpness of the final image, it only affects the sharpness of the attenuation itself.
-    cmap: Color map to use, can be a string or a cmap object
+    depth_gamma: Gamma correction applied to the stack depth to accentuate (depth_gamma < 1) color variations with depth at the center of the stack.
+    rgb_gamma: Gamma correction applied to the resulting RGB image.
     internal_dtype : dtype for internal computation
 
     Returns
@@ -48,7 +53,7 @@ def rgb_project(image,
     sp = Backend.get_sp_module()
 
     if internal_dtype is None:
-        internal_dtype = image.dtype
+        internal_dtype = xp.float16
 
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = xp.float32
@@ -108,7 +113,7 @@ def rgb_project(image,
         projection = xp.max(image, axis=axis)
 
         # apply color map:
-        projection = cmap(projection)
+        projection = rgb_colormap(projection, cmap=cmap, bytes=False)
 
     elif mode == 'colormax':
 
@@ -117,16 +122,26 @@ def rgb_project(image,
         values = xp.max(image, axis=axis)
 
         # apply color map, this is just the chroma-coding of depth
-        norm_factor = 1.0 / float(image.shape[axis] - 1)
-        projection = cmap(norm_factor * indices)
-        dtype = projection.dtype
+        norm_factor = xp.array(1.0 / float(image.shape[axis] - 1)).astype(internal_dtype, copy=False)
+        normalised_depth = norm_factor * indices
+        if depth_gamma != 1.0:
+            # this could be made faster, but does it matter (those are 2D images)
+            normalised_depth *= 2
+            normalised_depth -= 1
+            normalised_depth = xp.sign(normalised_depth) * (xp.absolute(normalised_depth) ** depth_gamma)
+            normalised_depth += 1
+            normalised_depth *= 0.5
+        projection = rgb_colormap(normalised_depth, cmap=cmap, bytes=False)
 
-        # Next we multiply the chroma-code with the inetnsity of the corresponding voxel:
+        # Next we multiply the chroma-code with the intensity of the corresponding voxel:
         projection[..., 0:3] *= values[..., xp.newaxis]
-        projection = projection.astype(dtype, copy=False)
-
 
     else:
         raise ValueError(f"Invalid projection mode: {mode}")
+
+    if rgb_gamma != 1.0:
+        projection **= rgb_gamma
+
+    projection = (projection * 255).astype(xp.uint8, copy=False)
 
     return projection

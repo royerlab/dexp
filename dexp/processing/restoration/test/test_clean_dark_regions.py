@@ -36,7 +36,7 @@ def _test_clean_dark_regions(length_xy=128):
     image = xp.clip(image - 95, 0, None)
 
     with timeit('clean_dark_regions'):
-        cleaned = clean_dark_regions(image, size=3, threshold=10, in_place=False)
+        cleaned = clean_dark_regions(image, size=3, threshold=30, in_place=False)
 
     assert cleaned is not image
     assert cleaned.shape == image.shape

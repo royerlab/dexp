@@ -7,7 +7,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 def clean_dark_regions(image,
                        threshold: float,
                        size: int = 3,
-                       mode: str = 'median',
+                       mode: str = 'uniform',
                        in_place: bool = True,
                        internal_dtype=None
                        ):
