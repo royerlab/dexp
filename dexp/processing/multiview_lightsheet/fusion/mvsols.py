@@ -245,7 +245,8 @@ def msols_fuse_1C2L(C0L0, C0L1,
                                                     max_residual_shift=registration_max_residual_shift,
                                                     edge_filter=registration_edge_filter,
                                                     registration_method=registration_method,
-                                                    denoise_input_sigma=1)
+                                                    denoise_input_sigma=1,
+                                                    save_memory=True)
 
             Backend.current().clear_memory_pool()
             aprint(f"Computed registration model: {new_model}, overall confidence: {new_model.overall_confidence()}")

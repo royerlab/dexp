@@ -105,20 +105,22 @@ def register_warp_multiscale_nd(image_a,
             #         viewer.add_image(_c(_scaled_model_confidence_n), name='_scaled_model_confidence_n', colormap='viridis', blending='additive', opacity=0.3)
 
             if vector_field is None:
-                splits = tuple(s // max(min_chunk, -(-s // (2 ** (num_iterations - 1)))) for s in image_a.shape)
-                aprint(f"final resolution = {splits}")
-                vector_field = xp.zeros(shape=splits + (ndim,), dtype=model_vector_field.dtype)
-                confidence = xp.zeros(shape=splits, dtype=model_confidence.dtype)
+                with asection(f"Initialise vector field and confidence arrays."):
+                    splits = tuple(s // max(min_chunk, -(-s // (2 ** (num_iterations - 1)))) for s in image_a.shape)
+                    aprint(f"final resolution = {splits}")
+                    vector_field = xp.zeros(shape=splits + (ndim,), dtype=model_vector_field.dtype)
+                    confidence = xp.zeros(shape=splits, dtype=model_confidence.dtype)
 
             if model.mean_confidence() > confidence_threshold // 2:
-                scale_factors = tuple(s / ms for ms, s in zip(model_confidence.shape, confidence.shape))
-                aprint(f"scale_factors: {scale_factors}")
+                with asection(f"Updating vector field and confidence array"):
+                    scale_factors = tuple(s / ms for ms, s in zip(model_confidence.shape, confidence.shape))
+                    aprint(f"Scaling obtained vector field and confidence arrays by a factor {scale_factors}")
 
-                scaled_vector_field = sp.ndimage.zoom(model_vector_field, zoom=scale_factors + (1,), order=1)
-                vector_field += scaled_vector_field
+                    scaled_vector_field = sp.ndimage.zoom(model_vector_field, zoom=scale_factors + (1,), order=1)
+                    vector_field += scaled_vector_field
 
-                scaled_confidence = sp.ndimage.zoom(model_confidence, zoom=scale_factors, order=1)
-                confidence = xp.maximum(confidence, scaled_confidence)
+                    scaled_confidence = sp.ndimage.zoom(model_confidence, zoom=scale_factors, order=1)
+                    confidence = xp.maximum(confidence, scaled_confidence)
             else:
                 aprint(f"Scale ignored!")
                 break
