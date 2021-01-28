@@ -50,7 +50,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     dark_denoise_threshold: int = 0,
                     dark_denoise_size: int = 9,
                     butterworth_filter_cutoff: float = 1,
-                    huge_dataset_mode: bool = False,
+                    huge_dataset_mode: bool = True,
                     internal_dtype=numpy.float16) -> Tuple:
     """
 
@@ -233,6 +233,10 @@ def msols_fuse_1C2L(C0L0, C0L1,
     with asection(f"Register C0L0 and C0L1"):
 
         aprint(f"Provided registration model: {registration_model}, overall confidence: {0 if registration_model is None else registration_model.overall_confidence()}")
+
+        if huge_dataset_mode:
+            C0L0 = Backend.to_numpy(C0L0)
+            C0L1 = Backend.to_numpy(C0L1)
 
         if registration_force_model and registration_model is not None:
             model = registration_model

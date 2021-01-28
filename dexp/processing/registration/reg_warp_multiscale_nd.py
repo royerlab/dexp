@@ -63,10 +63,11 @@ def register_warp_multiscale_nd(image_a,
 
             # pre-apply transform from previous iterations:
             if vector_field is not None:
-                model = WarpRegistrationModel(vector_field, force_numpy=force_numpy)
-                _, image = model.apply(image_a, image_b)
-                if save_memory:
-                    image = Backend.to_numpy(image)
+                with asection(f"Applying transform from previous iteration (save_memory={save_memory})"):
+                    model = WarpRegistrationModel(vector_field, force_numpy=force_numpy)
+                    _, image = model.apply(image_a, image_b)
+                    if save_memory:
+                        image = Backend.to_numpy(image)
             else:
                 image = image_b
 
