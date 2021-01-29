@@ -5,7 +5,6 @@ def center_of_mass(image,
                    mode: str = 'projection',
                    projection: str = 'avg',
                    remove_offset: bool = True):
-
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
@@ -44,5 +43,3 @@ def center_of_mass(image,
         com /= count
 
         return com
-
-

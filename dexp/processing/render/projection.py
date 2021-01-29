@@ -153,11 +153,7 @@ def rgb_project(image,
     return projection
 
 
-
-
-
 def _apply_depth_gamma(depth_map, gamma):
-
     if type(Backend.current()) is CupyBackend:
         import cupy
 
@@ -181,4 +177,3 @@ def _apply_depth_gamma(depth_map, gamma):
         depth_map += 1
         depth_map *= 0.5
         return depth_map
-

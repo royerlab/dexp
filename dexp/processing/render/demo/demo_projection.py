@@ -1,5 +1,4 @@
 import numpy
-from PIL import Image
 from arbol import asection
 
 from dexp.processing.backends.backend import Backend
@@ -23,7 +22,6 @@ def demo_projection_cupy():
 
 
 def demo_projection(length_xy=120):
-
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 

@@ -61,7 +61,6 @@ def _mvsols_resample():
                                               z_apodise=96)
         aprint(f"model = {model}, ratios={ratios}")
 
-
     from napari import gui_qt
     with gui_qt():
         def _c(array):
