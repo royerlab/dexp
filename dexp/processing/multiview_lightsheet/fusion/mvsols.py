@@ -47,6 +47,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     registration_max_change: int = 16,
                     dehaze_before_fusion: bool = True,
                     dehaze_size: int = 65,
+                    dehaze_correct_max_level: bool = True,
                     dark_denoise_threshold: int = 0,
                     dark_denoise_size: int = 9,
                     butterworth_filter_cutoff: float = 1,
@@ -65,7 +66,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     angle  : float, incident angle of the light sheet, angle between the light sheet and the optical axis
 
-    mode : Resampling mode, can be 'byang' for Bin Yang's resampling ;-)
+    mode : Resampling mode, can be 'yang' for Bin Yang's resampling ;-)
 
     equalise : Equalise intensity of views before fusion, or not.
 
@@ -112,6 +113,8 @@ def msols_fuse_1C2L(C0L0, C0L1,
     dehaze_size : After all fusion and registration, the final image is dehazed to remove
     large-scale background light caused by scattered illumination and out-of-focus light.
     This parameter controls the scale of the low-pass filter used.
+
+    dehaze_correct_max_level : Should the dehazing correct the reduced local max intensity induced by removing the background?
 
     dark_denoise_threshold : After all fusion and registration, the final image is processed
     to remove any remaining noise in the dark background region (= hurts compression!).
@@ -214,11 +217,11 @@ def msols_fuse_1C2L(C0L0, C0L1,
             C0L0 = dehaze(C0L0,
                           size=dehaze_size,
                           minimal_zero_level=zero_level,
-                          correct_max_level=True)
+                          correct_max_level=dehaze_correct_max_level)
             C0L1 = dehaze(C0L1,
                           size=dehaze_size,
                           minimal_zero_level=zero_level,
-                          correct_max_level=True)
+                          correct_max_level=dehaze_correct_max_level)
             Backend.current().clear_memory_pool()
 
     # from napari import Viewer, gui_qt
@@ -279,6 +282,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
             C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
                                                    zero_level=0 if dehaze_before_fusion else zero_level,
                                                    correction_ratio=equalisation_ratios[0],
+
                                                    copy=False)
             equalisation_ratios = (ratio,)
             aprint(f"Equalisation ratio: {ratio}")
@@ -305,7 +309,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
             C1Lx = dehaze(C1Lx,
                           size=dehaze_size,
                           minimal_zero_level=0,
-                          correct_max_level=True)
+                          correct_max_level=dehaze_correct_max_level)
             Backend.current().clear_memory_pool()
 
     if dark_denoise_threshold > 0:

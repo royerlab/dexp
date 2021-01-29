@@ -59,8 +59,8 @@ def _mvsols_resample():
                                               registration_max_residual_shift=64,
                                               z_pad=8,
                                               z_apodise=96)
+        aprint(f"model = {model}, ratios={ratios}")
 
-        print(f"")
 
     from napari import gui_qt
     with gui_qt():

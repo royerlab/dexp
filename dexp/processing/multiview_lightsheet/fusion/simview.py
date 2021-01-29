@@ -37,6 +37,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                       registration_max_change: int = 16,
                       dehaze_before_fusion: bool = True,
                       dehaze_size: int = 32,
+                      dehaze_correct_max_level: bool = True,
                       dark_denoise_threshold: int = 0,
                       dark_denoise_size: int = 9,
                       butterworth_filter_cutoff: float = 1,
@@ -92,6 +93,8 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
     dehaze_size : After all fusion and registration, the final image is dehazed to remove
     large-scale background light caused by scattered illumination and out-of-focus light.
     This parameter controls the scale of the low-pass filter used.
+
+    dehaze_correct_max_level : Should the dehazing correct the reduced local max intensity induced by removing the background?
 
     dark_denoise_threshold : After all fusion and registration, the final image is processed
     to remove any remaining noise in the dark background region (= hurts compression!).
@@ -223,11 +226,11 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             C1L0 = dehaze(C1L0,
                           size=dehaze_size,
                           minimal_zero_level=0,
-                          correct_max_level=True)
+                          correct_max_level=dehaze_correct_max_level)
             C1L1 = dehaze(C1L1,
                           size=dehaze_size,
                           minimal_zero_level=0,
-                          correct_max_level=True)
+                          correct_max_level=dehaze_correct_max_level)
             Backend.current().clear_memory_pool()
 
     with asection(f"Fuse illumination views C1L0 and C1L1..."):
@@ -284,7 +287,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             CxLx = dehaze(CxLx,
                           size=dehaze_size,
                           minimal_zero_level=0,
-                          correct_max_level=True)
+                          correct_max_level=dehaze_correct_max_level)
             Backend.current().clear_memory_pool()
 
     if dark_denoise_threshold > 0:

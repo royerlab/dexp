@@ -37,8 +37,8 @@ def simview_fusion():
     C1L1 = array[3]
 
     with asection("simview_fuse_2I2D"):
-        CxLx, model = simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1)
-    aprint(f"Model = {model}")
+        CxLx, model, ratios = simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1)
+    aprint(f"model = {model}, ratios={ratios}")
 
     with asection("to_numpy"):
         CxLx = Backend.to_numpy(CxLx)
