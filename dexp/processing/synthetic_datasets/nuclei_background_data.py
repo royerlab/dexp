@@ -15,6 +15,7 @@ def generate_nuclei_background_data(length_xy=320,
                                     background_scale=0.5,
                                     independent_haze=False,
                                     sphere: bool = False,
+                                    radius: float = 0.8,
                                     add_offset=True,
                                     dtype=numpy.float16,
                                     internal_dtype=numpy.float16):
@@ -67,7 +68,7 @@ def generate_nuclei_background_data(length_xy=320,
             z = xp.linspace(-1, 1, num=lz)
             xx, yy, zz = numpy.meshgrid(x, y, z, sparse=True)
             distance = xp.sqrt(xx ** 2 + yy ** 2 + zz ** 2)
-            mask = distance < 0.8
+            mask = distance < radius
             # f = 0.5*(1 + level**3 / (1 + xp.absolute(level)**3))
 
             image_gt *= mask

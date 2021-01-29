@@ -4,8 +4,10 @@ from matplotlib.cm import get_cmap
 from matplotlib.colors import LinearSegmentedColormap
 
 from dexp.processing.backends.backend import Backend
+from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.render.colormap import rgb_colormap
+from dexp.processing.utils.center_of_mass import center_of_mass
 from dexp.processing.utils.normalise import normalise_functions
 
 
@@ -19,6 +21,7 @@ def rgb_project(image,
                 cmap: Union[str, Callable] = None,
                 attenuation_filtering: float = 4,
                 depth_gamma: float = 1,
+                depth_stabilisation: bool = False,
                 rgb_gamma: float = 1,
                 internal_dtype=None):
     """
@@ -40,6 +43,7 @@ def rgb_project(image,
     attenuation_filtering: standard deviation of the gaussian filter used to preprocess the image for the purpose of computing the attenuation map.
     Important: this does not affect sharpness of the final image, it only affects the sharpness of the attenuation itself.
     depth_gamma: Gamma correction applied to the stack depth to accentuate (depth_gamma < 1) color variations with depth at the center of the stack.
+    depth_stabilisation: Uses the center of mass calculation to shift the center of the depth color map to teh center of mass of the image content.
     rgb_gamma: Gamma correction applied to the resulting RGB image.
     internal_dtype : dtype for internal computation
 
@@ -124,13 +128,15 @@ def rgb_project(image,
         # apply color map, this is just the chroma-coding of depth
         norm_factor = xp.array(1.0 / float(image.shape[axis] - 1)).astype(internal_dtype, copy=False)
         normalised_depth = norm_factor * indices
+
+        if depth_stabilisation:
+            com = center_of_mass(image)
+            delta = (com[axis] / image.shape[axis]) - 0.5
+            normalised_depth -= delta
+
         if depth_gamma != 1.0:
             # this could be made faster, but does it matter (those are 2D images)
-            normalised_depth *= 2
-            normalised_depth -= 1
-            normalised_depth = xp.sign(normalised_depth) * (xp.absolute(normalised_depth) ** depth_gamma)
-            normalised_depth += 1
-            normalised_depth *= 0.5
+            normalised_depth = _apply_depth_gamma(normalised_depth, depth_gamma)
         projection = rgb_colormap(normalised_depth, cmap=cmap, bytes=False)
 
         # Next we multiply the chroma-code with the intensity of the corresponding voxel:
@@ -145,3 +151,34 @@ def rgb_project(image,
     projection = (projection * 255).astype(xp.uint8, copy=False)
 
     return projection
+
+
+
+
+
+def _apply_depth_gamma(depth_map, gamma):
+
+    if type(Backend.current()) is CupyBackend:
+        import cupy
+
+        @cupy.fuse
+        def fun(depth_map, gamma):
+            depth_map *= 2
+            depth_map -= 1
+            depth_map = cupy.sign(depth_map) * (cupy.absolute(depth_map) ** gamma)
+            depth_map += 1
+            depth_map *= 0.5
+            return depth_map
+
+        return fun(depth_map, gamma)
+
+    else:
+
+        xp = Backend.get_xp_module()
+        depth_map *= 2
+        depth_map -= 1
+        depth_map = xp.sign(depth_map) * (xp.absolute(depth_map) ** gamma)
+        depth_map += 1
+        depth_map *= 0.5
+        return depth_map
+

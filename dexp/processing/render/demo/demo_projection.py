@@ -17,18 +17,23 @@ def demo_projection_numpy():
 def demo_projection_cupy():
     try:
         with CupyBackend():
-            demo_projection(length_xy=512)
+            demo_projection(length_xy=320)
     except (ModuleNotFoundError, NotImplementedError):
         print("Cupy module not found! ignored!")
 
 
 def demo_projection(length_xy=120):
+
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
+
     with asection("generate data"):
         _, _, image = generate_nuclei_background_data(add_noise=False,
                                                       length_xy=length_xy,
                                                       length_z_factor=1,
                                                       background_stength=0.001,
                                                       sphere=True,
+                                                      radius=0.7,
                                                       zoom=2,
                                                       dtype=numpy.uint16)
 
@@ -45,7 +50,8 @@ def demo_projection(length_xy=120):
         color_max_projection = rgb_project(image,
                                            mode='colormax',
                                            attenuation=0.05,
-                                           cmap='turbo')
+                                           cmap='turbo',
+                                           depth_stabilisation=True)
 
     with asection("color_max_projection_dg"):
         color_max_projection_dg = rgb_project(image,
@@ -61,9 +67,18 @@ def demo_projection(length_xy=120):
                                                   cmap='turbo',
                                                   dir=+1)
 
-    projection = Backend.to_numpy(color_max_projection)
-    png_image = Image.fromarray(projection)
-    png_image.save('test.png')
+    image_shifted = sp.ndimage.shift(image, shift=(50, 70, -23), order=1, mode='nearest')
+
+    with asection("color_max_projection_stabilised"):
+        color_max_projection_stabilised = rgb_project(image_shifted,
+                                                      mode='colormax',
+                                                      attenuation=0.05,
+                                                      cmap='turbo',
+                                                      depth_stabilisation=True)
+
+    # projection = Backend.to_numpy(color_max_projection)
+    # png_image = Image.fromarray(projection)
+    # png_image.save('test.png')
 
     from napari import Viewer, gui_qt
     with gui_qt():
@@ -75,6 +90,7 @@ def demo_projection(length_xy=120):
         viewer.add_image(_c(max_projection), name='max_projection', rgb=True)
         viewer.add_image(_c(max_projection_att), name='max_projection_att', rgb=True)
         viewer.add_image(_c(color_max_projection), name='color_max_projection', rgb=True)
+        viewer.add_image(_c(color_max_projection_stabilised), name='color_max_projection_stabilised', rgb=True)
         viewer.add_image(_c(color_max_projection_dg), name='color_max_projection_dg', rgb=True)
         viewer.add_image(_c(color_max_projection_bottom), name='color_max_projection_bottom', rgb=True)
 
