@@ -36,6 +36,7 @@ def dataset_fuse(dataset,
                  warpreg_num_iterations,
                  min_confidence,
                  max_change,
+                 huge_dataset,
                  workers,
                  workersbackend,
                  devices,
@@ -106,7 +107,8 @@ def dataset_fuse(dataset,
                                                                                  fusion_bias_strength_i=fusion_bias_strength_i,
                                                                                  fusion_bias_strength_d=fusion_bias_strength_d,
                                                                                  dehaze_size=dehaze_size,
-                                                                                 dark_denoise_threshold=dark_denoise_threshold)
+                                                                                 dark_denoise_threshold=dark_denoise_threshold,
+                                                                                 huge_dataset_mode=huge_dataset)
                 elif microscope == 'mvsols':
                     metadata = dataset.get_metadata()
                     angle = metadata['angle']
@@ -133,7 +135,8 @@ def dataset_fuse(dataset,
                                                                                dark_denoise_threshold=dark_denoise_threshold,
                                                                                angle=angle,
                                                                                dx=res,
-                                                                               dz=dz)
+                                                                               dz=dz,
+                                                                               huge_dataset_mode=huge_dataset)
 
                 with asection(f"Moving array from backend to numpy."):
                     tp_array = Backend.to_numpy(tp_array, dtype=dtype, force_copy=False)

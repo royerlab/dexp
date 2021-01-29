@@ -50,7 +50,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     dark_denoise_threshold: int = 0,
                     dark_denoise_size: int = 9,
                     butterworth_filter_cutoff: float = 1,
-                    huge_dataset_mode: bool = True,
+                    huge_dataset_mode: bool = False,
                     internal_dtype=numpy.float16) -> Tuple:
     """
 

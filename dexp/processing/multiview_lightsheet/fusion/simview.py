@@ -1,3 +1,4 @@
+import gc
 from typing import Sequence
 
 import numpy
@@ -40,6 +41,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                       dark_denoise_size: int = 9,
                       butterworth_filter_cutoff: float = 1,
                       flip_camera1: bool = True,
+                      huge_dataset_mode: bool = False,
                       internal_dtype=numpy.float16):
     """
 
@@ -103,6 +105,8 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
     frequencies below without any change (that's the point of Butterworth filtering).
     WARNING: Butterworth filtering is currently very slow...
 
+    huge_dataset_mode: optimises memory allocation at the detriment of processing speed to tackle really huge datasets.
+
     internal_dtype : internal dtype
 
 
@@ -127,13 +131,13 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
     with asection(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):
         C0L0 = Backend.to_backend(C0L0, dtype=internal_dtype, force_copy=False)
         C0L1 = Backend.to_backend(C0L1, dtype=internal_dtype, force_copy=False)
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
     if clip_too_high > 0:
         with asection(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
             C0L0 = xp.clip(C0L0, a_min=0, a_max=clip_too_high, out=C0L0)
             C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     if equalise:
         with asection(f"Equalise intensity of C0L0 relative to C0L1 ..."):
@@ -141,8 +145,8 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                                                     zero_level=zero_level,
                                                     correction_ratio=equalisation_ratios[0],
                                                     copy=False)
-            # Backend.current().clear_memory_pool()
             aprint(f"Equalisation ratio: {ratio0}")
+            Backend.current().clear_memory_pool()
 
     if dehaze_size > 0 and dehaze_before_fusion:
         with asection(f"Dehaze C0L0 and C0L1 ..."):
@@ -168,7 +172,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
             #
             # C0L0 = C0L0_dh
             # C0L1 = C0L1_dh
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     with asection(f"Fuse illumination views C0L0 and C0L1..."):
         C0lx = fuse_illumination_views(C0L0, C0L1,
@@ -188,7 +192,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
 
         del C0L0
         del C0L1
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
     with asection(f"Moving C1L0 and C1L1 to backend storage and converting to {internal_dtype}..."):
         C1L0 = Backend.to_backend(C1L0, dtype=internal_dtype, force_copy=False)
@@ -197,13 +201,13 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
         C1L1 = Backend.to_backend(C1L1, dtype=internal_dtype, force_copy=False)
         if flip_camera1:
             C1L1 = xp.flip(C1L1, -1)
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
     if clip_too_high > 0:
         with asection(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
             C1L0 = xp.clip(C1L0, a_min=0, a_max=clip_too_high, out=C1L0)
             C1L1 = xp.clip(C1L1, a_min=0, a_max=clip_too_high, out=C1L1)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     if equalise:
         with asection(f"Equalise intensity of C1L0 relative to C1L1 ..."):
@@ -211,7 +215,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                                                     zero_level=zero_level,
                                                     correction_ratio=equalisation_ratios[1],
                                                     copy=False)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
             aprint(f"Equalisation ratio: {ratio1}")
 
     if dehaze_size > 0 and dehaze_before_fusion:
@@ -224,7 +228,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                           size=dehaze_size,
                           minimal_zero_level=0,
                           correct_max_level=True)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     with asection(f"Fuse illumination views C1L0 and C1L1..."):
         C1Lx = fuse_illumination_views(C1L0, C1L1,
@@ -244,7 +248,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
 
         del C1L0
         del C1L1
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
     if equalise:
         with asection(f"Equalise intensity of C0lx relative to C1Lx ..."):
@@ -252,8 +256,8 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                                                     zero_level=0,
                                                     correction_ratio=equalisation_ratios[2],
                                                     copy=False)
-            # Backend.current().clear_memory_pool()
             aprint(f"Equalisation ratio: {ratioc}")
+            Backend.current().clear_memory_pool()
 
     with asection(f"Register_stacks C0lx and C1Lx ..."):
         C0lx, C1Lx, registration_model = register_detection_views(C0lx, C1Lx,
@@ -264,7 +268,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                                                                   min_confidence=registration_min_confidence,
                                                                   max_change=registration_max_change,
                                                                   crop_factor_along_z=registration_crop_factor_along_z)
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
     with asection(f"Fuse detection views C0lx and C1Lx..."):
         CxLx = fuse_detection_views(C0lx, C1Lx,
@@ -273,7 +277,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                                     bias_strength=fusion_bias_strength_d)
         del C0lx
         del C1Lx
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
     if dehaze_size > 0 and not dehaze_before_fusion:
         with asection(f"Dehaze CxLx ..."):
@@ -281,14 +285,14 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
                           size=dehaze_size,
                           minimal_zero_level=0,
                           correct_max_level=True)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     if dark_denoise_threshold > 0:
         with asection(f"Denoise dark regions of CxLx..."):
             CxLx = clean_dark_regions(CxLx,
                                       size=dark_denoise_size,
                                       threshold=dark_denoise_threshold)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     # from napari import gui_qt, Viewer
     # with gui_qt():
@@ -303,16 +307,16 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
         with asection(f"Filter output using a Butterworth filter"):
             cutoffs = (butterworth_filter_cutoff,) * CxLx.ndim
             CxLx = butterworth_filter(CxLx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
-            # Backend.current().clear_memory_pool()
+            Backend.current().clear_memory_pool()
 
     with asection(f"Converting back to original dtype..."):
         if original_dtype is numpy.uint16:
             CxLx = xp.clip(CxLx, 0, None, out=CxLx)
         CxLx = CxLx.astype(dtype=original_dtype, copy=False)
-        # Backend.current().clear_memory_pool()
+        Backend.current().clear_memory_pool()
 
-    # gc.collect()
-    # Backend.current().clear_memory_pool()
+    gc.collect()
+    Backend.current().clear_memory_pool()
 
     # equalisation ratios found:
     if equalisation_ratios is None:
