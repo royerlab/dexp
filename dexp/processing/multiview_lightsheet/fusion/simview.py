@@ -11,9 +11,9 @@ from dexp.processing.filters.butterworth_filter import butterworth_filter
 from dexp.processing.fusion.dct_fusion import fuse_dct_nd
 from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
-from dexp.processing.registration.model.pairwise_reg_model import PairwiseRegistrationModel
-from dexp.processing.registration.reg_trans_nd import register_translation_nd
-from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
+from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
+from dexp.processing.registration.translation_nd import register_translation_nd
+from dexp.processing.registration.translation_nd_proj import register_translation_maxproj_nd
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
 
@@ -395,5 +395,5 @@ def register_detection_views(C0Lx, C1Lx,
             model = provided_model
 
     aprint(f"Applying registration model: {model}, overall confidence: {model.overall_confidence()}")
-    C0Lx_reg, C1Lx_reg = model.apply(C0Lx, C1Lx)
+    C0Lx_reg, C1Lx_reg = model.apply_pair(C0Lx, C1Lx)
     return C0Lx_reg, C1Lx_reg, model

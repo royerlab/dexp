@@ -82,7 +82,7 @@ def dataset_isonet(dataset: BaseDataset,
                     tp_array = dehazing(tp_array, mode='hybrid', min=0, max=1024, margin_pad=False)
 
                 aprint("Applying IsoNet to image...")
-                tp_array = isonet.apply(tp_array)
+                tp_array = isonet.apply_pair(tp_array)
 
                 aprint(f'Result: image of shape: {tp_array.shape}, dtype: {tp_array.dtype} ')
 

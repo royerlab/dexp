@@ -2,7 +2,7 @@ from skimage.registration import phase_cross_correlation
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
-from dexp.processing.registration.reg_trans_nd import register_translation_nd
+from dexp.processing.registration.translation_nd import register_translation_nd
 
 
 def register_translation_2d_skimage(image_a, image_b,

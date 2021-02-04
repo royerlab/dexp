@@ -4,7 +4,7 @@ from arbol import section, aprint
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
-from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
+from dexp.processing.registration.translation_nd_proj import register_translation_maxproj_nd
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
 
 

@@ -35,7 +35,7 @@ isonet = IsoNet()
 #     isonet.train(max_epochs=40)
 
 with timeit("Evaluation:"):
-    restored = isonet.apply(image_crop, subsampling=subsampling, batch_size=1)
+    restored = isonet.apply_pair(image_crop, subsampling=subsampling, batch_size=1)
 
 print(restored.shape)
 

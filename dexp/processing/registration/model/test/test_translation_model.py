@@ -31,12 +31,12 @@ def _test_translation_model(length_xy=128):
 
     model = TranslationRegistrationModel(shift_vector=(-1, -5, 13), integral=True)
 
-    image1_reg, image2_reg = model.apply(image1, image2, pad=False)
+    image1_reg, image2_reg = model.apply_pair(image1, image2, pad=False)
     dumb_fusion = xp.maximum(image1_reg, image2_reg)
     average_error = xp.mean(xp.absolute(dumb_fusion - image_gt))
     print(f"average_error = {average_error}")
 
-    image1_reg_pad, image2_reg_pad = model.apply(image1, image2, pad=True)
+    image1_reg_pad, image2_reg_pad = model.apply_pair(image1, image2, pad=True)
     image1_reg_pad = image1_reg_pad[0:length_xy // 2, 0:length_xy, 0:length_xy]
     image2_reg_pad = image2_reg_pad[0:length_xy // 2, 0:length_xy, 0:length_xy]
     dumb_fusion_pad = xp.maximum(image1_reg_pad, image2_reg_pad)

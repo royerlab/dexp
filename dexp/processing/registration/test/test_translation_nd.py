@@ -1,7 +1,7 @@
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.reg_trans_nd import register_translation_nd
+from dexp.processing.registration.translation_nd import register_translation_nd
 
 
 def test_register_translation_nd_numpy():

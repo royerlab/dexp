@@ -38,7 +38,7 @@ def warp_model(length_xy=320, warp_grid_size=3):
 
     model = WarpRegistrationModel(vector_field=-vector_field)
 
-    image, image_reg = model.apply(image, image_warped)
+    image, image_reg = model.apply_pair(image, image_warped)
 
     from napari import Viewer, gui_qt
     with gui_qt():

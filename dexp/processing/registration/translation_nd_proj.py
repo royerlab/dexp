@@ -2,7 +2,7 @@ from typing import Callable
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
-from dexp.processing.registration.reg_trans_2d import register_translation_2d_dexp
+from dexp.processing.registration.translation_2d import register_translation_2d_dexp
 
 
 def register_translation_maxproj_nd(image_a, image_b,
@@ -24,6 +24,7 @@ def register_translation_maxproj_nd(image_a, image_b,
     register_translation_2d : 2d registration method to use
     gamma : gamma correction on max projections as a preprocessing before phase correlation.
     log_compression : Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)
+    drop_worse: drops the worst 2D registrations before combining the projection registration vectors to a full nD registration vector.
     force_numpy : Forces output model to be allocated with numpy arrays.
     internal_dtype : Internal dtype for computation
 
@@ -122,7 +123,7 @@ def register_translation_maxproj_nd(image_a, image_b,
         #     viewer.add_image(_c(iap2), name='iap2')
         #     viewer.add_image(_c(ibp2), name='ibp2')
     else:
-        raise ValueError(f'Unsupported number of dimensions ({image_a.ndim}) for registartion.')
+        raise ValueError(f'Unsupported number of dimensions ({image_a.ndim}) for registration.')
 
     model = TranslationRegistrationModel(shift_vector=shifts, confidence=confidence, force_numpy=force_numpy)
 

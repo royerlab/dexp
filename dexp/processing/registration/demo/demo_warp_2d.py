@@ -6,7 +6,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.reg_warp_nd import register_warp_nd
+from dexp.processing.registration.warp_nd import register_warp_nd
 
 
 def demo_register_warp_2d_numpy():
@@ -49,7 +49,7 @@ def _register_warp_2d(warp_grid_size=4, reg_grid_size=8, display=True):
         aprint(f"vector field found: {vector_field}")
 
     with asection("unwarp"):
-        _, unwarped = model.apply(image, warped, vector_field_upsampling=4)
+        _, unwarped = model.apply_pair(image, warped, vector_field_upsampling=4)
 
     if display:
         from napari import Viewer, gui_qt

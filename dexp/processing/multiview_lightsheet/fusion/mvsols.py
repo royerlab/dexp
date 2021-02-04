@@ -13,10 +13,10 @@ from dexp.processing.fusion.dct_fusion import fuse_dct_nd
 from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
 from dexp.processing.multiview_lightsheet.fusion.simview import fuse_illumination_views
-from dexp.processing.registration.model.pairwise_reg_model import PairwiseRegistrationModel
-from dexp.processing.registration.reg_trans_nd import register_translation_nd
-from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
-from dexp.processing.registration.reg_warp_multiscale_nd import register_warp_multiscale_nd
+from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
+from dexp.processing.registration.translation_nd import register_translation_nd
+from dexp.processing.registration.translation_nd_proj import register_translation_maxproj_nd
+from dexp.processing.registration.warp_multiscale_nd import register_warp_multiscale_nd
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
 
@@ -165,7 +165,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     if z_pad > 0:
         with asection(f"Pad C0L0 and C0L1 along scanning direction:"):
-
             C0L0[0] = sp.ndimage.gaussian_filter(C0L0[0], sigma=4)
             C0L0[-1] = sp.ndimage.gaussian_filter(C0L0[-1], sigma=4)
             C0L0 = xp.pad(C0L0, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode='edge')
@@ -178,7 +177,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
     if z_apodise > 0:
         with asection(f"apodise C0L0 and C0L1 along scanning direction:"):
-
             depth = C0L0.shape[0]
             apodise_left = xp.linspace(0, 1, num=z_apodise, dtype=internal_dtype)
             apodise_left **= 3
@@ -194,7 +192,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
 
             del apodise, apodise_left, apodise_right
             Backend.current().clear_memory_pool()
-
 
     # from napari import gui_qt, Viewer
     # with gui_qt():
@@ -265,7 +262,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                 model = registration_model
 
         aprint(f"Applying registration model: {model}, overall confidence: {model.overall_confidence()}")
-        C0L0, C0L1 = model.apply(C0L0, C0L1)
+        C0L0, C0L1 = model.apply_pair(C0L0, C0L1)
         Backend.current().clear_memory_pool()
 
     # from napari import Viewer, gui_qt

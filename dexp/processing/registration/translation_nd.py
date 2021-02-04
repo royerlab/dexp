@@ -1,6 +1,7 @@
 from functools import reduce
 
 import numpy
+from arbol import aprint
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -25,6 +26,7 @@ def register_translation_nd(image_a,
     Registers two nD images using just a translation-only model.
     This uses a full nD robust phase correlation based approach.
 
+    Note: it is recommended to normalise the images to [0, 1] range before registering them, otherwise there might be precision and overflow issues.
 
     Parameters
     ----------

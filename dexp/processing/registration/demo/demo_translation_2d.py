@@ -5,7 +5,7 @@ from skimage.data import camera
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.reg_trans_nd import register_translation_nd
+from dexp.processing.registration.translation_nd import register_translation_nd
 
 
 def demo_register_translation_2d_numpy():
@@ -39,9 +39,9 @@ def _register_translation_2d(shift=(13, -5), display=True):
         aprint(f"model: {model}")
 
     with asection("shift back"):
-        _, unshifted = model.apply(image, shifted)
-        image1_reg, image2_reg = model.apply(image, shifted, pad=False)
-        image1_reg_pad, image2_reg_pad = model.apply(image, shifted, pad=True)
+        _, unshifted = model.apply_pair(image, shifted)
+        image1_reg, image2_reg = model.apply_pair(image, shifted, pad=False)
+        image1_reg_pad, image2_reg_pad = model.apply_pair(image, shifted, pad=True)
 
     if display:
         from napari import Viewer, gui_qt

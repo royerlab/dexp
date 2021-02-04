@@ -1,34 +1,37 @@
 import numpy
 from arbol import aprint, asection
-from skimage.data import camera
+from scipy.ndimage import gaussian_filter
+from skimage.data import binary_blobs
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.reg_warp_multiscale_nd import register_warp_multiscale_nd
+from dexp.processing.registration.warp_nd import register_warp_nd
 
 
-def demo_register_warp_2d_ms_numpy():
+def demo_register_warp_2d_blobs_numpy():
     with NumpyBackend():
-        _register_warp_2d_ms()
+        _register_warp_2d_blobs()
 
 
-def demo_register_warp_2d_ms_cupy():
+def demo_register_warp_2D_blobs_cupy():
     try:
         with CupyBackend():
-            _register_warp_2d_ms()
+            _register_warp_2d_blobs()
     except ModuleNotFoundError:
         aprint("Cupy module not found! demo ignored")
 
 
-def _register_warp_2d_ms(warp_grid_size=4, reg_grid_size=8, display=True):
+def _register_warp_2d_blobs(length_xy=512, warp_grid_size=4, reg_grid_size=8, display=True):
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
     with asection("generate dataset"):
-        image = camera().astype(numpy.float32)
-        image = image[0:510, 0:509]
+        image = binary_blobs(length=length_xy, seed=1, n_dim=2, blob_size_fraction=0.04, volume_fraction=0.05)
+        image = image.astype(numpy.float32)
+        image = gaussian_filter(image, sigma=4)
+        image = image[0:length_xy - 3, 0:length_xy - 5]
         image = Backend.to_backend(image)
 
     with asection("warp"):
@@ -38,19 +41,18 @@ def _register_warp_2d_ms(warp_grid_size=4, reg_grid_size=8, display=True):
         aprint(f"vector field applied: {vector_field}")
 
     with asection("add noise"):
-        image += xp.random.uniform(0, 20, size=image.shape)
-        warped += xp.random.uniform(0, 20, size=warped.shape)
+        image += xp.random.uniform(0, 0.1, size=image.shape)
+        warped += xp.random.uniform(0, 0.1, size=warped.shape)
 
-    with asection("register_warp_multiscale_nd"):
-        model = register_warp_multiscale_nd(image, warped,
-                                            num_iterations=5,
-                                            confidence_threshold=0.3,
-                                            edge_filter=False)
-
-        aprint(f"vector field found: {model.vector_field}")
+    with asection("register_warp_nd"):
+        chunks = tuple(s // reg_grid_size for s in image.shape)
+        margins = tuple(c // 2 for c in chunks)
+        model = register_warp_nd(image, warped, chunks=chunks, margins=margins)
+        model.clean()
+        aprint(f"vector field found: {vector_field}")
 
     with asection("unwarp"):
-        _, unwarped = model.apply(image, warped, vector_field_upsampling=4)
+        _, unwarped = model.apply_pair(image, warped, vector_field_upsampling=4)
 
     if display:
         from napari import Viewer, gui_qt
@@ -67,5 +69,5 @@ def _register_warp_2d_ms(warp_grid_size=4, reg_grid_size=8, display=True):
 
 
 if __name__ == "__main__":
-    demo_register_warp_2d_ms_cupy()
+    demo_register_warp_2D_blobs_cupy()
     # demo_register_warp_2D_numpy()

@@ -1,11 +1,11 @@
 import json
-from typing import Any, Tuple
+from typing import Tuple
 
 import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.model.pairwise_reg_model import PairwiseRegistrationModel
+from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
 
 
 class WarpRegistrationModel(PairwiseRegistrationModel):
@@ -52,6 +52,9 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         self.vector_field = Backend.to_numpy(self.vector_field)
         self.confidence = Backend.to_numpy(self.confidence)
         return self
+
+    def padding(self):
+        return tuple((0, 0) for _ in range(self.confidence.ndim))
 
     def overall_confidence(self) -> float:
         return float(self.median_confidence())
@@ -103,34 +106,31 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         self.confidence = confidence
 
     def apply(self,
-              image_a, image_b,
+              image,
+              pad: bool = False,
               vector_field_upsampling: int = 2,
               vector_field_upsampling_order: int = 1,
               mode: str = 'border',
-              internal_dtype=None) -> Tuple[Any, Any]:
-        """
+              internal_dtype=None
+              ) -> 'Array':
 
-        Parameters
-        ----------
-        image_b
-        vector_field_upsampling
-        vector_field_upsampling_order
-        mode
-        internal_dtype
+        image_warped = warp(image=image,
+                            vector_field=self.vector_field,
+                            vector_field_upsampling=vector_field_upsampling,
+                            vector_field_upsampling_order=vector_field_upsampling_order,
+                            mode=mode,
+                            internal_dtype=internal_dtype)
 
-        Returns
-        -------
+        return image_warped
 
-        """
+    def apply_pair(self,
+                   image_a, image_b,
+                   vector_field_upsampling: int = 2,
+                   vector_field_upsampling_order: int = 1,
+                   mode: str = 'border',
+                   internal_dtype=None) -> Tuple['Array', 'Array']:
 
-        image_b_warped = warp(image=image_b,
-                              vector_field=self.vector_field,
-                              vector_field_upsampling=vector_field_upsampling,
-                              vector_field_upsampling_order=vector_field_upsampling_order,
-                              mode=mode,
-                              internal_dtype=internal_dtype)
-
-        return image_a, image_b_warped
+        return image_a, self.apply(image_b)
 
     def median_confidence(self):
         """

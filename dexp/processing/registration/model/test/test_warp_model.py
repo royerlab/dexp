@@ -42,7 +42,7 @@ def _test_warp_model(length_xy=128, warp_grid_size=3):
 
     model = WarpRegistrationModel(vector_field=vector_field, confidence=confidence)
 
-    image, image_reg = model.apply(image, image_warped)
+    image, image_reg = model.apply_pair(image, image_warped)
 
     warped_error = xp.mean(xp.absolute(image - image_warped))
     dewarped_error = xp.mean(xp.absolute(image - image_reg))

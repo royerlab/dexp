@@ -4,7 +4,7 @@ from arbol import asection, aprint, section
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
-from dexp.processing.registration.reg_warp_nd import register_warp_nd
+from dexp.processing.registration.warp_nd import register_warp_nd
 
 
 @section("register_warp_multiscale_nd")
@@ -65,7 +65,7 @@ def register_warp_multiscale_nd(image_a,
             if vector_field is not None:
                 with asection(f"Applying transform from previous iteration (save_memory={save_memory})"):
                     model = WarpRegistrationModel(vector_field, force_numpy=force_numpy)
-                    _, image = model.apply(image_a, image_b)
+                    _, image = model.apply_pair(image_a, image_b)
                     if save_memory:
                         image = Backend.to_numpy(image)
             else:

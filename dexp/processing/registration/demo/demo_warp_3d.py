@@ -6,7 +6,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.reg_warp_nd import register_warp_nd
+from dexp.processing.registration.warp_nd import register_warp_nd
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 
 
@@ -56,7 +56,7 @@ def _register_warp_3d(length_xy=256, warp_grid_size=3, reg_grid_size=6, display=
         # print(f"vector field found: {vector_field}")
 
     with asection("unwarp"):
-        _, unwarped = model.apply(image, warped, vector_field_upsampling=4)
+        _, unwarped = model.apply_pair(image, warped, vector_field_upsampling=4)
 
     vector_field = scipy.ndimage.zoom(vector_field, zoom=(2, 2, 2, 1), order=1)
 

@@ -27,8 +27,8 @@ def register_translation_nD(length_xy=320):
 
     model = TranslationRegistrationModel(shift_vector=(-1, -5, 13))
 
-    image1_reg, image2_reg = model.apply(image1, image2, pad=False)
-    image1_reg_pad, image2_reg_pad = model.apply(image1, image2, pad=True)
+    image1_reg, image2_reg = model.apply_pair(image1, image2, pad=False)
+    image1_reg_pad, image2_reg_pad = model.apply_pair(image1, image2, pad=True)
 
     from napari import Viewer, gui_qt
     with gui_qt():

@@ -3,7 +3,7 @@ from arbol import aprint, asection
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.reg_trans_nd_maxproj import register_translation_maxproj_nd
+from dexp.processing.registration.translation_nd_proj import register_translation_maxproj_nd
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 
 
@@ -39,8 +39,8 @@ def _register_translation_3d_maxproj_diff(length_xy=256, display=True):
         aprint(f"model: {model}")
 
     with asection("shift back"):
-        image1_reg, image2_reg = model.apply(image1, image2, pad=False)
-        image1_reg_pad, image2_reg_pad = model.apply(image1, image2, pad=True)
+        image1_reg, image2_reg = model.apply_pair(image1, image2, pad=False)
+        image1_reg_pad, image2_reg_pad = model.apply_pair(image1, image2, pad=True)
 
     if display:
         from napari import Viewer, gui_qt

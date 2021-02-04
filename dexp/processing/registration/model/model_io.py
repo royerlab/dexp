@@ -4,7 +4,8 @@ from typing import Sequence
 from arbol import asection
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.registration.model.pairwise_reg_model import PairwiseRegistrationModel
+from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
+from dexp.processing.registration.model.sequence_registration_model import SequenceRegistrationModel
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
 
@@ -19,6 +20,11 @@ def from_json(json_str: str):
     elif parsed_model['type'] == 'warp':
         model = WarpRegistrationModel(vector_field=xp.asarray(parsed_model['vector_field']),
                                       confidence=xp.asarray(parsed_model['confidence']))
+
+    elif parsed_model['type'] == 'translation_sequence':
+        model_list_json = parsed_model['model_list']
+        model_list = list(from_json(model_json) for model_json in model_list_json)
+        model = SequenceRegistrationModel(model_list=model_list)
 
     return model
 
