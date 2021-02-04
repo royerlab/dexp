@@ -1,9 +1,10 @@
-from typing import Tuple
+from typing import Tuple, List
 
 from dask.array import Array
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.sequence_registration_model import SequenceRegistrationModel
+from dexp.processing.utils.projection_generator import projection_generator
 
 
 def sequence_stabilisation_proj(image: 'Array',
@@ -32,8 +33,12 @@ def sequence_stabilisation_proj(image: 'Array',
 
     # TODO: compute all projections and call method below...
 
+    projections = projection_generator(image)
 
-def sequence_stabilisation_proj_(projections: dict[Tuple[int, int], 'Array'],
+
+
+
+def sequence_stabilisation_proj_(projections: List[Tuple],
                                  axis: int = 0,
                                  **kwargs
                                  ) -> SequenceRegistrationModel:

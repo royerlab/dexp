@@ -1,4 +1,5 @@
 from dexp.processing.backends.backend import Backend
+from dexp.processing.utils.projection_generator import projection_generator
 
 
 def center_of_mass(image,
@@ -38,27 +39,15 @@ def center_of_mass(image,
         com = xp.zeros((ndim,), dtype=xp.float32)
         count = xp.zeros((ndim,), dtype=xp.float32)
 
-        for u in range(ndim):
-            for v in range(ndim):
-                if u < v:
-                    proj_axis = tuple(set(range(ndim)).difference({u, v}))
-                    if projection_type == 'mean':
-                        projected_image = xp.mean(image, axis=proj_axis)
-                    elif projection_type == 'max':
-                        projected_image = xp.max(image, axis=proj_axis)
-                    elif projection_type == 'min':
-                        projected_image = xp.min(image, axis=proj_axis)
-                    else:
-                        raise ValueError(f"Unknown projection mode: {projection_type}")
+        for u, v, projected_image in projection_generator(image):
+            if remove_offset:
+                projected_image = _remove_offset(projected_image, offset_mode, xp)
 
-                    if remove_offset:
-                        projected_image = _remove_offset(projected_image, offset_mode, xp)
-
-                    du, dv = sp.ndimage.center_of_mass(projected_image)
-                    com[u] += du
-                    com[v] += dv
-                    count[u] += 1
-                    count[v] += 1
+            du, dv = sp.ndimage.center_of_mass(projected_image)
+            com[u] += du
+            com[v] += dv
+            count[u] += 1
+            count[v] += 1
 
         com /= count
 

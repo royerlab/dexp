@@ -119,6 +119,17 @@ def rgb_project(image,
         # apply color map:
         projection = rgb_colormap(projection, cmap=cmap, bytes=False)
 
+    elif mode == 'color':
+
+        depth = image.shape[axis]
+        depth_values = xp.linspace(0, 1, num=depth)
+        depth_values = xp.expand_dims(depth_values, axis=tuple(range(image.ndim-1)))
+        depth_values = xp.moveaxis(depth_values, -1, axis)
+        color_ramp = rgb_colormap(depth_values, cmap=cmap, bytes=False)
+        color_image = color_ramp * image[..., xp.newaxis]
+
+        projection = xp.max(color_image, axis=axis)
+
     elif mode == 'colormax':
 
         # argmax:
