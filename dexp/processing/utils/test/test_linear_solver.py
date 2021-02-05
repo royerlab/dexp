@@ -76,26 +76,26 @@ def test_linear_solver_large():
         aprint(_run_solver(w=1130, h=1121, order_error=1, order_reg=1, alpha_reg=0.1, display=True, limited=True))
 
 
-def test_linear_solver_compare():
-    n = 16
-
-    mean_error = numpy.mean(list(_run_solver(order_error=2, alpha_reg=0) for _ in range(n)))
-    aprint(f"L2 mean_error={mean_error}")
-
-    mean_error = numpy.mean(list(_run_solver(order_error=1, alpha_reg=0) for _ in range(n)))
-    aprint(f"L1 mean_error={mean_error}")
-
-    mean_error = numpy.mean(list(_run_solver(order_error=0.5, alpha_reg=0) for _ in range(n)))
-    aprint(f"L0.5 mean_error={mean_error}")
-
-    mean_error = numpy.mean(list(_run_solver(order_error=2, order_reg=2, alpha_reg=0.1) for _ in range(n)))
-    aprint(f"L2L2 mean_error={mean_error}")
-
-    mean_error = numpy.mean(list(_run_solver(order_error=2, order_reg=1, alpha_reg=0.1) for _ in range(n)))
-    aprint(f"L2L1 mean_error={mean_error}")
-
-    mean_error = numpy.mean(list(_run_solver(order_error=1, order_reg=1, alpha_reg=0.1) for _ in range(n)))
-    aprint(f"L1L1 mean_error={mean_error}")
-
-    mean_error = numpy.mean(list(_run_solver(order_error=1, order_reg=0.5, alpha_reg=0.1) for _ in range(n)))
-    aprint(f"L1L0.5 mean_error={mean_error}")
+# def test_linear_solver_compare():
+#     n = 16
+#
+#     mean_error = numpy.mean(list(_run_solver(order_error=2, alpha_reg=0) for _ in range(n)))
+#     aprint(f"L2 mean_error={mean_error}")
+#
+#     mean_error = numpy.mean(list(_run_solver(order_error=1, alpha_reg=0) for _ in range(n)))
+#     aprint(f"L1 mean_error={mean_error}")
+#
+#     mean_error = numpy.mean(list(_run_solver(order_error=0.5, alpha_reg=0) for _ in range(n)))
+#     aprint(f"L0.5 mean_error={mean_error}")
+#
+#     mean_error = numpy.mean(list(_run_solver(order_error=2, order_reg=2, alpha_reg=0.1) for _ in range(n)))
+#     aprint(f"L2L2 mean_error={mean_error}")
+#
+#     mean_error = numpy.mean(list(_run_solver(order_error=2, order_reg=1, alpha_reg=0.1) for _ in range(n)))
+#     aprint(f"L2L1 mean_error={mean_error}")
+#
+#     mean_error = numpy.mean(list(_run_solver(order_error=1, order_reg=1, alpha_reg=0.1) for _ in range(n)))
+#     aprint(f"L1L1 mean_error={mean_error}")
+#
+#     mean_error = numpy.mean(list(_run_solver(order_error=1, order_reg=0.5, alpha_reg=0.1) for _ in range(n)))
+#     aprint(f"L1L0.5 mean_error={mean_error}")

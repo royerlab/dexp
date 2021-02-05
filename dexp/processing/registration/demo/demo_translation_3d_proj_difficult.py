@@ -7,20 +7,20 @@ from dexp.processing.registration.translation_nd_proj import register_translatio
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 
 
-def demo_register_translation_3d_maxproj_diff_numpy():
+def demo_register_translation_3d_proj_diff_numpy():
     with NumpyBackend():
-        _register_translation_3d_maxproj_diff()
+        _register_translation_3d_proj_diff()
 
 
-def demo_register_translation_3d_maxproj_diff_cupy():
+def demo_register_translation_3d_proj_diff_cupy():
     try:
         with CupyBackend():
-            _register_translation_3d_maxproj_diff()
+            _register_translation_3d_proj_diff()
     except ModuleNotFoundError:
         aprint("Cupy module not found! demo ignored")
 
 
-def _register_translation_3d_maxproj_diff(length_xy=256, display=True):
+def _register_translation_3d_proj_diff(length_xy=256, display=True):
     with asection("generate dataset"):
         image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=False,
                                                                                            shift=(1, 5, -13),
@@ -64,5 +64,5 @@ def _register_translation_3d_maxproj_diff(length_xy=256, display=True):
 
 
 if __name__ == "__main__":
-    demo_register_translation_3d_maxproj_diff_cupy()
-    demo_register_translation_3d_maxproj_diff_numpy()
+    demo_register_translation_3d_proj_diff_cupy()
+    demo_register_translation_3d_proj_diff_numpy()

@@ -41,7 +41,7 @@ def sequence_stabilisation(image: 'Array',
 
     Returns
     -------
-    sequence registration model
+    Sequence registration model
 
     """
     xp = Backend.get_xp_module()

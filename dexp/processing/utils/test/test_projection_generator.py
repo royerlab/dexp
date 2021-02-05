@@ -1,11 +1,6 @@
-import numpy
-from arbol import asection, aprint
-
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
-from dexp.processing.utils.center_of_mass import center_of_mass
 from dexp.processing.utils.projection_generator import projection_generator
 
 
@@ -38,9 +33,3 @@ def _test_projection_generator():
 
         assert projection.shape[0] == image.shape[u]
         assert projection.shape[1] == image.shape[v]
-
-
-
-
-
-

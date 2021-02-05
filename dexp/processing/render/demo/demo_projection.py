@@ -44,11 +44,11 @@ def demo_projection(length_xy=120):
                                          mode='max',
                                          attenuation=0.05)
 
-    with asection("color_projection"):
-        color_projection = rgb_project(image,
-                                       mode='color',
-                                       attenuation=0.1,
-                                       cmap='turbo')
+    with asection("max_color_projection"):
+        max_color_projection = rgb_project(image,
+                                           mode='maxcolor',
+                                           attenuation=0.05,
+                                           cmap='turbo')
 
     with asection("color_max_projection"):
         color_max_projection = rgb_project(image,
@@ -93,7 +93,7 @@ def demo_projection(length_xy=120):
         viewer.add_image(_c(image), name='image')
         viewer.add_image(_c(max_projection), name='max_projection', rgb=True)
         viewer.add_image(_c(max_projection_att), name='max_projection_att', rgb=True)
-        viewer.add_image(_c(color_projection), name='color_projection', rgb=True)
+        viewer.add_image(_c(max_color_projection), name='max_color_projection', rgb=True)
         viewer.add_image(_c(color_max_projection), name='color_max_projection', rgb=True)
         viewer.add_image(_c(color_max_projection_stabilised), name='color_max_projection_stabilised', rgb=True)
         viewer.add_image(_c(color_max_projection_dg), name='color_max_projection_dg', rgb=True)
