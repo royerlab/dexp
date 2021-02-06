@@ -21,14 +21,16 @@ from dexp.processing.render.projection import rgb_project
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--axis', '-ax', type=int, default=0, help='Sets the projection axis: 0->Z, 1->Y, 2->X ', show_default=True)  # , help='dataset slice'
 @click.option('--dir', '-d', type=int, default=-1, help='Sets the projection direction: -1 -> top to bottom, +1 -> bottom to top.', show_default=True)  # , help='dataset slice'
-@click.option('--mode', '-m', type=str, default='colormax', help='Sets the projection mode: ‘max’: classic max projection, ‘colormax’: color max projection, i.e. color codes for depth. ', show_default=True)  # , help='dataset slice'
+@click.option('--mode', '-m', type=str, default='colormax',
+              help='Sets the projection mode: ‘max’: classic max projection, ‘colormax’: color max projection, i.e. color codes for depth, ‘maxcolor’ same as colormax but first does depth-coding by color and then max projects (acheives some level of transparency). ',
+              show_default=True)
 @click.option('--clim', '-cl', type=str, default=None, help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]')
 @click.option('--attenuation', '-at', type=float, default=0.1, help='Sets the projection attenuation coefficient, should be within [0, 1] ideally close to 0. Larger values mean more attenuation.',
               show_default=True)  # , help='dataset slice'
 @click.option('--gamma', '-g', type=int, default=1, help='Sets the gamma coefficient pre-applied to the raw voxel values (before projection or any subsequent processing).', show_default=True)  # , help='dataset slice'
 @click.option('--depthgamma', '-dg', type=float, default=1.0, help='Gamma correction applied to the stack depth to accentuate (depth gamma < 1) color variations at the center of the stack. Only used for colormax mode.',
               show_default=True)  # , help='dataset slice'
-@click.option('--colormap', '-cm', type=str, default='viridis', help='sets colormap, e.g. viridis, gray, magma, plasma, inferno. Use a rainbow colormap such as bmy or turbo fro colormax mode. ', show_default=True)
+@click.option('--colormap', '-cm', type=str, default='viridis', help='sets colormap, e.g. viridis, gray, magma, plasma, inferno. Use a rainbow colormap such as bmy or turbo for color-coded depth modes. ', show_default=True)
 @click.option('--rgbgamma', '-cg', type=float, default=1.0, help='Gamma correction applied to the resulting RGB image. Usefull to brighten image', show_default=True)
 @click.option('--step', '-sp', type=int, default=1, help='Process every ‘step’ frames.', show_default=True)
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #

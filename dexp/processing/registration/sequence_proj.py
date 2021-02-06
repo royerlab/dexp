@@ -44,8 +44,7 @@ def sequence_stabilisation_proj(image: 'Array',
                                        projection_type=projection_type)
 
     return sequence_stabilisation_proj_(projections=projections,
-                                        ndim=ndim - 1,
-                                        original_axis=axis)
+                                        ndim=ndim - 1)
 
 
 def sequence_stabilisation_proj_(projections: Sequence[Tuple],

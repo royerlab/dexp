@@ -29,10 +29,10 @@ def demo_register_sequence_3d_cupy():
 
 def _register_sequence_3d(length_xy=256,
                           n=64,
-                          drift_strength=0.5,
+                          drift_strength=0.8,
                           warp_grid_size=8,
                           warp_strength=2.5,
-                          ratio_bad_frames=0.0,
+                          ratio_bad_frames=0.05,
                           additive_noise=0.05,
                           multiplicative_noise=0.1,
                           use_projections=False,
