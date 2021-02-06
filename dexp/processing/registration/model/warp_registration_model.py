@@ -114,6 +114,8 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
               internal_dtype=None
               ) -> 'Array':
 
+
+
         image_warped = warp(image=image,
                             vector_field=self.vector_field,
                             vector_field_upsampling=vector_field_upsampling,
@@ -125,12 +127,9 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
 
     def apply_pair(self,
                    image_a, image_b,
-                   vector_field_upsampling: int = 2,
-                   vector_field_upsampling_order: int = 1,
-                   mode: str = 'border',
-                   internal_dtype=None) -> Tuple['Array', 'Array']:
+                   **kwargs) -> Tuple['Array', 'Array']:
 
-        return image_a, self.apply(image_b)
+        return image_a, self.apply(image_b, **kwargs)
 
     def median_confidence(self):
         """
