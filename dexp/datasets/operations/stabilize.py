@@ -18,6 +18,7 @@ def dataset_stabilize(dataset: BaseDataset,
                       compression: str,
                       compression_level: int,
                       overwrite: bool,
+                      minconfidence: float,
                       workers: int,
                       workersbackend: str,
                       devices: Sequence[int],
@@ -44,7 +45,9 @@ def dataset_stabilize(dataset: BaseDataset,
             proj_axis = list(range(3)).remove(axis)
             projections.append((*proj_axis, projection))
 
-        model = sequence_stabilisation_proj_(projections=projections, ndim=3)
+        model = sequence_stabilisation_proj_(projections=projections,
+                                             minconfidence=minconfidence,
+                                             ndim=3)
 
         padded_shape = model.padded_shape(shape)
 

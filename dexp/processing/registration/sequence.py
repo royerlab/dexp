@@ -30,11 +30,12 @@ def sequence_stabilisation(image: 'Array',
     ----------
     image: image to stabilise
     axis: sequence axis along which to stabilise image
-    mode: registartion mode. For now only 'translation' is available.
-    max_scale: Integer signifying how many scales to sue for pairwise registration. Each scale corresponds roughly to a power of the golden ratio g**scale,
-    but to avoid hitting the same images too often, we snap these integers to the closest prime number (see magic numbers table in code).
+    mode: registration mode. For now only 'translation' is available.
+    max_scale: Integer signifying how many scales to use for pairwise registration. Each scale corresponds roughly to a power of the golden ratio g**scale,
+    but to avoid hitting the same images too often, we snap these integers to the closest prime number (see magic numbers table in code). Best left to the maximum default
+    (None) unless there is a very good reason not to.
     min_confidence: minimal confidence to accept a pairwise registration
-    use_center_of_mass_shifts: if True then additional pairwise terms are added onthe basis of center of mass shifts.
+    use_center_of_mass_shifts: if True then additional pairwise terms are added on the basis of center of mass shifts.
     solver_order: order for linear solver. We use the same order for both error and regularisation terms.
     internal_dtype : internal dtype for computation
     **kwargs: argument passthrough to the pairwise registration method.

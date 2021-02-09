@@ -16,7 +16,7 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
 @click.option('--codec', '-z', default=_default_codec, help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ', show_default=True)
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)
-@click.option('--chunksize', '-cs', type=int, default=512, help='Chunk size for tiled computation', show_default=True)
+@click.option('--minconfidence', '-mc', type=float, default=0.3, help='Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
@@ -29,7 +29,7 @@ def deconv(input_path,
            codec,
            clevel,
            overwrite,
-           chunksize,
+           minconfidence,
            workers,
            workersbackend,
            devices,
@@ -50,6 +50,7 @@ def deconv(input_path,
                           compression=codec,
                           compression_level=clevel,
                           overwrite=overwrite,
+                          minconfidence=minconfidence,
                           workers=workers,
                           workersbackend=workersbackend,
                           devices=devices,
