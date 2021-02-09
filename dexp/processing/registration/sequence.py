@@ -50,11 +50,12 @@ def sequence_stabilisation(image: 'Array',
     # These numbers are approximately spaced out as powers of the golden ratio, but are all prime numbers:
     # There is a beautiful reason for this, ask Loic.
     magic_numbers = [1, 2, 3, 7, 11, 19, 29, 47, 79, 127, 199, 317, 521, 839, 1367]
+    golden_ratio = 1.618033988749895
 
     length = image.shape[axis]
     if max_scale is None:
         max_scale = len(magic_numbers) - 1
-    max_scale = min(max_scale, int(log(length, 1.618033988749895)))
+    max_scale = min(max_scale, int(log(length, golden_ratio)))
     image_sequence = list(xp.take(image, axis=axis, indices=range(0, length)))
 
     with asection(f"Registering image sequence of length: {length}"):
@@ -128,11 +129,18 @@ def sequence_stabilisation(image: 'Array',
                     a = xp.zeros((nb_models + 1, length), dtype=xp.float32)
                     y = xp.zeros((nb_models + 1,), dtype=xp.float32)
 
+                    zero_vector = None
                     for i, model in enumerate(pairwise_models):
                         u = model.u
                         v = model.v
 
-                        y[i] = model.shift_vector[d]
+                        if i == 0:
+                            # we make sure that all shifts are relative to the first timepoint:
+                            zero_vector = model.shift_vector[d].copy()
+
+                        vector = model.shift_vector[d] - zero_vector
+
+                        y[i] = vector.copy()
                         a[i, u] = +1
                         a[i, v] = -1
 

@@ -114,8 +114,6 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
               internal_dtype=None
               ) -> 'Array':
 
-
-
         image_warped = warp(image=image,
                             vector_field=self.vector_field,
                             vector_field_upsampling=vector_field_upsampling,

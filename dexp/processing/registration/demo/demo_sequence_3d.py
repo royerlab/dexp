@@ -32,7 +32,7 @@ def _register_sequence_3d(length_xy=256,
                           drift_strength=0.8,
                           warp_grid_size=8,
                           warp_strength=2.5,
-                          ratio_bad_frames=0.05,
+                          ratio_bad_frames=0.0,
                           additive_noise=0.05,
                           multiplicative_noise=0.1,
                           use_projections=False,
@@ -118,7 +118,10 @@ def _register_sequence_3d(length_xy=256,
         pad_width = None  # ((padding, padding), (padding, padding))
 
         # apply stabilisation:
-        stabilised = model.apply_sequence(shifted, axis=0, pad_width=pad_width)
+        stabilised_seq = model.apply_sequence(shifted, axis=0, pad_width=pad_width)
+
+        # another way to apply stabilisation:
+        stabilised_sps = xp.stack(model.apply(image, index=i, pad=True) for i, image in enumerate(shifted))
 
     if display:
         from napari import Viewer, gui_qt
@@ -129,9 +132,10 @@ def _register_sequence_3d(length_xy=256,
             viewer = Viewer()
             viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', visible=True)
             viewer.add_image(_c(shifted), name='shifted', colormap='bop purple', blending='additive', visible=False)
-            viewer.add_image(_c(stabilised), name='stabilised', colormap='bop blue', blending='additive', visible=True)
+            viewer.add_image(_c(stabilised_seq), name='stabilised_seq', colormap='bop blue', blending='additive', visible=True)
+            viewer.add_image(_c(stabilised_sps), name='stabilised_seq', colormap='bop blue', blending='additive', visible=True)
 
-    return image, shifted, stabilised, model
+    return image, shifted, stabilised_seq, model
 
 
 if __name__ == "__main__":

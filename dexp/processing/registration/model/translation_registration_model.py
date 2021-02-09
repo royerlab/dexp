@@ -12,7 +12,6 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
     def __init__(self,
                  shift_vector: Union[Sequence[float], numpy.ndarray],
                  confidence: Union[numpy.ndarray, float] = 1,
-                 integral: bool = False,
                  force_numpy: bool = True):
 
         """ Instantiates a translation registration model
@@ -23,7 +22,6 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
         confidence : registration confidence: a float within [0, 1] which conveys how confident is the registration.
         A value of 0 means no confidence, a value of 1 means perfectly confident.
         force_numpy : when creating this object, you have the option of forcing the use of numpy array instead of the current backend arrays.
-        integral : True if shifts are snapped to integer values, False otherwise
 
         """
         super().__init__()
@@ -36,27 +34,28 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
             self.shift_vector = xp.asarray(0 if shift_vector is None else shift_vector)
             self.confidence = xp.asarray(0 if confidence is None else confidence)
 
-        self.integral = integral
-
     def __str__(self):
-        return f"TranslationRegistrationModel(shift={self.shift_vector}, confidence={self.confidence}, integral={self.integral})"
+        return f"TranslationRegistrationModel(shift={self.shift_vector}, confidence={self.confidence})"
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return (self.shift_vector == other.shift_vector).all() and (self.confidence == other.confidence).all() and self.integral == other.integral
+            return (self.shift_vector == other.shift_vector).all() and (self.confidence == other.confidence).all()
         else:
             return False
 
     def to_json(self) -> str:
-        return json.dumps({'type': 'translation', 'translation': self.shift_vector.tolist(), 'integral': self.integral, 'confidence': self.confidence.tolist()})
+        return json.dumps({'type': 'translation', 'translation': self.shift_vector.tolist(), 'confidence': self.confidence.tolist()})
 
     def to_numpy(self) -> 'TranslationRegistrationModel':
         self.shift_vector = Backend.to_numpy(self.shift_vector)
         self.confidence = Backend.to_numpy(self.confidence)
         return self
 
+    def integral_shift(self):
+        return tuple(int(round(float(shift))) for shift in self.shift_vector)
+
     def padding(self):
-        integral_shift_vector = tuple(int(round(float(shift))) for shift in self.shift_vector)
+        integral_shift_vector = self.integral_shift()
         padding = tuple(((0, abs(s)) if s < 0 else (abs(s), 0)) for s in integral_shift_vector)
         return padding
 
@@ -69,11 +68,27 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
     def get_shift_and_confidence(self):
         return self.shift_vector, self.confidence
 
-    def apply(self, image, pad: bool = False) -> 'Array':
+    def apply(self,
+              image,
+              integral: bool = True,
+              pad: bool = False) -> 'Array':
+        """
+        Applies the translation model to the given image, possibly by padding the image.
 
+        Parameters
+        ----------
+        image: image to apply translation to.
+        integral: True to snap translation to pixels, False to perform subpixel interpolation.
+        pad: True to translate by padding, False for wrapped translation (image shape remains unchanged)
+
+        Returns
+        -------
+        translated image, with or without padding.
+
+        """
         image = Backend.to_backend(image)
 
-        integral_shift_vector = tuple(int(round(float(shift))) for shift in self.shift_vector)
+        integral_shift_vector = self.integral_shift()
 
         if pad:
             xp = Backend.get_xp_module()
@@ -82,7 +97,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
             return image
 
         else:
-            if self.integral:
+            if integral:
                 image = numpy.roll(image,
                                    shift=integral_shift_vector,
                                    axis=range(len(integral_shift_vector)))
@@ -95,13 +110,32 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
                                          order=1)
                 return image
 
-    def apply_pair(self, image_a, image_b, pad: bool = False) -> Tuple['Array', 'Array']:
+    def apply_pair(self,
+                   image_a,
+                   image_b,
+                   integral: bool = True,
+                   pad: bool = False) -> Tuple['Array', 'Array']:
+        """
+        Applies the translation model to an image pair, possibly by padding the image.
 
+        Parameters
+        ----------
+        image_a: First image
+        image_b: Second image
+        integral: True to snap translation to pixels, False to perform subpixel interpolation.
+        pad: True to translate by padding, False for wrapped translation (image shape remains unchanged).
+
+        Note: padding implies integral translation.
+
+        Returns
+        -------
+        Both images registered
+        """
         xp = Backend.get_xp_module()
 
-        integral_shift_vector = tuple(int(round(float(shift))) for shift in self.shift_vector)
-
         if pad:
+            integral_shift_vector = self.integral_shift()
+
             padding_a = tuple(((0, abs(s)) if s >= 0 else (abs(s), 0)) for s in integral_shift_vector)
             padding_b = tuple(((0, abs(s)) if s < 0 else (abs(s), 0)) for s in integral_shift_vector)
 
@@ -114,4 +148,4 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
             return image_a, image_b
 
         else:
-            return image_a, self.apply(image_b, pad=pad)
+            return image_a, self.apply(image_b, integral=integral, pad=False)

@@ -15,8 +15,7 @@ def from_json(json_str: str):
     parsed_model = json.loads(json_str)
     if parsed_model['type'] == 'translation':
         model = TranslationRegistrationModel(shift_vector=xp.asarray(parsed_model['translation']),
-                                             confidence=xp.asarray(parsed_model['confidence']),
-                                             integral=parsed_model['integral'])
+                                             confidence=xp.asarray(parsed_model['confidence']))
     elif parsed_model['type'] == 'warp':
         model = WarpRegistrationModel(vector_field=xp.asarray(parsed_model['vector_field']),
                                       confidence=xp.asarray(parsed_model['confidence']))

@@ -28,12 +28,11 @@ def _test_model_io_to_json():
     xp = Backend.get_xp_module()
 
     # Testing read/write translation model to json:
-    model = TranslationRegistrationModel(shift_vector=[-1, -5, 13], confidence=0.6, integral=True)
+    model = TranslationRegistrationModel(shift_vector=[-1, -5, 13], confidence=0.6)
     json_str = model.to_json()
     new_model = from_json(json_str)
     assert (new_model.shift_vector == model.shift_vector).all()
     assert (new_model.confidence == model.confidence).all()
-    assert new_model.integral == model.integral
 
     # Testing read/write warp model to json:
     magnitude = 15
@@ -47,7 +46,7 @@ def _test_model_io_to_json():
     assert (new_model.confidence == model.confidence).all()
 
     # Testing read/write translation sequence model to json:
-    model_list = list(TranslationRegistrationModel(shift_vector=[-1 * (i / 100.0), -5 + 0.1 * i, 13 - 0.2 * i], confidence=0.6, integral=True) for i in range(0, 10))
+    model_list = list(TranslationRegistrationModel(shift_vector=[-1 * (i / 100.0), -5 + 0.1 * i, 13 - 0.2 * i], confidence=0.6) for i in range(0, 10))
     model_list += list(WarpRegistrationModel(vector_field=xp.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 3 + (3,)),
                                              confidence=xp.random.uniform(low=-magnitude, high=+magnitude, size=(warp_grid_size,) * 3)) for _ in range(0, 10))
     model = SequenceRegistrationModel(model_list)
@@ -68,7 +67,7 @@ def _test_model_io_to_file():
     with tempfile.NamedTemporaryFile() as tmp:
         aprint(f"Temp file: {tmp.name}")
 
-        model_list_1 = list([TranslationRegistrationModel(shift_vector=[-1, i, 2 * i], confidence=0.6 - 0.01 * i, integral=True) for i in range(3)])
+        model_list_1 = list([TranslationRegistrationModel(shift_vector=[-1, i, 2 * i], confidence=0.6 - 0.01 * i) for i in range(3)])
         model_list_2 = list([WarpRegistrationModel(vector_field=vector_field * (1 + 0.1 * i), confidence=confidence / i) for i in range(3)])
         model_list = model_list_1 + model_list_2
         model_list_to_file(tmp.name, model_list)

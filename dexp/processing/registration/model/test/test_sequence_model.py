@@ -28,7 +28,7 @@ def _test_sequence_model(length_xy=128):
 
     assert len(model) == 0
 
-    model_list = list(TranslationRegistrationModel(shift_vector=[1 * (1 + 0.2 * i), 5 + 0.5 * i, -13 - i], confidence=0.6, integral=True) for i in range(0, 10))
+    model_list = list(TranslationRegistrationModel(shift_vector=[1 * (1 + 0.2 * i), 5 + 0.5 * i, -13 - i], confidence=0.6) for i in range(0, 10))
     model = SequenceRegistrationModel(model_list)
     assert len(model) == 10
 
@@ -40,7 +40,7 @@ def _test_sequence_model(length_xy=128):
                                                                                        amount_low=0,
                                                                                        zero_level=0)
 
-    reg_images = list(model.apply(image2, index=index) for index in range(0, 10))
+    reg_images = list(model.apply(image2, index=index, pad=False) for index in range(0, 10))
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -54,5 +54,10 @@ def _test_sequence_model(length_xy=128):
     aprint(average_errors)
     for u, e0 in enumerate(average_errors):
         for v, e1 in enumerate(average_errors):
-            if u < v:
+            if u + 1 < v:
                 assert e0 < e1
+
+    reg_images_pad = list(model.apply(image2, index=index, pad=True) for index in range(0, 10))
+
+    assert reg_images_pad[0].shape == model.padded_shape(image2.shape)
+    assert model.padding() == ((3, 0), (10, 0), (0, 22))

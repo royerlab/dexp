@@ -62,7 +62,21 @@ class SequenceRegistrationModel:
         xp = Backend.get_xp_module()
         return float(xp.mean(model.overall_confidence() for model in self.model_list))
 
-    def apply_sequence(self, image, axis: int, pad_width: Optional[Union[float, Tuple[Tuple[float, float], ...]]] = None, **kwargs) -> 'Array':
+    def padding(self):
+        padding_list = list(model.padding() for model in self.model_list)
+        overall_padding = padding_list[0]
+        for padding in padding_list:
+            overall_padding = ((max(op[0], p[0]), max(op[1], p[1])) for op, p in zip(overall_padding, padding))
+        return tuple(overall_padding)
+
+    def padded_shape(self, shape: Tuple[int, ...]):
+        new_shape = tuple(s + pl + pr for s, (pl, pr) in zip(shape, self.padding()))
+        return new_shape
+
+    def apply_sequence(self,
+                       image, axis: int,
+                       pad_width: Optional[Union[float, Tuple[Tuple[float, float], ...]]] = None,
+                       **kwargs) -> 'Array':
         """ Applies this sequence registration model to the an image sequence of given sequence axis.
             A new registered image is returned.
 
@@ -86,13 +100,8 @@ class SequenceRegistrationModel:
             image = xp.moveaxis(image, axis, 0)
 
         if pad_width is None:
-            # automatic padding:
-            padding_list = list(model.padding() for model in self.model_list)
-
-            overall_padding = padding_list[0]
-            for padding in padding_list:
-                overall_padding = ((min(op[0], p[0]), max(op[1], p[1])) for op, p in zip(overall_padding, padding))
-
+            # automatic padding
+            overall_padding = self.padding()
             image = xp.pad(image, pad_width=((0, 0),) + tuple(overall_padding))
 
         elif pad_width != 0:
@@ -102,7 +111,7 @@ class SequenceRegistrationModel:
             # no padding
             pass
 
-        registered_image = xp.stack(self.apply(image[index], index=index, **kwargs) for index in range(image.shape[axis]))
+        registered_image = xp.stack((self.apply(image[index], index=index, **kwargs) for index in range(image.shape[axis])))
 
         # put back axis where it belongs, if necessary:
         if axis != 0:
@@ -110,7 +119,11 @@ class SequenceRegistrationModel:
 
         return registered_image
 
-    def apply(self, image, index: int, **kwargs) -> 'Array':
+    def apply(self,
+              image,
+              index: int,
+              pad: bool = False,
+              **kwargs) -> 'Array':
         """ Applies this sequence registration model to the image at a given index.
             A new registered image is returned.
 
@@ -119,6 +132,7 @@ class SequenceRegistrationModel:
             ----------
             image: image to register
             index: index of image in sequence
+            pad : pads the image before registration
             **kwargs : parameters passthrough to the apply method of the pairwise registration model
 
             Returns
@@ -126,7 +140,13 @@ class SequenceRegistrationModel:
             image_reg: registered image against all others in the sequence
 
             """
-
+        xp = Backend.get_xp_module()
         model = self.model_list[index]
 
-        return model.apply(image, **kwargs)
+        if pad:
+            padding = self.padding()
+            image = xp.pad(image, pad_width=padding)
+            return model.apply(image, **kwargs)
+
+        else:
+            return model.apply(image, **kwargs)
