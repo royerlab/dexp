@@ -33,7 +33,7 @@ def dataset_copy(dataset: BaseDataset,
 
             shape = array.shape
             dtype = array.dtype
-            chunks = dataset._default_chunks
+            chunks = ZDataset._default_chunks
 
             dest_dataset.add_channel(name=channel,
                                      shape=shape,

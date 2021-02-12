@@ -51,7 +51,7 @@ def dataset_deconv(dataset: BaseDataset,
             array = array[slicing]
 
         shape = array.shape
-        chunks = dataset._default_chunks
+        chunks = ZDataset._default_chunks
 
         dest_array = dest_dataset.add_channel(name=channel,
                                               shape=shape,

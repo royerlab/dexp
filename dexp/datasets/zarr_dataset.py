@@ -31,6 +31,8 @@ blosc.set_nthreads(_nb_threads)
 
 class ZDataset(BaseDataset):
 
+    _default_chunks = (1, 128, 512, 512)
+
     def __init__(self, path: str, mode: str = 'r', store: str = 'dir'):
         """Instanciates a Zarr dataset (and opens it)
 
@@ -289,7 +291,7 @@ class ZDataset(BaseDataset):
             raise ValueError("Channel already exist!")
 
         if chunks is None:
-            chunks = BaseDataset._default_chunks[0: len(shape)]
+            chunks = ZDataset._default_chunks[0: len(shape)]
 
         aprint(f"chunks={chunks}")
 

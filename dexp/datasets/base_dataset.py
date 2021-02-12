@@ -5,7 +5,7 @@ import numpy
 
 
 class BaseDataset(ABC):
-    _default_chunks = (1, 128, 512, 512)
+
 
     def __init__(self, dask_backed=False):
         """ Instanciates a Base Dataset

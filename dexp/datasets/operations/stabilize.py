@@ -60,7 +60,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
         # Shape and chunks for array:
         shape = array.shape
         dtype = array.dtype
-        chunks = input_dataset.chunks(channel)
+        chunks = ZDataset._default_chunks
 
         # Perform slicing:
         if slicing is not None:

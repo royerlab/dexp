@@ -92,7 +92,7 @@ def dataset_isonet(dataset: BaseDataset,
                     zarr_array = dest_dataset.add_channel(name=channel,
                                                           shape=shape,
                                                           dtype=array.dtype,
-                                                          chunks=dataset._default_chunks,
+                                                          chunks=ZDataset._default_chunks,
                                                           codec=compression,
                                                           clevel=compression_level)
 
