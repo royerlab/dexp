@@ -22,7 +22,7 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
-def deconv(input_paths,
+def stabilize(input_paths,
            output_path,
            channels,
            slicing,

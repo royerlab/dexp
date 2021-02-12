@@ -62,6 +62,7 @@ from dexp.cli.commands.serve import serve
 from dexp.cli.commands.deskew import deskew
 from dexp.cli.commands.fuse import fuse
 from dexp.cli.commands.deconv import deconv
+from dexp.cli.commands.stabilize import stabilize
 from dexp.cli.commands.isonet import isonet
 
 from dexp.cli.commands.speedtest import speedtest
@@ -76,6 +77,7 @@ cli.add_command(serve)
 
 cli.add_command(deskew)
 cli.add_command(fuse)
+cli.add_command(stabilize)
 cli.add_command(deconv)
 cli.add_command(isonet)
 
