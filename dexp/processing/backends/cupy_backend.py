@@ -179,10 +179,15 @@ class CupyBackend(Backend):
 
         if self.enable_memory_pool_clearing:
             if self.mempool is not None:
-                aprint(f"Number of free blocks before release: {self.mempool.n_free_blocks()}, used:{self.mempool.used_bytes() // 1e9}GB, total:{self.mempool.total_bytes() // 1e9}GB ")
+                n_free_blocks_before = self.mempool.n_free_blocks()
+                used_before = self.mempool.used_bytes() // 1e9
                 gc.collect()
                 self.mempool.free_all_blocks(self.stream)
-                aprint(f"Number of free blocks after release: {self.mempool.n_free_blocks()}, used:{self.mempool.used_bytes() // 1e9}GB, total:{self.mempool.total_bytes() // 1e9}GB ")
+                n_free_blocks_after = self.mempool.n_free_blocks()
+                used_after = self.mempool.used_bytes() // 1e9
+                total_after = self.mempool.total_bytes() // 1e9
+
+                aprint(f"Number of free blocks before and after release: {n_free_blocks_before}->{n_free_blocks_after}, used:{used_before}GB->{used_after}GB, total:{total_after}GB ")
             else:
                 aprint("Warning: default cupy memory pool is 'None'")
         else:

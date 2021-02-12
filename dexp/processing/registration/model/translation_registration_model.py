@@ -56,7 +56,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
 
     def padding(self):
         integral_shift_vector = self.integral_shift()
-        padding = tuple(((0, abs(s)) if s < 0 else (abs(s), 0)) for s in integral_shift_vector)
+        padding = tuple(((0, abs(s)) if s > 0 else (abs(s), 0)) for s in integral_shift_vector)
         return padding
 
     def overall_confidence(self) -> float:

@@ -2,19 +2,20 @@ import click
 from arbol.arbol import aprint, asection
 
 from dexp.cli.dexp_main import _default_store
-from dexp.cli.utils import _get_dataset_from_path, _parse_channels, _get_output_path
+from dexp.cli.utils import _parse_channels, _get_output_path
+from dexp.datasets.open_dataset import glob_datasets
 
 
 @click.command()
-@click.argument('input_path')  # ,  help='input path'
+@click.argument('input_paths', nargs=-1)  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='List of channels, all channels when ommited.')
 @click.option('--rename', '-rc', default=None, help='You can rename channels: e.g. if channels are ‘channel1,anotherc’ then ‘gfp,rfp’ would rename the ‘channel1’ channel to ‘gfp’, and ‘anotherc’ to ‘rfp’ ')
 @click.option('--store', '-st', default=_default_store, help='Zarr store: ‘dir’, ‘ndir’, or ‘zip’', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='Forces overwrite of target', show_default=True)
-def add(input_path, output_path, channels, rename, store, overwrite):
-    input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path, '_add')
+def add(input_paths, output_path, channels, rename, store, overwrite):
+    input_dataset, input_paths = glob_datasets(input_paths)
+    output_path = _get_output_path(input_paths[0], output_path, '_add')
     channels = _parse_channels(input_dataset, channels)
 
     if rename is None:
@@ -22,7 +23,7 @@ def add(input_path, output_path, channels, rename, store, overwrite):
     else:
         rename = rename.split(',')
 
-    with asection(f"Adding channels: {channels} from: {input_path} to {output_path}, with new names: {rename}"):
+    with asection(f"Adding channels: {channels} from: {input_paths} to {output_path}, with new names: {rename}"):
         input_dataset.add_channels_to(output_path,
                                       channels=channels,
                                       rename=rename,

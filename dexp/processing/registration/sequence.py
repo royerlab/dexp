@@ -16,7 +16,7 @@ def sequence_stabilisation(image: 'Array',
                            axis: int = 0,
                            mode: str = 'translation',
                            max_scale: Optional[int] = None,
-                           min_confidence: float = 0.3,
+                           min_confidence: float = 0.7,
                            use_center_of_mass_shifts: bool = False,
                            solver_order: float = 1.05,
                            internal_dtype=None,
@@ -47,6 +47,9 @@ def sequence_stabilisation(image: 'Array',
     """
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
+
+    # First, we move image to the backend:
+    image = Backend.to_backend(image)
 
     # These numbers are approximately spaced out as powers of the golden ratio, but are all prime numbers:
     # There is a beautiful reason for this, ask Loic.

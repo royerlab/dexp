@@ -50,8 +50,9 @@ def test_zarr_dataset_livecycle():
 
         with NumpyBackend() as backend:
             xp = backend.get_xp_module()
+            blobs = binary_blobs(length=100, n_dim=3, blob_size_fraction=0.1).astype('f4')
             for i in range(0, 10):
-                blobs = binary_blobs(length=100, n_dim=3, blob_size_fraction=0.1).astype('f4')
+
                 blobs = gaussian(blobs, sigma=1 + 0.1 * i)
                 zdataset.write_stack('first', i, blobs)
 
@@ -67,8 +68,8 @@ def test_zarr_dataset_livecycle():
                 for axis in range(3):
                     assert xp.all((zdataset.get_projection_array('first', axis=axis)[i] == xp.max(blobs, axis=axis)))
 
+            blobs = binary_blobs(length=30, n_dim=3, blob_size_fraction=0.03).astype('f4')
             for i in range(0, 17):
-                blobs = binary_blobs(length=30, n_dim=3, blob_size_fraction=0.03).astype('f4')
                 blobs = gaussian(blobs, sigma=1 + 0.1 * i)
                 blobs = blobs[0:10, 0:20, 0:30]
                 zdataset.write_stack('second', i, blobs)

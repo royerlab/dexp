@@ -13,11 +13,11 @@ class BaseDataset(ABC):
         """
         self.dask_backed = dask_backed
 
-    def _selected_channels(self, channels):
+    def _selected_channels(self, channels: Sequence[str]):
         if channels is None:
-            selected_channels = self._channels
+            selected_channels = self.channels()
         else:
-            selected_channels = list(set(channels) & set(self._channels))
+            selected_channels = [channel for channel in channels if channel in self.channels()]
 
         # aprint(f"Available channels: {self._channels}")
         # aprint(f"Requested channels: {channels if channels else '--All--'} ")
@@ -39,21 +39,24 @@ class BaseDataset(ABC):
     def channels(self) -> Sequence[str]:
         pass
 
+    def nb_timepoints(self, channel: str) -> int:
+        return self.shape(channel)[0]
+
     @abstractmethod
     def shape(self, channel: str) -> Sequence[int]:
         raise NotImplementedError()
 
     @abstractmethod
-    def chunks(self, channel: str) -> Sequence[int]:
-        pass
-
-    @abstractmethod
     def dtype(self, channel: str):
         raise NotImplementedError()
 
-    @abstractmethod
     def tree(self) -> str:
-        raise NotImplementedError()
+        tree_str = f"{type(self).__name__} dataset"
+        tree_str += "\n\n"
+        tree_str += "Channels: \n"
+        for channel in self.channels():
+            tree_str += "  └──" + self.info(channel) + "\n"
+        return tree_str
 
     @abstractmethod
     def info(self, channel: str = None) -> str:
@@ -78,6 +81,10 @@ class BaseDataset(ABC):
     @abstractmethod
     def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
         pass
+
+    @abstractmethod
+    def write_array(self, channel: str, array: numpy.ndarray):
+        raise NotImplementedError()
 
     @abstractmethod
     def write_stack(self, channel: str, time_point: int, stack: numpy.ndarray):

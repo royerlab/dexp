@@ -1,14 +1,15 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.utils import _get_dataset_from_path
+from dexp.datasets.open_dataset import glob_datasets
 
 
 @click.command()
-@click.argument('input_path')
-def info(input_path):
-    input_dataset = _get_dataset_from_path(input_path)
-    with asection(f"Information on dataset at: {input_path}"):
+@click.argument('input_paths', nargs=-1)
+def info(input_paths):
+    input_dataset, input_paths = glob_datasets(input_paths)
+
+    with asection(f"Information on dataset at: {input_paths}"):
         aprint(input_dataset.info())
         input_dataset.close()
         aprint("Done!")

@@ -19,15 +19,15 @@ numcodecs.blosc.set_nthreads(cpu_count() // 2)
 
 class CCDataset(BaseDataset):
 
-    def __init__(self, folder, cache_size=8e9):
+    def __init__(self, path, cache_size=8e9):
 
         super().__init__(dask_backed=False)
 
-        self.folder = folder
+        self.folder = path
         self._channels = []
         self._index_files = {}
 
-        all_files = list(listdir(folder))
+        all_files = list(listdir(path))
         # print(all_files)
 
         for file in all_files:
@@ -35,7 +35,7 @@ class CCDataset(BaseDataset):
                 if not file.startswith('._'):
                     channel = file.replace('.index.txt', '')
                     self._channels.append(channel)
-                    self._index_files[channel] = join(folder, file)
+                    self._index_files[channel] = join(path, file)
 
         # print(self._channels)
         # print(self._index_files)
@@ -134,19 +134,8 @@ class CCDataset(BaseDataset):
         else:
             return ()
 
-    def chunks(self, channel: str) -> Sequence[int]:
-        return (1,) * len(self.shape())
-
     def dtype(self, channel: str):
         return numpy.uint16
-
-    def tree(self) -> str:
-        tree_str = f"CC dataset at: {self.folder}"
-        tree_str += "\n\n"
-        tree_str += "Channels: \n"
-        for channel in self.channels():
-            tree_str += "  └──" + self.info(channel) + "\n"
-        return tree_str
 
     def info(self, channel: str = None) -> str:
         if channel:

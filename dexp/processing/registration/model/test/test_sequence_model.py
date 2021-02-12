@@ -60,4 +60,4 @@ def _test_sequence_model(length_xy=128):
     reg_images_pad = list(model.apply(image2, index=index, pad=True) for index in range(0, 10))
 
     assert reg_images_pad[0].shape == model.padded_shape(image2.shape)
-    assert model.padding() == ((3, 0), (10, 0), (0, 22))
+    assert model.padding() == ((0, 3), (0, 10), (22, 00))

@@ -8,7 +8,7 @@ from dexp.datasets.base_dataset import BaseDataset
 
 
 def dataset_view(input_dataset: BaseDataset,
-                 input_path: str,
+                 name: str,
                  aspect: float,
                  channels: Sequence[str],
                  clim: str,
@@ -22,7 +22,7 @@ def dataset_view(input_dataset: BaseDataset,
     from napari import gui_qt, Viewer
     from napari._qt.qthreading import thread_worker
     with gui_qt():
-        viewer = Viewer(title=f"DEXP | viewing with napari: {input_path} ", ndisplay=2)
+        viewer = Viewer(title=f"DEXP | viewing with napari: {name} ", ndisplay=2)
 
         viewer.window.resize(windowsize + 256, windowsize)
 
@@ -82,23 +82,24 @@ def dataset_view(input_dataset: BaseDataset,
             try:
                 for axis in range(array.ndim - 1):
                     proj_array = input_dataset.get_projection_array(channel, axis=axis, wrap_with_dask=True)
-                    proj_layer = viewer.add_image(proj_array,
-                                                  name=channel + '_proj_' + str(axis),
-                                                  contrast_limits=contrast_limits,
-                                                  blending='additive',
-                                                  colormap=colormap, )
+                    if proj_array is not None:
+                        proj_layer = viewer.add_image(proj_array,
+                                                      name=channel + '_proj_' + str(axis),
+                                                      contrast_limits=contrast_limits,
+                                                      blending='additive',
+                                                      colormap=colormap, )
 
-                    if aspect is not None:
-                        if axis == 0:
-                            proj_layer.scale = (1, 1)
-                        elif axis == 1:
-                            proj_layer.scale = (aspect, 1)
-                        elif axis == 2:
-                            proj_layer.scale = (aspect, 1)
+                        if aspect is not None:
+                            if axis == 0:
+                                proj_layer.scale = (1, 1)
+                            elif axis == 1:
+                                proj_layer.scale = (aspect, 1)
+                            elif axis == 2:
+                                proj_layer.scale = (aspect, 1)
 
-                        aprint(f"Setting aspect ratio for projection (layer.scale={proj_layer.scale})")
+                            aprint(f"Setting aspect ratio for projection (layer.scale={proj_layer.scale})")
 
             except KeyError:
                 aprint("Warning: can't find projections!")
 
-        viewer.grid_view()
+        viewer.grid.enabled = True

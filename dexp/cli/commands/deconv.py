@@ -3,12 +3,13 @@ from arbol.arbol import aprint, asection
 
 from dexp.cli.dexp_main import _default_store, _default_codec, _default_clevel
 from dexp.cli.dexp_main import _default_workers_backend
-from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing, _parse_devices
+from dexp.cli.utils import _parse_channels, _get_output_path, _parse_slicing, _parse_devices
+from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.deconv import dataset_deconv
 
 
 @click.command()
-@click.argument('input_path')  # ,  help='input path'
+@click.argument('input_paths', nargs=-1)  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')
 @click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')
@@ -36,7 +37,7 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
-def deconv(input_path,
+def deconv(input_paths,
            output_path,
            channels,
            slicing,
@@ -59,14 +60,14 @@ def deconv(input_path,
            workersbackend,
            devices,
            check):
-    input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path, "_deconv")
+    input_dataset, input_paths = glob_datasets(input_paths)
+    output_path = _get_output_path(input_paths[0], output_path, "_deconv")
 
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
     devices = _parse_devices(devices)
 
-    with asection(f"Deconvolving dataset: {input_path}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "):
+    with asection(f"Deconvolving dataset: {input_paths}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "):
         dataset_deconv(input_dataset,
                        output_path,
                        channels=channels,

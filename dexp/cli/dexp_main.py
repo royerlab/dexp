@@ -55,7 +55,6 @@ from dexp.cli.commands.info import info
 from dexp.cli.commands.check import check
 from dexp.cli.commands.copy import copy
 from dexp.cli.commands.add import add
-from dexp.cli.commands.concat import concat
 from dexp.cli.commands.tiff import tiff
 from dexp.cli.commands.view import view
 from dexp.cli.commands.serve import serve
@@ -71,7 +70,6 @@ cli.add_command(info)
 cli.add_command(check)
 cli.add_command(copy)
 cli.add_command(add)
-cli.add_command(concat)
 cli.add_command(tiff)
 cli.add_command(view)
 cli.add_command(serve)

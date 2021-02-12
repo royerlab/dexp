@@ -66,7 +66,7 @@ class SequenceRegistrationModel:
         padding_list = list(model.padding() for model in self.model_list)
         overall_padding = padding_list[0]
         for padding in padding_list:
-            overall_padding = ((max(op[0], p[0]), max(op[1], p[1])) for op, p in zip(overall_padding, padding))
+            overall_padding = tuple((max(op[0], p[0]), max(op[1], p[1])) for op, p in zip(overall_padding, padding))
         return tuple(overall_padding)
 
     def padded_shape(self, shape: Tuple[int, ...]):
@@ -101,8 +101,7 @@ class SequenceRegistrationModel:
 
         if pad_width is None:
             # automatic padding
-            overall_padding = self.padding()
-            image = xp.pad(image, pad_width=((0, 0),) + tuple(overall_padding))
+            image = xp.pad(image, pad_width=((0, 0),) + self.padding())
 
         elif pad_width != 0:
             # custom padding

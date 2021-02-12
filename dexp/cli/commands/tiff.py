@@ -3,12 +3,13 @@ from arbol.arbol import aprint, asection
 
 from dexp.cli.dexp_main import _default_clevel
 from dexp.cli.dexp_main import _default_workers_backend
-from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _get_output_path, _parse_slicing
+from dexp.cli.utils import _parse_channels, _get_output_path, _parse_slicing
+from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.tiff import dataset_tiff
 
 
 @click.command()
-@click.argument('input_path')  # ,  help='input path'
+@click.argument('input_paths', nargs=-1)  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='selected channels.')  #
 @click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
@@ -18,7 +19,7 @@ from dexp.datasets.operations.tiff import dataset_tiff
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level, 0 means no compression, max is 9', show_default=True)  # , help='dataset slice'
 @click.option('--workers', '-k', default=-1, help='Number of worker threads to spawn. If -1 then num workers = num cores', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)
-def tiff(input_path,
+def tiff(input_paths,
          output_path,
          channels,
          slicing,
@@ -28,12 +29,12 @@ def tiff(input_path,
          clevel,
          workers,
          workersbackend):
-    input_dataset = _get_dataset_from_path(input_path)
-    output_path = _get_output_path(input_path, output_path)
+    input_dataset, input_paths = glob_datasets(input_paths)
+    output_path = _get_output_path(input_paths[0], output_path)
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
 
-    with asection(f"Exporting to TIFF datset: {input_path}, channels: {channels}, slice: {slicing}, project:{project}, split:{split}"):
+    with asection(f"Exporting to TIFF datset: {input_paths}, channels: {channels}, slice: {slicing}, project:{project}, split:{split}"):
         dataset_tiff(input_dataset,
                      output_path,
                      channels=channels,

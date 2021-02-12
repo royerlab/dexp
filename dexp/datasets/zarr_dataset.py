@@ -32,7 +32,7 @@ blosc.set_nthreads(_nb_threads)
 class ZDataset(BaseDataset):
 
     def __init__(self, path: str, mode: str = 'r', store: str = 'dir'):
-        """Convenience function to open a group or array using file-mode-like semantics.
+        """Instanciates a Zarr dataset (and opens it)
 
         Parameters
         ----------
@@ -180,20 +180,17 @@ class ZDataset(BaseDataset):
     def channels(self) -> Sequence[str]:
         return list(self._arrays.keys())
 
+    def nb_timepoints(self, channel: str) -> int:
+        return self.get_array(channel).shape[0]
+
     def shape(self, channel: str) -> Sequence[int]:
         return self._arrays[channel].shape
 
     def chunks(self, channel: str) -> Sequence[int]:
         return self._arrays[channel].chunks
 
-    def nb_timepoints(self, channel: str) -> int:
-        return self.get_array(channel).shape[0]
-
     def dtype(self, channel: str):
         return self.get_array(channel).dtype
-
-    def tree(self) -> str:
-        return self._root_group.tree()
 
     def info(self, channel: str = None) -> str:
         if channel:
@@ -226,7 +223,7 @@ class ZDataset(BaseDataset):
             return array
 
     def get_stack(self, channel: str, time_point: int, per_z_slice: bool = False, wrap_with_dask: bool = False):
-        stack_array = self.get_array(channel, wrap_with_dask)[time_point]
+        stack_array = self.get_array(channel, per_z_slice=per_z_slice, wrap_with_dask=wrap_with_dask)[time_point]
         return stack_array
 
     def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
@@ -237,9 +234,9 @@ class ZDataset(BaseDataset):
             return array
 
     def write_stack(self, channel: str, time_point: int, stack_array: numpy.ndarray):
-        stack_in_zarr = self.get_array(channel=channel,
+        array_in_zarr = self.get_array(channel=channel,
                                        wrap_with_dask=False)
-        stack_in_zarr[time_point] = stack_array
+        array_in_zarr[time_point] = stack_array
 
         for axis in range(stack_array.ndim):
             xp = Backend.get_xp_module()
@@ -249,7 +246,27 @@ class ZDataset(BaseDataset):
                                                            wrap_with_dask=False)
             projection_in_zarr[time_point] = projection
 
-    def add_channel(self, name: str, shape: Tuple[int, ...], dtype, enable_projections: bool = True, chunks: Tuple[int, ...] = None, codec: str = 'zstd', clevel: int = 3) -> Any:
+    def write_array(self, channel: str, array: numpy.ndarray):
+        array_in_zarr = self.get_array(channel=channel,
+                                       wrap_with_dask=False)
+        array_in_zarr[...] = array
+
+        for axis in range(array.ndim - 1):
+            xp = Backend.get_xp_module()
+            projection = xp.max(array, axis=axis + 1)
+            projection_in_zarr = self.get_projection_array(channel=channel,
+                                                           axis=axis,
+                                                           wrap_with_dask=False)
+            projection_in_zarr[...] = projection
+
+    def add_channel(self,
+                    name: str,
+                    shape: Tuple[int, ...],
+                    dtype,
+                    chunks: Sequence[int] = None,
+                    enable_projections: bool = True,
+                    codec: str = 'zstd',
+                    clevel: int = 3) -> Any:
         """Adds a channel to this dataset
 
         Parameters

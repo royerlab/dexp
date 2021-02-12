@@ -1,18 +1,5 @@
-from os.path import exists, join
-
 from arbol import aprint
 from numpy import s_
-
-from dexp.datasets.clearcontrol_dataset import CCDataset
-from dexp.datasets.zarr_dataset import ZDataset
-
-
-def _get_dataset_from_path(input_path):
-    if exists(join(input_path, 'stacks')):
-        input_dataset = CCDataset(input_path)
-    else:
-        input_dataset = ZDataset(input_path)
-    return input_dataset
 
 
 def _get_output_path(input_path, output_path, postfix=''):

@@ -14,7 +14,7 @@ def projection_generator(image,
     ----------
     image: image to compute center of mass of.
     axis_range: Axis range to compute projections, can be: (n) for [0, n[, (m,n) for [m,n[, and (m,n,step) for {i*step | m<=i*step<n & i integer}
-    projection_type: Projection type to use when in 'projection' mode: 'mean', 'min', 'max'
+    projection_type: Projection type to use when in 'projection' mode: 'mean', 'min', 'max', 'max-min'
     nb_axis: number of axis to project to, currently only supports 2D projections.
 
     Returns
@@ -44,6 +44,9 @@ def projection_generator(image,
                     projected_image = xp.max(image, axis=proj_axis)
                 elif projection_type == 'min':
                     projected_image = xp.min(image, axis=proj_axis)
+                elif projection_type == 'max-min':
+                    projected_image = xp.max(image, axis=proj_axis)
+                    projected_image -= xp.min(image, axis=proj_axis)
                 else:
                     raise ValueError(f"Unknown projection type: {projection_type}")
 

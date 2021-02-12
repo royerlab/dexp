@@ -12,7 +12,7 @@ from dexp.processing.utils.projection_generator import projection_generator
 
 def sequence_stabilisation_proj(image: 'Array',
                                 axis: int = 0,
-                                projection_type: str = 'mean',
+                                projection_type: str = 'max',
                                 **kwargs
                                 ) -> SequenceRegistrationModel:
     """
@@ -26,7 +26,7 @@ def sequence_stabilisation_proj(image: 'Array',
     ----------
     image: image to stabilise
     axis: sequence axis along which to stabilise image
-    projection_type : Projection type to use when in 'projection' mode: 'mean', 'min', 'max'
+    projection_type : Projection type to use when in 'projection' mode: 'mean', 'min', 'max', 'max-min'
     kwargs: argument passthrough to the 'sequence_stabilisation' method.
 
     Returns
