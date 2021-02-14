@@ -15,7 +15,6 @@ class Backend(ABC):
         """
 
     _local = threading.local()
-    _pool = ThreadPoolExecutor(max_workers=psutil.cpu_count())
 
     @staticmethod
     def reset():
@@ -73,14 +72,10 @@ class Backend(ABC):
     def __exit__(self, type, value, traceback):
         Backend._local.backend_stack.pop()
 
-    def submit(self, *args, **kwargs):
-        self._pool.submit(*args, **kwargs)
 
-    def synchronise(self):
-        """ Synchronises backend computation to this call, i.e. call to this method will block until all computation on backend (and its corresponding device) are finished.
-
-        """
-        pass
+    @abstractmethod
+    def copy(self):
+        raise NotImplementedError('Method not implemented!')
 
     @abstractmethod
     def clear_memory_pool(self):
@@ -108,7 +103,7 @@ class Backend(ABC):
         array converted to backend
 
         """
-        pass
+        raise NotImplementedError('Method not implemented!')
 
     @abstractmethod
     def _to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
@@ -120,7 +115,7 @@ class Backend(ABC):
         dtype : coerce array to given dtype
         force_copy : forces the return array to be a copy
         """
-        pass
+        raise NotImplementedError('Method not implemented!')
 
     @abstractmethod
     def _get_xp_module(self, array=None) -> Any:
@@ -135,7 +130,7 @@ class Backend(ABC):
         -------
         numpy-like module
         """
-        pass
+        raise NotImplementedError('Method not implemented!')
 
     @abstractmethod
     def _get_sp_module(self, array=None) -> Any:
@@ -149,4 +144,4 @@ class Backend(ABC):
         -------
         scipy-like module
         """
-        pass
+        raise NotImplementedError('Method not implemented!')
