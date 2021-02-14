@@ -7,6 +7,7 @@ from dask.array import Array
 from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
+from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.model.sequence_registration_model import SequenceRegistrationModel
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
@@ -130,19 +131,23 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
         pairwise_models = []
         with asection(f"Computing pairwise registrations..."):
 
+            # Current backend:
+            current_backend = Backend.current()
+
             # function to process a subset of the pairwise registrations:
             def process(uv_list):
-                for u, v, fullreg in uv_list:
-                    image_u = image_sequence[u]
-                    image_v = image_sequence[v]
-                    _pairwise_registration(pairwise_models,
-                                           u, v,
-                                           image_u, image_v,
-                                           min_confidence,
-                                           mode,
-                                           fullreg,
-                                           internal_dtype,
-                                           **kwargs)
+                with current_backend.copy():
+                    for u, v, fullreg in uv_list:
+                        image_u = image_sequence[u]
+                        image_v = image_sequence[v]
+                        _pairwise_registration(pairwise_models,
+                                               u, v,
+                                               image_u, image_v,
+                                               min_confidence,
+                                               mode,
+                                               fullreg,
+                                               internal_dtype,
+                                               **kwargs)
 
             # Convenient function to split a sequence into approximately equal sized lists:
             def split_list(a_seq: Sequence, n):
