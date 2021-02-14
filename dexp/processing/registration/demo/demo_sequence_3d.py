@@ -6,8 +6,8 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.sequence import sequence_stabilisation
-from dexp.processing.registration.sequence_proj import sequence_stabilisation_proj
+from dexp.processing.registration.sequence import image_stabilisation
+from dexp.processing.registration.sequence_proj import image_stabilisation_proj
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 
 
@@ -28,11 +28,11 @@ def demo_register_sequence_3d_cupy():
 
 
 def _register_sequence_3d(length_xy=256,
-                          n=64,
-                          drift_strength=0.8,
+                          n=128,
+                          drift_strength=0.9,
                           warp_grid_size=8,
-                          warp_strength=2.5,
-                          ratio_bad_frames=0.0,
+                          warp_strength=1.5,
+                          ratio_bad_frames=0 * 0.05,
                           additive_noise=0.05,
                           multiplicative_noise=0.1,
                           use_projections=False,
@@ -48,6 +48,10 @@ def _register_sequence_3d(length_xy=256,
     vector_field = xp.zeros((warp_grid_size,) * 3 + (3,), dtype=xp.float32)
 
     with asection("generate dataset"):
+
+        random.seed(0)
+        xp.random.seed(0)
+
         # prepare simulation data:
         for i in range(n):
             # drift:
@@ -65,12 +69,12 @@ def _register_sequence_3d(length_xy=256,
 
             # simulate sudden imaging jumps:
             if i == n // 2 - n // 3:
-                x += 7
-                y += -5
-                z += 8
+                x += 17
+                y += -25
+                z += 18
             if i == n // 2 + n // 3:
-                x += -7
-                y += +9
+                x += -27
+                y += +19
                 z += -11
 
             # keep for later:
@@ -106,9 +110,9 @@ def _register_sequence_3d(length_xy=256,
     with asection("register_translation_2d"):
         # compute image sequence stabilisation model:
         if use_projections:
-            model = sequence_stabilisation_proj(shifted, axis=0)
+            model = image_stabilisation_proj(shifted, axis=0)
         else:
-            model = sequence_stabilisation(shifted, axis=0)
+            model = image_stabilisation(shifted, axis=0)
         aprint(f"model: {model}")
 
     with asection("shift back"):

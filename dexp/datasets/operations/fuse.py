@@ -55,6 +55,7 @@ def dataset_fuse(dataset,
     # shape and dtype of views to fuse:
     shape = views[0].shape
     dtype = views[0].dtype
+    nb_timepoints = shape[0]
 
     # We allocate last minute once we know the shape...
     from dexp.datasets.zarr_dataset import ZDataset
@@ -68,7 +69,7 @@ def dataset_fuse(dataset,
             aprint(f"Loading registration shifts from existing file! ({model_list_filename})")
             models = model_list_from_file(model_list_filename)
         else:
-            models = [None, ] * shape[0]
+            models = [None, ] * nb_timepoints
 
     # hold equalisation ratios:
     equalisation_ratios_reference: List[Sequence[float]] = [[]]
@@ -80,7 +81,7 @@ def dataset_fuse(dataset,
     def process(tp, device, workers):
         try:
 
-            with asection(f"Loading channels {channels} for time point {tp}"):
+            with asection(f"Loading channels {channels} for time point {tp}/{nb_timepoints}"):
                 views_tp = tuple(view[tp].compute() for view in views)
 
             with CupyBackend(device, exclusive=True, enable_unified_memory=True):
@@ -89,7 +90,7 @@ def dataset_fuse(dataset,
 
                 # If we don't have a model for that timepoint we load one from a previous timepoint
                 if model is None and tp >= workers:
-                    aprint(f"we don't have a registration model for timepoint {tp} so we load one from a previous timepoint: {tp - workers}")
+                    aprint(f"we don't have a registration model for timepoint {tp}/{nb_timepoints} so we load one from a previous timepoint: {tp - workers}")
                     model = models[tp - workers]
 
                 if microscope == 'simview':
@@ -155,7 +156,7 @@ def dataset_fuse(dataset,
             if 'fused' not in dest_dataset.channels():
                 try:
                     dest_dataset.add_channel('fused',
-                                             shape=(shape[0],) + tp_array.shape,
+                                             shape=(nb_timepoints,) + tp_array.shape,
                                              dtype=dtype,
                                              codec=compression,
                                              clevel=compression_level)
@@ -167,7 +168,7 @@ def dataset_fuse(dataset,
                                          time_point=tp,
                                          stack_array=tp_array)
 
-            aprint(f"Done processing time point: {tp} .")
+            aprint(f"Done processing time point: {tp}/{nb_timepoints} .")
 
         except Exception as error:
             aprint(error)
@@ -183,9 +184,9 @@ def dataset_fuse(dataset,
     aprint(f"Number of workers: {workers}")
 
     if workers > 1:
-        Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)], workers) for tp in range(0, shape[0]))
+        Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)], workers) for tp in range(0, nb_timepoints))
     else:
-        for tp in range(0, shape[0]):
+        for tp in range(0, nb_timepoints):
             process(tp, devices[0], workers)
 
     if not loadreg:

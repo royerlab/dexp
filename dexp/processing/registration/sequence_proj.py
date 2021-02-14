@@ -6,15 +6,15 @@ from dask.array import Array
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.sequence_registration_model import SequenceRegistrationModel
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
-from dexp.processing.registration.sequence import sequence_stabilisation
+from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.utils.projection_generator import projection_generator
 
 
-def sequence_stabilisation_proj(image: 'Array',
-                                axis: int = 0,
-                                projection_type: str = 'max',
-                                **kwargs
-                                ) -> SequenceRegistrationModel:
+def image_stabilisation_proj(image: 'Array',
+                             axis: int = 0,
+                             projection_type: str = 'max',
+                             **kwargs
+                             ) -> SequenceRegistrationModel:
     """
     Computes a sequence stabilisation model for an image sequence indexed along a specified axis.
     Instead of running a full nD registration, this uses projections instead, economising memory and compute.
@@ -43,14 +43,14 @@ def sequence_stabilisation_proj(image: 'Array',
                                        axis_range=(1, ndim),
                                        projection_type=projection_type)
 
-    return sequence_stabilisation_proj_(projections=projections,
-                                        ndim=ndim - 1)
+    return image_stabilisation_proj_(projections=projections,
+                                     ndim=ndim - 1)
 
 
-def sequence_stabilisation_proj_(projections: Sequence[Tuple],
-                                 ndim: int,
-                                 **kwargs
-                                 ) -> SequenceRegistrationModel:
+def image_stabilisation_proj_(projections: Sequence[Tuple],
+                              ndim: int,
+                              **kwargs
+                              ) -> SequenceRegistrationModel:
     """
     Same as 'sequence_stabilisation_proj' but takes projections instead, usefull if the projections are already available.
 
@@ -68,7 +68,7 @@ def sequence_stabilisation_proj_(projections: Sequence[Tuple],
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
-    seq_reg_models = list((u - 1, v - 1, sequence_stabilisation(image=projection, axis=0, **kwargs)) for u, v, projection in projections)
+    seq_reg_models = list((u - 1, v - 1, image_stabilisation(image=projection, axis=0, **kwargs)) for u, v, projection in projections)
 
     # first we figure out the length of the sequence, and figure out the kind of model:
     _, _, model = seq_reg_models[0]

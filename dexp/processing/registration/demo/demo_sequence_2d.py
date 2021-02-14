@@ -7,7 +7,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.sequence import sequence_stabilisation
+from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.synthetic_datasets.binary_blobs import binary_blobs
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 
@@ -26,11 +26,11 @@ def demo_register_sequence_2d_cupy():
 
 
 def _register_sequence_2d(length_xy=512,
-                          n=320,
-                          drift_strength=2,
-                          warp_grid_size=8,
+                          n=512,
+                          drift_strength=0.9,
+                          warp_grid_size=6,
                           warp_strength=2.5,
-                          ratio_bad_frames=0.1,
+                          ratio_bad_frames=0.05,
                           additive_noise=0.05,
                           multiplicative_noise=0.1,
                           run_test=False,
@@ -45,6 +45,10 @@ def _register_sequence_2d(length_xy=512,
     vector_field = xp.zeros((warp_grid_size,) * 2 + (2,), dtype=xp.float32)
 
     with asection("generate dataset"):
+
+        random.seed(0)
+        xp.random.seed(0)
+
         # prepare simulation data:
         for i in range(n):
             # drift:
@@ -60,11 +64,13 @@ def _register_sequence_2d(length_xy=512,
 
             # simulate sudden imaging jumps:
             if i == n // 2 - n // 3:
-                x += 27
+                x += 38
                 y += -35
+                vector_field += 6 * warp_strength * xp.random.uniform(low=-1, high=+1, size=(warp_grid_size,) * 2 + (2,))
             if i == n // 2 + n // 3:
-                x += -37
-                y += +29
+                x += 37
+                y += -29
+                vector_field += 6 * warp_strength * xp.random.uniform(low=-1, high=+1, size=(warp_grid_size,) * 2 + (2,))
 
             # keep for later:
             shifts.append((x, y))
@@ -82,8 +88,9 @@ def _register_sequence_2d(length_xy=512,
         _, _, image3 = generate_nuclei_background_data(add_noise=False,
                                                        length_xy=length_xy // 4,
                                                        length_z_factor=1,
-                                                       independent_haze=True,
+                                                       independent_haze=False,
                                                        sphere=True,
+                                                       add_offset=False,
                                                        zoom=4,
                                                        dtype=xp.float32)
         image3 = image3[image3.shape[0] // 2].astype(xp.float32)
@@ -101,6 +108,7 @@ def _register_sequence_2d(length_xy=512,
         shifted = xp.stack((sp.ndimage.shift(warp(i, vf, vector_field_upsampling=4), shift=s) for i, s, vf in zip(image, shifts, vector_fields)))
         shifted *= xp.clip(xp.random.normal(loc=1, scale=multiplicative_noise, size=shifted.shape, dtype=xp.float32), 0.1, 10)
         shifted += additive_noise * xp.random.rand(*shifted.shape, dtype=xp.float32)
+        shifted = xp.clip(shifted - 50, 0)
 
         # simulate dropped, highly corrupted frames:
         for _ in range(int(shifted.shape[0] * ratio_bad_frames)):
@@ -112,7 +120,7 @@ def _register_sequence_2d(length_xy=512,
 
     with asection("register_translation_2d"):
         # compute image sequence stabilisation model:
-        model = sequence_stabilisation(shifted, axis=0)
+        model = image_stabilisation(shifted, axis=0, min_confidence=0.3)
         aprint(f"model: {model}")
 
     with asection("shift back"):

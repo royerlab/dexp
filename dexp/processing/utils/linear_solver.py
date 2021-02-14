@@ -9,6 +9,7 @@ from dexp.processing.backends.backend import Backend
 
 def linsolve(a, y, x0=None,
              maxiter: int = 1e12,
+             maxfun: int = 1e12,
              tolerance: float = 1e-6,
              order_error: float = 1,
              order_reg: float = 1,
@@ -19,8 +20,6 @@ def linsolve(a, y, x0=None,
              verbose: bool = False):
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
-    # a = Backend.to_numpy(a)
-    # y = Backend.to_numpy(y)
 
     a = Backend.to_backend(a)
     y = Backend.to_backend(y)
@@ -39,7 +38,10 @@ def linsolve(a, y, x0=None,
 
     def fun(x):
         x = Backend.to_backend(x)
-        objective = float(xp.linalg.norm(a @ x - y, ord=order_error) + alpha_reg * xp.linalg.norm(x, ord=order_reg))
+        if alpha_reg == 0:
+            objective = float(xp.linalg.norm(a @ x - y, ord=order_error))
+        else:
+            objective = float(xp.linalg.norm(a @ x - y, ord=order_error) + alpha_reg * xp.linalg.norm(x, ord=order_reg))
         return objective
 
     result = minimize(fun,
@@ -49,8 +51,13 @@ def linsolve(a, y, x0=None,
                       bounds=bounds if limited else None,
                       options={'disp': verbose,
                                'maxiter': maxiter,
+                               'maxfun': maxfun,
                                'gtol': tolerance},
                       )
     if result.nit == 0:
         aprint(f"Warning: optimisation finished after {result.nit} iterations!")
+
+    if not result.success:
+        raise RuntimeWarning(f"Convergence failed: '{result.message}' after {result.nit} iterations and {result.nfev} function evaluations.")
+
     return result.x

@@ -30,7 +30,6 @@ blosc.set_nthreads(_nb_threads)
 
 
 class ZDataset(BaseDataset):
-
     _default_chunks = (1, 128, 512, 512)
 
     def __init__(self, path: str, mode: str = 'r', store: str = 'dir'):

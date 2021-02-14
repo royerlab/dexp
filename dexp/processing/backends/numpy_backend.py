@@ -2,6 +2,7 @@ from typing import Any
 
 import numpy
 import scipy
+from dask.array import Array
 
 from dexp.processing.backends.backend import Backend
 
@@ -28,6 +29,10 @@ class NumpyBackend(Backend):
         pass
 
     def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
+
+        if isinstance(array, Array):
+            return self._to_numpy(array.compute(), dtype=dtype, force_copy=force_copy)
+
         if dtype:
             return array.astype(dtype, copy=force_copy)
         elif force_copy:
@@ -36,6 +41,10 @@ class NumpyBackend(Backend):
             return numpy.asarray(array)
 
     def _to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
+
+        if isinstance(array, Array):
+            return self._to_backend(array.compute(), dtype=dtype, force_copy=force_copy)
+
         if dtype:
             return array.astype(dtype, copy=force_copy)
         elif force_copy:

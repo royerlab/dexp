@@ -6,7 +6,6 @@ import numpy
 
 class BaseDataset(ABC):
 
-
     def __init__(self, dask_backed=False):
         """ Instanciates a Base Dataset
 

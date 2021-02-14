@@ -17,24 +17,24 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
 @click.option('--codec', '-z', default=_default_codec, help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ', show_default=True)
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)
-@click.option('--minconfidence', '-mc', type=float, default=0.3, help='Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.', show_default=True)  #
+@click.option('--minconfidence', '-mc', type=float, default=0.7, help='Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def stabilize(input_paths,
-           output_path,
-           channels,
-           slicing,
-           store,
-           codec,
-           clevel,
-           overwrite,
-           minconfidence,
-           workers,
-           workersbackend,
-           devices,
-           check):
+              output_path,
+              channels,
+              slicing,
+              store,
+              codec,
+              clevel,
+              overwrite,
+              minconfidence,
+              workers,
+              workersbackend,
+              devices,
+              check):
     input_dataset, input_paths = glob_datasets(input_paths)
     output_path = _get_output_path(input_paths[0], output_path, "_stabilized")
 

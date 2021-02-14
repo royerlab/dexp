@@ -11,7 +11,7 @@ from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.sequence_proj import sequence_stabilisation_proj
+from dexp.processing.registration.sequence_proj import image_stabilisation_proj
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 
 
@@ -132,7 +132,7 @@ def _test_stabilize(length_xy=256,
         zarr_output_array = numpy.asarray(output_dataset.get_array('channel'))
 
         # stabilise with lower level API:
-        model = sequence_stabilisation_proj(shifted, axis=0, projection_type='max')
+        model = image_stabilisation_proj(shifted, axis=0, projection_type='max')
         aprint(f"model: {model}")
 
         # apply stabilisation:

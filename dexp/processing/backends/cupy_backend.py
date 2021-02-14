@@ -6,6 +6,7 @@ from typing import Any
 
 import numpy
 from arbol import aprint
+from dask.array import Array
 
 from dexp.processing.backends.backend import Backend
 
@@ -197,7 +198,11 @@ class CupyBackend(Backend):
 
     def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         import cupy
-        if cupy.get_array_module(array) == cupy:
+
+        if isinstance(array, Array):
+            return self._to_numpy(array.compute(), dtype=dtype, force_copy=force_copy)
+
+        elif cupy.get_array_module(array) == cupy:
             array = cupy.asnumpy(array)
 
         if dtype:
@@ -210,7 +215,11 @@ class CupyBackend(Backend):
     def _to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
 
         import cupy
-        if cupy.get_array_module(array) == cupy:
+
+        if isinstance(array, Array):
+            return self._to_backend(array.compute(), dtype=dtype, force_copy=force_copy)
+
+        elif cupy.get_array_module(array) == cupy:
             if dtype:
                 return array.astype(dtype, copy=force_copy)
             elif force_copy:

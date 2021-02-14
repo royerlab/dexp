@@ -52,6 +52,7 @@ def dataset_deconv(dataset: BaseDataset,
 
         shape = array.shape
         chunks = ZDataset._default_chunks
+        nb_timepoints = shape[0]
 
         dest_array = dest_dataset.add_channel(name=channel,
                                               shape=shape,
@@ -75,7 +76,7 @@ def dataset_deconv(dataset: BaseDataset,
         def process(tp, device):
 
             try:
-                with asection(f"Loading channel: {channel} for time point {tp}"):
+                with asection(f"Loading channel: {channel} for time point {tp}/{nb_timepoints}"):
                     tp_array = array[tp].compute()
 
                 with CupyBackend(device, exclusive=True):
@@ -110,12 +111,12 @@ def dataset_deconv(dataset: BaseDataset,
                     with asection(f"Moving array from backend to numpy."):
                         tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
 
-                with asection(f"Saving deconvolved stack for time point {tp}, shape:{array.shape}, dtype:{array.dtype}"):
+                with asection(f"Saving deconvolved stack for time point {tp}, shape:{tp_array.shape}, dtype:{array.dtype}"):
                     dest_dataset.write_stack(channel=channel,
                                              time_point=tp,
                                              stack_array=tp_array)
 
-                aprint(f"Done processing time point: {tp} .")
+                aprint(f"Done processing time point: {tp}/{nb_timepoints} .")
 
             except Exception as error:
                 aprint(error)
@@ -131,9 +132,9 @@ def dataset_deconv(dataset: BaseDataset,
         aprint(f"Number of workers: {workers}")
 
         if workers > 1:
-            Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, shape[0]))
+            Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, nb_timepoints))
         else:
-            for tp in range(0, shape[0]):
+            for tp in range(0, nb_timepoints):
                 process(tp, devices[0])
     aprint(dest_dataset.info())
     if check:
