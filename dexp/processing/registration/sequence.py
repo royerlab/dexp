@@ -130,27 +130,40 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
         pairwise_models = []
         with asection(f"Computing pairwise registrations..."):
 
-            def process(u, v, fullreg):
-                image_u = image_sequence[u]
-                image_v = image_sequence[v]
-                _pairwise_registration(pairwise_models,
-                                       u, v,
-                                       image_u, image_v,
-                                       min_confidence,
-                                       mode,
-                                       fullreg,
-                                       internal_dtype,
-                                       **kwargs)
+            # function to process a subset of the pairwise registrations:
+            def process(uv_list):
+                for u, v, fullreg in uv_list:
+                    image_u = image_sequence[u]
+                    image_v = image_sequence[v]
+                    _pairwise_registration(pairwise_models,
+                                           u, v,
+                                           image_u, image_v,
+                                           min_confidence,
+                                           mode,
+                                           fullreg,
+                                           internal_dtype,
+                                           **kwargs)
 
+            # Convenient function to split a sequence into approximately equal sized lists:
+            def split_list(a_seq: Sequence, n):
+                a_list = list(a_seq)
+                k, m = divmod(len(a_list), n)
+                return (a_list[_i * k + min(_i, m):(_i + 1) * k + min(_i + 1, m)] for _i in range(n))
+
+            # We split the uv_set into approx. equal lists:
+            uv_list_list = split_list(uv_set)
+
+            # Setup the number of workers:
             if workers == -1:
                 workers = os.cpu_count() // 2
             aprint(f"Number of workers: {workers}")
 
+            # Start jobs:
             if workers > 1:
-                Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(u, v, fullreg) for u, v, fullreg in uv_set)
+                Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(uv_list) for uv_list in uv_list_list)
             else:
-                for u, v, fullreg in uv_set:
-                    process(u, v, fullreg)
+                for uv_list in uv_list_list:
+                    process(uv_list)
 
         # if use_center_of_mass_shifts:
         #     with asection(f"Computing pairwise center-of-mass shifts..."):

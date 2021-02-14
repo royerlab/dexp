@@ -1,5 +1,6 @@
 from typing import Union, Tuple
 
+import numpy
 from arbol import asection, aprint, section
 
 from dexp.processing.backends.backend import Backend
@@ -44,6 +45,9 @@ def register_warp_multiscale_nd(image_a,
     """
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
+
+    ima = numpy.zeros(10,23)
+    ima.pad
 
     if image_a.shape != image_b.shape:
         raise ValueError("Image must have same shape!")

@@ -15,7 +15,7 @@ def fuse_dct_nd(image_a,
     image_a : First image to fuse
     image_b : Second image to fuse
     cutoff : frequency cutoff
-    clip : C;lip fused image to the min and max voxel values of the original images
+    clip : Clip fused image to the min and max voxel values of the original images
     -- i.e. the fused image must remain within the bounds of the original images.
     internal_dtype : dtype for internal computation
 
