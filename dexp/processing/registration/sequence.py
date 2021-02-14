@@ -57,7 +57,7 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
                                  order_error: float = 1.0,
                                  order_reg: float = 2.0,
                                  alpha_reg: float = 1e-6,
-                                 workers: int = 1,
+                                 workers: int = -1,
                                  workersbackend: str = 'threading',
                                  internal_dtype=None,
                                  **kwargs
@@ -258,6 +258,7 @@ def _pairwise_registration(pairwise_models,
         model = register_translation_maxproj_nd(image_u, image_v,
                                                 _display_phase_correlation=False,
                                                 **kwargs)
+        model.to_numpy()
         confidence = model.overall_confidence()
 
         if confidence >= min_confidence and full_registration:
@@ -270,6 +271,7 @@ def _pairwise_registration(pairwise_models,
             com_u = center_of_mass(image_u, projection_type='max', offset_mode='middle')
             com_v = center_of_mass(image_v, projection_type='max', offset_mode='middle')
             model = TranslationRegistrationModel(shift_vector=com_u - com_v, confidence=1)
+            model.to_numpy()
             model.u = u
             model.v = v
             pairwise_models.append(model)
