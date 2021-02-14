@@ -150,13 +150,13 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
                 k, m = divmod(len(a_list), n)
                 return (a_list[_i * k + min(_i, m):(_i + 1) * k + min(_i + 1, m)] for _i in range(n))
 
-            # We split the uv_set into approx. equal lists:
-            uv_list_list = split_list(uv_set)
-
             # Setup the number of workers:
             if workers == -1:
                 workers = os.cpu_count() // 2
             aprint(f"Number of workers: {workers}")
+
+            # We split the uv_set into approx. equal lists:
+            uv_list_list = split_list(uv_set, workers)
 
             # Start jobs:
             if workers > 1:
@@ -164,30 +164,6 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
             else:
                 for uv_list in uv_list_list:
                     process(uv_list)
-
-        # if use_center_of_mass_shifts:
-        #     with asection(f"Computing pairwise center-of-mass shifts..."):
-        #         for scale in range(2, 6):
-        #             step = length // scale
-        #             if step >= 1:
-        #                 for offset in range(0, step):
-        #                     for u in range(0, length, step):
-        #                         v = u + step
-        #                         if v >= length:
-        #                             continue
-        #
-        #                         image_u = image_sequence[u]
-        #                         image_v = image_sequence[v]
-        #
-        #                         if mode == 'translation':
-        #                             com_u = center_of_mass(image_u, projection_type='max', offset_mode='middle')
-        #                             com_v = center_of_mass(image_v, projection_type='max', offset_mode='middle')
-        #                             model = TranslationRegistrationModel(shift_vector=com_u - com_v, confidence=1)
-        #                             model.u = u
-        #                             model.v = v
-        #                             pairwise_models.append(model)
-        #                         else:
-        #                             raise ValueError(f"Unsupported sequence stabilisation mode: {mode}")
 
         nb_models = len(pairwise_models)
         aprint(f"Number of models obtained: {nb_models} for a sequence of length:{length}")
