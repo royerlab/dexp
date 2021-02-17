@@ -1,6 +1,7 @@
 import tempfile
 from os.path import join
 
+import numpy
 from skimage.data import binary_blobs
 from skimage.filters import gaussian
 
@@ -124,30 +125,35 @@ def test_add_channels_to():
                              mode='w',
                              store='dir')
 
-        zdataset1.add_channel(name='first',
-                              shape=(10, 100, 100, 100),
-                              chunks=(1, 50, 50, 50),
+        array1 = zdataset1.add_channel(name='first',
+                              shape=(10, 11, 12, 13),
+                              chunks=None,
                               dtype='f4',
                               codec='zstd',
                               clevel=3)
+
+        array1[...] = 1
+
 
         dataset2_path = join(tmpdir, 'test2.zarr')
         zdataset2 = ZDataset(path=dataset2_path,
                              mode='w',
                              store='dir')
 
-        zdataset2.add_channel(name='second',
+        array2 = zdataset2.add_channel(name='second',
                               shape=(17, 10, 20, 30),
-                              chunks=(1, 5, 1, 6),
+                              chunks=None,
                               dtype='f4',
                               codec='zstd',
                               clevel=3)
+
+        array2[...] = 1
 
         zdataset2.add_channels_to(dataset1_path,
                                   channels=('second',),
                                   rename=('second-',),
                                   )
-        zdataset2.close()
+
 
         zdataset1_reloaded = ZDataset(path=dataset1_path,
                                       mode='r',
@@ -162,6 +168,11 @@ def test_add_channels_to():
         assert zdataset1_reloaded.dtype('first') == zdataset1.dtype('first')
         assert zdataset1_reloaded.dtype('second-') == zdataset2.dtype('second')
 
-        assert (zdataset1_reloaded.get_array('second-', wrap_with_dask=True).compute() == zdataset2.get_array('second', wrap_with_dask=True).compute()).all()
+        a = zdataset1_reloaded.get_array('second-', wrap_with_dask=True).compute()
+        b = zdataset2.get_array('second', wrap_with_dask=True).compute()
+        assert numpy.all(a == b)
 
+
+        zdataset1.close()
+        zdataset2.close()
         zdataset1_reloaded.close()

@@ -217,23 +217,17 @@ class ZDataset(BaseDataset):
 
     def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False):
         array = self._arrays[channel]
-        if wrap_with_dask:
-            return dask.array.from_array(array, chunks=array.chunks)
-        else:
-            return array
+        return dask.array.from_array(array, chunks=array.chunks) if wrap_with_dask else array
 
     def get_stack(self, channel: str, time_point: int, per_z_slice: bool = False, wrap_with_dask: bool = False):
         stack_array = self.get_array(channel, per_z_slice=per_z_slice, wrap_with_dask=wrap_with_dask)[time_point]
         return stack_array
 
     def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
-        array = self._projections[self._projection_name(axis, channel)]
-        if wrap_with_dask:
-            return dask.array.from_array(array, chunks=array.chunks)
-        else:
-            return array
+        array = self._projections[self._projection_name(channel, axis)]
+        return dask.array.from_array(array, chunks=array.chunks) if wrap_with_dask else array
 
-    def _projection_name(self, axis: int, channel: str):
+    def _projection_name(self, channel: str, axis: int):
         return f'{channel}_projection_{axis}'
 
     def write_stack(self, channel: str, time_point: int, stack_array: numpy.ndarray):
@@ -317,7 +311,7 @@ class ZDataset(BaseDataset):
         if enable_projections:
             ndim = len(shape) - 1
             for axis in range(ndim):
-                proj_name = self._projection_name(axis, name)
+                proj_name = self._projection_name(name, axis)
 
                 proj_shape = list(shape)
                 del proj_shape[1 + axis]
@@ -370,7 +364,7 @@ class ZDataset(BaseDataset):
 
         for channel, new_name in zip(channels, rename):
             try:
-                array = self.get_array(channel, per_z_slice=False)
+                array = self.get_array(channel, per_z_slice=False, wrap_with_dask=False)
                 source_group = self._get_group_for_channel(channel)
                 source_arrays = source_group.items()
 
@@ -383,21 +377,23 @@ class ZDataset(BaseDataset):
                 aprint(f"Fast copying channel {channel} renamed to {new_name} of shape {array.shape} and dtype {array.dtype} ")
 
                 for name, array in source_arrays:
-                    aprint(f"Fast copying array {name} to {new_name}")
-                    convenience.copy(source=array,
-                                     dest=dest_group,
-                                     name=new_name,
-                                     if_exists='replace' if overwrite else 'raise')
+                    if name in self.channels():
+                        aprint(f"Fast copying array {name} to {new_name}")
+                        convenience.copy(source=array,
+                                         dest=dest_group,
+                                         name=new_name,
+                                         if_exists='replace' if overwrite else 'raise')
 
-                    if add_projections:
-                        ndim = array.ndim - 1
-                        for axis in range(ndim):
-                            proj_array = self.get_projection_array(channel=channel,
-                                                                   axis=axis)
-                            convenience.copy(source=proj_array,
-                                             dest=dest_group,
-                                             name=self._projection_name(new_name, axis),
-                                             if_exists='replace' if overwrite else 'raise')
+                        if add_projections:
+                            ndim = array.ndim - 1
+                            for axis in range(ndim):
+                                proj_array = self.get_projection_array(channel=channel,
+                                                                       axis=axis,
+                                                                       wrap_with_dask=False)
+                                convenience.copy(source=proj_array,
+                                                 dest=dest_group,
+                                                 name=self._projection_name(new_name, axis),
+                                                 if_exists='replace' if overwrite else 'raise')
 
             except (CopyError, NotImplementedError):
                 aprint(f"Channel already exists, set option '-w' to force overwriting! ")
