@@ -13,8 +13,8 @@ def test_joined_dataset():
     with tempfile.TemporaryDirectory() as tmpdir:
         print('created temporary directory', tmpdir)
 
-        size = 32
-        chunks = 16
+        size = 12
+        chunks = 6
 
         dataset_list = []
 
@@ -33,7 +33,7 @@ def test_joined_dataset():
 
             zdataset.add_channel(name='second',
                                  shape=(17 + i // 2, size, size, size),
-                                 chunks=(1, chunks, chunks, chunks),
+                                 chunks=None,
                                  dtype='f4',
                                  codec='zstd',
                                  clevel=3)

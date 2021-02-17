@@ -332,7 +332,7 @@ class ZDataset(BaseDataset):
         return array
 
     def add_channels_to(self,
-                        path: str,
+                        zdataset: Union[str, 'ZDataset'],
                         channels: Sequence[str],
                         rename: Sequence[str],
                         store: str = None,
@@ -343,21 +343,18 @@ class ZDataset(BaseDataset):
 
         Parameters
         ----------
-        path : name of channel.
+        path : zarr dataset or path of zarr dataset.
         channels: list or tuple of channels to add
         rename: list or tuple of new names for channels
         store: type of zarr store: 'dir' or 'zip', only usefull if store does not exist yet!
         add_projections: If True the projections are also copied.
         overwrite: overwrite destination (not fully functional for zip stores!)
 
-        Returns
-        -------
-        zarr array
-
-
         """
 
-        zdataset = ZDataset(path, 'a', store)
+        if type(zdataset) is str:
+            zdataset = ZDataset(zdataset, 'a', store)
+
         root = zdataset._root_group
 
         aprint(f"Existing channels: {zdataset.channels()}")
