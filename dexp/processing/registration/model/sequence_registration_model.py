@@ -1,6 +1,8 @@
 import json
 from typing import List, Sequence, Tuple, Optional, Union
 
+import numpy
+
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
 
@@ -59,8 +61,8 @@ class SequenceRegistrationModel:
         return self
 
     def overall_confidence(self) -> float:
-        xp = Backend.get_xp_module()
-        return float(xp.mean(model.overall_confidence() for model in self.model_list))
+        confidences = list(model.overall_confidence() for model in self.model_list)
+        return float(numpy.median(confidences))
 
     def padding(self):
         padding_list = list(model.padding() for model in self.model_list)

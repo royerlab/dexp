@@ -11,7 +11,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
 
     def __init__(self,
                  shift_vector: Union[Sequence[float], numpy.ndarray],
-                 confidence: Union[numpy.ndarray, float] = 1,
+                 confidence: Union[numpy.ndarray, float] = 1.0,
                  force_numpy: bool = True):
 
         """ Instantiates a translation registration model

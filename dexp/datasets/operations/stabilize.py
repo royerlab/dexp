@@ -21,7 +21,14 @@ def dataset_stabilize(input_dataset: BaseDataset,
                       compression_codec: str = 'zstd',
                       compression_level: int = 3,
                       overwrite: bool = False,
+                      scales: Sequence[int] = None,
                       min_confidence: float = 0.3,
+                      enable_com: bool = True,
+                      quantile: float = 0.5,
+                      tolerance: float = 1e-7,
+                      order_error: float = 1.0,
+                      order_reg: float = 2.0,
+                      alpha_reg: float = 1e-1,
                       pad: bool = True,
                       integral: bool = True,
                       workers: int = -1,
@@ -43,7 +50,14 @@ def dataset_stabilize(input_dataset: BaseDataset,
     compression_codec: compression codec to be used ('zstd', 'blosclz', 'lz4', 'lz4hc', 'zlib' or 'snappy').
     compression_level: An integer between 0 and 9 specifying the compression level.
     overwrite: overwrite output dataset if already exists
+    scales: Sequence of integers representing the distances between timepoints to consider for pairwise registrations.
     min_confidence: minimal confidence below which pairwise registrations are rejected for the stabilisation.
+    enable_com: enable center of mass fallback when standard registration fails.
+    quantile: quantile to cut-off background in center-of-mass calculation
+    tolerance: tolerance for linear solver.
+    order_error: order for linear solver error term.
+    order_reg: order for linear solver regularisation term.
+    alpha_reg: multiplicative coefficient for regularisation term.
     pad: pad input dataset.
     integral: Set to True to only allow integral translations, False to allow subpixel accurate translations (induces blur!).
     workers: number of workers, if -1 then the number of workers == number of cores or devices
@@ -67,6 +81,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
             array = array[slicing]
 
         # Shape and chunks for array:
+        ndim = array.ndim
         shape = array.shape
         dtype = array.dtype
         chunks = ZDataset._default_chunks
@@ -83,10 +98,19 @@ def dataset_stabilize(input_dataset: BaseDataset,
             projections.append((*proj_axis, projection))
 
         # Perform stabilisation:
-        model = image_stabilisation_proj_(projections=projections,
-                                          min_confidence=min_confidence,
-                                          ndim=3,
-                                          internal_dtype=numpy.float16)
+        with CupyBackend(devices[0], enable_unified_memory=True):
+            model = image_stabilisation_proj_(projections=projections,
+                                              scales=scales,
+                                              min_confidence=min_confidence,
+                                              enable_com=enable_com,
+                                              quantile=quantile,
+                                              tolerance=tolerance,
+                                              order_error=order_error,
+                                              order_reg=order_reg,
+                                              alpha_reg=alpha_reg,
+                                              ndim=ndim - 1,
+                                              internal_dtype=numpy.float16)
+            model.to_numpy()
 
         # Shape of the resulting array:
         padded_shape = (nb_timepoints,) + model.padded_shape(shape[1:])
@@ -117,7 +141,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
                             tp_array = model.apply(tp_array, index=tp, pad=pad, integral=integral)
                             tp_array = Backend.to_numpy(tp_array, dtype=array.dtype, force_copy=False)
 
-                    with asection(f"Saving stabilized stack for time point {tp}, shape:{tp_array.shape}, dtype:{array.dtype}"):
+                    with asection(f"Saving stabilized stack for time point {tp}/{nb_timepoints}, shape:{tp_array.shape}, dtype:{array.dtype}"):
                         output_dataset.write_stack(channel=channel,
                                                    time_point=tp,
                                                    stack_array=tp_array)
@@ -126,7 +150,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
 
             except Exception as error:
                 aprint(error)
-                aprint(f"Error occurred while processing time point {tp} !")
+                aprint(f"Error occurred while processing time point {tp}/{nb_timepoints} !")
                 import traceback
                 traceback.print_exc()
                 if stop_at_exception:

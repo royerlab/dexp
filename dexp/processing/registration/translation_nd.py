@@ -80,13 +80,14 @@ def register_translation_nd(image_a,
                                exponent=1,
                                normalise_input=False)
 
-    # We compute the phase correlation:
+    # Compute the phase correlation:
     raw_correlation = _phase_correlation(image_a, image_b, internal_dtype)
     correlation = raw_correlation
 
-    # max range is computed from max_range_ratio:
+    # Max range is computed from max_range_ratio:
     max_ranges = tuple(int(0.5 * max_range_ratio * s) for s in correlation.shape)
     # print(f"max_ranges={max_ranges}")
+
     # We estimate the noise floor of the correlation:
     center = tuple(s // 2 for s in correlation.shape)
     empty_region = correlation[tuple(slice(0, c - r) for c, r in zip(center, max_ranges))]
@@ -95,26 +96,24 @@ def register_translation_nd(image_a,
         noise_floor_level = xp.mean(empty_region.ravel()[::decimate])
     # print(f"noise_floor_level={noise_floor_level}")
 
-    # We roll the array and crop it to restrict ourself to the search region:
+    # Roll the array and crop it to restrict ourself to the search region:
     correlation = correlation[tuple(slice(max(c - r, 0), min(c + r, s)) for c, r, s in zip(center, max_ranges, correlation.shape))]
 
-    # we use that floor to clip anything below:
+    # Use that floor to clip anything below:
     correlation = xp.maximum(correlation, noise_floor_level, out=correlation)
     correlation -= noise_floor_level
 
-    # denoise cropped correlation image:
+    # Denoise cropped correlation image:
     if sigma > 0:
         correlation = sp.ndimage.filters.gaussian_filter(correlation, sigma=sigma, mode='wrap')
 
-    # We use the max as quickly computed proxy for the real center:
+    # Use the max as quickly computed proxy for the real center:
     max_correlation_flat_index = xp.argmax(correlation, axis=None)
     rough_shift = xp.unravel_index(max_correlation_flat_index, correlation.shape)
     max_correlation = correlation[rough_shift]
 
-    # We compute the signed shift vector:
+    # Compute the signed shift vector:
     shift_vector = xp.array(tuple(int(rs) - r for rs, r in zip(rough_shift, max_ranges)))
-    shift_vector = Backend.to_numpy(shift_vector)
-    # print(f"signed_rough_shift= {signed_rough_shift}")
 
     # Compute confidence:
     masked_correlation = correlation.copy()
@@ -123,10 +122,6 @@ def register_translation_nd(image_a,
     background_correlation_max = xp.max(masked_correlation)
     epsilon = 1e-6
     confidence = (max_correlation - background_correlation_max) / (epsilon + max_correlation)
-    # print(f"shift={signed_rough_shift}, confidence={confidence}")
-
-    # shift vector:
-    shift_vector = list(shift_vector)
 
     if _display_phase_correlation:
         # DO NOT DELETE, INSTRUMENTATION CODE FOR DEBUGGING
@@ -143,7 +138,8 @@ def register_translation_nd(image_a,
             viewer.add_image(_c(raw_correlation), name='raw_correlation', colormap='viridis')
             viewer.add_image(_c(correlation), name='correlation', colormap='viridis')
             viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='bop orange', blending='additive')
-            viewer.grid_view(2, 3, 1)
+            viewer.grid.enabled = True
+            viewer.grid.shape = (2, 3)
 
     return TranslationRegistrationModel(shift_vector=shift_vector, confidence=confidence, force_numpy=force_numpy)
 

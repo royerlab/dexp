@@ -120,7 +120,7 @@ def _register_sequence_2d(length_xy=512,
 
     with asection("register_translation_2d"):
         # compute image sequence stabilisation model:
-        model = image_stabilisation(shifted, axis=0, min_confidence=0.3)
+        model = image_stabilisation(shifted, axis=0)
         aprint(f"model: {model}")
 
     with asection("shift back"):
@@ -142,10 +142,10 @@ def _register_sequence_2d(length_xy=512,
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', visible=True)
-            viewer.add_image(_c(shifted), name='shifted', colormap='bop purple', blending='additive', visible=False)
+            # viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', visible=True)
+            viewer.add_image(_c(shifted), name='shifted', colormap='bop purple', blending='additive', visible=True)
             viewer.add_image(_c(stabilised_seq), name='stabilised_seq', colormap='bop blue', blending='additive', visible=True)
-            viewer.add_image(_c(stabilised_sps), name='stabilised_sps', colormap='bop blue', blending='additive', visible=True)
+            # viewer.add_image(_c(stabilised_sps), name='stabilised_sps', colormap='bop blue', blending='additive', visible=True)
 
     return image, shifted, stabilised_seq, model
 

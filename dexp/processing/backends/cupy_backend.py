@@ -87,7 +87,7 @@ class CupyBackend(Backend):
         self.enable_memory_pool_clearing = enable_memory_pool_clearing
         self.enable_streaming = enable_streaming
         self.enable_unified_memory = enable_unified_memory
-        self.enable_cub =enable_cub
+        self.enable_cub = enable_cub
         self.enable_cutensor = enable_cutensor
         self.enable_fft_planning = enable_fft_planning
         self.enable_dask_cuda_cluster = enable_dask_cuda_cluster
@@ -118,18 +118,18 @@ class CupyBackend(Backend):
         ## Important: Leave this, this is to make sure that the ndimage package works properly!
         exec("import cupyx.scipy.ndimage")
 
-    def copy(self):
+    def copy(self, exclusive: bool = None):
         return CupyBackend(device_id=self.device_id,
-                      exclusive=self.exclusive,
-                      enable_streaming=self.enable_streaming,
-                      enable_memory_pool=self.enable_memory_pool,
-                      enable_memory_pool_clearing=self.enable_memory_pool_clearing,
-                      enable_unified_memory=self.enable_unified_memory,
-                      enable_cub=self.enable_cub,
-                      enable_cutensor=self.enable_cutensor,
-                      enable_fft_planning=self.enable_fft_planning,
-                      enable_dask_cuda_cluster=self.enable_dask_cuda_cluster,
-                      enable_dask_cuda_nvlink=self.enable_dask_cuda_nvlink)
+                           exclusive=self.exclusive if exclusive is None else exclusive,
+                           enable_streaming=self.enable_streaming,
+                           enable_memory_pool=self.enable_memory_pool,
+                           enable_memory_pool_clearing=self.enable_memory_pool_clearing,
+                           enable_unified_memory=self.enable_unified_memory,
+                           enable_cub=self.enable_cub,
+                           enable_cutensor=self.enable_cutensor,
+                           enable_fft_planning=self.enable_fft_planning,
+                           enable_dask_cuda_cluster=self.enable_dask_cuda_cluster,
+                           enable_dask_cuda_nvlink=self.enable_dask_cuda_nvlink)
 
     def __str__(self):
         free_mem = self.cupy_device.mem_info[0]

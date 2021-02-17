@@ -38,10 +38,12 @@ def linsolve(a, y, x0=None,
 
     def fun(x):
         x = Backend.to_backend(x)
+        beta = (1.0 / y.shape[0]) ** (1.0 / order_error)
+        alpha = (1.0 / x.shape[0]) ** (1.0 / order_reg)
         if alpha_reg == 0:
-            objective = float(xp.linalg.norm(a @ x - y, ord=order_error))
+            objective = beta * float(xp.linalg.norm(a @ x - y, ord=order_error))
         else:
-            objective = float(xp.linalg.norm(a @ x - y, ord=order_error) + alpha_reg * xp.linalg.norm(x, ord=order_reg))
+            objective = beta * float(xp.linalg.norm(a @ x - y, ord=order_error) + (alpha_reg * alpha) * xp.linalg.norm(x, ord=order_reg))
         return objective
 
     result = minimize(fun,
@@ -58,6 +60,6 @@ def linsolve(a, y, x0=None,
         aprint(f"Warning: optimisation finished after {result.nit} iterations!")
 
     if not result.success:
-        raise RuntimeWarning(f"Convergence failed: '{result.message}' after {result.nit} iterations and {result.nfev} function evaluations.")
+        raise RuntimeError(f"Convergence failed: '{result.message}' after {result.nit} iterations and {result.nfev} function evaluations.")
 
     return result.x

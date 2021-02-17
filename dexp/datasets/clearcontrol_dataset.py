@@ -2,8 +2,9 @@ import re
 from fnmatch import fnmatch
 from os import listdir, cpu_count
 from os.path import join
-from typing import Sequence
+from typing import Sequence, Tuple, Any
 
+import dask
 import numcodecs
 import numpy
 from arbol.arbol import aprint
@@ -197,6 +198,22 @@ class CCDataset(BaseDataset):
             stack = self._get_array_for_stack_file(file_name, shape=shape)
 
         return stack
+
+    def add_channel(self, name: str, shape: Tuple[int, ...], dtype, enable_projections: bool = True, **kwargs) -> Any:
+        raise NotImplementedError('Not implemented!')
+
+    def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = True) -> Any:
+        array = self.get_array(channel=channel,
+                               per_z_slice=False,
+                               wrap_with_dask=True)
+        projection = dask.array.max(array, axis=axis + 1)
+        return projection
+
+    def write_array(self, channel: str, array: numpy.ndarray):
+        raise NotImplementedError('Not implemented!')
+
+    def write_stack(self, channel: str, time_point: int, stack: numpy.ndarray):
+        raise NotImplementedError('Not implemented!')
 
     def check_integrity(self, channels: Sequence[str]) -> bool:
         # TODO: actually implement!

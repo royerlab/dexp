@@ -12,7 +12,7 @@ from dexp.processing.utils.projection_generator import projection_generator
 
 def image_stabilisation_proj(image: 'Array',
                              axis: int = 0,
-                             projection_type: str = 'max',
+                             projection_type: str = 'max-min',
                              **kwargs
                              ) -> SequenceRegistrationModel:
     """
@@ -49,6 +49,7 @@ def image_stabilisation_proj(image: 'Array',
 
 def image_stabilisation_proj_(projections: Sequence[Tuple],
                               ndim: int,
+                              keep_best: bool = True,
                               **kwargs
                               ) -> SequenceRegistrationModel:
     """
@@ -56,8 +57,9 @@ def image_stabilisation_proj_(projections: Sequence[Tuple],
 
     Parameters
     ----------
-    projections:
+    projections: List of projections as a list of tuples: (u, v, projection) where u and v are the axis indices and projection is an array where the first axis is the stabilisation axis.
     ndim: number of dimensions of original array
+    keep_best: keep only the best n stabilised projections
     kwargs: argument passthrough to the 'sequence_stabilisation' method.
 
     Returns
@@ -68,6 +70,7 @@ def image_stabilisation_proj_(projections: Sequence[Tuple],
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
+    # we stabilise along each projection:
     seq_reg_models = list((u - 1, v - 1, image_stabilisation(image=projection, axis=0, **kwargs)) for u, v, projection in projections)
 
     # first we figure out the length of the sequence, and figure out the kind of model:
@@ -80,17 +83,22 @@ def image_stabilisation_proj_(projections: Sequence[Tuple],
         fused_model_list = [TranslationRegistrationModel(shift_vector=numpy.zeros(shape=(ndim,), dtype=numpy.float32)) for _ in range(length)]
 
         # third, we iterate through the sequence updating the fused model:
-        for i in range(length):
+        for tp in range(length):
 
             # current fused model:
-            fused_model = fused_model_list[i]
+            fused_model = fused_model_list[tp]
 
             # keep track of how many shift values we add here:
             counts = numpy.zeros(shape=(ndim,), dtype=numpy.float32)
 
-            for u, v, seq_reg_model in seq_reg_models:
-                # for each seq reg model we...
-                model: TranslationRegistrationModel = seq_reg_model.model_list[i]
+            # We extract the models for the current time point (tp):
+            models = list(tuple((u, v, seq_reg_model.model_list[tp])) for u, v, seq_reg_model in seq_reg_models)
+
+            # Let's sort the models by decreasing confidence:
+            models = sorted(models, key=lambda t: t[2].overall_confidence(), reverse=True)
+
+            for u, v, model in models:
+                model: TranslationRegistrationModel
 
                 # ... add the shifts at the right places:
                 fused_model.shift_vector[u] += model.shift_vector[0]
@@ -99,6 +107,10 @@ def image_stabilisation_proj_(projections: Sequence[Tuple],
                 # and keep track of the number of shifts added ...
                 counts[u] += 1
                 counts[v] += 1
+
+                if keep_best and Backend.get_xp_module(counts).all(counts > 0):
+                    # we stop if all coefficients of the shift vector are covered:
+                    break
 
             # ... so we can compute averages:
             fused_model.shift_vector /= counts

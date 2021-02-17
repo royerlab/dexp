@@ -43,11 +43,11 @@ class BaseDataset(ABC):
 
     @abstractmethod
     def shape(self, channel: str) -> Sequence[int]:
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def dtype(self, channel: str):
-        raise NotImplementedError()
+        pass
 
     def tree(self) -> str:
         tree_str = f"{type(self).__name__} dataset"
@@ -59,23 +59,23 @@ class BaseDataset(ABC):
 
     @abstractmethod
     def info(self, channel: str = None) -> str:
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def get_metadata(self):
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def add_channel(self, name: str, shape: Tuple[int, ...], dtype, enable_projections: bool = True, **kwargs) -> Any:
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False):
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def get_stack(self, channel: str, time_point: int, per_z_slice: bool = False, wrap_with_dask: bool = False):
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
@@ -83,12 +83,12 @@ class BaseDataset(ABC):
 
     @abstractmethod
     def write_array(self, channel: str, array: numpy.ndarray):
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def write_stack(self, channel: str, time_point: int, stack: numpy.ndarray):
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def check_integrity(self, channels: Sequence[str]) -> bool:
-        return True
+        pass

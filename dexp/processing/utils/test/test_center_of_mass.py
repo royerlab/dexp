@@ -36,18 +36,31 @@ def _test_com(length_xy=128):
                                                       add_offset=False,
                                                       dtype=numpy.uint16)
 
+        # from napari import Viewer, gui_qt
+        # with gui_qt():
+        #     def _c(array):
+        #         return Backend.to_numpy(array)
+        #     viewer = Viewer()
+        #     viewer.add_image(_c(image), name='image')
+
         com_before = center_of_mass(image)
-        aprint(com_before)
+        aprint(f"com_before: {com_before}")
 
         image_shifted = sp.ndimage.shift(image, shift=(50, 70, -23), order=1, mode='nearest')
 
         com_after = center_of_mass(image_shifted)
-        aprint(com_after)
+        aprint(f"com_after: {com_after}")
+
+        com_after_bb = center_of_mass(image_shifted, offset_mode='p=75', bounding_box=True)
+        aprint(f"com_after_bb: {com_after_bb}")
 
         # from napari import Viewer, gui_qt
         # with gui_qt():
+        #     def _c(array):
+        #         return Backend.to_numpy(array)
         #     viewer = Viewer()
-        #     viewer.add_image(image, name='image')
-        #     viewer.add_image(image_shifted, name='image_shifted')
+        #     viewer.add_image(_c(image), name='image')
+        #     viewer.add_image(_c(image_shifted), name='image_shifted')
 
         assert xp.mean(xp.absolute((com_after - xp.asarray((50, 70, -23)) - com_before))) < 10
+        assert xp.mean(xp.absolute((com_after_bb - xp.asarray((50, 70, -23)) - com_before))) < 10

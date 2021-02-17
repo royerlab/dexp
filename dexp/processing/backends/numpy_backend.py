@@ -16,7 +16,7 @@ class NumpyBackend(Backend):
         ## Important: Leave this, this is to make sure that the ndimage package works properly!
         exec("import scipy.ndimage")
 
-    def copy(self):
+    def copy(self, *args, **kwargs):
         return NumpyBackend()
 
     def __str__(self):

@@ -50,6 +50,8 @@ def projection_generator(image,
                 else:
                     raise ValueError(f"Unknown projection type: {projection_type}")
 
+                projected_image = projected_image.astype(dtype=image.dtype, copy=False)
+
                 yield u, v, projected_image
 
             elif u < 0 or v < 0 or u >= ndim or v >= ndim:

@@ -102,6 +102,7 @@ def generate_nuclei_background_data(length_xy=320,
         zero_level = zero_level.astype(image.dtype, copy=False)
         image *= 300
         image += zero_level
+        image = xp.clip(image - 1, 0, None, out=image)
 
     return image_gt.astype(dtype, copy=False), \
            background.astype(dtype, copy=False), \

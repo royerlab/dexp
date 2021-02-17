@@ -112,3 +112,56 @@ def test_zarr_integrity():
         array[...] = 1
         # the dataset integrity must be True!
         assert zdataset.check_integrity()
+
+
+def test_add_channels_to():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        print('created temporary directory', tmpdir)
+
+        # self, path:str, mode:str ='r', store:str ='dir'
+        dataset1_path = join(tmpdir, 'test1.zarr')
+        zdataset1 = ZDataset(path=dataset1_path,
+                             mode='w',
+                             store='dir')
+
+        zdataset1.add_channel(name='first',
+                              shape=(10, 100, 100, 100),
+                              chunks=(1, 50, 50, 50),
+                              dtype='f4',
+                              codec='zstd',
+                              clevel=3)
+
+        dataset2_path = join(tmpdir, 'test2.zarr')
+        zdataset2 = ZDataset(path=dataset2_path,
+                             mode='w',
+                             store='dir')
+
+        zdataset2.add_channel(name='second',
+                              shape=(17, 10, 20, 30),
+                              chunks=(1, 5, 1, 6),
+                              dtype='f4',
+                              codec='zstd',
+                              clevel=3)
+
+        zdataset2.add_channels_to(dataset1_path,
+                                  channels=('second',),
+                                  rename=('second-',),
+                                  )
+        zdataset2.close()
+
+        zdataset1_reloaded = ZDataset(path=dataset1_path,
+                                      mode='r',
+                                      store='dir')
+
+        assert len(zdataset1_reloaded.channels()) == 2
+        assert 'first' in zdataset1_reloaded.channels()
+        assert 'second-' in zdataset1_reloaded.channels()
+
+        assert zdataset1_reloaded.shape('first') == zdataset1.shape('first')
+        assert zdataset1_reloaded.shape('second-') == zdataset2.shape('second')
+        assert zdataset1_reloaded.dtype('first') == zdataset1.dtype('first')
+        assert zdataset1_reloaded.dtype('second-') == zdataset2.dtype('second')
+
+        assert (zdataset1_reloaded.get_array('second-', wrap_with_dask=True).compute() == zdataset2.get_array('second', wrap_with_dask=True).compute()).all()
+
+        zdataset1_reloaded.close()

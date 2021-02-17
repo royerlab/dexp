@@ -32,7 +32,7 @@ blosc.set_nthreads(_nb_threads)
 class ZDataset(BaseDataset):
     _default_chunks = (1, 128, 512, 512)
 
-    def __init__(self, path: str, mode: str = 'r', store: str = 'dir'):
+    def __init__(self, path: str, mode: str = 'r', store: str = None):
         """Instanciates a Zarr dataset (and opens it)
 
         Parameters
@@ -90,10 +90,8 @@ class ZDataset(BaseDataset):
             elif isfile(path):
                 os.remove(path)
 
-        # Initialise Zarr storage:
-        aprint(f"Initialising Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
         if exists(path):
-            aprint(f"Path exists, opening zarr storage...")
+            aprint(f"Opening existing Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
             if isfile(path) and (path.endswith('.zarr.zip') or store == 'zip'):
                 aprint(f"Opening as ZIP store")
                 self._store = zarr.storage.ZipStore(path)
@@ -108,8 +106,10 @@ class ZDataset(BaseDataset):
             self._root_group = open_group(self._store, mode=mode)
             self._initialise_existing()
         elif 'a' in mode or 'w' in mode:
+            aprint(f"Creating Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
+            if store is None:
+                store = 'dir'
             try:
-                aprint(f"Path does not exist, creating zarr storage...")
                 if path.endswith('.zarr.zip') or store == 'zip':
                     aprint(f"Opening as ZIP store")
                     self._store = zarr.storage.ZipStore(path)
@@ -122,7 +122,6 @@ class ZDataset(BaseDataset):
                 else:
                     aprint(f'Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr` or `.nested.zarr` for nested folders), or a zipped zarr file (file that ends with `.zarr.zip`)')
 
-                aprint(f"Opening Zarr storage with mode='{mode}'")
                 self._root_group = zarr.convenience.open(self._store, mode=mode)
 
             except Exception as e:
@@ -195,7 +194,7 @@ class ZDataset(BaseDataset):
 
     def info(self, channel: str = None) -> str:
         if channel:
-            info_str = f"Channel: '{channel}'', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}"
+            info_str = f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}"
             info_str += "\n"
             info_str += str(self._arrays[channel].info)
             return info_str
@@ -228,11 +227,14 @@ class ZDataset(BaseDataset):
         return stack_array
 
     def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
-        array = self._projections[channel + '_projection_' + str(axis)]
+        array = self._projections[self._projection_name(axis, channel)]
         if wrap_with_dask:
             return dask.array.from_array(array, chunks=array.chunks)
         else:
             return array
+
+    def _projection_name(self, axis: int, channel: str):
+        return f'{channel}_projection_{axis}'
 
     def write_stack(self, channel: str, time_point: int, stack_array: numpy.ndarray):
         array_in_zarr = self.get_array(channel=channel,
@@ -315,7 +317,7 @@ class ZDataset(BaseDataset):
         if enable_projections:
             ndim = len(shape) - 1
             for axis in range(ndim):
-                max_0_name = name + '_projection_' + str(axis)
+                proj_name = self._projection_name(axis, name)
 
                 proj_shape = list(shape)
                 del proj_shape[1 + axis]
@@ -324,14 +326,14 @@ class ZDataset(BaseDataset):
                 # chunking along time must be 1 to allow parallelism, but no chunking for each projection (not needed!)
                 proj_chunks = (1,) + (None,) * (len(chunks) - 2)
 
-                max_0_array = channel_group.full(name=max_0_name,
-                                                 shape=proj_shape,
-                                                 dtype=dtype,
-                                                 chunks=proj_chunks,
-                                                 filters=filters,
-                                                 compressor=compressor,
-                                                 fill_value=fill_value)
-                self._projections[max_0_name] = max_0_array
+                proj_array = channel_group.full(name=proj_name,
+                                                shape=proj_shape,
+                                                dtype=dtype,
+                                                chunks=proj_chunks,
+                                                filters=filters,
+                                                compressor=compressor,
+                                                fill_value=fill_value)
+                self._projections[proj_name] = proj_array
 
         return array
 
@@ -339,8 +341,9 @@ class ZDataset(BaseDataset):
                         path: str,
                         channels: Sequence[str],
                         rename: Sequence[str],
-                        store: str,
-                        overwrite: bool
+                        store: str = None,
+                        add_projections: bool = True,
+                        overwrite: bool = True,
                         ):
         """Adds channels from this zarr dataset into an other possibly existing zarr dataset
 
@@ -349,7 +352,8 @@ class ZDataset(BaseDataset):
         path : name of channel.
         channels: list or tuple of channels to add
         rename: list or tuple of new names for channels
-        store: type of zarr store: 'dir' or 'zip'
+        store: type of zarr store: 'dir' or 'zip', only usefull if store does not exist yet!
+        add_projections: If True the projections are also copied.
         overwrite: overwrite destination (not fully functional for zip stores!)
 
         Returns
@@ -379,8 +383,23 @@ class ZDataset(BaseDataset):
                 aprint(f"Fast copying channel {channel} renamed to {new_name} of shape {array.shape} and dtype {array.dtype} ")
 
                 for name, array in source_arrays:
-                    aprint(f"Fast copying array {name}")
-                    convenience.copy(array, dest_group, if_exists='replace' if overwrite else 'raise')
+                    aprint(f"Fast copying array {name} to {new_name}")
+                    convenience.copy(source=array,
+                                     dest=dest_group,
+                                     name=new_name,
+                                     if_exists='replace' if overwrite else 'raise')
 
-            except CopyError | NotImplementedError:
+                    if add_projections:
+                        ndim = array.ndim - 1
+                        for axis in range(ndim):
+                            proj_array = self.get_projection_array(channel=channel,
+                                                                   axis=axis)
+                            convenience.copy(source=proj_array,
+                                             dest=dest_group,
+                                             name=self._projection_name(new_name, axis),
+                                             if_exists='replace' if overwrite else 'raise')
+
+            except (CopyError, NotImplementedError):
                 aprint(f"Channel already exists, set option '-w' to force overwriting! ")
+
+        zdataset.close()

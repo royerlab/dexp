@@ -1,10 +1,8 @@
 import threading
 from abc import ABC, abstractmethod
-from concurrent.futures.thread import ThreadPoolExecutor
 from typing import Any
 
 import numpy
-import psutil
 
 
 class Backend(ABC):
@@ -72,9 +70,8 @@ class Backend(ABC):
     def __exit__(self, type, value, traceback):
         Backend._local.backend_stack.pop()
 
-
     @abstractmethod
-    def copy(self):
+    def copy(self, *args, **kwargs):
         raise NotImplementedError('Method not implemented!')
 
     @abstractmethod

@@ -14,25 +14,25 @@ from dexp.processing.synthetic_datasets.nuclei_background_data import generate_n
 def demo_register_sequence_3d_numpy():
     with NumpyBackend():
         _register_sequence_3d(use_projections=True)
-        _register_sequence_3d(use_projections=False)
+        # _register_sequence_3d(use_projections=False)
 
 
 def demo_register_sequence_3d_cupy():
     try:
         with CupyBackend():
             _register_sequence_3d(use_projections=True)
-            _register_sequence_3d(use_projections=False)
+            # _register_sequence_3d(use_projections=False)
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! demo ignored")
 
 
-def _register_sequence_3d(length_xy=256,
+def _register_sequence_3d(length_xy=320,
                           n=128,
                           drift_strength=0.9,
                           warp_grid_size=8,
-                          warp_strength=1.5,
-                          ratio_bad_frames=0 * 0.05,
+                          warp_strength=2.5,
+                          ratio_bad_frames=0.05,
                           additive_noise=0.05,
                           multiplicative_noise=0.1,
                           use_projections=False,
@@ -85,8 +85,9 @@ def _register_sequence_3d(length_xy=256,
         _, _, image = generate_nuclei_background_data(add_noise=False,
                                                       length_xy=length_xy // 4,
                                                       length_z_factor=1,
-                                                      independent_haze=True,
+                                                      independent_haze=False,
                                                       sphere=True,
+                                                      add_offset=False,
                                                       zoom=2,
                                                       dtype=xp.float32)
         image = Backend.to_backend(image)
@@ -98,6 +99,7 @@ def _register_sequence_3d(length_xy=256,
         shifted = xp.stack((sp.ndimage.shift(warp(i, vf, vector_field_upsampling=4), shift=s) for i, s, vf in zip(image, shifts, vector_fields)))
         shifted *= xp.clip(xp.random.normal(loc=1, scale=multiplicative_noise, size=shifted.shape, dtype=xp.float32), 0.1, 10)
         shifted += additive_noise * xp.random.rand(*shifted.shape, dtype=xp.float32)
+        shifted = xp.clip(shifted - 50, 0)
 
         # simulate dropped, highly corrupted frames:
         for _ in range(int(shifted.shape[0] * ratio_bad_frames)):
@@ -134,10 +136,10 @@ def _register_sequence_3d(length_xy=256,
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', visible=True)
-            viewer.add_image(_c(shifted), name='shifted', colormap='bop purple', blending='additive', visible=False)
+            # viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', visible=True)
+            viewer.add_image(_c(shifted), name='shifted', colormap='bop purple', blending='additive', visible=True)
             viewer.add_image(_c(stabilised_seq), name='stabilised_seq', colormap='bop blue', blending='additive', visible=True)
-            viewer.add_image(_c(stabilised_sps), name='stabilised_seq', colormap='bop blue', blending='additive', visible=True)
+            # viewer.add_image(_c(stabilised_sps), name='stabilised_sps', colormap='bop blue', blending='additive', visible=True)
 
     return image, shifted, stabilised_seq, model
 
