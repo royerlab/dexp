@@ -11,13 +11,14 @@ from dexp.processing.registration.model.translation_registration_model import Tr
 
 def register_translation_nd(image_a,
                             image_b,
-                            denoise_input_sigma: float = None,
+                            denoise_input_sigma: float = 1.5,
+                            gamma: float = 1,
+                            log_compression: bool = True,
+                            edge_filter: bool = True,
                             max_range_ratio: float = 0.9,
                             decimate: int = 16,
                             quantile: float = 0.999,
-                            sigma: float = 1.0,
-                            log_compression: bool = False,
-                            edge_filter: bool = True,
+                            sigma: float = 2.0,
                             force_numpy: bool = False,
                             internal_dtype=None,
                             _display_phase_correlation: bool = False,
@@ -33,12 +34,13 @@ def register_translation_nd(image_a,
     image_a : First image to register
     image_b : Second image to register
     denoise_input_sigma : Uses a Gaussian filter to denoise input images.
-    max_range_ratio : backend for computation
+    gamma : gamma correction on max projections as a preprocessing before phase correlation.
+    log_compression : Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)
+    edge_filter : apply sobel edge filter to input images.
+    max_range_ratio : maximal range for correlation.
     decimate : How much to decimate when computing floor level
     quantile : Quantile to use for robust min and max
     sigma : sigma for Gaussian smoothing of phase correlogram
-    log_compression : Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)
-    edge_filter : apply sobel edge filter to input images.
     force_numpy : Forces output model to be allocated with numpy arrays.
     internal_dtype : internal dtype for computation
 
@@ -64,15 +66,19 @@ def register_translation_nd(image_a,
     image_a = Backend.to_backend(image_a, dtype=internal_dtype)
     image_b = Backend.to_backend(image_b, dtype=internal_dtype)
 
-    if denoise_input_sigma is not None:
+    if denoise_input_sigma is not None and denoise_input_sigma > 0:
         image_a = sp.ndimage.filters.gaussian_filter(image_a, sigma=denoise_input_sigma)
         image_b = sp.ndimage.filters.gaussian_filter(image_b, sigma=denoise_input_sigma)
 
-    if log_compression:
+    if log_compression is not None and log_compression:
         image_a = xp.log1p(image_a)
         image_b = xp.log1p(image_b)
 
-    if edge_filter:
+    if gamma is not None and gamma != 1:
+        image_a **= gamma
+        image_b **= gamma
+
+    if edge_filter is not None and edge_filter:
         image_a = sobel_filter(image_a,
                                exponent=1,
                                normalise_input=False)

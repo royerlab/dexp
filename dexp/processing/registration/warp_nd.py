@@ -4,7 +4,7 @@ from arbol import section, aprint
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
-from dexp.processing.registration.translation_nd_proj import register_translation_maxproj_nd
+from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
 
 
@@ -13,7 +13,7 @@ def register_warp_nd(image_a,
                      image_b,
                      chunks: Union[int, Tuple[int, ...]],
                      margins: Union[int, Tuple[int, ...]] = None,
-                     registration_method=register_translation_maxproj_nd,
+                     registration_method=register_translation_proj_nd,
                      force_numpy: bool = False,
                      **kwargs) -> WarpRegistrationModel:
     """

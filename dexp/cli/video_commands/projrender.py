@@ -7,14 +7,15 @@ from arbol.arbol import aprint, asection
 from joblib import delayed, Parallel
 
 from dexp.cli.dexp_main import _default_workers_backend
-from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _parse_slicing, _get_output_path, _parse_devices
+from dexp.cli.utils import _parse_channels, _parse_slicing, _get_output_path, _parse_devices
+from dexp.datasets.open_dataset import glob_datasets
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.render.projection import rgb_project
 
 
 @click.command()
-@click.argument('input_path')
+@click.argument('input_paths', nargs=-1)
 @click.option('--output_path', '-o', default=None, help='Output folder to store rendered PNGs. Default is: frames_<channel_name>')
 @click.option('--channels', '-c', default=None, help='list of channels to render, all channels when ommited.')
 @click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
@@ -36,7 +37,7 @@ from dexp.processing.render.projection import rgb_project
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
-def projrender(input_path,
+def projrender(input_paths,
                output_path,
                channels,
                slicing,
@@ -56,15 +57,16 @@ def projrender(input_path,
                devices,
                stop_at_exception=True
                ):
-    input_dataset = _get_dataset_from_path(input_path)
+
+    input_dataset, input_paths = glob_datasets(input_paths)
     channels = _parse_channels(input_dataset, channels)
     slicing = _parse_slicing(slicing)
     devices = _parse_devices(devices)
 
-    output_path = _get_output_path(input_path, output_path, f"_{mode}_projection")
+    output_path = _get_output_path(input_paths[0], output_path, f"_{mode}_projection")
     makedirs(output_path, exist_ok=True)
 
-    aprint(f"Projection rendering of: {input_path} to {output_path} for channels: {channels}, slicing: {slicing} ")
+    aprint(f"Projection rendering of: {input_paths} to {output_path} for channels: {channels}, slicing: {slicing} ")
 
     for channel in channels:
 

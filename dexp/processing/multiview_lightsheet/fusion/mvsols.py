@@ -15,7 +15,7 @@ from dexp.processing.fusion.tg_fusion import fuse_tg_nd
 from dexp.processing.multiview_lightsheet.fusion.simview import fuse_illumination_views
 from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
 from dexp.processing.registration.translation_nd import register_translation_nd
-from dexp.processing.registration.translation_nd_proj import register_translation_maxproj_nd
+from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
 from dexp.processing.registration.warp_multiscale_nd import register_warp_multiscale_nd
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
@@ -243,14 +243,13 @@ def msols_fuse_1C2L(C0L0, C0L1,
             model = registration_model
         else:
             aprint("No registration model enforced, running registration now")
-            registration_method = register_translation_maxproj_nd if registration_mode == 'projection' else register_translation_nd
+            registration_method = register_translation_proj_nd if registration_mode == 'projection' else register_translation_nd
             new_model = register_warp_multiscale_nd(C0L0, C0L1,
                                                     num_iterations=registration_num_iterations,
                                                     confidence_threshold=registration_confidence_threshold,
                                                     max_residual_shift=registration_max_residual_shift,
                                                     edge_filter=registration_edge_filter,
                                                     registration_method=registration_method,
-                                                    denoise_input_sigma=1,
                                                     save_memory=True)
 
             Backend.current().clear_memory_pool()

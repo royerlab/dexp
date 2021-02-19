@@ -14,19 +14,17 @@ def linsolve(a, y, x0=None,
              order_error: float = 1,
              order_reg: float = 1,
              alpha_reg: float = 1e-1,
-             l2_init: bool = True,
+             l2_init: bool = False,
              bounds: Optional[Sequence[Tuple[float, float]]] = None,
              limited: bool = True,
              verbose: bool = False):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     a = Backend.to_backend(a)
     y = Backend.to_backend(y)
 
     if x0 is None:
         if l2_init:
-            # x0, _, _, _ = numpy.linalg.lstsq(a, y)
             x0 = linsolve(a, y, x0=x0,
                           maxiter=maxiter,
                           tolerance=tolerance,
@@ -36,14 +34,19 @@ def linsolve(a, y, x0=None,
         else:
             x0 = numpy.zeros(a.shape[1])
 
+    beta = (1.0 / y.shape[0]) ** (1.0 / order_error)
+    alpha = (1.0 / x0.shape[0]) ** (1.0 / order_reg)
+
     def fun(x):
         x = Backend.to_backend(x)
-        beta = (1.0 / y.shape[0]) ** (1.0 / order_error)
-        alpha = (1.0 / x.shape[0]) ** (1.0 / order_reg)
         if alpha_reg == 0:
             objective = beta * float(xp.linalg.norm(a @ x - y, ord=order_error))
+            # aprint(f"objective={objective}, regterm=N/A ")
         else:
-            objective = beta * float(xp.linalg.norm(a @ x - y, ord=order_error) + (alpha_reg * alpha) * xp.linalg.norm(x, ord=order_reg))
+            objective = beta * float(xp.linalg.norm(a @ x - y, ord=order_error))
+            regularisation_term = (alpha_reg * alpha) * float(xp.linalg.norm(x, ord=order_reg))
+            # aprint(f"objective={objective}, regterm={regularisation_term} ")
+            objective += regularisation_term
         return objective
 
     result = minimize(fun,

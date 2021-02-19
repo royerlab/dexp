@@ -126,14 +126,13 @@ def test_add_channels_to():
                              store='dir')
 
         array1 = zdataset1.add_channel(name='first',
-                              shape=(10, 11, 12, 13),
-                              chunks=None,
-                              dtype='f4',
-                              codec='zstd',
-                              clevel=3)
+                                       shape=(10, 11, 12, 13),
+                                       chunks=None,
+                                       dtype='f4',
+                                       codec='zstd',
+                                       clevel=3)
 
         array1[...] = 1
-
 
         dataset2_path = join(tmpdir, 'test2.zarr')
         zdataset2 = ZDataset(path=dataset2_path,
@@ -141,11 +140,11 @@ def test_add_channels_to():
                              store='dir')
 
         array2 = zdataset2.add_channel(name='second',
-                              shape=(17, 10, 20, 30),
-                              chunks=None,
-                              dtype='f4',
-                              codec='zstd',
-                              clevel=3)
+                                       shape=(17, 10, 20, 30),
+                                       chunks=None,
+                                       dtype='f4',
+                                       codec='zstd',
+                                       clevel=3)
 
         array2[...] = 1
 
@@ -153,7 +152,6 @@ def test_add_channels_to():
                                   channels=('second',),
                                   rename=('second-',),
                                   )
-
 
         zdataset1_reloaded = ZDataset(path=dataset1_path,
                                       mode='r',
@@ -171,7 +169,6 @@ def test_add_channels_to():
         a = zdataset1_reloaded.get_array('second-', wrap_with_dask=True).compute()
         b = zdataset2.get_array('second', wrap_with_dask=True).compute()
         assert numpy.all(a == b)
-
 
         zdataset1.close()
         zdataset2.close()

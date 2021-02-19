@@ -6,11 +6,12 @@ import click
 import numpy
 from arbol.arbol import section, aprint, asection
 
-from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _parse_slicing
+from dexp.cli.utils import _parse_channels, _parse_slicing
+from dexp.datasets.open_dataset import glob_datasets
 
 
 @click.command()
-@click.argument('input_path')
+@click.argument('input_paths', nargs=-1)
 @click.option('--output_path', '-o', default=None, help='Output folder to store rendered PNGs. Default is: frames_<channel_name>')
 @click.option('--channels', '-c', default=None, help='list of channels to render, all channels when ommited.')
 @click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
@@ -20,12 +21,12 @@ from dexp.cli.utils import _parse_channels, _get_dataset_from_path, _parse_slici
 @click.option('--rendersize', '-rs', type=int, default=2048, help='Sets the frame render size. i.e. -ws 400 sets the window to 400x400', show_default=True)
 @click.option('--clim', '-cl', type=str, default='0,1024', help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]')
 @click.option('--options', '-opt', type=str, default=None, help='Render options, e.g: \'gamma=1.2,box=True\'. Important: no white spaces!!! Complete list with defaults will be displayed on first run')
-def volrender(input_path, output_path, channels=None, slicing=None, overwrite=False, aspect=None, colormap='viridis', rendersize=1536, clim=None, options=None):
-    input_dataset = _get_dataset_from_path(input_path)
+def volrender(input_paths, output_path, channels=None, slicing=None, overwrite=False, aspect=None, colormap='viridis', rendersize=1536, clim=None, options=None):
+    input_dataset, input_paths = glob_datasets(input_paths)
     channels = _parse_channels(input_dataset, channels)
     slicing = _parse_slicing(slicing)
 
-    aprint(f"Volumetric rendering of: {input_path} to {output_path} for channels: {channels}, slicing: {slicing} ")
+    aprint(f"Volumetric rendering of: {input_paths} to {output_path} for channels: {channels}, slicing: {slicing} ")
 
     for channel in channels:
 

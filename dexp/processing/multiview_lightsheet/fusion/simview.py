@@ -13,7 +13,7 @@ from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
 from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
 from dexp.processing.registration.translation_nd import register_translation_nd
-from dexp.processing.registration.translation_nd_proj import register_translation_maxproj_nd
+from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
 
@@ -381,9 +381,11 @@ def register_detection_views(C0Lx, C1Lx,
         C1Lx_c = C1Lx[crop:-crop]
 
         if mode == 'projection':
-            new_model = register_translation_maxproj_nd(C0Lx_c, C1Lx_c, edge_filter=edge_filter)
+            new_model = register_translation_proj_nd(C0Lx_c, C1Lx_c,
+                                                     edge_filter=edge_filter)
         elif mode == 'full':
-            new_model = register_translation_nd(C0Lx_c, C1Lx_c, edge_filter=edge_filter)
+            new_model = register_translation_nd(C0Lx_c, C1Lx_c,
+                                                edge_filter=edge_filter)
 
         new_model.integral = integral
 

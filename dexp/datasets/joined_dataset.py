@@ -30,6 +30,8 @@ class JoinedDataset(BaseDataset):
 
         self._dataset_list: List[BaseDataset] = list(datasets)
 
+        aprint(f"dataset list: {self._dataset_list}")
+
         # First we make sure that the list is not empty:
         if len(self._dataset_list) == 0:
             raise ValueError("Dataset list is empty!")

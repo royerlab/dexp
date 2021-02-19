@@ -16,6 +16,7 @@ def test_cupy_basics():
         import cupy
         with cupy.cuda.Device(1):
             array = cupy.array([1, 2, 3])
+            assert numpy.median(array) == 2
             aprint("\nWorked!")
 
     except (ModuleNotFoundError, NotImplementedError):

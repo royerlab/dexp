@@ -4,7 +4,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.translation_2d import register_translation_2d_dexp
-from dexp.processing.registration.translation_nd_proj import register_translation_maxproj_nd
+from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 
 
@@ -30,7 +30,7 @@ def _register_translation_3d_proj(method=register_translation_2d_dexp, length_xy
                                                                                            length_z_factor=1)
 
     with asection("register_translation_maxproj_nd"):
-        model = register_translation_maxproj_nd(image1, image2, register_translation_2d=method)
+        model = register_translation_proj_nd(image1, image2, register_translation_2d=method)
         aprint(f"model: {model}")
 
     with asection("shift back"):

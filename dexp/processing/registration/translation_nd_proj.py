@@ -5,25 +5,21 @@ from dexp.processing.registration.model.translation_registration_model import Tr
 from dexp.processing.registration.translation_2d import register_translation_2d_dexp
 
 
-def register_translation_maxproj_nd(image_a, image_b,
-                                    register_translation_2d: Callable = register_translation_2d_dexp,
-                                    gamma: float = 1,
-                                    log_compression: bool = False,
-                                    drop_worse: bool = True,
-                                    force_numpy: bool = False,
-                                    internal_dtype=None,
-                                    **kwargs):
+def register_translation_proj_nd(image_a, image_b,
+                                 register_translation_2d: Callable = register_translation_2d_dexp,
+                                 drop_worse: bool = True,
+                                 force_numpy: bool = False,
+                                 internal_dtype=None,
+                                 **kwargs):
     """
     Registers two nD (n=2 or 3) images using just a translation-only model.
-    This method uses max projections along 2 or 3 axis and then performs phase correlation.
+    This method uses projections along 2 or 3 axis and then performs phase correlation.
 
     Parameters
     ----------
     image_a : First image to register
     image_b : Second image to register
     register_translation_2d : 2d registration method to use
-    gamma : gamma correction on max projections as a preprocessing before phase correlation.
-    log_compression : Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)
     drop_worse: drops the worst 2D registrations before combining the projection registration vectors to a full nD registration vector.
     force_numpy : Forces output model to be allocated with numpy arrays.
     internal_dtype : Internal dtype for computation
@@ -45,28 +41,25 @@ def register_translation_maxproj_nd(image_a, image_b,
 
     if image_a.ndim == 2:
         image_a = _preprocess_image(image_a,
-                                    gamma=gamma,
-                                    log_compression=log_compression,
                                     in_place=False,
                                     dtype=internal_dtype)
         image_b = _preprocess_image(image_b,
-                                    gamma=gamma,
-                                    log_compression=log_compression,
                                     in_place=False,
                                     dtype=internal_dtype)
+
         shifts, confidence = register_translation_2d(image_a, image_b,
                                                      force_numpy=force_numpy,
                                                      internal_dtype=internal_dtype,
                                                      **kwargs).get_shift_and_confidence()
 
     elif image_a.ndim == 3:
-        iap0 = _project_preprocess_image(image_a, axis=0, dtype=xp.float32, gamma=gamma, log_compression=log_compression)
-        iap1 = _project_preprocess_image(image_a, axis=1, dtype=xp.float32, gamma=gamma, log_compression=log_compression)
-        iap2 = _project_preprocess_image(image_a, axis=2, dtype=xp.float32, gamma=gamma, log_compression=log_compression)
+        iap0 = _project_preprocess_image(image_a, axis=0, dtype=xp.float32)
+        iap1 = _project_preprocess_image(image_a, axis=1, dtype=xp.float32)
+        iap2 = _project_preprocess_image(image_a, axis=2, dtype=xp.float32)
 
-        ibp0 = _project_preprocess_image(image_b, axis=0, dtype=xp.float32, gamma=gamma, log_compression=log_compression)
-        ibp1 = _project_preprocess_image(image_b, axis=1, dtype=xp.float32, gamma=gamma, log_compression=log_compression)
-        ibp2 = _project_preprocess_image(image_b, axis=2, dtype=xp.float32, gamma=gamma, log_compression=log_compression)
+        ibp0 = _project_preprocess_image(image_b, axis=0, dtype=xp.float32)
+        ibp1 = _project_preprocess_image(image_b, axis=1, dtype=xp.float32)
+        ibp2 = _project_preprocess_image(image_b, axis=2, dtype=xp.float32)
 
         shifts_p0, confidence_p0 = register_translation_2d(iap0, ibp0,
                                                            force_numpy=force_numpy,
@@ -135,14 +128,10 @@ def _project_preprocess_image(image,
                               smoothing: float = 0,
                               quantile: int = None,
                               gamma: float = 1,
-                              log_compression: bool = False,
                               dtype=None):
     image_projected = _project_image(image, axis=axis)
     image_projected_processed = _preprocess_image(image_projected,
-                                                  smoothing=smoothing,
                                                   quantile=quantile,
-                                                  gamma=gamma,
-                                                  log_compression=log_compression,
                                                   dtype=dtype)
 
     return image_projected_processed
@@ -157,22 +146,13 @@ def _project_image(image, axis: int):
 
 
 def _preprocess_image(image,
-                      smoothing: float = 0,
-                      log_compression: bool = True,
                       quantile: float = 0.01,
-                      gamma: float = 1,
                       in_place: bool = True,
                       dtype=None):
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
     processed_image = Backend.to_backend(image, dtype=dtype, force_copy=not in_place)
-
-    if smoothing > 0:
-        processed_image = sp.ndimage.gaussian_filter(processed_image, sigma=smoothing)
-
-    if log_compression:
-        processed_image = xp.log1p(processed_image, out=processed_image)
 
     if quantile is None:
         min_value = processed_image.min()
@@ -186,9 +166,6 @@ def _preprocess_image(image,
         processed_image -= min_value
         processed_image /= alpha
         processed_image = xp.clip(processed_image, 0, 1, out=processed_image)
-
-    if gamma != 1:
-        processed_image **= gamma
 
     # from napari import Viewer, gui_qt
     # with gui_qt():

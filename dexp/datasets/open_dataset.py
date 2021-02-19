@@ -51,8 +51,14 @@ def glob_datasets(glob_paths: Sequence[str]):
     # concatenate list of paths:
     paths = reduce(lambda u, v: u + v, paths)
 
+    # remove empty paths:
+    paths = (path.strip() for path in paths)
+
+    # remove empty paths:
+    paths = (path for path in paths if len(path) > 0)
+
     # sort paths:
-    paths = sorted(paths)
+    paths = sorted(list(paths))
 
     return open_joined_datasets(paths), paths
 

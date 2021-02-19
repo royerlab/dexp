@@ -151,3 +151,24 @@ class SequenceRegistrationModel:
 
         else:
             return model.apply(image, **kwargs)
+
+    def plot(self, path: str):
+        import matplotlib.pyplot as plt
+
+        length = len(self.model_list)
+        ndim = self.model_list[0].shift_vector.shape[0]
+        x = numpy.arange(0, length)
+        y = numpy.zeros((length, ndim))
+        for i, m in enumerate(self.model_list):
+            y[i] = m.shift_vector
+
+        fig, ax = plt.subplots()  # Create a figure and an axes.
+        for axis in range(ndim):
+            ax.plot(x, y[:, axis], label=f'axis {axis}')  # Plot some data on the axes.
+
+        ax.set_xlabel('time points')  # Add an x-label to the axes.
+        ax.set_ylabel('shift')  # Add a y-label to the axes.
+        ax.set_title(f"{path} shifts")  # Add a title to the axes.
+        ax.legend()  # Add a legend.
+
+        plt.savefig(path + '_shifts.pdf')

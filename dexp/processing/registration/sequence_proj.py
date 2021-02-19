@@ -44,12 +44,14 @@ def image_stabilisation_proj(image: 'Array',
                                        projection_type=projection_type)
 
     return image_stabilisation_proj_(projections=projections,
-                                     ndim=ndim - 1)
+                                     ndim=ndim - 1,
+                                     **kwargs)
 
 
 def image_stabilisation_proj_(projections: Sequence[Tuple],
                               ndim: int,
                               keep_best: bool = True,
+                              debug_output: str = None,
                               **kwargs
                               ) -> SequenceRegistrationModel:
     """
@@ -71,7 +73,25 @@ def image_stabilisation_proj_(projections: Sequence[Tuple],
     sp = Backend.get_sp_module()
 
     # we stabilise along each projection:
-    seq_reg_models = list((u - 1, v - 1, image_stabilisation(image=projection, axis=0, **kwargs)) for u, v, projection in projections)
+    seq_reg_models = list((u - 1, v - 1, image_stabilisation(image=projection,
+                                                             axis=0,
+                                                             debug_output=f'{u - 1}_{v - 1}_{debug_output}' if debug_output is not None else debug_output,
+                                                             **kwargs)) for u, v, projection in projections)
+
+    # Let's sort the models by decreasing confidence:
+    seq_reg_models = sorted(seq_reg_models, key=lambda t: t[2].overall_confidence(), reverse=True)
+
+    if keep_best:
+        # Only keep the best models, but enough to cover all coordinates:
+        counts = numpy.zeros(shape=(ndim,), dtype=numpy.float32)
+        selected_seq_reg_models = []
+        for u, v, seq_reg_model in seq_reg_models:
+            counts[u] += 1
+            counts[v] += 1
+            selected_seq_reg_models.append((u, v, seq_reg_model))
+            if numpy.all(counts > 0):
+                break
+        seq_reg_models = selected_seq_reg_models
 
     # first we figure out the length of the sequence, and figure out the kind of model:
     _, _, model = seq_reg_models[0]
@@ -79,43 +99,41 @@ def image_stabilisation_proj_(projections: Sequence[Tuple],
 
     if type(model.model_list[0]) == TranslationRegistrationModel:
 
-        # second, we create a new model list:
+        # Create a new model list:
         fused_model_list = [TranslationRegistrationModel(shift_vector=numpy.zeros(shape=(ndim,), dtype=numpy.float32)) for _ in range(length)]
 
-        # third, we iterate through the sequence updating the fused model:
+        # Iterate through the sequence updating the fused model:
         for tp in range(length):
 
             # current fused model:
             fused_model = fused_model_list[tp]
 
-            # keep track of how many shift values we add here:
+            # keeps track of how many shift values we add here:
             counts = numpy.zeros(shape=(ndim,), dtype=numpy.float32)
 
             # We extract the models for the current time point (tp):
             models = list(tuple((u, v, seq_reg_model.model_list[tp])) for u, v, seq_reg_model in seq_reg_models)
 
-            # Let's sort the models by decreasing confidence:
-            models = sorted(models, key=lambda t: t[2].overall_confidence(), reverse=True)
-
             for u, v, model in models:
                 model: TranslationRegistrationModel
 
-                # ... add the shifts at the right places:
-                fused_model.shift_vector[u] += model.shift_vector[0]
-                fused_model.shift_vector[v] += model.shift_vector[1]
-
-                # and keep track of the number of shifts added ...
-                counts[u] += 1
-                counts[v] += 1
-
-                if keep_best and Backend.get_xp_module(counts).all(counts > 0):
-                    # we stop if all coefficients of the shift vector are covered:
-                    break
+                # we add the shifts at the right places:
+                if not keep_best or counts[u] == 0:
+                    fused_model.shift_vector[u] += model.shift_vector[0]
+                    counts[u] += 1
+                if not keep_best or counts[v] == 0:
+                    fused_model.shift_vector[v] += model.shift_vector[1]
+                    counts[v] += 1
 
             # ... so we can compute averages:
             fused_model.shift_vector /= counts
 
-        return SequenceRegistrationModel(model_list=fused_model_list)
+        model: SequenceRegistrationModel = SequenceRegistrationModel(model_list=fused_model_list)
+
+        if debug_output is not None:
+            model.plot(debug_output + '_fused_model')
+
+        return model
 
     else:
         raise ValueError("Pairwise registration model not supported!")

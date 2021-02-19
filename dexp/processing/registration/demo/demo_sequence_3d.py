@@ -29,7 +29,7 @@ def demo_register_sequence_3d_cupy():
 
 def _register_sequence_3d(length_xy=320,
                           n=128,
-                          drift_strength=0.9,
+                          drift_strength=1.5,
                           warp_grid_size=8,
                           warp_strength=2.5,
                           ratio_bad_frames=0.05,
@@ -72,10 +72,12 @@ def _register_sequence_3d(length_xy=320,
                 x += 17
                 y += -25
                 z += 18
+                vector_field += 10 * warp_strength * xp.random.uniform(low=-1, high=+1, size=(warp_grid_size,) * 3 + (3,))
             if i == n // 2 + n // 3:
                 x += -27
                 y += +19
                 z += -11
+                vector_field += 10 * warp_strength * xp.random.uniform(low=-1, high=+1, size=(warp_grid_size,) * 3 + (3,))
 
             # keep for later:
             shifts.append((x, y, z))
@@ -85,7 +87,7 @@ def _register_sequence_3d(length_xy=320,
         _, _, image = generate_nuclei_background_data(add_noise=False,
                                                       length_xy=length_xy // 4,
                                                       length_z_factor=1,
-                                                      independent_haze=False,
+                                                      independent_haze=True,
                                                       sphere=True,
                                                       add_offset=False,
                                                       zoom=2,
@@ -112,19 +114,27 @@ def _register_sequence_3d(length_xy=320,
     with asection("register_translation_2d"):
         # compute image sequence stabilisation model:
         if use_projections:
-            model = image_stabilisation_proj(shifted, axis=0)
+            model = image_stabilisation_proj(shifted,
+                                             axis=0,
+                                             sigma=3,
+                                             min_confidence=0.5,
+                                             edge_filter=False,
+                                             enable_com=True,
+                                             denoise_input_sigma=1,
+                                             debug_output='stabilisation' if display else None)
         else:
-            model = image_stabilisation(shifted, axis=0)
+            model = image_stabilisation(shifted,
+                                        axis=0,
+                                        sigma=3,
+                                        edge_filter=False,
+                                        denoise_input_sigma=1,
+                                        debug_output='stabilisation' if display else None)
         aprint(f"model: {model}")
 
     with asection("shift back"):
 
-        # how much to pad:
-        padding = 64
-        pad_width = None  # ((padding, padding), (padding, padding))
-
         # apply stabilisation:
-        stabilised_seq = model.apply_sequence(shifted, axis=0, pad_width=pad_width)
+        stabilised_seq = model.apply_sequence(shifted, axis=0, pad_width=None)
 
         # another way to apply stabilisation:
         stabilised_sps = xp.stack(model.apply(image, index=i, pad=True) for i, image in enumerate(shifted))
@@ -135,7 +145,8 @@ def _register_sequence_3d(length_xy=320,
             def _c(array):
                 return Backend.to_numpy(array)
 
-            viewer = Viewer()
+            viewer = Viewer(ndisplay=3)
+            viewer.grid.enabled = True
             # viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', visible=True)
             viewer.add_image(_c(shifted), name='shifted', colormap='bop purple', blending='additive', visible=True)
             viewer.add_image(_c(stabilised_seq), name='stabilised_seq', colormap='bop blue', blending='additive', visible=True)
