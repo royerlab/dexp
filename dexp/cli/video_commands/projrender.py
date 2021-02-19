@@ -57,7 +57,6 @@ def projrender(input_paths,
                devices,
                stop_at_exception=True
                ):
-
     input_dataset, input_paths = glob_datasets(input_paths)
     channels = _parse_channels(input_dataset, channels)
     slicing = _parse_slicing(slicing)
@@ -85,7 +84,7 @@ def projrender(input_paths,
 
         with asection("Rendering:"):
 
-            def process(tp, clim, device):
+            def process(tp, _clim, device):
                 try:
                     with asection(f"Rendering Frame     : {tp:05}"):
 
@@ -97,10 +96,10 @@ def projrender(input_paths,
                                 stack = array[tp].compute()
 
                             with CupyBackend(device, exclusive=True, enable_unified_memory=True):
-                                if clim is not None:
-                                    aprint(f"Using provided min and max for contrast limits: {clim}")
-                                    min_value, max_value = (float(strvalue) for strvalue in clim.split(','))
-                                    clim = (min_value, max_value)
+                                if _clim is not None:
+                                    aprint(f"Using provided min and max for contrast limits: {_clim}")
+                                    min_value, max_value = (float(strvalue) for strvalue in _clim.split(','))
+                                    _clim = (min_value, max_value)
 
                                 with asection("Projecting"):
                                     projection = rgb_project(stack,
@@ -109,7 +108,7 @@ def projrender(input_paths,
                                                              mode=mode,
                                                              attenuation=attenuation,
                                                              gamma=gamma,
-                                                             clim=clim,
+                                                             clim=_clim,
                                                              cmap=colormap,
                                                              depth_gamma=depthgamma,
                                                              rgb_gamma=rgbgamma)

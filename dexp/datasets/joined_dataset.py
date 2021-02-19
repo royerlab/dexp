@@ -88,7 +88,7 @@ class JoinedDataset(BaseDataset):
 
     def info(self, channel: str = None) -> str:
         if channel:
-            info_str = f"Channel: '{channel}'', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}, joined from {len(self._dataset_list)} datasets."
+            info_str = f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}, joined from {len(self._dataset_list)} datasets."
             info_str += "\n"
             return info_str
         else:
