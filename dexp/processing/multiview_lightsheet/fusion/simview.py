@@ -322,7 +322,7 @@ def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
     Backend.current().clear_memory_pool()
 
     # equalisation ratios found:
-    if equalisation_ratios is None:
+    if None in equalisation_ratios:
         equalisation_ratios = (ratio0, ratio1, ratioc)
 
     return CxLx, registration_model, equalisation_ratios
@@ -398,4 +398,5 @@ def register_detection_views(C0Lx, C1Lx,
 
     aprint(f"Applying registration model: {model}, overall confidence: {model.overall_confidence()}")
     C0Lx_reg, C1Lx_reg = model.apply_pair(C0Lx, C1Lx)
+
     return C0Lx_reg, C1Lx_reg, model

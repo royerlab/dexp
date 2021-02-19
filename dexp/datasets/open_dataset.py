@@ -20,6 +20,11 @@ def open_dataset(path: str):
     -------
 
     """
+
+    # remove trailing slash:
+    if path.endswith('/'):
+        path = path[:-1]
+
     if path.endswith('.zarr.zip') or path.endswith('.zarr'):
         # we can recognise a Zarr dataset by its extension.
         dataset = ZDataset(path)
