@@ -74,9 +74,13 @@ def normalise_functions(image,
     else:
         min_value, max_value = minmax
 
-    # normalise:
-    norm_alpha = ((high - low) / (max_value - min_value)).astype(dtype)
-    norm_beta = (low - norm_alpha * min_value).astype(dtype)
+    # Normalise:
+    norm_alpha = ((high - low) / (max_value - min_value))
+    norm_beta = (low - norm_alpha * min_value)
+
+    # Ensure correct type:
+    norm_alpha = xp.asarray(norm_alpha, dtype=dtype)
+    norm_beta = xp.asarray(norm_beta, dtype=dtype)
 
     def _norm_function(_image):
         if not do_normalise:
@@ -88,9 +92,13 @@ def normalise_functions(image,
         _image = _image.astype(dtype=dtype, copy=False)
         return _image
 
-    # denormalise:
-    denorm_alpha = ((max_value - min_value) / (high - low)).astype(dtype)
-    denorm_beta = (min_value - denorm_alpha * low).astype(dtype)
+    # Denormalise:
+    denorm_alpha = ((max_value - min_value) / (high - low))
+    denorm_beta = (min_value - denorm_alpha * low)
+
+    # Ensure correct type:
+    denorm_alpha = xp.asarray(denorm_alpha, dtype=dtype)
+    denorm_beta = xp.asarray(denorm_beta, dtype=dtype)
 
     def _denorm_function(_image):
         if not do_normalise:
