@@ -37,7 +37,6 @@ def mp4(input_path,
         preset,
         constantratefactor,
         overwrite):
-
     if output_path is None:
         videofilepath = os.path.basename(os.path.normpath(input_path)) + '.mp4'
     else:
