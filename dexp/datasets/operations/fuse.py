@@ -116,6 +116,7 @@ def dataset_fuse(dataset,
                     channel = metadata['channel']
                     dz = metadata['dz']
                     res = metadata['res']
+                    illumination_correction_sigma = metadata['ic_sigma'] if 'ic_sigma' in metadata else None
 
                     tp_array, model, new_equalisation_ratios = msols_fuse_1C2L(*views_tp,
                                                                                z_pad=z_pad_apodise[0],
@@ -137,6 +138,7 @@ def dataset_fuse(dataset,
                                                                                angle=angle,
                                                                                dx=res,
                                                                                dz=dz,
+                                                                               illumination_correction_sigma=illumination_correction_sigma,
                                                                                huge_dataset_mode=huge_dataset)
 
                 with asection(f"Moving array from backend to numpy."):

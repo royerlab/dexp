@@ -51,6 +51,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                     dark_denoise_threshold: int = 0,
                     dark_denoise_size: int = 9,
                     butterworth_filter_cutoff: float = 1,
+                    illumination_correction_sigma: float = None,
                     huge_dataset_mode: bool = False,
                     internal_dtype=numpy.float16) -> Tuple:
     """
@@ -127,6 +128,8 @@ def msols_fuse_1C2L(C0L0, C0L1,
     a value of e.g. 0.5 means cutting off the top 50% higher frequencies, and keeping all
     frequencies below without any change (that's the point of Butterworth filtering).
     WARNING: Butterworth filtering is currently very slow...
+
+    illumination_correction_sigma: sigma in pixels for correcting the Gaussian profile of a cylindrical lightsheet.
 
     huge_dataset_mode: optimises memory allocation at the detriment of processing speed to tackle really huge datasets.
 
@@ -320,6 +323,15 @@ def msols_fuse_1C2L(C0L0, C0L1,
             cutoffs = (butterworth_filter_cutoff,) * C1Lx.ndim
             C1Lx = butterworth_filter(C1Lx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
             Backend.current().clear_memory_pool()
+
+    if illumination_correction_sigma is not None:
+        sigma = illumination_correction_sigma
+        length = C1Lx.shape[1]
+        correction = xp.linspace(-length // 2, length // 2, num=length)
+        correction = xp.exp(-(correction ** 2) / (2 * sigma * sigma))
+        correction = 1.0 / correction
+        correction = correction.astype(dtype=internal_dtype)
+        C1Lx *= correction[xp.newaxis, :, xp.newaxis]
 
     with asection(f"Convert back to original dtype..."):
         if original_dtype is numpy.uint16:

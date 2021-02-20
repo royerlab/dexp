@@ -77,7 +77,7 @@ def rgb_project(image,
     # normalise color map:
     if type(cmap) == str:
         from colorcet import rgb_to_hex
-        rgb_to_hex(0, 0, 0)  # this is a dummy call to prevent eliminationof the colorcet import by IDEs
+        rgb_to_hex(0, 0, 0)  # this is a dummy call to prevent elimination of the colorcet import by IDEs
         cmap = get_cmap(cmap)
     elif type(cmap) == LinearSegmentedColormap:
         # all good here...

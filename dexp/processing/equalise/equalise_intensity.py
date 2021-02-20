@@ -68,8 +68,8 @@ def equalise_intensity(image1,
         strided_image2 = proj_image2.ravel()[::reduction].astype(numpy.float32, copy=False)
 
         # We determine a robust maximum for voxel intensities:
-        highvalue1 = xp.percentile(strided_image1, q=quantile_high * 100)
-        highvalue2 = xp.percentile(strided_image2, q=quantile_high * 100)
+        highvalue1 = xp.percentile(strided_image1, q=quantile_high * 100, interpolation='higher')
+        highvalue2 = xp.percentile(strided_image2, q=quantile_high * 100, interpolation='higher')
 
         # we set a 'high-value' threshold to the minimum of both robust maximums:
         threshold = min(highvalue1, highvalue2)
