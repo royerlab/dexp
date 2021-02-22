@@ -21,6 +21,114 @@ On windows, make sure to insatll CUDA 10.2 (exactly that version for the current
 
 # Installation:
 
+## Prerequisites:
+
+### Install CUDA and other libraries
+The following instructions are for Ubuntu 20.04 (recomended!)
+
+### Remove all existing CUDA and NVIDIA packages:
+```
+sudo apt-get purge nvidia*
+sudo apt-get autoremove
+sudo apt-get autoclean
+sudo rm -rf /usr/local/cuda*
+```
+
+### Install CUDA 11.2:
+It is recomeneded to install the most recent packages that are still compatible with CUPY and its dependencies.
+As of Feb 2021, this is a good choice:
+```
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
+sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+sudo apt-get update
+sudo apt-get -y install cuda
+```
+
+### Install cutensor:
+```
+sudo add-apt-repository "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+sudo apt update 
+sudo apt -y install libcutensor1 libcutensor-dev libcutensor-doc
+```
+
+### Install nccl:
+```
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
+sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+sudo apt-get update
+sudo apt install libnccl2=2.8.4-1+cuda11.2 libnccl-dev=2.8.4-1+cuda11.2
+```
+
+### Install cudnn:
+```
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin 
+sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+sudo apt-get update
+sudo apt-get install libcudnn8=8.1.0.77-1+cuda11.2
+```
+
+### Install cub:
+Nothing to do...
+
+
+## Another way to install CUDA and other libraries:
+
+If you want to target CUDA 11.2:
+```
+conda install -c conda-forge cudatoolkit=11.2
+conda install -c conda-forge cudnn
+conda install -c conda-forge cutensor
+```
+
+If you want to target CUDA 11.1:
+```
+conda install -c conda-forge cudatoolkit=11.1
+conda install -c conda-forge cudnn
+conda install -c conda-forge cutensor
+```
+
+
+## Important: tell CUPY to use cub and cutensor:
+
+To benefit from the cub and cutensor libraries, set this env variable:
+```
+CUPY_ACCELERATORS=cub,cutensor
+```
+This can be done by opening the file: `/etc/environment`,
+and adding the line:
+```
+CUPY_ACCELERATORS="cub,cutensor"
+```
+
+### Build/Install CUPY:
+
+It is recomended to install cupy using the available wheels, 
+if the correct wheels package for the given CUDA version and CUPY version are available:
+```
+pip install cupy-cuda111==9.0.0b2
+```
+Note: currently only `cupy-cuda111` is available, installing drivers for 11.2 is fine,
+but you also want to also add the 11.1 toolkit. A lightweight approach is to simply use conda:
+```
+conda install -c conda-forge cudatoolkit=11.1
+```
+Once cupy fully supports 11.1 this won't be nescessary.
+
+Another approach, which takes time and fails often is to build from source:
+```
+pip install -U setuptools pip
+pip install cupy --no-cache-dir -vvvv
+```
+
+## DEXP setup:
+
 ### Clone dexp:
 
 ```
@@ -30,55 +138,13 @@ git clone https://github.com/royerlab/dexp.git
 ### Create conda environment:
 
 ```
-conda create --name dexp python=3.7 
+conda create --name dexp python=3.8 
 ```
 
 ### Activate environment:
 
 ```
 conda activate dexp
-```
-
-### Install dependencies:
-
-On a Linux system:
-
-First make sure to have headers for OpenCL:
-
-```
-sudo apt-get install opencl-headers
-sudo apt-get install ocl-icd-opencl-dev
-sudo apt-get install ocl-icd-libopencl1
-```
-
-and then install dependencies:
-
-```
-bash install_linux.sh
-```
-
-or on Windows:
-
-```
-bash install_windows.sh
-```
-
-If some errors occur -- in paticular related to pyopencl or mako -- please rerun the script.
-
-You might want to install clinf to check your OpenCL install:
-
-```
-sudo apt-get install beignet clinfo
-```
-
-### Install Aydin:
-
-DEXP depends on Aydin (for denoising, deconvolution and more...)
-
-```
-cd aydin
-pip install -e .
-python setup.py develop
 ```
 
 ### Install dexp:
@@ -96,13 +162,39 @@ Always make sure that you are in the correct environment:
 source activate dexp
 ```
 
-There is currently 12dexp commands:
+## DEXP commands:
+There is currently 16 dexp commands:
+
+```
+Usage: dexp [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  add
+  check
+  copy
+  deconv
+  deskew
+  fuse
+  info
+  isonet
+  serve
+  speedtest
+  stabilize
+  tiff
+  view
+```
 
 Sytorage info & manipulation commands:
-info copy add
+info check copy add 
 
-Processing commands:
-fuse deconv isonet
+Lightsheet data processing commands:
+deskew fuse deconv stabilize isonet
+
+Network commands:
+serve
 
 Video rendering commands:
 render blend stack mp4
@@ -110,110 +202,289 @@ render blend stack mp4
 Export commnads:
 tiff
 
-Viewing commands:
+Viewing commands (opens napari):
 view
 
-## info:
+Miscellaneous:
+speedtest
+
+
+
+### info:
 
 Collects information about a given dataset:
 
 ```
-Usage: dexp info [OPTIONS] INPUT_PATH
+Usage: dexp info [OPTIONS] [INPUT_PATHS]...
 
 Options:
   --help  Show this message and exit.
-
 ```
 
-## copy:
+### check:
+
+Checks the integrity of a dataset:
+```
+sage: dexp check [OPTIONS] [INPUT_PATHS]...
+
+Options:
+  -c, --channels TEXT  List of channels, all channels when ommited.
+  --help               Show this message and exit.
+```
+
+### view:
+
+Views a dataset with napari
+
+```
+Usage: dexp view [OPTIONS] INPUT_PATH
+
+  Opens dataset for viewing using napari.
+
+Options:
+  -c, --channels TEXT  list of channels, all channels when ommited.
+  -s, --slice TEXT     dataset slice (TZYX), e.g. [0:5] (first five stacks)
+                       [:,0:100] (cropping in z).
+  -v, --volume         to view with volume rendering (3D ray casting)
+  --help               Show this message and exit.
+```
+
+### copy:
 
 Copies a dataset from one file/folder to another file/folder. The destination is _always_ in ZARR format (dir ort zip). Prefer 'zip' for fully processed datasets (<200GB) to be able to convenienytly copy a single file instead of a gazillion
 files.
 
 ```
-Usage: dexp copy [OPTIONS] INPUT_PATH
+Usage: dexp copy [OPTIONS] [INPUT_PATHS]...
 
 Options:
   -o, --output_path TEXT
-  -c, --channels TEXT     List of channels, all channels when ommited.
-  -s, --slicing TEXT      Dataset slice (TZYX), e.g. [0:5] (first five stacks)
-                          [:,0:100] (cropping in z)
+  -c, --channels TEXT          List of channels, all channels when ommited.
+  -s, --slicing TEXT           Dataset slice (TZYX), e.g. [0:5] (first five
+                               stacks) [:,0:100] (cropping in z)
 
-  -st, --store TEXT       Store: ‘dir’, ‘zip’  [default: dir]
-  -z, --codec TEXT        Compression codec: zstd for ’, ‘blosclz’, ‘lz4’,
-                          ‘lz4hc’, ‘zlib’ or ‘snappy’   [default: zstd]
+  -st, --store TEXT            Zarr store: ‘dir’, ‘ndir’, or ‘zip’  [default:
+                               dir]
 
-  -l, --clevel INTEGER    Compression level  [default: 3]
-  -w, --overwrite         Forces overwrite of target  [default: False]
-  -p, --project INTEGER   max projection over given axis (0->T, 1->Z, 2->Y,
-                          3->X)
+  -z, --codec TEXT             Compression codec: zstd for ’, ‘blosclz’,
+                               ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’   [default:
+                               zstd]
 
-  -k, --workers INTEGER   Number of worker threads to spawn.  [default: 1]
-  --help                  Show this message and exit.
+  -l, --clevel INTEGER         Compression level  [default: 3]
+  -w, --overwrite              Forces overwrite of target  [default: False]
+  -wk, --workers INTEGER       Number of worker threads to spawn.  [default:
+                               -1]
+
+  -wkb, --workersbackend TEXT  What backend to spawn workers with, can be
+                               ‘loky’ (multi-process) or ‘threading’ (multi-
+                               thread)   [default: threading]
+
+  -ck, --check TEXT            Checking integrity of written file.  [default:
+                               True]
+
+  --help                       Show this message and exit.
 
 ```
 
-## add:
+### add:
 
 Adds a channel from one dataset to another (possibly not yet existant) ZARR file/folder. Channels can be renamed as they are copied.
 
 ```
-Usage: dexp add [OPTIONS] INPUT_PATH
+Usage: dexp add [OPTIONS] [INPUT_PATHS]...
 
 Options:
   -o, --output_path TEXT
   -c, --channels TEXT     List of channels, all channels when ommited.
   -rc, --rename TEXT      You can rename channels: e.g. if channels are
-                          `channel1,anotherc` then `gfp,rfp` would rename the
-                          `channel1` channel to `gfp`, and `anotherc` to `rfp`
+                          ‘channel1,anotherc’ then ‘gfp,rfp’ would rename the
+                          ‘channel1’ channel to ‘gfp’, and ‘anotherc’ to ‘rfp’
 
-  -st, --store TEXT       Store: ‘dir’, ‘zip’  [default: dir]
-  -z, --codec TEXT        Compression codec: zstd for ’, ‘blosclz’, ‘lz4’,
-                          ‘lz4hc’, ‘zlib’ or ‘snappy’   [default: zstd]
-
-  -l, --clevel INTEGER    Compression level  [default: 3]
+  -st, --store TEXT       Zarr store: ‘dir’, ‘ndir’, or ‘zip’  [default: dir]
   -w, --overwrite         Forces overwrite of target  [default: False]
   --help                  Show this message and exit.
 ```
 
-## Fusion (& registration):
+### Deskew:
+
+```
+Usage: dexp deskew [OPTIONS] [INPUT_PATHS]...
+
+Options:
+  -o, --output_path TEXT
+  -c, --channels TEXT             list of channels for the view in standard
+                                  order for the microscope type (C0L0, C0L1,
+                                  C1L0, C1L1,...)
+
+  -s, --slicing TEXT              dataset slice (TZYX), e.g. [0:5] (first five
+                                  stacks) [:,0:100] (cropping in z)
+
+  -st, --store TEXT               Zarr store: ‘dir’, ‘ndir’, or ‘zip’
+                                  [default: dir]
+
+  -z, --codec TEXT                compression codec: ‘zstd’, ‘blosclz’, ‘lz4’,
+                                  ‘lz4hc’, ‘zlib’ or ‘snappy’
+
+  -l, --clevel INTEGER            Compression level  [default: 3]
+  -w, --overwrite                 to force overwrite of target  [default:
+                                  False]
+
+  -zl, --zerolevel INTEGER        ‘zero-level’ i.e. the pixel values in the
+                                  restoration (to be substracted)  [default:
+                                  110]
+
+  -ch, --cliphigh INTEGER         Clips voxel values above the given value, if
+                                  zero no clipping is done  [default: 1024]
+
+  -dhs, --dehaze_size INTEGER     Filter size (scale) for dehazing the final
+                                  regsitered and fused image to reduce effect
+                                  of scattered and out-of-focus light. Set to
+                                  zero to deactivate.  [default: 65]
+
+  -ddt, --dark_denoise_threshold INTEGER
+                                  Threshold for denoises the dark pixels of
+                                  the image -- helps increase compression
+                                  ratio. Set to zero to deactivate.  [default:
+                                  0]
+
+  -k, --workers INTEGER           Number of worker threads to spawn, if -1
+                                  then num workers = num devices  [default:
+                                  -1]
+
+  -wkb, --workersbackend TEXT     What backend to spawn workers with, can be
+                                  ‘loky’ (multi-process) or ‘threading’
+                                  (multi-thread)   [default: threading]
+
+  -d, --devices TEXT              Sets the CUDA devices id, e.g. 0,1,2 or
+                                  ‘all’  [default: 0]
+
+  -ck, --check TEXT               Checking integrity of written file.
+                                  [default: True]
+
+  --help                          Show this message and exit.
+```
+
+
+### Fusion (& registration):
 
 Fuses and registers stacks acquired on a multi-view lightsheet microscope. Right now we have only support for SimView type lightsheet microscope with 2 detection arms and 2 illmination arms. Channels must be named:
 'C0L0', 'C0L1', 'C1L0', 'C1L1'. The result has a single channel called 'fused'.
 
 ```
-Usage: dexp fuse [OPTIONS] INPUT_PATH
+Usage: dexp fuse [OPTIONS] [INPUT_PATHS]...
 
 Options:
   -o, --output_path TEXT
-  -s, --slicing TEXT        dataset slice (TZYX), e.g. [0:5] (first five
-                            stacks) [:,0:100] (cropping in z)
+  -c, --channels TEXT             list of channels for the view in standard
+                                  order for the microscope type (C0L0, C0L1,
+                                  C1L0, C1L1,...)
 
-  -st, --store TEXT         Store: ‘dir’, ‘zip’  [default: dir]
-  -z, --codec TEXT          compression codec: ‘zstd’, ‘blosclz’, ‘lz4’,
-                            ‘lz4hc’, ‘zlib’ or ‘snappy’
+  -s, --slicing TEXT              dataset slice (TZYX), e.g. [0:5] (first five
+                                  stacks) [:,0:100] (cropping in z)
 
-  -l, --clevel INTEGER      Compression level  [default: 3]
-  -w, --overwrite           to force overwrite of target  [default: False]
-  -k, --workers INTEGER     Number of worker threads to spawn, recommended: 1
-                            (unless you know what you are doing)  [default: 1]
+  -st, --store TEXT               Zarr store: ‘dir’, ‘ndir’, or ‘zip’
+                                  [default: dir]
 
-  -zl, --zerolevel INTEGER  Sets the 'zero-level' i.e. the pixel values in the
-                            background (to be substracted)  [default: 110]
+  -z, --codec TEXT                compression codec: ‘zstd’, ‘blosclz’, ‘lz4’,
+                                  ‘lz4hc’, ‘zlib’ or ‘snappy’
 
-  -ls, --loadshifts         Turn on to load the registration parameters (i.e
-                            translation shifts) from another run  [default:
-                            False]
+  -l, --clevel INTEGER            Compression level  [default: 3]
+  -w, --overwrite                 to force overwrite of target  [default:
+                                  False]
 
-  --help                    Show this message and exit.
+  -m, --microscope TEXT           Microscope objective to use for computing
+                                  psf, can be: simview or mvsols  [default:
+                                  simview]
+
+  -eq, --equalise / -neq, --no-equalise
+                                  Equalise intensity of views before fusion,
+                                  or not.  [default: True]
+
+  -eqm, --equalisemode TEXT       Equalisation modes: compute correction
+                                  ratios only for first time point: ‘first’ or
+                                  for all time points: ‘all’.  [default:
+                                  first]
+
+  -zl, --zerolevel INTEGER        ‘zero-level’ i.e. the pixel values in the
+                                  restoration (to be substracted)  [default:
+                                  110]
+
+  -ch, --cliphigh INTEGER         Clips voxel values above the given value, if
+                                  zero no clipping is done  [default: 1024]
+
+  -f, --fusion TEXT               Fusion mode, can be: ‘tg’ or ‘dct’.
+                                  [default: tg]
+
+  -fbs, --fusion_bias_strength <FLOAT FLOAT>...
+                                  Fusion bias strength for illumination and
+                                  detection ‘fbs_i fbs_d’, set to ‘0 0’) if
+                                  fusing a cropped region  [default: 0.5,
+                                  0.02]
+
+  -dhs, --dehaze_size INTEGER     Filter size (scale) for dehazing the final
+                                  regsitered and fused image to reduce effect
+                                  of scattered and out-of-focus light. Set to
+                                  zero to deactivate.  [default: 65]
+
+  -ddt, --dark_denoise_threshold INTEGER
+                                  Threshold for denoises the dark pixels of
+                                  the image -- helps increase compression
+                                  ratio. Set to zero to deactivate.  [default:
+                                  0]
+
+  -zpa, --zpadapodise <INTEGER INTEGER>...
+                                  Pads and apodises the views along z before
+                                  fusion: ‘pad apo’, where pad is a padding
+                                  length, and apo is apodisation length, both
+                                  in voxels. If pad=apo, no original voxel is
+                                  modified and only added voxels are apodised.
+                                  [default: 8, 96]
+
+  -lr, --loadreg                  Turn on to load the registration parameters
+                                  from a previous run  [default: False]
+
+  -wri, --warpregiter INTEGER     Number of iterations for warp registration
+                                  (if applicable).  [default: 4]
+
+  -mc, --minconfidence FLOAT      Minimal confidence for registration
+                                  parameters, if below that level the
+                                  registration parameters for previous time
+                                  points is used.  [default: 0.3]
+
+  -md, --maxchange FLOAT          Maximal change in registration parameters,
+                                  if above that level the registration
+                                  parameters for previous time points is used.
+                                  [default: 16]
+
+  -hd, --hugedataset              Use this flag to indicate that the the
+                                  dataset is _huge_ and that memory allocation
+                                  should be optimised at the detriment of
+                                  processing speed.  [default: False]
+
+  -k, --workers INTEGER           Number of worker threads to spawn, if -1
+                                  then num workers = num devices  [default:
+                                  -1]
+
+  -wkb, --workersbackend TEXT     What backend to spawn workers with, can be
+                                  ‘loky’ (multi-process) or ‘threading’
+                                  (multi-thread)   [default: threading]
+
+  -d, --devices TEXT              Sets the CUDA devices id, e.g. 0,1,2 or
+                                  ‘all’  [default: 0]
+
+  -ck, --check TEXT               Checking integrity of written file.
+                                  [default: True]
+
+  --help                          Show this message and exit.
+
 ```
 
-## Deconvolution:
+### Deconvolution:
 
 Deconvolves stacks using a simulated PSF. Right now we only support the optics of our SimVew type light sheet (0.8 NA objectives wth custom magnfication.)
 
 ```
-Usage: dexp deconv [OPTIONS] INPUT_PATH
+Usage: dexp deconv [OPTIONS] [INPUT_PATHS]...
 
 Options:
   -o, --output_path TEXT
@@ -221,15 +492,16 @@ Options:
   -s, --slicing TEXT            dataset slice (TZYX), e.g. [0:5] (first five
                                 stacks) [:,0:100] (cropping in z)
 
-  -st, --store TEXT             Store: ‘dir’, ‘zip’  [default: dir]
+  -st, --store TEXT             Zarr store: ‘dir’, ‘ndir’, or ‘zip’  [default:
+                                dir]
+
   -z, --codec TEXT              compression codec: ‘zstd’, ‘blosclz’, ‘lz4’,
                                 ‘lz4hc’, ‘zlib’ or ‘snappy’   [default: zstd]
 
   -l, --clevel INTEGER          Compression level  [default: 3]
   -w, --overwrite               to force overwrite of target  [default: False]
-  -k, --workers INTEGER         Number of worker threads to spawn,
-                                recommended: 1 (unless you know what you are
-                                doing)  [default: 1]
+  -cs, --chunksize INTEGER      Chunk size for tiled computation  [default:
+                                512]
 
   -m, --method TEXT             Deconvolution method: for now only lr (Lucy
                                 Richardson)  [default: lr]
@@ -237,43 +509,73 @@ Options:
   -i, --iterations INTEGER      Number of deconvolution iterations. More
                                 iterations takes longer, will be sharper, but
                                 might also be potentially more noisy depending
-                                on method.  [default: 15]
+                                on method. The default number of iterations
+                                depends on the other parameters, in particular
+                                it depends on the choice of backprojection
+                                operator. For ‘wb’ as little as 3 iterations
+                                suffice.
 
-  -mc, --maxcorrection INTEGER  Max correction in folds per iteration. Noisy
-                                datasets benefit from mc=2 (recommended), for
-                                noiseless datasets you can push to mc=8 or
-                                even more.  [default: 2]
+  -mc, --maxcorrection INTEGER  Max correction in folds per iteration. By
+                                default there is no limit
 
   -pw, --power FLOAT            Correction exponent, default for standard LR
-                                is 1, set to 1.5 for acceleration.  [default:
-                                1.5]
+                                is 1, set to >1 for acceleration.  [default:
+                                1.0]
+
+  -bs, --blindspot INTEGER      Blindspot based noise reduction. Provide size
+                                of kernel to use, must be an odd number:
+                                3(recommended), 5, 7. 0 means no blindspot.
+                                [default: 0]
+
+  -bp, --backprojection TEXT    Back projection operator, can be: ‘tpsf’
+                                (transposed PSF = classic) or ‘wb’ (Wiener-
+                                Butterworth =  accelerated)   [default: tpsf]
+
+  -obj, --objective TEXT        Microscope objective to use for computing psf,
+                                can be: nikon16x08na or olympus20x10na
+                                [default: nikon16x08na]
 
   -dxy, --dxy FLOAT             Voxel size along x and y in microns  [default:
                                 0.485]
 
   -dz, --dz FLOAT               Voxel size along z in microns  [default: 1.94]
-  -sxy, --xysize INTEGER        Voxel size along xy in microns  [default: 17]
-  -sz, --zsize INTEGER          Voxel size along z in microns  [default: 31]
+  -sxy, --xysize INTEGER        PSF size along xy in voxels  [default: 31]
+  -sz, --zsize INTEGER          PSF size along z in voxels  [default: 31]
   -d, --downscalexy2 TEXT       Downscales along x and y for faster
                                 deconvolution (but worse quality of course)
 
-  --help                    Show this message and exit.
+  -k, --workers INTEGER         Number of worker threads to spawn, if -1 then
+                                num workers = num devices  [default: -1]
+
+  -wkb, --workersbackend TEXT   What backend to spawn workers with, can be
+                                ‘loky’ (multi-process) or ‘threading’ (multi-
+                                thread)   [default: threading]
+
+  -d, --devices TEXT            Sets the CUDA devices id, e.g. 0,1,2 or ‘all’
+                                [default: 0]
+
+  -ck, --check TEXT             Checking integrity of written file.  [default:
+                                True]
+
+  --help                        Show this message and exit.
 ```
 
-## Isonet:
+### Isonet:
 
 Provides support for Isonet deep learning based axial deconvolution:
 https://arxiv.org/abs/1704.01510
 
 ```
-Usage: dexp isonet [OPTIONS] INPUT_PATH
+Usage: dexp isonet [OPTIONS] [INPUT_PATHS]...
 
 Options:
   -o, --output_path TEXT
   -s, --slicing TEXT        dataset slice (TZYX), e.g. [0:5] (first five
                             stacks) [:,0:100] (cropping in z)
 
-  -st, --store TEXT         Store: ‘dir’, ‘zip’  [default: dir]
+  -st, --store TEXT         Zarr store: ‘dir’, ‘ndir’, or ‘zip’  [default:
+                            dir]
+
   -z, --codec TEXT          compression codec: ‘zstd’, ‘blosclz’, ‘lz4’,
                             ‘lz4hc’, ‘zlib’ or ‘snappy’   [default: zstd]
 
@@ -284,11 +586,33 @@ Options:
                             apply    [default: pta]
 
   -e, --max_epochs INTEGER  to force overwrite of target  [default: 50]
+  -ck, --check TEXT         Checking integrity of written file.  [default:
+                            True]
+
   --help                    Show this message and exit.
 
 ```
 
-## Volume rendering:
+
+## Video commands
+
+DEXP has a series of video commands that let you render datasets and compose complex videos:
+```
+Usage: video [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  blend
+  mp4
+  projrender
+  stack
+  volrender
+```
+
+
+### Volume rendering:
 
 Simple but effective volume rendering. By default should produce nice rotating views, but lots of parameters can be configured!
 This command produces video frames as individual PNG files in a subfolder (frames). To make a movie, blend channels together, or stich panels together, use the blend, stack and mp4 commands.
@@ -325,7 +649,7 @@ Options:
 
 ```
 
-## Video compositing:
+### Video compositing:
 
 Takes frames and blend them together. Typically used for merging channels, but can also be used to add text -- if you provide a folder with a single PNG image of correct dimensions
 
@@ -345,7 +669,7 @@ Options:
 
 ```
 
-## Video stacking:
+### Video stacking:
 
 In addition to blending frames you can also stack frames horyzontally or vertically to make multi-panel videos. Again, here we just manipulate folders of PNG files.
 
@@ -363,7 +687,7 @@ Options:
 
 ```
 
-## Conversion from frame sequences to mp4 file:
+### Conversion from frame sequences to mp4 file:
 
 Takes a folder of PNG files and makes it into a MP4 file.
 
@@ -380,22 +704,7 @@ Options:
 
 ```
 
-## view:
 
-Views a dataset with napari
-
-```
-Usage: dexp view [OPTIONS] INPUT_PATH
-
-  Opens dataset for viewing using napari.
-
-Options:
-  -c, --channels TEXT  list of channels, all channels when ommited.
-  -s, --slice TEXT     dataset slice (TZYX), e.g. [0:5] (first five stacks)
-                       [:,0:100] (cropping in z).
-  -v, --volume         to view with volume rendering (3D ray casting)
-  --help               Show this message and exit.
-```
 
 # Examples:
 
