@@ -28,10 +28,21 @@ The following instructions are for Ubuntu 20.04 (recomended!)
 
 ### Remove all existing CUDA and NVIDIA packages:
 ```
-sudo apt-get purge nvidia*
-sudo apt-get autoremove
-sudo apt-get autoclean
+sudo apt-get -y purge nvidia*
+sudo apt-get -y autoremove
+sudo apt-get -y autoclean
 sudo rm -rf /usr/local/cuda*
+sudo apt-get clean
+```
+
+### Install CUDA 11.1:
+```
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
+sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+sudo apt-get update
+sudo apt-get -y install cuda=11.1.0-1
 ```
 
 ### Install CUDA 11.2:
@@ -40,10 +51,11 @@ As of Feb 2021, this is a good choice:
 ```
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
-sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+wget https://developer.download.nvidia.com/compute/cuda/11.2.0/local_installers/cuda-repo-ubuntu2004-11-2-local_11.2.0-460.27.04-1_amd64.deb
+sudo dpkg -i cuda-repo-ubuntu2004-11-2-local_11.2.0-460.27.04-1_amd64.deb
+sudo apt-key add /var/cuda-repo-ubuntu2004-11-2-local/7fa2af80.pub
 sudo apt-get update
-sudo apt-get -y install cuda
+sudo apt-get -y install cuda=11.2.0-1
 ```
 
 ### Install cutensor:
@@ -51,27 +63,41 @@ sudo apt-get -y install cuda
 sudo add-apt-repository "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
 sudo apt update 
+sudo apt -y remove libcutensor1 libcutensor-dev libcutensor-doc
 sudo apt -y install libcutensor1 libcutensor-dev libcutensor-doc
 ```
 
-### Install nccl:
+### Install nccl for CUDA 11.1:
 ```
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
 sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
 sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 sudo apt-get update
-sudo apt install libnccl2=2.8.4-1+cuda11.2 libnccl-dev=2.8.4-1+cuda11.2
+sudo apt -y remove libnccl2 libnccl-dev
+sudo apt -y install libnccl2=2.8.4-1+cuda11.1 libnccl-dev=2.8.4-1+cuda11.1
 ```
 
-### Install cudnn:
+### Install nccl for CUDA 11.2:
+```
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
+sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+sudo apt-get update
+sudo apt -y remove libnccl2 libnccl-dev
+sudo apt -y install libnccl2=2.8.4-1+cuda11.2 libnccl-dev=2.8.4-1+cuda11.2
+```
+
+### Install cudnn for CUDA 11.1:
 ```
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin 
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
 sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
 sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 sudo apt-get update
-sudo apt-get install libcudnn8=8.1.0.77-1+cuda11.2
+sudo apt-get -y remove libcudnn8
+sudo apt-get -y install libcudnn8=8.1.0.77-1+cuda11.1
 ```
 
 ### Install cub:
@@ -107,24 +133,13 @@ and adding the line:
 CUPY_ACCELERATORS="cub,cutensor"
 ```
 
-### Build/Install CUPY:
+### Build/Install CUPY for CUDA 11.1:
 
 It is recomended to install cupy using the available wheels, 
-if the correct wheels package for the given CUDA version and CUPY version are available:
+you must have installed the correct CUDA packages for the correct version (11.1)
+as detailed above. Once ready you do:
 ```
 pip install cupy-cuda111==9.0.0b2
-```
-Note: currently only `cupy-cuda111` is available, installing drivers for 11.2 is fine,
-but you also want to also add the 11.1 toolkit. A lightweight approach is to simply use conda:
-```
-conda install -c conda-forge cudatoolkit=11.1
-```
-Once cupy fully supports 11.1 this won't be nescessary.
-
-Another approach, which takes time and fails often is to build from source:
-```
-pip install -U setuptools pip
-pip install cupy --no-cache-dir -vvvv
 ```
 
 ## DEXP setup:
