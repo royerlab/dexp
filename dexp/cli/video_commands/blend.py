@@ -15,7 +15,7 @@ from dexp.cli.dexp_main import _default_workers_backend
 @click.command()
 @click.argument('input_paths', nargs=-1)
 @click.option('--output_path', '-o', type=str, default=None, help='Output folder for blended frames.')
-@click.option('--blending', '-b', type=str, default='max', help='Blending mode: max, add, adderf, alpha. Note: in the add mode the values are clipped.', show_default=True)
+@click.option('--blending', '-b', type=str, default='max', help='Blending mode: max, add, adderf, alpha. In the add mode the values are clipped. For alpha-blending, we assume that RGB values are not ‘alpha-premultiplied’.', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, set to -1 for maximum number of workers', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #

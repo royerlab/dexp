@@ -81,6 +81,11 @@ def open_joined_datasets(paths: Sequence[str]):
 
     """
 
-    datasets = tuple(open_dataset(path) for path in paths)
-    dataset = JoinedDataset(datasets)
-    return dataset
+    if len(paths) == 1:
+        # If there is only one dataset, no need to join anything:
+        return open_dataset(paths[0])
+    else:
+        #If there are multiple datasets, we join them into a single dataset:
+        datasets = tuple(open_dataset(path) for path in paths)
+        dataset = JoinedDataset(datasets)
+        return dataset

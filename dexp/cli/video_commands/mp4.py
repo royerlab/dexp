@@ -12,21 +12,28 @@ from arbol.arbol import aprint, asection
 @click.option('--extension', '-e', type=str, default='png', help='Extension for image filenames')
 @click.option('--output_path', '-o', type=str, default=None, help='Output file path for movie')
 @click.option('--framerate', '-fps', type=int, default=30, help='Sets the framerate in frames per second', show_default=True)
-@click.option('--preset', '-ps', type=str, default='slower',
-              help='Possible values: ultrafast, superfast, veryfast, faster, fast, medium (default preset), slow, slower, veryslow.'
-                   'A preset is a collection of options that will provide a certain encoding speed to compression ratio.'
-                   'A slower preset will provide better compression (compression is quality per filesize).'
-                   'This means that, for example, if you target a certain file size or constant bit rate,'
-                   'you will achieve better quality with a slower preset.'
-                   'Similarly, for constant quality encoding, you will simply save bitrate by choosing a slower preset.',
+@click.option('--codec', '-c', type=str, default='h264_nvenc',
+              help='Encoding codec, can be: libx264 (reference but slow), or nvenc_h264 (faster, GPU) .',
               show_default=True)
-@click.option('--constantratefactor', '-crf', type=int, default=21,
-              help='The range of the CRF scale is 0–51, where 0 is lossless, 23 is the default, and 51 is worst quality possible.'
-                   'A lower value generally leads to higher quality, and a subjectively sane range is 17–28.'
-                   'Consider 17 or 18 to be visually lossless or nearly so; it should look the same or nearly the same '
-                   'as the input but it is not technically lossless.'
-                   'The range is exponential, so increasing the CRF value +6 results in roughly half the bitrate / file size,'
-                   ' while -6 leads to roughly twice the bitrate.',
+@click.option('--preset', '-ps', type=str, default='slow',
+              help='Possible values: ultrafast, superfast, veryfast, faster, fast, medium (default preset), slow, slower, veryslow.'
+                   ' A preset is a collection of options that will provide a certain encoding speed to compression ratio.'
+                   ' A slower preset will provide better compression (compression is quality per filesize).'
+                   ' This means that, for example, if you target a certain file size or constant bit rate,'
+                   ' you will achieve better quality with a slower preset.'
+                   ' Similarly, for constant quality encoding, you will simply save bitrate by choosing a slower preset.',
+              show_default=True)
+@click.option('--quality', '-q', type=int, default=0,
+              help='Sets the quality of the video by modulating the bit rate. Set to a higher value for higher quality, or lower (negative ok) value for lower quality. Means different things for different codecs.',
+              show_default=True)
+@click.option('--width', '-wi', type=int, default=0,
+              help='Video frame width, recomended values: 1280(HD720), 1920(HD1080), 2048(2K), 3840(UHD-1), 4096(4K), 7680(8K). If zero then original size preserved, '
+                   'if -1 the best fit is found while allowing some downscaling. Height is automatically determined to preserve aspect ratio,'
+                   ' and is forced to be a multiple of 32.',
+              show_default=True)
+@click.option('--pixelformat', '-pf', type=str, default='yuv420p',
+              help='Pixel format, can be yuv420p (default, recommended) or yuv444p (no chrominance downsampling but better compatibility),'
+                   ' or any other allowed ffmpeg & codec pixel format.',
               show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 def mp4(input_path,
@@ -35,8 +42,11 @@ def mp4(input_path,
         extension,
         output_path,
         framerate,
+        codec,
         preset,
-        constantratefactor,
+        quality,
+        width,
+        pixelformat,
         overwrite):
     if output_path is None:
         videofilepath = os.path.basename(os.path.normpath(input_path)) + '.mp4'
@@ -47,9 +57,17 @@ def mp4(input_path,
 
     if overwrite or not exists(videofilepath):
         with asection(f"Converting PNG files at: {input_path}, into MP4 file: {videofilepath}, framerate: {framerate} "):
+
+            scale_option = f'-vf scale={width}:-8:flags=bicubic' if width > 0 else ''
+            #black_background_filter = f'-filter_complex "{scale_option};color=black,format={pixelformat}[c];[c][0]scale2ref[c][i];[c][i]overlay=format=auto:shortest=1,setsar=1"'
+
             ffmpeg_command = f"ffmpeg -hwaccel auto -framerate {framerate} -start_number 0 -i '{input_path}/{prefix}%0{leading}d.{extension}'  " \
-                             f"-f mp4 -vcodec libx264 -preset {preset} -crf {constantratefactor} -pix_fmt yuv420p  -y {videofilepath}"
-            # -vf  \"crop=576:1240:320:0\"
+                             f"-f mp4 -vcodec {codec} -preset {preset} -cq {26+quality} -crf {21-quality} -pix_fmt {pixelformat} {scale_option} -y {videofilepath}"
+            # -vf  \"crop=576:1240:320:0\"  ""  ,setsar=1:1
+            # -pix_fmt {pixelformat} {scale_option}
+            #,setsar=1:1
+            #h264_nvenc nvenc_h264 libx264
+
             os.system(ffmpeg_command)
     else:
         aprint(f"Video file: {videofilepath} already exists! use -w option to force overwrite...")

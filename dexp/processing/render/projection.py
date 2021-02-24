@@ -1,5 +1,6 @@
 from typing import Union, Tuple, Callable
 
+import numpy
 from matplotlib.cm import get_cmap
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -23,7 +24,9 @@ def rgb_project(image,
                 depth_gamma: float = 1,
                 depth_stabilisation: bool = False,
                 rgb_gamma: float = 1,
-                alpha: bool = True,
+                transparency: bool = True,
+                depth_scale: float = None,
+                depth_unit: str = 'voxels',
                 internal_dtype=None):
     """
     Projects an image along a given axis given a specified method (max projection, max projection color-coded depth, ...)
@@ -47,7 +50,10 @@ def rgb_project(image,
     depth_gamma: Gamma correction applied to the stack depth to accentuate (depth_gamma < 1) color variations with depth at the center of the stack.
     depth_stabilisation: Uses the center of mass calculation to shift the center of the depth color map to teh center of mass of the image content.
     rgb_gamma: Gamma correction applied to the resulting RGB image.
-    alpha: If True, the best attempt is made to use alpha transparency in the resulting image. Not available in all modes.
+    transparency: If True, the best attempt is made to use alpha transparency in the resulting image. Not available in all modes. RGB output is not 'alpha pre-multiplied'.
+    depth_scale: Float that gives the scale in some unit of each voxel (along the prohjection direction).
+    In that case (!= None) a color depth scale is placed on the image. Only in color projection modes.
+    depth_unit: Depth unit for color-coded depth.
     internal_dtype : dtype for internal computation
 
     Returns
@@ -91,6 +97,11 @@ def rgb_project(image,
     # Normalise
     norm_fun, _ = normalise_functions(image, quantile=0.0001, minmax=clim, clip=True)
     image = norm_fun(image)
+
+    # # Apply color depth scale:
+    # if 'color' in mode and depth_scale is not None:
+    #
+    #     image
 
     # Apply gamma:
     if gamma != 1:
@@ -140,7 +151,11 @@ def rgb_project(image,
 
         # argmax:
         indices = xp.argmax(image, axis=axis)
-        values = xp.max(image, axis=axis)
+
+        expanded_indices = xp.expand_dims(indices, axis=axis)
+        values = xp.take_along_axis(image, expanded_indices, axis=axis)
+        values = xp.squeeze(values)
+        #values = xp.max(image, axis=axis)
 
         # apply color map, this is just the chroma-coding of depth
         norm_factor = xp.array(1.0 / float(image.shape[axis] - 1)).astype(internal_dtype, copy=False)
@@ -157,7 +172,7 @@ def rgb_project(image,
         projection = rgb_colormap(normalised_depth, cmap=cmap, bytes=False)
 
         # Next we multiply the chroma-code with the intensity of the corresponding voxel:
-        if alpha:
+        if transparency:
             projection[..., 3] *= values
         else:
             projection[..., 0:3] *= values[..., xp.newaxis]
@@ -171,6 +186,14 @@ def rgb_project(image,
     projection *= 255
     projection = xp.clip(projection, 0, 255)
     projection = projection.astype(xp.uint8, copy=False)
+
+    # Apply color depth scale text:
+    # if 'color' in mode and depth_scale is not None:
+    #
+    #
+    #     data = numpy.ndarray(shape=(height, width), dtype=numpy.uint32)
+    #     import cairo
+    #     surface = cairo.ImageSurface.create_for_data(data, cairo.FORMAT_RGBA32, width, height)
 
     return projection
 

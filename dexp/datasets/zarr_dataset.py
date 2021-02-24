@@ -206,7 +206,14 @@ class ZDataset(BaseDataset):
             for channel in self.channels():
                 info_str += "  └──" + self.info(channel) + "\n\n"
 
-            return info_str
+        info_str += "\n\n"
+        info_str += "\n\n"
+        for name, array in self._arrays.items():
+            info_str += f"Channel: {name}  \n"
+            info_str += str(array.info)
+            info_str += '\n'
+
+        return info_str
 
     def get_metadata(self):
         """get the attributes stored in the zarr folder"""

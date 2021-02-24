@@ -33,6 +33,8 @@ from dexp.processing.render.projection import rgb_project
               show_default=True)  # , help='dataset slice'
 @click.option('--colormap', '-cm', type=str, default='viridis', help='sets colormap, e.g. viridis, gray, magma, plasma, inferno. Use a rainbow colormap such as bmy or turbo for color-coded depth modes. ', show_default=True)
 @click.option('--rgbgamma', '-cg', type=float, default=1.0, help='Gamma correction applied to the resulting RGB image. Usefull to brighten image', show_default=True)
+#'--equalise/--no-equalise', '-eq/-neq', default=True,
+@click.option('--transparency', '-t', is_flag=True, help='Set to enable transparency output.', show_default=True)
 @click.option('--step', '-sp', type=int, default=1, help='Process every ‘step’ frames.', show_default=True)
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
@@ -51,6 +53,7 @@ def projrender(input_paths,
                depthgamma,
                colormap,
                rgbgamma,
+               transparency,
                step,
                workers,
                workersbackend,
@@ -111,7 +114,8 @@ def projrender(input_paths,
                                                              clim=_clim,
                                                              cmap=colormap,
                                                              depth_gamma=depthgamma,
-                                                             rgb_gamma=rgbgamma)
+                                                             rgb_gamma=rgbgamma,
+                                                             transparency=transparency)
 
                                 with asection("Saving frame"):
                                     projection = Backend.to_numpy(projection)
