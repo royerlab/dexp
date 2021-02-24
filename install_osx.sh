@@ -17,16 +17,11 @@ conda install -y -c anaconda dask
 conda install -y -c anaconda dask-image
 conda install -y -c anaconda distributed
 conda install -y -c anaconda zarr
-#conda install -y -c anaconda cudatoolkit
-#conda install -y -c rapidsai dask-cuda
-#conda install -y -c conda-forge ocl-icd-system
-#conda install -y -c pytorch pytorch torchvision torch-dct
 
 #pip install cupy-cuda111
 #pip install cupy-cuda111 -f https://github.com/cupy/cupy/releases/tag/v9.0.0a1
 
-pip install pyopencl --upgrade
-#pip install torch-dct --upgrade
+pip install --upgrade pip
 pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install spimagine --upgrade
@@ -35,5 +30,7 @@ pip install arbol colorama ansicolors --upgrade
 pip install simple-zarr-server requests aiohttp --upgrade
 pip install colorcet --upgrade
 pip install python-telegram-bot --upgrade
+pip install PyYAML --upgrade
+pip install pycairo --upgrade
 
 pip install -e .

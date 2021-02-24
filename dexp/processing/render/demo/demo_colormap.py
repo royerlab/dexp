@@ -20,7 +20,7 @@ def demo_colormap_cupy():
         print("Cupy module not found! ignored!")
 
 
-def demo_colormap(length_xy=120):
+def demo_colormap(length_xy=120, display=True):
     with asection("generate data"):
         _, _, image = generate_nuclei_background_data(add_noise=False,
                                                       length_xy=length_xy,
@@ -36,14 +36,15 @@ def demo_colormap(length_xy=120):
         rgb_image = rgb_colormap(image,
                                  cmap='turbo')
 
-    from napari import Viewer, gui_qt
-    with gui_qt():
-        def _c(array):
-            return Backend.to_numpy(array)
+    if display:
+        from napari import Viewer, gui_qt
+        with gui_qt():
+            def _c(array):
+                return Backend.to_numpy(array)
 
-        viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(rgb_image), name='rgb_image')
+            viewer = Viewer()
+            viewer.add_image(_c(image), name='image')
+            viewer.add_image(_c(rgb_image), name='rgb_image')
 
 
 if __name__ == "__main__":

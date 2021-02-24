@@ -36,7 +36,8 @@ def rgb_project(image,
     image : Image to project
     axis : axis along which to project
     dir : projection diretion, can be either '-1' for top to botttom or '1' for bottom to top -- assuming top corresponds to the positive direction of the projection axis.
-    mode : projection mode, can be: 'max' for max projection, 'colormax' for max color projection, ...
+    mode : projection mode, can be: 'max' for max projection, 'colormax' and 'maxcolor' for max color projections. Explanation: colormax applies first max and then colorises,
+     maxcolor, first colorises each voxel then computes the max. This means that maxcolor is 3x more memory intensive (with current implementation).
     attenuation : How much to attenuate when projecting.
     gamma: Gamma correction to apply
     clim : color limits for applying the colormap.
@@ -120,13 +121,19 @@ def rgb_project(image,
 
     elif mode == 'maxcolor':
 
+        # compute a depth map of same shape as the image:
         depth = image.shape[axis]
-        depth_values = xp.linspace(0, 1, num=depth) if dir > 0 else xp.linspace(1, 0, num=depth)
+        depth_values = xp.linspace(0, 1, num=depth) if dir < 0 else xp.linspace(1, 0, num=depth)
         depth_values = xp.expand_dims(depth_values, axis=tuple(range(image.ndim - 1)))
         depth_values = xp.moveaxis(depth_values, -1, axis)
+
+        # Apply the colormap:
         color_ramp = rgb_colormap(depth_values, cmap=cmap, bytes=False)
+
+        # Multiply with image leveraing broadcasting:
         color_image = color_ramp * image[..., xp.newaxis]
 
+        # Projecting:
         projection = xp.max(color_image, axis=axis)
 
     elif mode == 'colormax':
@@ -155,14 +162,15 @@ def rgb_project(image,
         else:
             projection[..., 0:3] *= values[..., xp.newaxis]
 
-
     else:
         raise ValueError(f"Invalid projection mode: {mode}")
 
     if rgb_gamma != 1.0:
         projection **= rgb_gamma
 
-    projection = (projection * 255).astype(xp.uint8, copy=False)
+    projection *= 255
+    projection = xp.clip(projection, 0, 255)
+    projection = projection.astype(xp.uint8, copy=False)
 
     return projection
 

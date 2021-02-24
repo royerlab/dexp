@@ -1,12 +1,6 @@
 # Run this to create a new env:
 #conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; ./install_linux.sh
 
-# To install cuTensor, type:
-#sudo add-apt-repository "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
-#sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
-#sudo apt update
-#sudo apt -y install libcutensor1 libcutensor-dev libcutensor-doc
-
 conda config --add channels anaconda
 conda install -y -c anaconda numpy #"libblas=*=*mkl"
 conda install -y -c anaconda scipy
@@ -23,18 +17,11 @@ conda install -y -c anaconda dask
 conda install -y -c anaconda dask-image
 conda install -y -c anaconda distributed
 conda install -y -c anaconda zarr
-#conda install -y -c anaconda cudatoolkit
-#conda install -y -c rapidsai dask-cuda
-#conda install -y -c conda-forge ocl-icd-system
-conda install pytorch torchvision torchaudio cudatoolkit=11.0 torch-dct -c pytorch
 
-#pip install cupy-cuda111
-#pip install cupy-cuda111 -f https://github.com/cupy/cupy/releases/tag/v9.0.0a1
 source /apps/GCC-6.5.0/setup.GCC-6.5.0
 pip install cupy-cuda111==9.0.0b2 --no-cache-dir
 
-pip install pyopencl --upgrade
-#pip install torch-dct --upgrade
+pip install --upgrade pip
 pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install spimagine --upgrade
@@ -44,5 +31,8 @@ pip install simple-zarr-server requests aiohttp --upgrade
 pip install colorcet --upgrade
 pip install python-telegram-bot --upgrade
 pip install PyYAML --upgrade
+
+sudo apt install libcairo2-dev pkg-config python3-dev
+pip install pycairo --upgrade
 
 pip install -e .

@@ -21,7 +21,7 @@ def demo_projection_cupy():
         print("Cupy module not found! ignored!")
 
 
-def demo_projection(length_xy=120):
+def demo_projection(length_xy=120, display=True):
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
@@ -80,24 +80,21 @@ def demo_projection(length_xy=120):
                                                       cmap='turbo',
                                                       depth_stabilisation=True)
 
-    # projection = Backend.to_numpy(color_max_projection)
-    # png_image = Image.fromarray(projection)
-    # png_image.save('test.png')
+    if display:
+        from napari import Viewer, gui_qt
+        with gui_qt():
+            def _c(array):
+                return Backend.to_numpy(array)
 
-    from napari import Viewer, gui_qt
-    with gui_qt():
-        def _c(array):
-            return Backend.to_numpy(array)
-
-        viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(max_projection), name='max_projection', rgb=True)
-        viewer.add_image(_c(max_projection_att), name='max_projection_att', rgb=True)
-        viewer.add_image(_c(max_color_projection), name='max_color_projection', rgb=True)
-        viewer.add_image(_c(color_max_projection), name='color_max_projection', rgb=True)
-        viewer.add_image(_c(color_max_projection_stabilised), name='color_max_projection_stabilised', rgb=True)
-        viewer.add_image(_c(color_max_projection_dg), name='color_max_projection_dg', rgb=True)
-        viewer.add_image(_c(color_max_projection_bottom), name='color_max_projection_bottom', rgb=True)
+            viewer = Viewer()
+            viewer.add_image(_c(image), name='image')
+            viewer.add_image(_c(max_projection), name='max_projection', rgb=True)
+            viewer.add_image(_c(max_projection_att), name='max_projection_att', rgb=True)
+            viewer.add_image(_c(max_color_projection), name='max_color_projection', rgb=True)
+            viewer.add_image(_c(color_max_projection), name='color_max_projection', rgb=True)
+            viewer.add_image(_c(color_max_projection_stabilised), name='color_max_projection_stabilised', rgb=True)
+            viewer.add_image(_c(color_max_projection_dg), name='color_max_projection_dg', rgb=True)
+            viewer.add_image(_c(color_max_projection_bottom), name='color_max_projection_bottom', rgb=True)
 
 
 if __name__ == "__main__":
