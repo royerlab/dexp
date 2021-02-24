@@ -101,7 +101,7 @@ def projrender(input_paths,
                                     min_value, max_value = (float(strvalue) for strvalue in _clim.split(','))
                                     _clim = (min_value, max_value)
 
-                                with asection("Projecting"):
+                                with asection(f"Projecting image of shape: {stack.shape} "):
                                     projection = rgb_project(stack,
                                                              axis=axis,
                                                              dir=dir,

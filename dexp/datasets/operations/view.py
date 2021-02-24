@@ -2,6 +2,7 @@ from typing import Sequence, Union, List
 
 import dask
 from arbol import aprint
+from dask.array import reshape
 
 from dexp.datasets.base_dataset import BaseDataset
 
@@ -35,6 +36,10 @@ def dataset_view(input_dataset: BaseDataset,
             try:
                 for axis in range(array.ndim - 1):
                     proj_array = input_dataset.get_projection_array(channel, axis=axis, wrap_with_dask=True)
+
+                    shape = (proj_array.shape[0], 1,) + proj_array.shape[1:]
+                    proj_array = reshape(proj_array, shape=shape)
+
                     if proj_array is not None:
                         proj_layer = viewer.add_image(proj_array,
                                                       name=channel + '_proj_' + str(axis),

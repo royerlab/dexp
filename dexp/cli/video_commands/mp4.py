@@ -12,14 +12,15 @@ from arbol.arbol import aprint, asection
 @click.option('--extension', '-e', type=str, default='png', help='Extension for image filenames')
 @click.option('--output_path', '-o', type=str, default=None, help='Output file path for movie')
 @click.option('--framerate', '-fps', type=int, default=30, help='Sets the framerate in frames per second', show_default=True)
-@click.option('--preset', '-ps', type=str, default='slow',
-              help='A preset is a collection of options that will provide a certain encoding speed to compression ratio.'
+@click.option('--preset', '-ps', type=str, default='slower',
+              help='Possible values: ultrafast, superfast, veryfast, faster, fast, medium (default preset), slow, slower, veryslow.'
+                   'A preset is a collection of options that will provide a certain encoding speed to compression ratio.'
                    'A slower preset will provide better compression (compression is quality per filesize).'
                    'This means that, for example, if you target a certain file size or constant bit rate,'
                    'you will achieve better quality with a slower preset.'
                    'Similarly, for constant quality encoding, you will simply save bitrate by choosing a slower preset.',
               show_default=True)
-@click.option('--constantratefactor', '-crf', type=int, default=20,
+@click.option('--constantratefactor', '-crf', type=int, default=21,
               help='The range of the CRF scale is 0–51, where 0 is lossless, 23 is the default, and 51 is worst quality possible.'
                    'A lower value generally leads to higher quality, and a subjectively sane range is 17–28.'
                    'Consider 17 or 18 to be visually lossless or nearly so; it should look the same or nearly the same '

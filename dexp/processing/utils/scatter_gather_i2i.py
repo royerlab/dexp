@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 import numpy
 
@@ -10,8 +10,8 @@ from dexp.processing.utils.normalise import normalise_functions
 def scatter_gather_i2i(function,
                        image,
                        chunks: Union[int, Tuple[int, ...]],
-                       margins: Union[int, Tuple[int, ...]] = None,
-                       normalise: bool = True,
+                       margins: Optional[Union[int, Tuple[int, ...]]] = None,
+                       normalise: bool = False,
                        clip: bool = False,
                        to_numpy: bool = True,
                        internal_dtype=None):
@@ -27,7 +27,7 @@ def scatter_gather_i2i(function,
     function : unary function
     image : input image (can be any backend, numpy )
     chunks : chunk sizes to cut input image into, can be a single integer or a tuple of integers.
-    margins : margins to add to each chunk, can be a single integer or a tuple of integers.
+    margins : margins to add to each chunk, can be a single integer or a tuple of integers. if None, no margins are added.
     normalise : normalises  the input image.
     clip : clip after normalisation/denormalisation
     to_numpy : should the result be a numpy array? Very usefull when the compute backend cannot hold the whole input and output images in memory.
@@ -44,6 +44,12 @@ def scatter_gather_i2i(function,
 
     if type(chunks) == int:
         chunks = (chunks,) * image.ndim
+
+    # If None is passed for a chunk that means that we don't chunk along that axis, we als clip the chunk size:
+    chunks = tuple((length if chunk is None else min(length, chunk)) for chunk, length in zip(chunks, image.shape))
+
+    if margins is None:
+        margins = (0,) * image.ndim
 
     if type(margins) == int:
         margins = (margins,) * image.ndim

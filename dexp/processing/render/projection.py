@@ -23,6 +23,7 @@ def rgb_project(image,
                 depth_gamma: float = 1,
                 depth_stabilisation: bool = False,
                 rgb_gamma: float = 1,
+                alpha: bool = True,
                 internal_dtype=None):
     """
     Projects an image along a given axis given a specified method (max projection, max projection color-coded depth, ...)
@@ -45,6 +46,7 @@ def rgb_project(image,
     depth_gamma: Gamma correction applied to the stack depth to accentuate (depth_gamma < 1) color variations with depth at the center of the stack.
     depth_stabilisation: Uses the center of mass calculation to shift the center of the depth color map to teh center of mass of the image content.
     rgb_gamma: Gamma correction applied to the resulting RGB image.
+    alpha: If True, the best attempt is made to use alpha transparency in the resulting image. Not available in all modes.
     internal_dtype : dtype for internal computation
 
     Returns
@@ -100,16 +102,13 @@ def rgb_project(image,
         else:
             image_for_attenuation = image
 
-        if dir == -1:
-            cum_density = xp.cumsum(image_for_attenuation, axis=axis)
-        elif dir == +1:
-            image_flipped = xp.flip(image_for_attenuation, axis=axis)
-            cum_density = xp.cumsum(image_flipped, axis=axis)
-            cum_density = xp.flip(cum_density, axis=axis)
+        if dir == -1 or dir == +1:
+            cum_density = _inplace_cumsum(image_for_attenuation, axis=axis, dir=-dir)
+
         else:
             raise ValueError(f"Invalid direction: {dir}, must be '-1' or '+1' ")
 
-        image = image * xp.exp(-attenuation * cum_density)
+        image *= xp.exp(-attenuation * cum_density)
 
     # Perform projection
     if mode == 'max':
@@ -151,7 +150,11 @@ def rgb_project(image,
         projection = rgb_colormap(normalised_depth, cmap=cmap, bytes=False)
 
         # Next we multiply the chroma-code with the intensity of the corresponding voxel:
-        projection[..., 0:3] *= values[..., xp.newaxis]
+        if alpha:
+            projection[..., 3] *= values
+        else:
+            projection[..., 0:3] *= values[..., xp.newaxis]
+
 
     else:
         raise ValueError(f"Invalid projection mode: {mode}")
@@ -188,3 +191,28 @@ def _apply_depth_gamma(depth_map, gamma):
         depth_map += 1
         depth_map *= 0.5
         return depth_map
+
+
+def _inplace_cumsum(image, axis, dir = 1):
+    xp = Backend.get_xp_module()
+
+    length = image.shape[axis]
+
+    accumulator = xp.zeros_like(xp.take(image, 0, axis=axis))
+
+    positions = list(range(length))
+
+    if dir < 0:
+        positions.reverse()
+
+    for i in positions:
+        # take slice:
+        _slice = xp.take(image, i, axis=axis)
+
+        # accumulate:
+        accumulator += _slice
+
+        # place sum into array:
+        xp.moveaxis(image, axis, 0)[i] = accumulator
+
+    return image
