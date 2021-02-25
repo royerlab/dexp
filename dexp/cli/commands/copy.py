@@ -17,6 +17,7 @@ from dexp.datasets.operations.copy import dataset_copy
 @click.option('--codec', '-z', default=_default_codec, help='Compression codec: zstd for ’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ', show_default=True)
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='Forces overwrite of target', show_default=True)
+@click.option('--zerolevel', '-zl', type=int, default=0, help="‘zero-level’ i.e. the pixel values in the restoration (to be substracted)", show_default=True)  #
 @click.option('--workers', '-wk', default=-1, help='Number of worker threads to spawn.', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
@@ -28,6 +29,7 @@ def copy(input_paths,
          codec,
          clevel,
          overwrite,
+         zerolevel,
          workers,
          workersbackend,
          check):
@@ -45,6 +47,7 @@ def copy(input_paths,
                      compression=codec,
                      compression_level=clevel,
                      overwrite=overwrite,
+                     zerolevel=zerolevel,
                      workers=workers,
                      workersbackend=workersbackend,
                      check=check)

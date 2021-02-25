@@ -20,7 +20,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--microscope', '-m', type=str, default='simview', help='Microscope objective to use for computing psf, can be: simview or mvsols', show_default=True)
 @click.option('--equalise/--no-equalise', '-eq/-neq', default=True, help='Equalise intensity of views before fusion, or not.', show_default=True)
 @click.option('--equalisemode', '-eqm', default='first', help='Equalisation modes: compute correction ratios only for first time point: ‘first’ or for all time points: ‘all’.', show_default=True)
-@click.option('--zerolevel', '-zl', type=int, default=110, help="‘zero-level’ i.e. the pixel values in the restoration (to be substracted)", show_default=True)  #
+@click.option('--zerolevel', '-zl', type=int, default=0, help="‘zero-level’ i.e. the pixel values in the restoration (to be substracted)", show_default=True)  #
 @click.option('--cliphigh', '-ch', type=int, default=1024, help='Clips voxel values above the given value, if zero no clipping is done', show_default=True)  #
 @click.option('--fusion', '-f', type=str, default='tg', help="Fusion mode, can be: ‘tg’ or ‘dct’.  ", show_default=True)  #
 @click.option('--fusion_bias_strength', '-fbs', type=(float, float), default=(0.5, 0.02), help='Fusion bias strength for illumination and detection ‘fbs_i fbs_d’, set to ‘0 0’) if fusing a cropped region', show_default=True)  #
