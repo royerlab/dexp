@@ -46,17 +46,9 @@ def rgb_colormap(image,
         cmap = 'viridis'
 
     # normalise color map:
-    if type(cmap) == str:
-        from colorcet import rgb_to_hex
-        rgb_to_hex(0, 0, 0)  # this is a dummy call to prevent elimination of the colorcet import by IDEs
-        cmap = get_cmap(cmap)
-    elif type(cmap) == LinearSegmentedColormap or type(cmap) == ListedColormap:
-        # all good here...
-        cmap = cmap
-    else:
-        raise ValueError(f"Unknown colormap: {cmap}")
+    cmap = _normalise_colormap(cmap)
 
-    if type(cmap) == ListedColormap:
+    if type(cmap) == ListedColormap or type(cmap) == LinearSegmentedColormap:
         listed_cmap: ListedColormap = cmap
         # force initialisation:
         listed_cmap(0)
@@ -69,6 +61,21 @@ def rgb_colormap(image,
         raise NotImplementedError(f"rgb_colormap not yet implemented for cmap type: {type(cmap)}")
 
     return rgb_image
+
+
+def _normalise_colormap(cmap):
+    if type(cmap) == str:
+        cmap = 'cet_rainbow' if cmap == 'rainbow' else cmap
+        cmap = 'cet_bmy' if cmap == 'bmy' else cmap
+        from colorcet import rgb_to_hex
+        rgb_to_hex(0, 0, 0)  # this is a dummy call to prevent elimination of the colorcet import by IDEs
+        cmap = get_cmap(cmap)
+    elif type(cmap) == LinearSegmentedColormap or type(cmap) == ListedColormap:
+        # all good here...
+        cmap = cmap
+    else:
+        raise ValueError(f"Unknown colormap: {cmap}")
+    return cmap
 
 
 def _apply_lut(X,

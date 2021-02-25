@@ -18,7 +18,6 @@ conda install -y -c anaconda dask-image
 conda install -y -c anaconda distributed
 conda install -y -c anaconda zarr
 
-
 pip install cupy-cuda111
 
 pip install --upgrade pip

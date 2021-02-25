@@ -24,9 +24,11 @@ On windows, make sure to insatll CUDA 10.2 (exactly that version for the current
 ## Prerequisites:
 
 ### Install CUDA and other libraries
+
 The following instructions are for Ubuntu 20.04 (recomended!)
 
 ### Remove all existing CUDA and NVIDIA packages:
+
 ```
 sudo apt-get -y purge nvidia*
 sudo apt-get -y autoremove
@@ -36,6 +38,7 @@ sudo apt-get clean
 ```
 
 ### Install CUDA 11.1:
+
 ```
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
@@ -46,8 +49,9 @@ sudo apt-get -y install cuda=11.1.0-1
 ```
 
 ### Install CUDA 11.2:
-It is recomeneded to install the most recent packages that are still compatible with CUPY and its dependencies.
-As of Feb 2021, this is a good choice:
+
+It is recomeneded to install the most recent packages that are still compatible with CUPY and its dependencies. As of Feb 2021, this is a good choice:
+
 ```
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
@@ -59,6 +63,7 @@ sudo apt-get -y install cuda=11.2.0-1
 ```
 
 ### Install cutensor:
+
 ```
 sudo add-apt-repository "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
@@ -68,6 +73,7 @@ sudo apt -y install libcutensor1 libcutensor-dev libcutensor-doc
 ```
 
 ### Install nccl for CUDA 11.1:
+
 ```
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
@@ -79,6 +85,7 @@ sudo apt -y install libnccl2=2.8.4-1+cuda11.1 libnccl-dev=2.8.4-1+cuda11.1
 ```
 
 ### Install nccl for CUDA 11.2:
+
 ```
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
@@ -90,6 +97,7 @@ sudo apt -y install libnccl2=2.8.4-1+cuda11.2 libnccl-dev=2.8.4-1+cuda11.2
 ```
 
 ### Install cudnn for CUDA 11.1:
+
 ```
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin 
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
@@ -101,12 +109,13 @@ sudo apt-get -y install libcudnn8=8.1.0.77-1+cuda11.1
 ```
 
 ### Install cub:
-Nothing to do...
 
+Nothing to do...
 
 ## Another way to install CUDA and other libraries:
 
 If you want to target CUDA 11.2:
+
 ```
 conda install -c conda-forge cudatoolkit=11.2
 conda install -c conda-forge cudnn
@@ -114,30 +123,32 @@ conda install -c conda-forge cutensor
 ```
 
 If you want to target CUDA 11.1:
+
 ```
 conda install -c conda-forge cudatoolkit=11.1
 conda install -c conda-forge cudnn
 conda install -c conda-forge cutensor
 ```
 
-
 ## Important: tell CUPY to use cub and cutensor:
 
 To benefit from the cub and cutensor libraries, set this env variable:
+
 ```
 CUPY_ACCELERATORS=cub,cutensor
 ```
-This can be done by opening the file: `/etc/environment`,
-and adding the line:
+
+This can be done by opening the file: `/etc/environment`, and adding the line:
+
 ```
 CUPY_ACCELERATORS="cub,cutensor"
 ```
 
 ### Build/Install CUPY for CUDA 11.1:
 
-It is recomended to install cupy using the available wheels, 
-you must have installed the correct CUDA packages for the correct version (11.1)
+It is recomended to install cupy using the available wheels, you must have installed the correct CUDA packages for the correct version (11.1)
 as detailed above. Once ready you do:
+
 ```
 pip install cupy-cuda111==9.0.0b2
 ```
@@ -178,6 +189,7 @@ source activate dexp
 ```
 
 ## DEXP commands:
+
 There is currently 16 dexp commands:
 
 ```
@@ -203,7 +215,7 @@ Commands:
 ```
 
 Sytorage info & manipulation commands:
-info check copy add 
+info check copy add
 
 Lightsheet data processing commands:
 deskew fuse deconv stabilize isonet
@@ -223,8 +235,6 @@ view
 Miscellaneous:
 speedtest
 
-
-
 ### info:
 
 Collects information about a given dataset:
@@ -239,6 +249,7 @@ Options:
 ### check:
 
 Checks the integrity of a dataset:
+
 ```
 sage: dexp check [OPTIONS] [INPUT_PATHS]...
 
@@ -378,7 +389,6 @@ Options:
 
   --help                          Show this message and exit.
 ```
-
 
 ### Fusion (& registration):
 
@@ -608,10 +618,10 @@ Options:
 
 ```
 
-
 ## Video commands
 
 DEXP has a series of video commands that let you render datasets and compose complex videos:
+
 ```
 Usage: video [OPTIONS] COMMAND [ARGS]...
 
@@ -625,7 +635,6 @@ Commands:
   stack
   volrender
 ```
-
 
 ### Volume rendering:
 
@@ -718,8 +727,6 @@ Options:
   --help                     Show this message and exit.
 
 ```
-
-
 
 # Examples:
 

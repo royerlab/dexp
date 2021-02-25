@@ -36,7 +36,6 @@ def _register_sequence_3d(length_xy=320,
                           additive_noise=0.05,
                           multiplicative_noise=0.1,
                           use_projections=False,
-                          run_test=False,
                           display=True):
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()

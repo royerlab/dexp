@@ -14,11 +14,13 @@ def demo_projection_numpy():
 
 
 def demo_projection_cupy():
-    try:
-        with CupyBackend():
-            demo_projection(length_xy=320)
-    except (ModuleNotFoundError, NotImplementedError):
-        print("Cupy module not found! ignored!")
+    # try:
+    with CupyBackend():
+        demo_projection(length_xy=320)
+
+
+# except (ModuleNotFoundError, NotImplementedError):
+#    print("Cupy module not found! ignored!")
 
 
 def demo_projection(length_xy=120, display=True):
@@ -36,49 +38,43 @@ def demo_projection(length_xy=120, display=True):
                                                       dtype=numpy.uint16)
 
     with asection("max_projection"):
-        max_projection = rgb_project(image,
-                                     mode='max')
+        max_projection, _ = rgb_project(image,
+                                        mode='max')
 
     with asection("max_projection_att"):
-        max_projection_att = rgb_project(image,
-                                         mode='max',
-                                         attenuation=0.05)
+        max_projection_att, _ = rgb_project(image,
+                                            mode='max',
+                                            attenuation=0.05)
 
     with asection("max_color_projection"):
-        max_color_projection = rgb_project(image,
-                                           mode='maxcolor',
-                                           attenuation=0.05,
-                                           cmap='turbo')
+        max_color_projection, color_legend = rgb_project(image,
+                                                         mode='maxcolor',
+                                                         attenuation=0.05,
+                                                         cmap='rainbow',
+                                                         dlim=(0.27, 0.73),
+                                                         legend_size=1)
 
     with asection("color_max_projection"):
-        color_max_projection = rgb_project(image,
-                                           mode='colormax',
-                                           attenuation=0.05,
-                                           cmap='turbo',
-                                           depth_stabilisation=True)
-
-    with asection("color_max_projection_dg"):
-        color_max_projection_dg = rgb_project(image,
+        color_max_projection, _ = rgb_project(image,
                                               mode='colormax',
                                               attenuation=0.05,
-                                              depth_gamma=0.6,
-                                              cmap='turbo')
+                                              cmap='rainbow')
+
+    with asection("color_max_projection_dl"):
+        color_max_projection_dl, _ = rgb_project(image,
+                                                 mode='colormax',
+                                                 attenuation=0.05,
+                                                 dlim=(0.3, 0.7),
+                                                 cmap='rainbow')
 
     with asection("color_max_projection_bottom"):
-        color_max_projection_bottom = rgb_project(image,
-                                                  mode='colormax',
-                                                  attenuation=0.1,
-                                                  cmap='turbo',
-                                                  dir=+1)
+        color_max_projection_bottom, _ = rgb_project(image,
+                                                     mode='colormax',
+                                                     attenuation=0.1,
+                                                     cmap='rainbow',
+                                                     dir=+1)
 
-    image_shifted = sp.ndimage.shift(image, shift=(50, 70, -23), order=1, mode='nearest')
-
-    with asection("color_max_projection_stabilised"):
-        color_max_projection_stabilised = rgb_project(image_shifted,
-                                                      mode='colormax',
-                                                      attenuation=0.05,
-                                                      cmap='turbo',
-                                                      depth_stabilisation=True)
+    # image_shifted = sp.ndimage.shift(image, shift=(50, 70, -23), order=1, mode='nearest')
 
     if display:
         from napari import Viewer, gui_qt
@@ -92,11 +88,12 @@ def demo_projection(length_xy=120, display=True):
             viewer.add_image(_c(max_projection_att), name='max_projection_att', rgb=True)
             viewer.add_image(_c(max_color_projection), name='max_color_projection', rgb=True)
             viewer.add_image(_c(color_max_projection), name='color_max_projection', rgb=True)
-            viewer.add_image(_c(color_max_projection_stabilised), name='color_max_projection_stabilised', rgb=True)
-            viewer.add_image(_c(color_max_projection_dg), name='color_max_projection_dg', rgb=True)
+            viewer.add_image(_c(color_legend), name='color_legend', rgb=True)
+            viewer.add_image(_c(color_max_projection_dl), name='color_max_projection_dl', rgb=True)
             viewer.add_image(_c(color_max_projection_bottom), name='color_max_projection_bottom', rgb=True)
+            viewer.grid.enabled = True
 
 
 if __name__ == "__main__":
     demo_projection_cupy()
-    demo_projection_numpy()
+    # demo_projection_numpy()

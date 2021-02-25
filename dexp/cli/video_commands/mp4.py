@@ -13,7 +13,7 @@ from arbol.arbol import aprint, asection
 @click.option('--output_path', '-o', type=str, default=None, help='Output file path for movie')
 @click.option('--framerate', '-fps', type=int, default=30, help='Sets the framerate in frames per second', show_default=True)
 @click.option('--codec', '-c', type=str, default='h264_nvenc',
-              help='Encoding codec, can be: libx264 (reference but slow), or nvenc_h264 (faster, GPU) .',
+              help='Encoding codec, For x264 class codecs: libx264 (reference but slow), or: h264_nvenc (faster, GPU). For x265 class codecs: libx265 (reference but slow), or: hevc_nvenc(faster, GPU',
               show_default=True)
 @click.option('--preset', '-ps', type=str, default='slow',
               help='Possible values: ultrafast, superfast, veryfast, faster, fast, medium (default preset), slow, slower, veryslow.'
@@ -59,14 +59,16 @@ def mp4(input_path,
         with asection(f"Converting PNG files at: {input_path}, into MP4 file: {videofilepath}, framerate: {framerate} "):
 
             scale_option = f'-vf scale={width}:-8:flags=bicubic' if width > 0 else ''
-            #black_background_filter = f'-filter_complex "{scale_option};color=black,format={pixelformat}[c];[c][0]scale2ref[c][i];[c][i]overlay=format=auto:shortest=1,setsar=1"'
+            # black_background_filter = f'-filter_complex "{scale_option};color=black,format={pixelformat}[c];[c][0]scale2ref[c][i];[c][i]overlay=format=auto:shortest=1,setsar=1"'
 
             ffmpeg_command = f"ffmpeg -hwaccel auto -framerate {framerate} -start_number 0 -i '{input_path}/{prefix}%0{leading}d.{extension}'  " \
-                             f"-f mp4 -vcodec {codec} -preset {preset} -cq {26+quality} -crf {21-quality} -pix_fmt {pixelformat} {scale_option} -y {videofilepath}"
+                             f"-f mp4 -vcodec {codec} -preset {preset} -cq {26 + quality} -crf {21 - quality} -pix_fmt {pixelformat} {scale_option} -y {videofilepath}"
             # -vf  \"crop=576:1240:320:0\"  ""  ,setsar=1:1
             # -pix_fmt {pixelformat} {scale_option}
-            #,setsar=1:1
-            #h264_nvenc nvenc_h264 libx264
+            # ,setsar=1:1
+            # h264_nvenc nvenc_h264 libx264
+
+            aprint(f"Executing command: '{ffmpeg_command}'")
 
             os.system(ffmpeg_command)
     else:

@@ -1,7 +1,5 @@
-from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.demo.demo_sequence_3d import _register_sequence_3d
 from dexp.processing.render.demo.demo_projection import demo_projection
 
 

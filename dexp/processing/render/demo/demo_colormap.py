@@ -49,4 +49,4 @@ def demo_colormap(length_xy=120, display=True):
 
 if __name__ == "__main__":
     demo_colormap_cupy()
-    demo_colormap_numpy()
+    # demo_colormap_numpy()

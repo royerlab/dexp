@@ -29,12 +29,12 @@ from dexp.processing.render.projection import rgb_project
 @click.option('--attenuation', '-at', type=float, default=0.1, help='Sets the projection attenuation coefficient, should be within [0, 1] ideally close to 0. Larger values mean more attenuation.',
               show_default=True)  # , help='dataset slice'
 @click.option('--gamma', '-g', type=int, default=1, help='Sets the gamma coefficient pre-applied to the raw voxel values (before projection or any subsequent processing).', show_default=True)  # , help='dataset slice'
-@click.option('--depthgamma', '-dg', type=float, default=1.0, help='Gamma correction applied to the stack depth to accentuate (depth gamma < 1) color variations at the center of the stack. Only used for colormax mode.',
+@click.option('--dlim', '-dl', type=str, default=None,
+              help='Sets the depth limits. Depth limits. For example, a value of (0.1, 0.7) means that the colormap start at a normalised depth of 0.1, and ends at a normalised depth of 0.7, other values are clipped. Only used for colormax mode.',
               show_default=True)  # , help='dataset slice'
-@click.option('--colormap', '-cm', type=str, default='viridis', help='sets colormap, e.g. viridis, gray, magma, plasma, inferno. Use a rainbow colormap such as bmy or turbo for color-coded depth modes. ', show_default=True)
+@click.option('--colormap', '-cm', type=str, default='viridis', help='sets colormap, e.g. viridis, gray, magma, plasma, inferno. Use a rainbow colormap such as bmy, turbo, or rainbow for color-coded depth modes. ', show_default=True)
 @click.option('--rgbgamma', '-cg', type=float, default=1.0, help='Gamma correction applied to the resulting RGB image. Usefull to brighten image', show_default=True)
-#'--equalise/--no-equalise', '-eq/-neq', default=True,
-@click.option('--transparency', '-t', is_flag=True, help='Set to enable transparency output.', show_default=True)
+@click.option('--transparency', '-t', is_flag=True, help='Enables transparency output when possible.', show_default=True)
 @click.option('--step', '-sp', type=int, default=1, help='Process every ‘step’ frames.', show_default=True)
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
@@ -50,7 +50,7 @@ def projrender(input_paths,
                clim,
                attenuation,
                gamma,
-               depthgamma,
+               dlim,
                colormap,
                rgbgamma,
                transparency,
@@ -67,6 +67,8 @@ def projrender(input_paths,
 
     output_path = _get_output_path(input_paths[0], output_path, f"_{mode}_projection")
     makedirs(output_path, exist_ok=True)
+
+    dlim = None if dlim is None else tuple((float(strvalue) for strvalue in dlim.split(',')))
 
     aprint(f"Projection rendering of: {input_paths} to {output_path} for channels: {channels}, slicing: {slicing} ")
 
@@ -105,24 +107,22 @@ def projrender(input_paths,
                                     _clim = (min_value, max_value)
 
                                 with asection(f"Projecting image of shape: {stack.shape} "):
-                                    projection = rgb_project(stack,
-                                                             axis=axis,
-                                                             dir=dir,
-                                                             mode=mode,
-                                                             attenuation=attenuation,
-                                                             gamma=gamma,
-                                                             clim=_clim,
-                                                             cmap=colormap,
-                                                             depth_gamma=depthgamma,
-                                                             rgb_gamma=rgbgamma,
-                                                             transparency=transparency)
+                                    projection, _ = rgb_project(stack,
+                                                                axis=axis,
+                                                                dir=dir,
+                                                                mode=mode,
+                                                                attenuation=attenuation,
+                                                                gamma=gamma,
+                                                                clim=_clim,
+                                                                cmap=colormap,
+                                                                dlim=dlim,
+                                                                rgb_gamma=rgbgamma,
+                                                                transparency=transparency)
 
-                                with asection("Saving frame"):
+                                with asection(f"Saving frame {tp} as: {filename}"):
                                     projection = Backend.to_numpy(projection)
                                     image = Image.fromarray(projection)
                                     image.save(filename)
-
-                            aprint(f"Saving frame: {filename}")
 
                 except Exception as error:
                     aprint(error)
