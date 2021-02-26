@@ -8,33 +8,6 @@ from dexp.datasets.joined_dataset import JoinedDataset
 from dexp.datasets.zarr_dataset import ZDataset
 
 
-def open_dataset(path: str):
-    """
-    Opens a dataset given a path
-        
-    Parameters
-    ----------
-    path: path of dataset
-
-    Returns
-    -------
-
-    """
-
-    # remove trailing slash:
-    if path.endswith('/'):
-        path = path[:-1]
-
-    if path.endswith('.zarr.zip') or path.endswith('.zarr'):
-        # we can recognise a Zarr dataset by its extension.
-        dataset = ZDataset(path)
-    elif exists(join(path, 'stacks')):
-        # we can recognise a ClearControl dataset by the presence of a 'stacks' sub folder.
-        dataset = CCDataset(path)
-    else:
-        raise ValueError("Dataset type not recognised, or path incorrect!")
-
-    return dataset
 
 
 def glob_datasets(glob_paths: Sequence[str]):
@@ -78,7 +51,7 @@ def open_joined_datasets(paths: Sequence[str]):
 
     Returns
     -------
-
+    JoinedDataset
     """
 
     if len(paths) == 1:
@@ -89,3 +62,34 @@ def open_joined_datasets(paths: Sequence[str]):
         datasets = tuple(open_dataset(path) for path in paths)
         dataset = JoinedDataset(datasets)
         return dataset
+
+
+def open_dataset(path: str):
+    """
+    Opens a Zarr or ClearControl dataset given a path
+
+    Parameters
+    ----------
+    path: path of dataset
+
+    Returns
+    -------
+    dataset
+
+    """
+
+    # remove trailing slash:
+    if path.endswith('/'):
+        path = path[:-1]
+
+    if path.endswith('.zarr.zip') or path.endswith('.zarr'):
+        # we can recognise a Zarr dataset by its extension.
+        dataset = ZDataset(path)
+    elif exists(join(path, 'stacks')):
+        # we can recognise a ClearControl dataset by the presence of a 'stacks' sub folder.
+        dataset = CCDataset(path)
+    else:
+        raise ValueError("Dataset type not recognised, or path incorrect!")
+
+    return dataset
+

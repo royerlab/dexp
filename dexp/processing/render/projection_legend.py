@@ -3,24 +3,37 @@ import numpy
 from dexp.processing.render.colormap import rgb_colormap
 
 
-def depth_color_scale_legend(cmap, start, end, title, legend_size):
+def depth_color_scale_legend(cmap,
+                             start: float,
+                             end: float,
+                             format: str = '{:.1f}',
+                             font_name: str = "Helvetica",
+                             font_size: float = 0.08,
+                             title: str = '',
+                             size: float = 1):
+
     """
-    Produces a color bar legend
+    Produces a color bar legend.
+
+    Note: if you need to specify the unit as microns, use this symbol: μm
     
     Parameters
     ----------
-    cmap
-    start
-    end
-    title
-    legend_size
+    cmap: Color map to use
+    start: start value
+    end: end value
+    format: format string to represent the start and end values.
+    font_name: Font name.
+    font_size: Font size.
+    title: title for bar legend
+    size: overall size factor (default: 1)
 
     Returns
     -------
 
     """
-    width = int(legend_size * 512)
-    height = int(legend_size * 512)
+    width = int(size * 512)
+    height = int(size * 512)
 
     # First we build the depth ramp:
     depth_ramp = numpy.linspace(0, 1, num=255)
@@ -66,25 +79,26 @@ def depth_color_scale_legend(cmap, start, end, title, legend_size):
 
     # draw text
     context.set_source_rgba(1, 1, 1, 1)
-    context.select_font_face("Helvetica",
+    context.select_font_face(font_name,
                              cairo.FONT_SLANT_NORMAL,
                              cairo.FONT_WEIGHT_NORMAL)
-    context.set_font_size(0.1)
+    context.set_font_size(font_size)
 
     text_height = context.text_extents('X')[3]
 
-    context.move_to(0.01, end_bar + text_height / 3 + text_height)
-    context.show_text(f"{start}")
+    start_text = format.format(start)
+    context.move_to(0.01, end_bar + text_height / 2 + text_height)
+    context.show_text(start_text)
 
     ext = context.text_extents(f"{title}")
     utw = ext[2]
-    context.move_to(0.5 - utw / 2, begin_bar - text_height / 3)
+    context.move_to(0.5 - utw / 2, begin_bar - text_height / 2)
     context.show_text(f"{title}")
 
-    end_text = f"{end}"
+    end_text = format.format(end)
     ext = context.text_extents(end_text)
     utw = ext[2]
-    context.move_to(0.99 - utw, end_bar + text_height / 3 + text_height)
+    context.move_to(0.99 - utw, end_bar + text_height / 2 + text_height)
     context.show_text(end_text)
 
     # Get pycairo surface buffer:

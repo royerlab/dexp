@@ -107,17 +107,17 @@ def projrender(input_paths,
                                     _clim = (min_value, max_value)
 
                                 with asection(f"Projecting image of shape: {stack.shape} "):
-                                    projection, _ = rgb_project(stack,
-                                                                axis=axis,
-                                                                dir=dir,
-                                                                mode=mode,
-                                                                attenuation=attenuation,
-                                                                gamma=gamma,
-                                                                clim=_clim,
-                                                                cmap=colormap,
-                                                                dlim=dlim,
-                                                                rgb_gamma=rgbgamma,
-                                                                transparency=transparency)
+                                    projection = rgb_project(stack,
+                                                             axis=axis,
+                                                             dir=dir,
+                                                             mode=mode,
+                                                             attenuation=attenuation,
+                                                             gamma=gamma,
+                                                             clim=_clim,
+                                                             cmap=colormap,
+                                                             dlim=dlim,
+                                                             rgb_gamma=rgbgamma,
+                                                             transparency=transparency)
 
                                 with asection(f"Saving frame {tp} as: {filename}"):
                                     projection = Backend.to_numpy(projection)

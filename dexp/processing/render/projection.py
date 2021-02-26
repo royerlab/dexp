@@ -24,7 +24,7 @@ def rgb_project(image,
                 legend_size: float = 0,
                 legend_depth_scale: float = 1,
                 legend_depth_title: str = 'voxels',
-
+                legend_position: Union[str, Tuple[int, int]] = 'bottom_left',
                 internal_dtype=None):
     """
     Projects an image along a given axis given a specified method (max projection, max projection color-coded depth, ...)
@@ -52,7 +52,6 @@ def rgb_project(image,
     legend_size: Multiplicative factor to control size of legend. If 0, no legend is generated.
     legend_depth_scale: Float that gives the scale in some unit of each voxel (along the projection direction). Only in color projection modes.
     legend_depth_title: title for the color-coded depth legend.
-
     internal_dtype : dtype for internal computation
 
     Returns
@@ -175,11 +174,16 @@ def rgb_project(image,
 
     if 'color' in mode and legend_size != 0:
         depth = image.shape[axis] * (abs(dlim[1] - dlim[0])) * legend_depth_scale
-        legend = depth_color_scale_legend(cmap, 0, depth, legend_depth_title, legend_size)
-    else:
-        legend = None
+        legend = depth_color_scale_legend(cmap=cmap,
+                                          start=0,
+                                          end=depth,
+                                          title=legend_depth_title,
+                                          size=legend_size)
 
-    return projection, legend
+
+
+
+    return projection
 
 
 def _apply_depth_limits(depth_map,

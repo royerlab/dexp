@@ -5,6 +5,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.render.projection import rgb_project
+from dexp.processing.render.projection_legend import depth_color_scale_legend
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 
 
@@ -38,41 +39,47 @@ def demo_projection(length_xy=120, display=True):
                                                       dtype=numpy.uint16)
 
     with asection("max_projection"):
-        max_projection, _ = rgb_project(image,
-                                        mode='max')
+        max_projection = rgb_project(image,
+                                     mode='max')
 
     with asection("max_projection_att"):
-        max_projection_att, _ = rgb_project(image,
-                                            mode='max',
-                                            attenuation=0.05)
+        max_projection_att = rgb_project(image,
+                                         mode='max',
+                                         attenuation=0.05)
 
     with asection("max_color_projection"):
-        max_color_projection, color_legend = rgb_project(image,
-                                                         mode='maxcolor',
-                                                         attenuation=0.05,
-                                                         cmap='rainbow',
-                                                         dlim=(0.27, 0.73),
-                                                         legend_size=1)
+        max_color_projection = rgb_project(image,
+                                           mode='maxcolor',
+                                           attenuation=0.05,
+                                           cmap='rainbow',
+                                           dlim=(0.27, 0.73),
+                                           legend_size=1)
 
     with asection("color_max_projection"):
-        color_max_projection, _ = rgb_project(image,
-                                              mode='colormax',
-                                              attenuation=0.05,
-                                              cmap='rainbow')
+        color_max_projection = rgb_project(image,
+                                           mode='colormax',
+                                           attenuation=0.05,
+                                           cmap='rainbow')
 
     with asection("color_max_projection_dl"):
-        color_max_projection_dl, _ = rgb_project(image,
-                                                 mode='colormax',
-                                                 attenuation=0.05,
-                                                 dlim=(0.3, 0.7),
-                                                 cmap='rainbow')
+        color_max_projection_dl = rgb_project(image,
+                                              mode='colormax',
+                                              attenuation=0.05,
+                                              dlim=(0.3, 0.7),
+                                              cmap='rainbow')
 
     with asection("color_max_projection_bottom"):
-        color_max_projection_bottom, _ = rgb_project(image,
-                                                     mode='colormax',
-                                                     attenuation=0.1,
-                                                     cmap='rainbow',
-                                                     dir=+1)
+        color_max_projection_bottom = rgb_project(image,
+                                                  mode='colormax',
+                                                  attenuation=0.1,
+                                                  cmap='rainbow',
+                                                  dir=+1)
+
+    color_legend = depth_color_scale_legend(cmap='rainbow',
+                                            start=0,
+                                            end=100,
+                                            title='color-coded depth (μm)',
+                                            size=1)
 
     # image_shifted = sp.ndimage.shift(image, shift=(50, 70, -23), order=1, mode='nearest')
 
