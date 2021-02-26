@@ -54,7 +54,7 @@ def blend_images(images: Sequence['Array'],
             raise ValueError(f"Not all images have the same shape: {image.shape}.")
 
     # Create image to store result:
-    result = xp.zeros_like(images[0])
+    result = xp.zeros_like(images[0], dtype=internal_dtype)
 
     # Blend in the images:
     for alpha, image in zip(alphas, images):
@@ -88,7 +88,9 @@ def _blend_function(image_u, image_v, mode):
     elif mode == 'satadd':
         # TODO: this fails but it is unclear why:
         result = sp.special.erf(image_u + image_v)
-    elif mode == 'max':
+    elif mode == 'max' or mode == 'rgbamax':
+        result = xp.maximum(image_u, image_v)
+    elif mode == 'rgbmax':
         result = xp.maximum(image_u, image_v)
     elif mode == 'alpha' and image_u.shape[-1] == 4 and image_v.shape[-1] == 4:
         # See: https://en.wikipedia.org/wiki/Alpha_compositing

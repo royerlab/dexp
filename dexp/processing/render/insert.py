@@ -12,8 +12,9 @@ def insert_image(image,
                  alpha: float = 1,
                  rgb: bool = True):
     """
-    Inserts a smaller image into a base image.
-    
+    Inserts an inset image into a base image.
+    After scaling the inset image must be smaller than the base image.
+
     Parameters
     ----------
     image: Base image.

@@ -11,7 +11,7 @@ from dexp.processing.synthetic_datasets.nuclei_background_data import generate_n
 
 def demo_projection_numpy():
     with NumpyBackend():
-        demo_projection()
+        demo_projection(length_xy=150)
 
 
 def demo_projection_cupy():
@@ -38,42 +38,65 @@ def demo_projection(length_xy=120, display=True):
                                                       zoom=2,
                                                       dtype=numpy.uint16)
 
-    with asection("max_projection"):
-        max_projection = rgb_project(image,
-                                     mode='max')
+        # we place an indicator to know where is the depth 0, will appear at the bottom right of the image:
+        image[0, 2*length_xy-20:2*length_xy, 2*length_xy-20:2*length_xy] = 150
 
-    with asection("max_projection_att"):
-        max_projection_att = rgb_project(image,
-                                         mode='max',
-                                         attenuation=0.05)
+        # we place an indicator to know where is the depth max, will appear at the top right of the image:
+        image[image.shape[0]-1, 0:20, 2*length_xy-20:2*length_xy] = 150
 
-    with asection("max_color_projection"):
-        max_color_projection = rgb_project(image,
-                                           mode='maxcolor',
-                                           attenuation=0.05,
-                                           cmap='rainbow',
-                                           dlim=(0.27, 0.73),
-                                           legend_size=0.2)
+    # with asection("max_projection"):
+    #     max_projection = rgb_project(image,
+    #                                  mode='max')
+    #
+    # with asection("max_projection_att"):
+    #     max_projection_att = rgb_project(image,
+    #                                      mode='max',
+    #                                      attenuation=0.05)
+    #
+    # with asection("max_color_projection"):
+    #     max_color_projection = rgb_project(image,
+    #                                        mode='maxcolor',
+    #                                        attenuation=0.05,
+    #                                        cmap='rainbow',
+    #                                        legend_size=0.2
+    #                                        )
+    #
+    # with asection("max_color_projection"):
+    #     max_color_projection_bottom = rgb_project(image,
+    #                                        mode='maxcolor',
+    #                                        attenuation=0.05,
+    #                                        cmap='rainbow',
+    #                                        dir=+1,
+    #                                        legend_size=0.2
+    #                                        )
 
     with asection("color_max_projection"):
         color_max_projection = rgb_project(image,
                                            mode='colormax',
-                                           attenuation=0.05,
-                                           cmap='rainbow')
-
-    with asection("color_max_projection_dl"):
-        color_max_projection_dl = rgb_project(image,
-                                              mode='colormax',
-                                              attenuation=0.05,
-                                              dlim=(0.3, 0.7),
-                                              cmap='rainbow')
+                                           attenuation=0.1,
+                                           cmap='rainbow',
+                                           legend_size=0.2
+                                           )
 
     with asection("color_max_projection_bottom"):
         color_max_projection_bottom = rgb_project(image,
                                                   mode='colormax',
                                                   attenuation=0.1,
                                                   cmap='rainbow',
-                                                  dir=+1)
+                                                  dir=+1,
+                                                  legend_size=0.2
+                                                  )
+
+    # with asection("color_max_projection_dl"):
+    #     color_max_projection_dl = rgb_project(image,
+    #                                           mode='colormax',
+    #                                           attenuation=0.05,
+    #                                           cmap='rainbow',
+    #                                           dlim=(0.3, 0.7),
+    #                                           legend_size=0.2
+    #                                           )
+
+
 
     color_legend = depth_color_scale_legend(cmap='rainbow',
                                             start=0,
@@ -90,13 +113,14 @@ def demo_projection(length_xy=120, display=True):
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(image), name='image')
-            viewer.add_image(_c(max_projection), name='max_projection', rgb=True)
-            viewer.add_image(_c(max_projection_att), name='max_projection_att', rgb=True)
-            viewer.add_image(_c(max_color_projection), name='max_color_projection', rgb=True)
+            # viewer.add_image(_c(image), name='image')
+            # viewer.add_image(_c(max_projection), name='max_projection', rgb=True)
+            # viewer.add_image(_c(max_projection_att), name='max_projection_att', rgb=True)
+            # viewer.add_image(_c(max_color_projection), name='max_color_projection', rgb=True)
+            # viewer.add_image(_c(max_color_projection_bottom), name='max_color_projection_bottom', rgb=True)
+            # viewer.add_image(_c(color_legend), name='color_legend', rgb=True)
+            # viewer.add_image(_c(color_max_projection_dl), name='color_max_projection_dl', rgb=True)
             viewer.add_image(_c(color_max_projection), name='color_max_projection', rgb=True)
-            viewer.add_image(_c(color_legend), name='color_legend', rgb=True)
-            viewer.add_image(_c(color_max_projection_dl), name='color_max_projection_dl', rgb=True)
             viewer.add_image(_c(color_max_projection_bottom), name='color_max_projection_bottom', rgb=True)
             viewer.grid.enabled = True
 

@@ -1,11 +1,13 @@
 import numpy
 
+from dexp.processing.backends.backend import Backend
 from dexp.processing.render.colormap import rgb_colormap
 
 
 def depth_color_scale_legend(cmap,
                              start: float,
                              end: float,
+                             flip: bool = False,
                              number_format: str = '{:.1f}',
                              font_name: str = "Helvetica",
                              font_size: float = 0.08,
@@ -19,6 +21,7 @@ def depth_color_scale_legend(cmap,
     Parameters
     ----------
     cmap: Color map to use
+    flip: Set to rue to flip the colormap
     start: start value
     end: end value
     number_format: format string to represent the start and end values.
@@ -36,6 +39,7 @@ def depth_color_scale_legend(cmap,
 
     # First we build the depth ramp:
     depth_ramp = numpy.linspace(0, 1, num=255)
+    depth_ramp = numpy.flip(depth_ramp) if flip else depth_ramp
 
     # get color ramp:
     color_ramp = rgb_colormap(depth_ramp, cmap=cmap, bytes=False)
@@ -67,7 +71,8 @@ def depth_color_scale_legend(cmap,
     bar_height = 0.3
     begin_bar = 0.5 - bar_height / 2
     end_bar = 0.5 + bar_height / 2
-    context.set_source_rgba(0, 0, 0, 1)
+    context.set_operator(cairo.OPERATOR_SOURCE)
+    context.set_source_rgba(0, 0, 0, 0)
     context.rectangle(0, 0, 1, begin_bar)
     context.fill()
     context.rectangle(0, end_bar, 1, end_bar)
@@ -75,6 +80,10 @@ def depth_color_scale_legend(cmap,
 
     # turn on antialiasing again for text:
     context.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
+
+    # tirn back on alpha blending:
+    context.set_operator(cairo.OPERATOR_OVER)
+
 
     # draw text
     context.set_source_rgba(1, 1, 1, 1)
@@ -100,6 +109,10 @@ def depth_color_scale_legend(cmap,
     context.move_to(0.99 - utw, end_bar + text_height / 2 + text_height)
     context.show_text(end_text)
 
+    # We remember where does the figure start and end vertically:
+    vert_start = begin_bar - 3 * text_height / 2
+    vert_end = end_bar + text_height / 2 + text_height
+
     # Get pycairo surface buffer:
     buffer = surface.get_data()
 
@@ -112,4 +125,13 @@ def depth_color_scale_legend(cmap,
     # Convert ARGB to RGBA:
     surface_array = numpy.roll(surface_array, shift=-1, axis=surface_array.ndim - 1)
 
-    return surface_array.copy()
+    # Crop final image:
+    height = surface_array.shape[0]
+    crop_top = int((vert_start-text_height)*height)
+    crop_bottom = int((vert_end+text_height)*height)
+    surface_array = surface_array[crop_top-10:crop_bottom+10, ...]
+
+    # Move to backend:
+    surface_array = Backend.to_backend(surface_array.copy())
+
+    return surface_array

@@ -26,6 +26,10 @@ def demo_blend(display=True):
     image_u = logo()
     image_v = xp.flip(logo(), axis=1)
 
+    # modulate alpha channel:
+    image_u[:, 0:256, 3] = 128
+    image_v[0:256, :, 3] = 128
+
     with asection("blend_mean"):
         blend_mean = blend_images((image_u, image_v), (1, 1), mode='mean')
 

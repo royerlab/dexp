@@ -16,12 +16,13 @@ def rgb_project(image,
                 attenuation: float = 0,
                 gamma: float = 1,
                 clim: Tuple[float, float] = None,
+                normalisation_quantile: float = 0.0001,
                 cmap: Union[str, Callable] = None,
                 attenuation_filtering: float = 4,
                 dlim: Tuple[float, float] = None,
                 depth_stabilisation: bool = False,
                 rgb_gamma: float = 1,
-                transparency: bool = True,
+                transparency: bool = False,
                 legend_size: float = 0,
                 legend_depth_scale: float = 1,
                 legend_depth_title: str = 'voxels',
@@ -37,12 +38,13 @@ def rgb_project(image,
     ----------
     image : Image to project
     axis : axis along which to project
-    dir : projection diretion, can be either '-1' for top to botttom or '1' for bottom to top -- assuming top corresponds to the positive direction of the projection axis.
+    dir : projection diretion, can be either '-1' for top to bottom or '1' for bottom to top -- assuming top corresponds to the positive direction of the projection axis.
     mode : projection mode, can be: 'max' for max projection, 'colormax' and 'maxcolor' for max color projections. Explanation: colormax applies first max and then colorises,
      maxcolor, first colorises each voxel then computes the max. This means that maxcolor is 3x more memory intensive (with current implementation).
     attenuation : How much to attenuate when projecting.
     gamma: Gamma correction to apply
     clim : color limits for applying the colormap.
+    normalisation_quantile :
     cmap: Color map to use, can be a string or a cmap object
     attenuation_filtering: standard deviation of the gaussian filter used to preprocess the image for the purpose of computing the attenuation map.
     Important: this does not affect sharpness of the final image, it only affects the sharpness of the attenuation itself.
@@ -70,10 +72,10 @@ def rgb_project(image,
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = xp.float32
 
-    # move image to current backend:
+    # Move image to current backend:
     image = Backend.to_backend(image, dtype=internal_dtype)
 
-    # set default cmap:
+    # Set default cmap:
     if cmap is None:
         if mode == 'max':
             cmap = 'viridis'
@@ -82,16 +84,27 @@ def rgb_project(image,
         elif mode == 'colormax':
             cmap = 'cet_bmy'
 
-    # normalise color map:
+    # Normalise color map:
     cmap = _normalise_colormap(cmap)
 
-    # Normalise
-    norm_fun, _ = normalise_functions(image, quantile=0.0001, minmax=clim, clip=True)
+    # Normalise depth limits:
+    dlim = (0, 1) if dlim is None else dlim
+
+    # Normalise image:
+    norm_fun, _ = normalise_functions(image, quantile=normalisation_quantile, minmax=clim, clip=True)
     image = norm_fun(image)
 
     # Apply gamma:
     if gamma != 1:
         image **= gamma
+
+    # # flip image:
+    # if dir == -1 or dir == +1:
+    #     if dir > 0:
+    #         image = xp.flip(image, axis=axis).copy()
+    # else:
+    #     raise ValueError(f"Invalid direction: {dir}, must be '-1' or '+1' ")
+
 
     if attenuation != 0:
 
@@ -100,13 +113,18 @@ def rgb_project(image,
         else:
             image_for_attenuation = image
 
-        if dir == -1 or dir == +1:
-            cum_density = _inplace_cumsum(image_for_attenuation, axis=axis, dir=-dir)
-
-        else:
-            raise ValueError(f"Invalid direction: {dir}, must be '-1' or '+1' ")
+        cum_density = _inplace_cumsum(image_for_attenuation, axis=axis, dir=-dir)
 
         image *= xp.exp(-attenuation * cum_density)
+
+        from napari import Viewer, gui_qt
+        with gui_qt():
+            def _c(array):
+                return Backend.to_numpy(array)
+
+            viewer = Viewer()
+            viewer.add_image(_c(image), name='image')
+            viewer.grid.enabled = True
 
     # Perform projection
     if mode == 'max':
@@ -120,14 +138,14 @@ def rgb_project(image,
 
         # compute a depth map of same shape as the image:
         depth = image.shape[axis]
-        depth_values = xp.linspace(0, 1, num=depth) if dir < 0 else xp.linspace(1, 0, num=depth)
+        depth_values = xp.linspace(0, 1, num=depth) if dir > 0 else xp.linspace(1, 0, num=depth)
         depth_values = xp.expand_dims(depth_values, axis=tuple(range(image.ndim - 1)))
         depth_values = xp.moveaxis(depth_values, -1, axis)
 
         # Apply the colormap:
         color_ramp = rgb_colormap(depth_values, cmap=cmap, bytes=False)
 
-        # Multiply with image leveraing broadcasting:
+        # Multiply with image leveraging broadcasting:
         color_image = color_ramp * image[..., xp.newaxis]
 
         # Projecting:
@@ -136,18 +154,19 @@ def rgb_project(image,
     elif mode == 'colormax':
 
         # argmax:
-        indices = xp.argmax(image, axis=axis)
+        image_for_argmax = xp.flip(image, axis=axis).copy() if dir < 0 else image
+        indices = xp.argmax(image_for_argmax, axis=axis)
 
+        # Equivalent to: values = xp.max(image, axis=axis) but faster because we reuse the argmax result.
         expanded_indices = xp.expand_dims(indices, axis=axis)
-        values = xp.take_along_axis(image, expanded_indices, axis=axis)
+        values = xp.take_along_axis(image_for_argmax, expanded_indices, axis=axis)
         values = xp.squeeze(values)
-        # values = xp.max(image, axis=axis)
 
         # apply color map, this is just the chroma-coding of depth
         norm_factor = xp.array(1.0 / float(image.shape[axis] - 1)).astype(internal_dtype, copy=False)
         normalised_depth = norm_factor * indices
 
-        # Crude depthstabilisation, not recomended:
+        # Crude depth stabilisation, not recommended:
         if depth_stabilisation:
             com = center_of_mass(image)
             delta = (com[axis] / image.shape[axis]) - 0.5
@@ -159,6 +178,7 @@ def rgb_project(image,
 
         # Next we multiply the chroma-code with the intensity of the corresponding voxel:
         if transparency:
+            # we set the alpha channel:
             projection[..., 3] *= values
         else:
             projection[..., 0:3] *= values[..., xp.newaxis]
@@ -178,13 +198,14 @@ def rgb_project(image,
         legend = depth_color_scale_legend(cmap=cmap,
                                           start=0,
                                           end=depth,
+                                          flip=dir < 0,
                                           title=legend_depth_title,
                                           size=legend_size)
 
         projection = insert_image(projection,
                                   legend,
                                   position=legend_position,
-                                  blend_mode='max')
+                                  blend_mode='add')
 
     return projection
 
@@ -201,15 +222,15 @@ def _apply_depth_limits(depth_map,
     return depth_map
 
 
-def _inplace_cumsum(image, axis, dir=1):
+def _inplace_cumsum(image, axis, dir):
     xp = Backend.get_xp_module()
 
     length = image.shape[axis]
 
     accumulator = xp.zeros_like(xp.take(image, 0, axis=axis))
+    image_with_moved_axis = xp.moveaxis(image, axis, 0)
 
     positions = list(range(length))
-
     if dir < 0:
         positions.reverse()
 
@@ -221,6 +242,15 @@ def _inplace_cumsum(image, axis, dir=1):
         accumulator += _slice
 
         # place sum into array:
-        xp.moveaxis(image, axis, 0)[i] = accumulator
+        image_with_moved_axis[i] = accumulator
+
+    from napari import Viewer, gui_qt
+    with gui_qt():
+        def _c(array):
+            return Backend.to_numpy(array)
+
+        viewer = Viewer()
+        viewer.add_image(_c(image), name='image')
+        viewer.grid.enabled = True
 
     return image
