@@ -33,6 +33,6 @@ pip install python-telegram-bot --upgrade
 pip install PyYAML --upgrade
 
 sudo apt install libcairo2-dev pkg-config python3-dev
-pip install pycairo --upgrade
+pip install pycairo==1.11.1
 
 pip install -e .

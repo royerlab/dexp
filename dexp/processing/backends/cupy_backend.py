@@ -104,6 +104,12 @@ class CupyBackend(Backend):
         cub.available = enable_cub
         cutensor.available = enable_cutensor
 
+        try:
+            import cupy.cudnn
+            aprint("CUDNN supported!")
+        except Exception as e:
+            aprint("CUDNN not supported!")
+
         if not enable_fft_planning:
             import cupy
             cupy.fft.config.enable_nd_planning = False
@@ -115,8 +121,10 @@ class CupyBackend(Backend):
             CupyBackend._dexp_cuda_cluster = LocalCUDACluster(enable_nvlink=enable_dask_cuda_nvlink)
             CupyBackend._dexp_dask_client = Client(CupyBackend._dexp_cuda_cluster)
 
-        ## Important: Leave this, this is to make sure that the ndimage package works properly!
+        ## Important: Leave this, this is to make sure that some package works properly!
         exec("import cupyx.scipy.ndimage")
+        exec("import cupyx.scipy.special")
+        exec("import scipy.special")
 
     def copy(self, exclusive: bool = None):
         return CupyBackend(device_id=self.device_id,

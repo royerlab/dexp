@@ -8,8 +8,6 @@ from dexp.datasets.joined_dataset import JoinedDataset
 from dexp.datasets.zarr_dataset import ZDataset
 
 
-
-
 def glob_datasets(glob_paths: Sequence[str]):
     """
     Opens a joined dataset given a list of path patterns (each following the 'glob' convention).
@@ -92,4 +90,3 @@ def open_dataset(path: str):
         raise ValueError("Dataset type not recognised, or path incorrect!")
 
     return dataset
-

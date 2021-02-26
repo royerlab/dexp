@@ -6,12 +6,11 @@ from dexp.processing.render.colormap import rgb_colormap
 def depth_color_scale_legend(cmap,
                              start: float,
                              end: float,
-                             format: str = '{:.1f}',
+                             number_format: str = '{:.1f}',
                              font_name: str = "Helvetica",
                              font_size: float = 0.08,
                              title: str = '',
                              size: float = 1):
-
     """
     Produces a color bar legend.
 
@@ -22,7 +21,7 @@ def depth_color_scale_legend(cmap,
     cmap: Color map to use
     start: start value
     end: end value
-    format: format string to represent the start and end values.
+    number_format: format string to represent the start and end values.
     font_name: Font name.
     font_size: Font size.
     title: title for bar legend
@@ -86,7 +85,7 @@ def depth_color_scale_legend(cmap,
 
     text_height = context.text_extents('X')[3]
 
-    start_text = format.format(start)
+    start_text = number_format.format(start)
     context.move_to(0.01, end_bar + text_height / 2 + text_height)
     context.show_text(start_text)
 
@@ -95,7 +94,7 @@ def depth_color_scale_legend(cmap,
     context.move_to(0.5 - utw / 2, begin_bar - text_height / 2)
     context.show_text(f"{title}")
 
-    end_text = format.format(end)
+    end_text = number_format.format(end)
     ext = context.text_extents(end_text)
     utw = ext[2]
     context.move_to(0.99 - utw, end_bar + text_height / 2 + text_height)

@@ -1,17 +1,16 @@
 from typing import Union, Tuple
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.render.blend import blend
+from dexp.processing.render.blend import blend_images
 
 
-def insert(image,
-           inset_image,
-           scale: float = 1,
-           position: Union[str, Tuple[int, int]] = None,
-           blend_mode: str = 'max',
-           alpha: float = 1,
-           rgb: bool = True):
-
+def insert_image(image,
+                 inset_image,
+                 scale: Union[float, Tuple[float, ...]] = 1,
+                 position: Union[str, Tuple[int, int]] = None,
+                 blend_mode: str = 'max',
+                 alpha: float = 1,
+                 rgb: bool = True):
     """
     Inserts a smaller image into a base image.
     
@@ -34,6 +33,16 @@ def insert(image,
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
+    # Normalise scale:
+    if type(scale) == int or type(scale) == float:
+        if rgb:
+            scale = (scale,) * (inset_image.ndim - 1) + (1,)
+        else:
+            scale = (scale,) * inset_image.ndim
+    scale = tuple(scale)
+    if len(scale) == inset_image.ndim - 1:
+        scale = scale + (1,)
+
     # Scale inset image:
     inset_image = sp.ndimage.zoom(inset_image, zoom=scale)
 
@@ -46,22 +55,24 @@ def insert(image,
         raise ValueError(f"Inset image number of dimensions: {inset_image.ndim} does not match base image number of dimensions: {image.ndim}.")
 
     # Pad inset image:
-    pad_width = tuple((v-u for u, v in zip(inset_image.shape, image.shape)))
+    pad_width = tuple((v - u for u, v in zip(inset_image.shape, image.shape)))
+    pad_width = pad_width[0:-1] + (0,) if rgb else pad_width
+    pad_width = tuple((0, p) for p in pad_width)
     padded_inset_image = xp.pad(inset_image, pad_width=pad_width)
 
     # Roll inset image to place it at the correct position:
-    axis = tuple(range(image.ndim+(-1 if rgb else 0)))
+    axis = tuple(range(image.ndim))
     shift = tuple((0,) * image.ndim)
     if type(position) == str:
         shift = list(shift)
-        if 'left' in position:
-            shift[0] += 0
-        elif 'right' in position:
-            shift[0] += image.shape[0]-inset_image.shape[0]
         if 'top' in position:
-            shift[1] += 0
+            shift[0] += 0
         elif 'bottom' in position:
-            shift[1] += image.shape[1]-inset_image.shape[1]
+            shift[0] += image.shape[0] - inset_image.shape[0]
+        if 'left' in position:
+            shift[1] += 0
+        elif 'right' in position:
+            shift[1] += image.shape[1] - inset_image.shape[1]
         shift = tuple(shift)
     elif type(position) == tuple:
         shift = position
@@ -70,12 +81,8 @@ def insert(image,
     padded_inset_image = xp.roll(padded_inset_image, axis=axis, shift=shift)
 
     # Blend images together:
-    result = blend(images=(image, padded_inset_image),
-                   mode=blend_mode,
-                   alphas=(1, alpha),
-                   rgb=rgb)
+    result = blend_images(images=(image, padded_inset_image),
+                          alphas=(1, alpha),
+                          mode=blend_mode)
 
     return result
-
-
-

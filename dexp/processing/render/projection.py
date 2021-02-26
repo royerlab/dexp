@@ -3,6 +3,7 @@ from typing import Union, Tuple, Callable
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.render.colormap import rgb_colormap, _normalise_colormap
+from dexp.processing.render.insert import insert_image
 from dexp.processing.render.projection_legend import depth_color_scale_legend
 from dexp.processing.utils.center_of_mass import center_of_mass
 from dexp.processing.utils.normalise import normalise_functions
@@ -180,8 +181,10 @@ def rgb_project(image,
                                           title=legend_depth_title,
                                           size=legend_size)
 
-
-
+        projection = insert_image(projection,
+                                  legend,
+                                  position=legend_position,
+                                  blend_mode='max')
 
     return projection
 

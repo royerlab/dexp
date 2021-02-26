@@ -15,13 +15,13 @@ def demo_projection_numpy():
 
 
 def demo_projection_cupy():
-    # try:
-    with CupyBackend():
-        demo_projection(length_xy=320)
-
-
-# except (ModuleNotFoundError, NotImplementedError):
-#    print("Cupy module not found! ignored!")
+    try:
+        with CupyBackend():
+            demo_projection(length_xy=320)
+        return True
+    except (ModuleNotFoundError, NotImplementedError):
+        print("Cupy module not found! ignored!")
+        return False
 
 
 def demo_projection(length_xy=120, display=True):
@@ -53,7 +53,7 @@ def demo_projection(length_xy=120, display=True):
                                            attenuation=0.05,
                                            cmap='rainbow',
                                            dlim=(0.27, 0.73),
-                                           legend_size=1)
+                                           legend_size=0.2)
 
     with asection("color_max_projection"):
         color_max_projection = rgb_project(image,
@@ -102,5 +102,5 @@ def demo_projection(length_xy=120, display=True):
 
 
 if __name__ == "__main__":
-    demo_projection_cupy()
-    # demo_projection_numpy()
+    if not demo_projection_cupy():
+        demo_projection_numpy()
