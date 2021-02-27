@@ -61,8 +61,11 @@ def mp4(input_path,
             scale_option = f'-vf scale={width}:-8:flags=bicubic' if width > 0 else ''
             # black_background_filter = f'-filter_complex "{scale_option};color=black,format={pixelformat}[c];[c][0]scale2ref[c][i];[c][i]overlay=format=auto:shortest=1,setsar=1"'
 
+            # some codec wizardry to be able to effectively modulate
+            quality = f'-rc vbr -cq {26 - quality} -qmin {26 - quality} -qmax {26 - quality} -b:v 0 ' if 'nvenc' in codec else f'-crf {21 - quality}'
+
             ffmpeg_command = f"ffmpeg -hwaccel auto -framerate {framerate} -start_number 0 -i '{input_path}/{prefix}%0{leading}d.{extension}'  " \
-                             f"-f mp4 -vcodec {codec} -preset {preset} -cq {26 + quality} -crf {21 - quality} -pix_fmt {pixelformat} {scale_option} -y {videofilepath}"
+                             f"-f mp4 -vcodec {codec} -preset {preset}  {quality} -pix_fmt {pixelformat} {scale_option} -y {videofilepath}"
             # -vf  \"crop=576:1240:320:0\"  ""  ,setsar=1:1
             # -pix_fmt {pixelformat} {scale_option}
             # ,setsar=1:1

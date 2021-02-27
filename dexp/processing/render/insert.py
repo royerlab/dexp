@@ -20,7 +20,7 @@ def insert_image(image,
     image: Base image.
     inset_image: Inset image to place in base image.
     scale: scale factor for inset image -- scaling happens before translation.
-    position: position of the inset in pixels in natural order: (x, y).
+    position: position of the inset in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
     blend_mode: blending mode.
     alpha: inset transparency.
     rgb: images are RGB images with the last dimension of length 3 or 4.

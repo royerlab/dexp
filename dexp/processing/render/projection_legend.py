@@ -12,7 +12,8 @@ def depth_color_scale_legend(cmap,
                              font_name: str = "Helvetica",
                              font_size: float = 0.08,
                              title: str = '',
-                             size: float = 1):
+                             size: float = 1,
+                             pixel_resolution: int = 512):
     """
     Produces a color bar legend.
 
@@ -29,13 +30,14 @@ def depth_color_scale_legend(cmap,
     font_size: Font size.
     title: title for bar legend
     size: overall size factor (default: 1)
+    pixel_resolution: base resolution in pixels to render at (pixels per unit of scale).
 
     Returns
     -------
 
     """
-    width = int(size * 512)
-    height = int(size * 512)
+    width = int(size * pixel_resolution)
+    height = int(size * pixel_resolution)
 
     # First we build the depth ramp:
     depth_ramp = numpy.linspace(0, 1, num=255)
@@ -84,7 +86,6 @@ def depth_color_scale_legend(cmap,
     # tirn back on alpha blending:
     context.set_operator(cairo.OPERATOR_OVER)
 
-
     # draw text
     context.set_source_rgba(1, 1, 1, 1)
     context.select_font_face(font_name,
@@ -127,9 +128,9 @@ def depth_color_scale_legend(cmap,
 
     # Crop final image:
     height = surface_array.shape[0]
-    crop_top = int((vert_start-text_height)*height)
-    crop_bottom = int((vert_end+text_height)*height)
-    surface_array = surface_array[crop_top-10:crop_bottom+10, ...]
+    crop_top = int((vert_start - text_height / 2) * height)
+    crop_bottom = int((vert_end + text_height / 2) * height)
+    surface_array = surface_array[crop_top - 10:crop_bottom + 10, ...]
 
     # Move to backend:
     surface_array = Backend.to_backend(surface_array.copy())

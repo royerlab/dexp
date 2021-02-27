@@ -106,9 +106,9 @@ class CupyBackend(Backend):
 
         try:
             import cupy.cudnn
-            aprint("CUDNN supported!")
+            aprint("CUDNN available!")
         except Exception as e:
-            aprint("CUDNN not supported!")
+            aprint("CUDNN not available!")
 
         if not enable_fft_planning:
             import cupy
