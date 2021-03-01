@@ -4,7 +4,7 @@ from skimage.data import logo
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.render.blend import blend_images
+from dexp.processing.color.blend import blend_color_images
 
 
 def demo_blend_numpy():
@@ -16,8 +16,10 @@ def demo_blend_cupy():
     try:
         with CupyBackend():
             demo_blend()
+        return True
     except (ModuleNotFoundError, NotImplementedError):
         print("Cupy module not found! ignored!")
+        return False
 
 
 def demo_blend(display=True):
@@ -31,19 +33,19 @@ def demo_blend(display=True):
     image_v[0:256, :, 3] = 128
 
     with asection("blend_mean"):
-        blend_mean = blend_images((image_u, image_v), (1, 1), mode='mean')
+        blend_mean = blend_color_images((image_u, image_v), (1, 1), modes=('max', 'mean'))
 
     with asection("blend_add"):
-        blend_add = blend_images((image_u, image_v), (1, 1), mode='add')
+        blend_add = blend_color_images((image_u, image_v), (1, 1), modes=('max', 'add'))
 
     # with asection("blend_erfadd"):
     #     blend_erfadd = blend((image_u, image_v), (1, 0.5), mode='erfadd')
 
     with asection("blend_max"):
-        blend_max = blend_images((image_u, image_v), (1, 1), mode='max')
+        blend_max = blend_color_images((image_u, image_v), (1, 1), modes=('max', 'max'))
 
     with asection("blend_alpha"):
-        blend_alpha = blend_images((image_u, image_v), (1, 1), mode='alpha')
+        blend_alpha = blend_color_images((image_u, image_v), (1, 1), modes=('max', 'alpha'))
 
     if display:
         from napari import Viewer, gui_qt
@@ -63,5 +65,5 @@ def demo_blend(display=True):
 
 
 if __name__ == "__main__":
-    # demo_blend_cupy()
-    demo_blend_numpy()
+    if not demo_blend_cupy():
+        demo_blend_numpy()

@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 from zarr.errors import ContainsArrayError, ContainsGroupError
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
 from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2C2L
@@ -84,7 +84,7 @@ def dataset_fuse(dataset,
             with asection(f"Loading channels {channels} for time point {tp}/{nb_timepoints}"):
                 views_tp = tuple(view[tp].compute() for view in views)
 
-            with CupyBackend(device, exclusive=True, enable_unified_memory=True):
+            with BestBackend(device, exclusive=True, enable_unified_memory=True):
 
                 model = models[tp]
 

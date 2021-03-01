@@ -4,7 +4,7 @@ from joblib import Parallel, delayed
 from zarr.errors import ContainsArrayError, ContainsGroupError
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.registration.model.model_io import model_list_to_file
 
 
@@ -53,7 +53,7 @@ def dataset_deskew(dataset,
                 with asection(f"Loading channel {channel} for time point {tp}"):
                     view_tp = array[tp].compute()
 
-                with CupyBackend(device, exclusive=True, enable_unified_memory=True):
+                with BestBackend(device, exclusive=True, enable_unified_memory=True):
 
                     metadata = dataset.get_metadata()
                     angle = metadata['angle']

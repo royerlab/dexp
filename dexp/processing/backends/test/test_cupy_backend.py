@@ -14,9 +14,9 @@ from dexp.processing.interpolation.warp import warp
 def test_cupy_basics():
     try:
         import cupy
-        with cupy.cuda.Device(1):
+        with cupy.cuda.Device(0):
             array = cupy.array([1, 2, 3])
-            assert numpy.median(array) == 2
+            assert cupy.median(array) == 2
             aprint("\nWorked!")
 
     except (ModuleNotFoundError, NotImplementedError):

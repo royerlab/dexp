@@ -1,16 +1,19 @@
-from typing import Union, Tuple
+from typing import Union, Tuple, Sequence
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.render.blend import blend_images
+from dexp.processing.color.blend import blend_color_images
+from dexp.processing.color.border import add_border
 
 
-def insert_image(image,
-                 inset_image,
-                 scale: Union[float, Tuple[float, ...]] = 1,
-                 position: Union[str, Tuple[int, int]] = None,
-                 blend_mode: str = 'max',
-                 alpha: float = 1,
-                 rgb: bool = True):
+def insert_color_image(image,
+                       inset_image,
+                       scale: Union[float, Tuple[float, ...]] = 1,
+                       translation: Union[str, Sequence[Tuple[Union[int, float], ...]]] = None,
+                       border_width: int = 0,
+                       border_color: Tuple[float, float, float, float] = None,
+                       border_over_image: bool = False,
+                       mode: str = 'max',
+                       alpha: float = 1):
     """
     Inserts an inset image into a base image.
     After scaling the inset image must be smaller than the base image.
@@ -20,10 +23,12 @@ def insert_image(image,
     image: Base image.
     inset_image: Inset image to place in base image.
     scale: scale factor for inset image -- scaling happens before translation.
-    position: position of the inset in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
-    blend_mode: blending mode.
+    translation: positions of the insets in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
+    width: Width of border added to insets.
+    color: Border color.
+    over_image: If True the border is not added but overlayed over the image, the image does not change size.
+    mode: blending mode.
     alpha: inset transparency.
-    rgb: images are RGB images with the last dimension of length 3 or 4.
 
     Returns
     -------
@@ -36,16 +41,21 @@ def insert_image(image,
 
     # Normalise scale:
     if type(scale) == int or type(scale) == float:
-        if rgb:
-            scale = (scale,) * (inset_image.ndim - 1) + (1,)
-        else:
-            scale = (scale,) * inset_image.ndim
+        scale = (scale,) * (inset_image.ndim - 1) + (1,)
+
     scale = tuple(scale)
     if len(scale) == inset_image.ndim - 1:
         scale = scale + (1,)
 
     # Scale inset image:
     inset_image = sp.ndimage.zoom(inset_image, zoom=scale)
+
+    # Add border:
+    inset_image = add_border(inset_image,
+                             width=border_width,
+                             color=border_color,
+                             over_image=border_over_image
+                             )
 
     # Check that if after scaling, the inset image is smaller than the base image:
     if any(u > v for u, v in zip(inset_image.shape, image.shape)):
@@ -57,33 +67,36 @@ def insert_image(image,
 
     # Pad inset image:
     pad_width = tuple((v - u for u, v in zip(inset_image.shape, image.shape)))
-    pad_width = pad_width[0:-1] + (0,) if rgb else pad_width
+    pad_width = pad_width[0:-1] + (0,)
     pad_width = tuple((0, p) for p in pad_width)
     padded_inset_image = xp.pad(inset_image, pad_width=pad_width)
 
     # Roll inset image to place it at the correct position:
     axis = tuple(range(image.ndim))
     shift = tuple((0,) * image.ndim)
-    if type(position) == str:
+    if translation is None:
+        # Nothing to do...
+        pass
+    elif type(translation) == str:
         shift = list(shift)
-        if 'top' in position:
+        if 'top' in translation:
             shift[0] += 0
-        elif 'bottom' in position:
+        elif 'bottom' in translation:
             shift[0] += image.shape[0] - inset_image.shape[0]
-        if 'left' in position:
+        if 'left' in translation:
             shift[1] += 0
-        elif 'right' in position:
+        elif 'right' in translation:
             shift[1] += image.shape[1] - inset_image.shape[1]
         shift = tuple(shift)
-    elif type(position) == tuple:
-        shift = position
+    elif type(translation) == tuple:
+        shift = translation + (0,)
     else:
-        raise ValueError(f"Unsupported position: {position}")
+        raise ValueError(f"Unsupported translation: {translation}")
     padded_inset_image = xp.roll(padded_inset_image, axis=axis, shift=shift)
 
     # Blend images together:
-    result = blend_images(images=(image, padded_inset_image),
-                          alphas=(1, alpha),
-                          mode=blend_mode)
+    result = blend_color_images(images=(image, padded_inset_image),
+                                alphas=(1, alpha),
+                                modes=('max', mode))
 
     return result

@@ -2,9 +2,9 @@ from typing import Union, Tuple, Callable
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.render.colormap import rgb_colormap, _normalise_colormap
-from dexp.processing.render.insert import insert_image
-from dexp.processing.render.projection_legend import depth_color_scale_legend
+from dexp.processing.color.colormap import rgb_colormap, _normalise_colormap
+from dexp.processing.color.insert import insert_color_image
+from dexp.processing.color.projection_legend import depth_color_scale_legend
 from dexp.processing.utils.center_of_mass import center_of_mass
 from dexp.processing.utils.normalise import normalise_functions
 
@@ -13,7 +13,7 @@ def project_image(image,
                   axis: int = 0,
                   dir: int = -1,
                   mode: str = 'max',
-                  attenuation: float = 0,
+                  attenuation: float = 0.05,
                   attenuation_min_density: float = 0.002,
                   attenuation_filtering: float = 4,
                   gamma: float = 1,
@@ -85,9 +85,9 @@ def project_image(image,
         if mode == 'max':
             cmap = 'viridis'
         elif mode == 'maxcolor':
-            cmap = 'cet_bmy'
+            cmap = 'rainbow'
         elif mode == 'colormax':
-            cmap = 'cet_bmy'
+            cmap = 'rainbow'
 
     # Normalise color map:
     cmap = _normalise_colormap(cmap)
@@ -206,11 +206,11 @@ def project_image(image,
         pad_width = ((pad_length, pad_length), (6 * pad_length, 6 * pad_length), (0, 0))
         legend = xp.pad(legend, pad_width=pad_width)
 
-        projection = insert_image(projection,
-                                  legend,
-                                  position=legend_position,
-                                  blend_mode='add',
-                                  alpha=legend_alpha)
+        projection = insert_color_image(projection,
+                                        legend,
+                                        translation=legend_position,
+                                        mode='add',
+                                        alpha=legend_alpha)
 
     return projection
 

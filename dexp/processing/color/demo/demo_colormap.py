@@ -3,7 +3,7 @@ from arbol import asection
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.render.colormap import rgb_colormap
+from dexp.processing.color.colormap import rgb_colormap
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 
 
@@ -16,8 +16,10 @@ def demo_colormap_cupy():
     try:
         with CupyBackend():
             demo_colormap(length_xy=512)
+        return True
     except (ModuleNotFoundError, NotImplementedError):
         print("Cupy module not found! ignored!")
+        return False
 
 
 def demo_colormap(length_xy=120, display=True):
@@ -48,5 +50,5 @@ def demo_colormap(length_xy=120, display=True):
 
 
 if __name__ == "__main__":
-    demo_colormap_cupy()
-    # demo_colormap_numpy()
+    if not demo_colormap_cupy():
+        demo_colormap_numpy()

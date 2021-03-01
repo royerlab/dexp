@@ -13,12 +13,12 @@ from dexp.datasets.open_dataset import glob_datasets
 @click.command()
 @click.argument('input_paths', nargs=-1)
 @click.option('--output_path', '-o', default=None, help='Output folder to store rendered PNGs. Default is: frames_<channel_name>')
-@click.option('--channels', '-c', default=None, help='list of channels to render, all channels when ommited.')
+@click.option('--channels', '-c', default=None, help='list of channels to color, all channels when ommited.')
 @click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--aspect', '-a', type=float, default=4, help='sets aspect ratio e.g. 4', show_default=True)
 @click.option('--colormap', '-cm', type=str, default='magma', help='sets colormap, e.g. viridis, gray, magma, plasma, inferno ', show_default=True)
-@click.option('--rendersize', '-rs', type=int, default=2048, help='Sets the frame render size. i.e. -ws 400 sets the window to 400x400', show_default=True)
+@click.option('--rendersize', '-rs', type=int, default=2048, help='Sets the frame color size. i.e. -ws 400 sets the window to 400x400', show_default=True)
 @click.option('--clim', '-cl', type=str, default='0,1024', help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]')
 @click.option('--options', '-opt', type=str, default=None, help='Render options, e.g: \'gamma=1.2,box=True\'. Important: no white spaces!!! Complete list with defaults will be displayed on first run')
 def volrender(input_paths, output_path, channels=None, slicing=None, overwrite=False, aspect=None, colormap='viridis', rendersize=1536, clim=None, options=None):
@@ -99,7 +99,7 @@ def volrender(input_paths, output_path, channels=None, slicing=None, overwrite=F
             aprint(f"box?                    : {box}       \toption: box:      \tbool (true/false)")
             aprint(f"normalisation           : {norm}      \toption: norm:     \tbool (true/false)")
             aprint(f"normalisation range     : {normrange} \toption: normrange:\tfloat")
-            aprint(f"Max steps for vol render: {maxsteps}  \toption: maxsteps: \tint")
+            aprint(f"Max steps for vol color: {maxsteps}  \toption: maxsteps: \tint")
 
         if output_path is None:
             output_path = f"frames_{channel}"

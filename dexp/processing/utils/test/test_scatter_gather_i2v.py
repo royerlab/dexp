@@ -68,5 +68,5 @@ def _test_scatter_gather_i2v(ndim=3, length_xy=128, splits=4, filter_size=7):
     # from napari import Viewer, gui_qt
     # with gui_qt():
     #     viewer = Viewer()
-    #     viewer.add_image(result, name='result', rgb=False)
+    #     viewer.add_image(result, name='result', color=False)
     #

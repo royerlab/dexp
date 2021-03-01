@@ -8,7 +8,7 @@ from joblib import Parallel, delayed
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.sequence_proj import image_stabilisation_proj_
 
@@ -107,7 +107,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
             projections.append((*proj_axis, projection))
 
         # Perform stabilisation:
-        with CupyBackend(devices[0], enable_unified_memory=True):
+        with BestBackend(devices[0], enable_unified_memory=True):
             model = image_stabilisation_proj_(projections=projections,
                                               max_range=max_range,
                                               min_confidence=min_confidence,

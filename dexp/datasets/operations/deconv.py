@@ -8,7 +8,7 @@ from skimage.transform import downscale_local_mean
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
 from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 
@@ -79,7 +79,7 @@ def dataset_deconv(dataset: BaseDataset,
                 with asection(f"Loading channel: {channel} for time point {tp}/{nb_timepoints}"):
                     tp_array = array[tp].compute()
 
-                with CupyBackend(device, exclusive=True):
+                with BestBackend(device, exclusive=True):
 
                     if downscalexy2:
                         tp_array = downscale_local_mean(tp_array, factors=(1, 2, 2)).astype(tp_array.dtype)

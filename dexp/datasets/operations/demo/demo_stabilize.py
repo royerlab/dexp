@@ -156,7 +156,7 @@ def _demo_stabilize(length_xy=256,
                 def _c(array):
                     return Backend.to_numpy(array)
 
-                viewer = Viewer(ndisplay=3)
+                viewer = Viewer(ndisplay=2)
                 viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', visible=True)
                 viewer.add_image(_c(shifted), name='shifted', colormap='bop purple', blending='additive', visible=True)
                 viewer.add_image(_c(zarr_input_array), name='zarr_input_array', colormap='bop purple', blending='additive', visible=True)

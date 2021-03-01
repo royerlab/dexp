@@ -86,7 +86,7 @@ def generate_nuclei_background_data(length_xy=320,
             image = image_gt
 
     if length_z_factor != 1 or zoom != 1:
-        with asection("downscale along z"):
+        with asection("upscale all dimensions and downscale along z"):
             image_gt = sp.ndimage.zoom(image_gt, zoom=(zoom / length_z_factor, zoom, zoom), order=1)
             background = sp.ndimage.zoom(background, zoom=(zoom / length_z_factor, zoom, zoom), order=1)
             image = sp.ndimage.zoom(image, zoom=(zoom / length_z_factor, zoom, zoom), order=1)

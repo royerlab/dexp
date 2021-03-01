@@ -67,6 +67,9 @@ from dexp.cli.commands.isonet import isonet
 
 from dexp.cli.commands.speedtest import speedtest
 
+from dexp.cli.video_commands.volrender import volrender
+from dexp.cli.commands.projrender import projrender
+
 cli.add_command(info)
 cli.add_command(check)
 cli.add_command(copy)
@@ -82,3 +85,6 @@ cli.add_command(deconv)
 cli.add_command(isonet)
 
 cli.add_command(speedtest)
+
+cli.add_command(volrender)
+cli.add_command(projrender)

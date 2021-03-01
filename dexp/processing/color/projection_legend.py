@@ -1,7 +1,8 @@
 import numpy
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.render.colormap import rgb_colormap
+from dexp.processing.color.cairo_utils import get_array_for_cairo_surface
+from dexp.processing.color.colormap import rgb_colormap
 
 
 def depth_color_scale_legend(cmap,
@@ -10,8 +11,9 @@ def depth_color_scale_legend(cmap,
                              flip: bool = False,
                              number_format: str = '{:.1f}',
                              font_name: str = "Helvetica",
-                             font_size: float = 0.08,
+                             font_size: float = 32.0,
                              title: str = '',
+                             bar_height: float = 0.15,
                              size: float = 1,
                              pixel_resolution: int = 512):
     """
@@ -23,14 +25,15 @@ def depth_color_scale_legend(cmap,
     ----------
     cmap: Color map to use
     flip: Set to rue to flip the colormap
-    start: start value
-    end: end value
-    number_format: format string to represent the start and end values.
+    start: Start value
+    end: End value
+    number_format: Format string to represent the start and end values.
     font_name: Font name.
-    font_size: Font size.
-    title: title for bar legend
-    size: overall size factor (default: 1)
-    pixel_resolution: base resolution in pixels to render at (pixels per unit of scale).
+    font_size: Font size in pixels.
+    title: Title for bar legend
+    bar_height: Height of the color bar in relative units [0,1].
+    size: Overall size factor (default: 1)
+    pixel_resolution: Base resolution in pixels to color at (pixels per unit of scale).
 
     Returns
     -------
@@ -46,11 +49,14 @@ def depth_color_scale_legend(cmap,
     # get color ramp:
     color_ramp = rgb_colormap(depth_ramp, cmap=cmap, bytes=False)
 
-    # Create surface from array:
+    # Create a Cairo surface:
     import cairo
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     context = cairo.Context(surface)
     context.scale(width, height)
+
+    # Adjust font size to relative coordinates:
+    font_size /= pixel_resolution
 
     # we draw the depth ramp:
     context.set_antialias(cairo.ANTIALIAS_NONE)
@@ -70,7 +76,6 @@ def depth_color_scale_legend(cmap,
         context.fill()
 
     # clear top rectangle for text:
-    bar_height = 0.3
     begin_bar = 0.5 - bar_height / 2
     end_bar = 0.5 + bar_height / 2
     context.set_operator(cairo.OPERATOR_SOURCE)
@@ -114,17 +119,7 @@ def depth_color_scale_legend(cmap,
     vert_start = begin_bar - 3 * text_height / 2
     vert_end = end_bar + text_height / 2 + text_height
 
-    # Get pycairo surface buffer:
-    buffer = surface.get_data()
-
-    # Reshape array to get an extra uint8 axis:
-    surface_array = numpy.ndarray(shape=(height, width, 4), dtype=numpy.uint8, buffer=buffer)
-
-    # We have now: BGRA, we need to flip color axis because of endianness to ARGB:
-    surface_array = numpy.flip(surface_array, axis=surface_array.ndim - 1)
-
-    # Convert ARGB to RGBA:
-    surface_array = numpy.roll(surface_array, shift=-1, axis=surface_array.ndim - 1)
+    surface_array = get_array_for_cairo_surface(surface)
 
     # Crop final image:
     height = surface_array.shape[0]
@@ -133,6 +128,6 @@ def depth_color_scale_legend(cmap,
     surface_array = surface_array[crop_top - 10:crop_bottom + 10, ...]
 
     # Move to backend:
-    surface_array = Backend.to_backend(surface_array.copy())
+    surface_array = Backend.to_backend(surface_array, force_copy=True)
 
     return surface_array

@@ -117,7 +117,7 @@ def lucy_richardson_deconvolution(image,
         #     viewer = Viewer()
         #     #viewer.add_image(_c(image), name='image')
         #     viewer.add_image(_c(psf_original), name='psf_original')
-        #     viewer.add_image(_c(donut_kernel), name='donut_kernel', rgb=False)
+        #     viewer.add_image(_c(donut_kernel), name='donut_kernel', color=False)
         #     viewer.add_image(_c(psf), name='psf')
         #     viewer.add_image(_c(sp.ndimage.convolve(psf, full_kernel)), name='psf_for_backproj')
         #     viewer.add_image(_c(back_projector), name='psf')

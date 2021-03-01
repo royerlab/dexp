@@ -4,12 +4,13 @@ from arbol import asection
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.render.projection import project_image
-from dexp.processing.render.projection_legend import depth_color_scale_legend
+from dexp.processing.color.projection import project_image
+from dexp.processing.color.projection_legend import depth_color_scale_legend
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 
 
 def demo_projection_numpy():
+    # TODO: projection behaves differently in numpy ?!? back and front views look the same ?!!
     with NumpyBackend():
         demo_projection(length_xy=150)
 
@@ -121,6 +122,5 @@ def demo_projection(length_xy=120, display=True):
 
 
 if __name__ == "__main__":
-    demo_projection_cupy()
-    # if not demo_projection_cupy():
-    #     demo_projection_numpy()
+    if not demo_projection_cupy():
+        demo_projection_numpy()

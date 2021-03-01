@@ -1,15 +1,15 @@
-from typing import Sequence
+from typing import Sequence, Union, Generator, Any
 
 import numpy
 
 from dexp.processing.backends.backend import Backend
 
 
-def blend_images(images: Sequence['Array'],
-                 alphas: Sequence[float] = None,
-                 value_max: float = 255,
-                 mode: str = 'max',
-                 internal_dtype=numpy.float32):
+def blend_color_images(images: Union[Generator[Any, Any, None], Sequence[Any]],
+                       alphas: Sequence[float] = None,
+                       value_max: float = 255,
+                       modes: Union[str, Sequence[str]] = 'max',
+                       internal_dtype=numpy.float32):
     """
     Blends multiple images together according to a blend mode
 
@@ -17,8 +17,8 @@ def blend_images(images: Sequence['Array'],
     ----------
     images: Sequence of images to blend.
     alphas: Optional sequence of alpha values to use for blending, must be of same length as the sequence of images, optional.
-    value_max: Max value for teh pixel/voxel values.
-    mode: Blending mode. can be: 'mean', 'add', 'satadd', 'max', 'alpha'
+    value_max: Max value for the pixel/voxel values.
+    modes: Blending modes. Either one for all images, or one per image in the form of a sequence. Blending modes are: 'mean', 'add', 'satadd', 'max', 'alpha'
     internal_dtype: dtype for internal computation
 
     Returns
@@ -33,33 +33,35 @@ def blend_images(images: Sequence['Array'],
     # convert to list of images:
     images = list(images)
 
-    # original dtype:
-    original_dtype = images[0].dtype
-
-    # normalise alphas:
-    # alpha_sum = sum(alphas)
-    # alphas = list(alpha/alpha_sum for alpha in alphas)
-
     # Check that there is at least one image in the image list:
     if len(images) == 0:
         raise ValueError(f"Blending requires at least one image!")
+
+    # original dtype:
+    original_dtype = images[0].dtype
+
+    # Verify that all images are of the same shape:
+    for image in images:
+        if images[0].ndim != image.ndim or images[0].shape[:-1] != image.shape[:-1]:
+            raise ValueError("All images in sequence must have the same number of dimensions and shape!")
+
+    # verify that the images are 2D RGB(A) images:
+    if images[0].ndim != 3 or not images[0].shape[2] in (3, 4):
+        raise ValueError("Images must be 2D RGB(A) images!")
 
     # Check that the number of images and alphas match:
     if len(images) != len(alphas):
         raise ValueError(f"The number of images ({len(images)}) is not equal to the number of alpha values ({len(images)}).")
 
-    # Check that all images have the same shape:
-    for image in images:
-        if image.shape != images[0].shape:
-            raise ValueError(f"Not all images have the same shape: {image.shape}.")
-
     # Create image to store result:
-    result = xp.zeros_like(images[0], dtype=internal_dtype)
+    result = xp.zeros_like(_ensure_rgba(images[0], value_max), dtype=internal_dtype)
 
     # Blend in the images:
-    for alpha, image in zip(alphas, images):
+    for image, mode, alpha in zip(images, modes, alphas):
         # move image to backend:
         image = Backend.to_backend(image, dtype=internal_dtype)
+
+        image = _ensure_rgba(image, value_max)
 
         # normalise image:
         image /= value_max
@@ -77,6 +79,16 @@ def blend_images(images: Sequence['Array'],
     return result
 
 
+def _ensure_rgba(image, value_max):
+    xp = Backend.get_xp_module()
+    # make sure that the image has an alpha channel:
+    if image.shape[-1] == 3:
+        pad_width = ((0, 0),) * (image.ndim - 1) + ((0, 1),)
+        image = xp.pad(image, pad_width=pad_width)
+        image[..., -1] = value_max
+    return image
+
+
 def _blend_function(image_u, image_v, mode):
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
@@ -89,8 +101,6 @@ def _blend_function(image_u, image_v, mode):
         # TODO: this fails but it is unclear why:
         result = sp.special.erf(image_u + image_v)
     elif mode == 'max' or mode == 'rgbamax':
-        result = xp.maximum(image_u, image_v)
-    elif mode == 'rgbmax':
         result = xp.maximum(image_u, image_v)
     elif mode == 'alpha' and image_u.shape[-1] == 4 and image_v.shape[-1] == 4:
         # See: https://en.wikipedia.org/wiki/Alpha_compositing
