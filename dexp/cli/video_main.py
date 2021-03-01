@@ -25,7 +25,7 @@ def cli():
     aprint("")
 
 
-from dexp.cli.video_commands.blend import overlay
+from dexp.cli.video_commands.overlay import overlay
 from dexp.cli.video_commands.blend import blend
 from dexp.cli.video_commands.stack import stack
 from dexp.cli.video_commands.mp4 import mp4

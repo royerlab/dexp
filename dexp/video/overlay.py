@@ -7,6 +7,8 @@ import imageio
 from arbol.arbol import asection, aprint
 from joblib import Parallel, delayed
 
+from dexp.processing.backends.backend import Backend
+from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.scale_bar import insert_scale_bar
 from dexp.processing.color.time_stamp import insert_time_stamp
@@ -76,7 +78,7 @@ def add_overlays_image_sequence(input_path: str,
 
     # Load images:
     with asection("Load images..."):
-        images = list(imageio.imread(p) for p in png_file_paths)
+        images = list(Backend.to_backend(imageio.imread(p)) for p in png_file_paths)
 
     # Apply time stamp:
     if time_stamp:
@@ -96,7 +98,6 @@ def add_overlays_image_sequence(input_path: str,
     if scale_bar:
 
         # First generate the scale bar itself:
-
         _, scale_bar_image = insert_scale_bar(images[0],
                                               length_in_unit=scale_bar_length_in_unit,
                                               pixel_scale=scale_bar_pixel_scale,
@@ -114,29 +115,31 @@ def add_overlays_image_sequence(input_path: str,
         # The number of time points is the number of images in the sequence:
         nb_timepoints = len(images)
 
+        current_backend = Backend.current()
+
         def _process(tp: int):
 
             with asection(f'processing time point: {tp}'):
+                with current_backend.copy():
+                    # get image:
+                    image = images[tp]
 
-                # get image:
-                image = images[tp]
+                    # Blend images:
+                    image_with_scale_bar = blend_color_images(images=(image,
+                                                                      scale_bar_image),
+                                                              alphas=(1, 1),
+                                                              modes=('max', mode))
 
-                # Blend images:
-                image_with_scale_bar = blend_color_images(images=(image,
-                                                                  scale_bar_image),
-                                                          alphas=(1, 1),
-                                                          modes=('max', mode))
+                    # Output file:
+                    filename = f"frame_{tp:05}.png"
+                    filepath = join(output_path, filename)
 
-                # Output file:
-                filename = f"frame_{tp:05}.png"
-                filepath = join(output_path, filename)
-
-                # Write file:
-                if overwrite or not exists(filepath):
-                    aprint(f"Writing file: {filename} in folder: {output_path}")
-                    imageio.imwrite(filepath, image_with_scale_bar)
-                else:
-                    aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
+                    # Write file:
+                    if overwrite or not exists(filepath):
+                        aprint(f"Writing file: {filename} in folder: {output_path}")
+                        imageio.imwrite(filepath, Backend.to_numpy(image_with_scale_bar))
+                    else:
+                        aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
 
         with asection(f"Adding time-stamp ({insert_time_stamp}) and scale-bar ({insert_scale_bar}) to: {input_path}, and saving to {output_path}, for a total of {nb_timepoints} time points"):
             if workers <= 0:

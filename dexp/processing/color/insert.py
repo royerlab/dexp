@@ -39,6 +39,10 @@ def insert_color_image(image,
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
+    # Move to backend:
+    image = Backend.to_backend(image)
+    inset_image = Backend.to_backend(inset_image)
+
     # Normalise scale:
     if type(scale) == int or type(scale) == float:
         scale = (scale,) * (inset_image.ndim - 1) + (1,)

@@ -28,7 +28,7 @@ def demo_scale_bar(display=True):
     sp = Backend.get_sp_module()
 
     with asection("generate data"):
-        image = gray2rgba(camera())
+        image = Backend.to_backend(gray2rgba(camera()))
 
     with asection("Apply scale bar..."):
         image_with_scale_bar_br, _ = insert_scale_bar(image,

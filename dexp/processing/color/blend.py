@@ -30,8 +30,8 @@ def blend_color_images(images: Union[Generator[Any, Any, None], Sequence[Any]],
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
-    # convert to list of images:
-    images = list(images)
+    # convert to list of images, and move to backend:
+    images = list(Backend.to_backend(image) for image in images)
 
     # Check that there is at least one image in the image list:
     if len(images) == 0:

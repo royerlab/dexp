@@ -28,7 +28,7 @@ def demo_border(display=True):
     sp = Backend.get_sp_module()
 
     with asection("generate data"):
-        image = gray2rgba(camera())
+        image = Backend.to_backend(gray2rgba(camera()))
 
     with asection("Add border..."):
         image_with_border = add_border(image,

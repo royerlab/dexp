@@ -30,7 +30,7 @@ def demo_time_stamp(n=32, display=True):
     sp = Backend.get_sp_module()
 
     with asection("generate data"):
-        image = gray2rgba(camera())
+        image = Backend.to_backend(gray2rgba(camera()))
 
         # generate reference 'ground truth' timelapse
         images = (image.copy() for _ in range(n))

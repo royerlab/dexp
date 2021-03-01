@@ -44,6 +44,9 @@ def insert_scale_bar(image,
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
+    # Move to backend:
+    image = Backend.to_backend(image)
+
     if color is None:
         color = (1, 1, 1, 1)
 

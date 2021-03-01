@@ -47,8 +47,8 @@ def insert_time_stamp(images: Union[Generator[Any, Any, None], Sequence[Any]],
     if color is None:
         color = (1, 1, 1, 1)
 
-    # Turn sequence or generator into list:
-    images = list(images)
+    # Turn sequence or generator into list, and move to backend:
+    images = list(Backend.to_backend(image) for image in images)
 
     # Check that there is at least one image in the image list:
     if len(images) == 0:

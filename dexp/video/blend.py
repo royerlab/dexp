@@ -7,6 +7,7 @@ import imageio
 from arbol.arbol import asection, aprint
 from joblib import Parallel, delayed
 
+from dexp.processing.backends.backend import Backend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.insert import insert_color_image
 
@@ -115,7 +116,7 @@ def blend_color_image_sequences(input_paths: Sequence[str],
             # Write file:
             if overwrite or not exists(filepath):
                 aprint(f"Writing file: {filename} in folder: {output_path}")
-                imageio.imwrite(filepath, blended)
+                imageio.imwrite(filepath, Backend.to_numpy(blended))
             else:
                 aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
 

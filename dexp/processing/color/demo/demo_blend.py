@@ -25,8 +25,8 @@ def demo_blend_cupy():
 def demo_blend(display=True):
     xp = Backend.get_xp_module()
 
-    image_u = logo()
-    image_v = xp.flip(logo(), axis=1)
+    image_u = Backend.to_backend(logo())
+    image_v = xp.flip(Backend.to_backend(logo()), axis=1)
 
     # modulate alpha channel:
     image_u[:, 0:256, 3] = 128

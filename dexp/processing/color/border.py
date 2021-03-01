@@ -33,6 +33,9 @@ def add_border(image,
     if width == 0:
         return image
 
+    # Move to backend:
+    image = Backend.to_backend(image)
+
     # Default color:
     if color is None:
         color = (1, 1, 1, 1)
