@@ -1,11 +1,13 @@
-from typing import Union, Tuple, Sequence, Generator, Any
+from typing import Union, Tuple, Sequence
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.cairo_utils import get_array_for_cairo_surface
 
 
-def insert_time_stamp(images: Union[Generator[Any, Any, None], Sequence[Any]],
+def insert_time_stamp(image: 'Array',
+                      time_point_index: int,
+                      nb_time_points: int,
                       start_time: float = 0,
                       time_interval: float = 1,
                       margin: float = 1,
@@ -16,13 +18,16 @@ def insert_time_stamp(images: Union[Generator[Any, Any, None], Sequence[Any]],
                       font_size: float = 32,
                       unit: str = 's',
                       mode: str = 'max',
-                      alpha: float = 1):
+                      alpha: float = 1
+                      ):
     """
     Inserts a scale bar into an image.
 
     Parameters
     ----------
-    images: Image into which to insert the scale bar.
+    image: Image into which to insert the time stamp.
+    time_point_index: Index (starting at 0 for start time) of the image.
+    nb_time_points: Total number of time points.
     start_time: Start time for time stamp
     time_interval: Time interval inn units of time between consecutive images.
     margin: margin around bar expressed in units relative to the text height
@@ -37,7 +42,7 @@ def insert_time_stamp(images: Union[Generator[Any, Any, None], Sequence[Any]],
 
     Returns
     -------
-    Image with inserted scale bar.
+    Image with inserted time stamp.
 
     """
 
@@ -47,24 +52,12 @@ def insert_time_stamp(images: Union[Generator[Any, Any, None], Sequence[Any]],
     if color is None:
         color = (1, 1, 1, 1)
 
-    # Turn sequence or generator into list, and move to backend:
-    images = list(Backend.to_backend(image) for image in images)
-
-    # Check that there is at least one image in the image list:
-    if len(images) == 0:
-        raise ValueError(f"Blending requires at least one image!")
-
-    # Verify that all images are of the same shape:
-    for image in images:
-        if images[0].ndim != image.ndim or images[0].shape[:-1] != image.shape[:-1]:
-            raise ValueError("All images in sequence must have the same number of dimensions and shape!")
-
     # verify that the images are 2D RGB(A) images:
-    if images[0].ndim != 3 or not images[0].shape[2] in (3, 4):
-        raise ValueError("Images must be 2D RGB(A) images!")
+    if image.ndim != 3 or not image.shape[2] in (3, 4):
+        raise ValueError("Image must be 2D RGB(A) images!")
 
     # Image shape:
-    height, width = images[0].shape[:-1]
+    height, width = image.shape[:-1]
 
     # Dummy surface just for computing text width and height:
     import cairo
@@ -79,7 +72,7 @@ def insert_time_stamp(images: Union[Generator[Any, Any, None], Sequence[Any]],
     context.set_font_size(font_size)
 
     # longest text to be rendered:
-    end_time = start_time + len(images) * time_interval
+    end_time = start_time + nb_time_points * time_interval
     time_text = number_format.format(end_time)
     text = f"{time_text} {unit}"
 
@@ -150,15 +143,12 @@ def insert_time_stamp(images: Union[Generator[Any, Any, None], Sequence[Any]],
 
         return time_stamp
 
-    # Apply time stamp to each image:
-    images_with_time_stamps = []
-    for tp, image in enumerate(images):
-        time_stamp = generate_time_stamp(tp)
-        # Blend images:
-        image_with_time_stamp = blend_color_images(images=(image, time_stamp),
-                                                   alphas=(1, alpha),
-                                                   modes=('max', mode))
+    # generate time stamp:
+    time_stamp = generate_time_stamp(time_point_index)
 
-        images_with_time_stamps.append(image_with_time_stamp)
+    # Blend images:
+    image_with_time_stamp = blend_color_images(images=(image, time_stamp),
+                                               alphas=(1, alpha),
+                                               modes=('max', mode))
 
-    return images_with_time_stamps
+    return image_with_time_stamp

@@ -22,7 +22,7 @@ def demo_overlay_numpy():
 def demo_overlay_cupy():
     try:
         with CupyBackend():
-            demo_overlay(display=True)
+            demo_overlay(n=64, display=True)
             return True
 
     except ModuleNotFoundError:

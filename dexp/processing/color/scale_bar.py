@@ -56,6 +56,10 @@ def insert_scale_bar(image,
     # Bar length in pixels/voxels:
     bar_length = length_in_unit / pixel_scale
 
+    # Replace um with µm:
+    if unit.strip() == 'um':
+        unit = 'µm'
+
     scale_bar_array = _generate_scale_bar_image(width,
                                                 height,
                                                 translation,

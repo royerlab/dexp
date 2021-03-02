@@ -42,7 +42,11 @@ def demo_time_stamp(n=32, display=True):
         images = list(image.astype(xp.uint8) for image in images)
 
     with asection("Apply time stamp..."):
-        images_with_time_stamp_tr = insert_time_stamp(images=images,
+        images_with_time_stamps = []
+        for tp, image in enumerate(images):
+            image_with_time_stamp = insert_time_stamp(image=image,
+                                                      time_point_index=tp,
+                                                      nb_time_points=len(images),
                                                       start_time=0,
                                                       time_interval=20 / 60.0,
                                                       unit='min',
@@ -50,10 +54,11 @@ def demo_time_stamp(n=32, display=True):
                                                       color=(1, 1, 1, 1),
                                                       alpha=1.0
                                                       )
+            images_with_time_stamps.append(image_with_time_stamp)
 
         # Convert sequences to arrays:
         # images = xp.stack(images)
-        images_with_time_stamp_tr = xp.stack(images_with_time_stamp_tr)
+        images_with_time_stamp_tr = xp.stack(images_with_time_stamps)
 
     if display:
         from napari import Viewer, gui_qt

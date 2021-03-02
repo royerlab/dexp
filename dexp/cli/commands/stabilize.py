@@ -3,7 +3,7 @@ from arbol.arbol import aprint, asection
 
 from dexp.cli.dexp_main import _default_store, _default_codec, _default_clevel
 from dexp.cli.dexp_main import _default_workers_backend
-from dexp.cli.utils import _parse_channels, _get_output_path, _parse_slicing, _parse_devices
+from dexp.cli.utils import _parse_channels, _get_output_path, _parse_slicing
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.stabilize import dataset_stabilize
 
@@ -32,7 +32,7 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num cores // 4. Be careful, starting two many workers is know to cause trouble (unfortunately unclear why!).',
               show_default=True)
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
-@click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
+@click.option('--device', '-d', type=int, default=0, help='Sets the CUDA devices id, e.g. 0,1,2', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def stabilize(input_paths,
               output_path,
@@ -56,14 +56,13 @@ def stabilize(input_paths,
               edgefilter,
               workers,
               workersbackend,
-              devices,
+              device,
               check):
     input_dataset, input_paths = glob_datasets(input_paths)
     output_path = _get_output_path(input_paths[0], output_path, "_stabilized")
 
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
-    devices = _parse_devices(devices)
 
     with asection(f"Stabilizing dataset(s): {input_paths}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "):
         dataset_stabilize(input_dataset,
@@ -88,7 +87,7 @@ def stabilize(input_paths,
                           edge_filter=edgefilter,
                           workers=workers,
                           workers_backend=workersbackend,
-                          devices=devices,
+                          device=device,
                           check=check,
                           debug_output='stabilization'
                           )

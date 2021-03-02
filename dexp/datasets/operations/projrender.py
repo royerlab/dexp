@@ -2,7 +2,7 @@ from os import makedirs
 from os.path import exists, join
 from typing import Any, Tuple, Sequence
 
-from PIL import Image
+import imageio
 from arbol.arbol import aprint, asection
 from joblib import delayed, Parallel
 
@@ -97,9 +97,9 @@ def dataset_projection_rendering(input_dataset: BaseDataset,
                                                                legend_alpha=legendalpha)
 
                                 with asection(f"Saving frame {tp} as: {filename}"):
-                                    projection = Backend.to_numpy(projection)
-                                    image = Image.fromarray(projection)
-                                    image.save(filename)
+                                    imageio.imwrite(filename,
+                                                    Backend.to_numpy(projection),
+                                                    compress_level=0)
 
                 except Exception as error:
                     aprint(error)

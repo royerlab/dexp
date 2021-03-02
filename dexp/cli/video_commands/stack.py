@@ -65,7 +65,8 @@ def stack(input_paths, output_path, orientation, overwrite, workers, workersback
         file_path = join(output_path, pngfile)
         if overwrite or not exists(file_path):
             aprint(f"Writing file: {pngfile} in folder: {output_path}")
-            imageio.imwrite(file_path, stacked_image_array)
+            imageio.imwrite(file_path, stacked_image_array,
+                            compress_level=0)
         else:
             aprint(f"File: {file_path} already exists! use -w option to force overwrite...")
 
