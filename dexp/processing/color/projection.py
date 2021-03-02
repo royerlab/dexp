@@ -27,6 +27,7 @@ def project_image(image,
                   legend_size: float = 0,
                   legend_scale: float = 1,
                   legend_title: str = 'depth (voxels)',
+                  legend_title_color: Tuple[float, float, float, float] = (1, 1, 1, 1),
                   legend_position: Union[str, Tuple[int, int]] = 'bottom_left',
                   legend_alpha: float = 1,
                   internal_dtype=None):
@@ -58,6 +59,7 @@ def project_image(image,
     legend_size: Multiplicative factor to control size of legend. If 0, no legend is generated.
     legend_scale: Float that gives the scale in some unit of each voxel (along the projection direction). Only in color projection modes.
     legend_title: title for the color-coded depth legend.
+    legend_title_color: Legend title color as a tuple of normalised floats: (R, G, B, A)  (values between 0 and 1).
     legend_position: Position of the legend in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
     legend_alpha: Transparency for legend (1 means opaque, 0 means completely transparent)
     internal_dtype : dtype for internal computation
@@ -184,7 +186,10 @@ def project_image(image,
         raise ValueError(f"Invalid projection mode: {mode}")
 
     if rgb_gamma != 1.0:
-        projection **= rgb_gamma
+        if transparency:
+            projection[..., 3] **= rgb_gamma
+        else:
+            projection[..., 0:3] **= rgb_gamma
 
     projection *= 255
     projection = xp.clip(projection, 0, 255)
@@ -200,6 +205,7 @@ def project_image(image,
                                           end=end,
                                           flip=False,
                                           title=legend_title,
+                                          color=legend_title_color,
                                           size=legend_size)
 
         pad_length = int(legend_size * 10)
@@ -209,7 +215,7 @@ def project_image(image,
         projection = insert_color_image(projection,
                                         legend,
                                         translation=legend_position,
-                                        mode='add',
+                                        mode='over',
                                         alpha=legend_alpha)
 
     return projection

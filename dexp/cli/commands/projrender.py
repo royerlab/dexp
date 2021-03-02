@@ -28,10 +28,11 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
 @click.option('--colormap', '-cm', type=str, default=None, help='sets colormap, e.g. viridis, gray, magma, plasma, inferno. Use a rainbow colormap such as turbo, bmy, or rainbow (recommended) for color-coded depth modes. ',
               show_default=True)
 @click.option('--rgbgamma', '-cg', type=float, default=1.0, help='Gamma correction applied to the resulting RGB image. Usefull to brighten image', show_default=True)
-@click.option('--transparency', '-t', is_flag=True, help='Enables transparency output when possible, use only if you are sure of what you are doing.', show_default=True)
+@click.option('--transparency', '-t', is_flag=True, help='Enables transparency output when possible. Good for rendering on white (e.g. on paper).', show_default=True)
 @click.option('--legendsize', '-lsi', type=float, default=1.0, help='Multiplicative factor to control size of legend. If 0, no legend is generated.', show_default=True)
 @click.option('--legendscale', '-lsc', type=float, default=1.0, help='Float that gives the scale in some unit of each voxel (along the projection direction). Only in color projection modes.', show_default=True)
 @click.option('--legendtitle', '-lt', type=str, default='color-coded depth (voxels)', help='Title for the color-coded depth legend.', show_default=True)
+@click.option('--legendtitlecolor', '-ltc', type=str, default='1,1,1,1', help='Legend title color as a tuple of normalised floats: R, G, B, A  (values between 0 and 1).', show_default=True)
 @click.option('--legendposition', '-lp', type=str, default='bottom_left', help='Position of the legend in pixels in natural order: x,y. Can also be a string: bottom_left, bottom_right, top_left, or top_right.', show_default=True)
 @click.option('--legendalpha', '-la', type=float, default=1, help='Transparency for legend (1 means opaque, 0 means completely transparent)', show_default=True)
 @click.option('--step', '-sp', type=int, default=1, help='Process every ‘step’ frames.', show_default=True)
@@ -56,6 +57,7 @@ def projrender(input_paths,
                legendsize,
                legendscale,
                legendtitle,
+               legendtitlecolor,
                legendposition,
                legendalpha,
                step,
@@ -72,6 +74,7 @@ def projrender(input_paths,
     output_path = _get_output_path(input_paths[0], output_path, f"_{mode}_projection")
 
     dlim = None if dlim is None else tuple(float(strvalue) for strvalue in dlim.split(','))
+    legendtitlecolor = tuple(float(v) for v in legendtitlecolor.split(','))
 
     if ',' in legendposition:
         legendposition = tuple(float(strvalue) for strvalue in legendposition.split(','))
@@ -95,6 +98,7 @@ def projrender(input_paths,
                                      legendsize,
                                      legendscale,
                                      legendtitle,
+                                     legendtitlecolor,
                                      legendposition,
                                      legendalpha,
                                      step,

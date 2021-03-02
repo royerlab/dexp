@@ -13,7 +13,9 @@ def insert_color_image(image,
                        border_color: Tuple[float, float, float, float] = None,
                        border_over_image: bool = False,
                        mode: str = 'max',
-                       alpha: float = 1):
+                       alpha: float = 1,
+                       background_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
+                       rgba_value_max: float = 255):
     """
     Inserts an inset image into a base image.
     After scaling the inset image must be smaller than the base image.
@@ -29,6 +31,8 @@ def insert_color_image(image,
     over_image: If True the border is not added but overlayed over the image, the image does not change size.
     mode: blending mode.
     alpha: inset transparency.
+    background_color: background color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.
+    rgba_value_max: Max value for the pixel/voxel values.
 
     Returns
     -------
@@ -58,7 +62,8 @@ def insert_color_image(image,
     inset_image = add_border(inset_image,
                              width=border_width,
                              color=border_color,
-                             over_image=border_over_image
+                             over_image=border_over_image,
+                             rgba_value_max=rgba_value_max,
                              )
 
     # Check that if after scaling, the inset image is smaller than the base image:
@@ -101,6 +106,8 @@ def insert_color_image(image,
     # Blend images together:
     result = blend_color_images(images=(image, padded_inset_image),
                                 alphas=(1, alpha),
-                                modes=('max', mode))
+                                modes=('max', mode),
+                                background_color=background_color,
+                                rgba_value_max=rgba_value_max)
 
     return result

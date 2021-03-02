@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy
 
 from dexp.processing.backends.backend import Backend
@@ -13,6 +15,7 @@ def depth_color_scale_legend(cmap,
                              font_name: str = "Helvetica",
                              font_size: float = 32.0,
                              title: str = '',
+                             color: Tuple[float, float, float, float] = (1, 1, 1, 1),
                              bar_height: float = 0.15,
                              size: float = 1,
                              pixel_resolution: int = 512):
@@ -31,6 +34,7 @@ def depth_color_scale_legend(cmap,
     font_name: Font name.
     font_size: Font size in pixels.
     title: Title for bar legend
+    color: Title color as a tuple of normalised floats: (R, G, B, A)  (values between 0 and 1).
     bar_height: Height of the color bar in relative units [0,1].
     size: Overall size factor (default: 1)
     pixel_resolution: Base resolution in pixels to color at (pixels per unit of scale).
@@ -63,9 +67,9 @@ def depth_color_scale_legend(cmap,
     delta = 1.0 / 255
     for i in range(255):
         # determine color:
-        color = color_ramp[i]
-        color = (float(color[0]), float(color[1]), float(color[2]), 1.0)
-        context.set_source_rgba(*color)
+        _color = color_ramp[i]
+        _color = (float(_color[0]), float(_color[1]), float(_color[2]), 1.0)
+        context.set_source_rgba(*_color)
 
         # set position:
         pos_x = i * delta
@@ -92,7 +96,7 @@ def depth_color_scale_legend(cmap,
     context.set_operator(cairo.OPERATOR_OVER)
 
     # draw text
-    context.set_source_rgba(1, 1, 1, 1)
+    context.set_source_rgba(*color)
     context.select_font_face(font_name,
                              cairo.FONT_SLANT_NORMAL,
                              cairo.FONT_WEIGHT_NORMAL)

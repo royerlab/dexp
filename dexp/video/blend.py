@@ -19,6 +19,7 @@ def blend_color_image_sequences(input_paths: Sequence[str],
                                 alphas: Sequence[float] = None,
                                 scales: Sequence[float] = None,
                                 translations: Union[str, Sequence[Tuple[Union[int, float], ...]]] = None,
+                                background_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
                                 border_width: int = 1,
                                 border_color: Tuple[float, float, float, float] = None,
                                 border_over_image: bool = False,
@@ -37,6 +38,7 @@ def blend_color_image_sequences(input_paths: Sequence[str],
     alphas :  Alpha transparency applied to each input sequence.
     scales : Scaling ('zoom' in scipy parlance) applied to each input sequence.
     translations : Translation applied to each input sequence.
+    background_color:  Background color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.
     border_width: Width of border added to insets.
     border_color: Border color.
     border_over_image: If True the border is not added but overlayed over the image, the image does not change size.
@@ -115,8 +117,9 @@ def blend_color_image_sequences(input_paths: Sequence[str],
                                                      border_width=border_width,
                                                      border_color=border_color,
                                                      border_over_image=border_over_image,
-                                                     alpha=alpha,
                                                      mode=mode,
+                                                     alpha=alpha,
+                                                     background_color=background_color,
                                                      )
 
                 # Output file:

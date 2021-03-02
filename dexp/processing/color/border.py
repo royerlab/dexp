@@ -7,7 +7,7 @@ def add_border(image,
                width: int = 2,
                color: Tuple[float, float, float, float] = None,
                over_image: bool = False,
-               rgb_max_value: int = 255
+               rgba_value_max: float = 255
                ):
     """
     Adds a color border to an image
@@ -16,9 +16,9 @@ def add_border(image,
     ----------
     image: Base image.
     width: Width of border.
-    color: Border color.
+    color: Border color as tuple (R, G, B, A) of normalised floats.
     over_image: If True the border is not added but overlayed over the image, the image does not change size.
-    rgb_max_value: max valiue for rgba values.
+    rgba_value_max: max value for rgba values.
 
     Returns
     -------
@@ -53,7 +53,7 @@ def add_border(image,
     image_with_border = xp.zeros(shape=new_shape, dtype=image.dtype)
 
     for i, channel in enumerate(image):
-        value = int(color[i] * rgb_max_value)
+        value = int(color[i] * rgba_value_max)
         if over_image:
             channel = channel[..., width:-width, width:-width]
 
