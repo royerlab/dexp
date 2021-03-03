@@ -54,7 +54,7 @@ from dexp.video.overlay import add_overlays_image_sequence
 @click.option('--fontname', '-fn', type=str, default='Helvetica',
               help='Font name.',
               show_default=True)
-@click.option('--fontsize', '-fs', type=str, default=32,
+@click.option('--fontsize', '-fs', type=int, default=32,
               help='Font size in pixels.',
               show_default=True)
 @click.option('--mode', '-md', type=str, default='max',
