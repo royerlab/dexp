@@ -54,16 +54,17 @@ from dexp.video.overlay import add_overlays_image_sequence
 @click.option('--fontname', '-fn', type=str, default='Helvetica',
               help='Font name.',
               show_default=True)
-@click.option('--fontsize', '-fs', type=str, default=32,
+@click.option('--fontsize', '-fs', type=int, default=32,
               help='Font size in pixels.',
               show_default=True)
-@click.option('--mode', '-md', type=str, default=32,
+@click.option('--mode', '-md', type=str, default='max',
               help='Blending modes. Either one for all images, or one per image in the form of a sequence.'
                    ' Blending modes are: mean, add, satadd, max, alpha.',
               show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='Force overwrite of output images.', show_default=True)
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, set to -1 for maximum number of workers', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
+@click.option('--device', '-d', type=int, default=0, help='Sets the CUDA devices id, e.g. 0,1,2', show_default=True)  #
 def overlay(input_path,
             output_path,
             scalebar,
@@ -85,7 +86,8 @@ def overlay(input_path,
             mode,
             overwrite,
             workers,
-            workersbackend):
+            workersbackend,
+            device):
     # Default output path:
     if output_path is None:
         basename = input_path + '_overlay'
@@ -100,7 +102,8 @@ def overlay(input_path,
         timepos = tuple(float(v) for v in timepos.split(','))
 
     # Parse color:
-    color = tuple(float(v) for v in color.split(','))
+    if color is not None and ',' in color:
+        color = tuple(float(v) for v in color.split(','))
 
     add_overlays_image_sequence(input_path=input_path,
                                 output_path=output_path,
@@ -123,4 +126,5 @@ def overlay(input_path,
                                 mode=mode,
                                 overwrite=overwrite,
                                 workers=workers,
-                                workersbackend=workersbackend)
+                                workersbackend=workersbackend,
+                                device=device)

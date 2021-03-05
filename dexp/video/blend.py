@@ -7,6 +7,8 @@ import imageio
 from arbol.arbol import asection, aprint
 from joblib import Parallel, delayed
 
+from dexp.processing.backends.backend import Backend
+from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.insert import insert_color_image
 
@@ -17,12 +19,14 @@ def blend_color_image_sequences(input_paths: Sequence[str],
                                 alphas: Sequence[float] = None,
                                 scales: Sequence[float] = None,
                                 translations: Union[str, Sequence[Tuple[Union[int, float], ...]]] = None,
+                                background_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
                                 border_width: int = 1,
                                 border_color: Tuple[float, float, float, float] = None,
                                 border_over_image: bool = False,
                                 overwrite: bool = False,
                                 workers: int = -1,
-                                workersbackend: str = 'threading'):
+                                workersbackend: str = 'threading',
+                                device: int = 0):
     """
     Blends several RGB(A) image sequences together
 
@@ -34,12 +38,14 @@ def blend_color_image_sequences(input_paths: Sequence[str],
     alphas :  Alpha transparency applied to each input sequence.
     scales : Scaling ('zoom' in scipy parlance) applied to each input sequence.
     translations : Translation applied to each input sequence.
+    background_color:  Background color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.
     border_width: Width of border added to insets.
     border_color: Border color.
     border_over_image: If True the border is not added but overlayed over the image, the image does not change size.
     overwrite : If True the output files are overwritten
     workers : Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)
     workersbackend : What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread)
+    device: Device on  which to run the overlay computation (if a non-CPU device is available).
     """
 
     # ensure folder exists:
@@ -77,51 +83,62 @@ def blend_color_image_sequences(input_paths: Sequence[str],
     image_sequences = _image_sequences
     nb_timepoints = min_length
 
-    def _process(tp: int):
+    with BestBackend(device, exclusive=True, enable_unified_memory=True):
 
-        with asection(f'processing time point: {tp}'):
+        current_backend = Backend.current()
 
-            # collect all images that need to be blended:
-            image_paths = list(image_sequence[tp] for image_sequence in image_sequences)
+        def _process(tp: int):
 
-            # Load images:
-            images = list(imageio.imread(image_path) for image_path in image_paths)
+            with asection(f'processing time point: {tp}'):
 
-            if scales is None and translations is None:
-                # Blend images:
-                blended = blend_color_images(images=images,
-                                             alphas=alphas,
-                                             modes=modes)
-            else:
-                # Insert images:
-                aprint("Note: the first mode, scale, translation and alphas are ignored")
-                blended = images[0]
-                for inset_image, mode, scale, alpha, trans in zip(images[1:], modes[1:], scales[1:], alphas[1:], translations[1:]):
-                    blended = insert_color_image(image=blended,
-                                                 inset_image=inset_image,
-                                                 scale=scale,
-                                                 translation=trans,
-                                                 border_width=border_width,
-                                                 border_color=border_color,
-                                                 border_over_image=border_over_image,
-                                                 alpha=alpha,
-                                                 mode=mode,
-                                                 )
+                # We set the backend of this thread to be the same as its parent thread:
+                Backend.set(current_backend)
 
-            # Output file:
-            filename = f"frame_{tp:05}.png"
-            filepath = join(output_path, filename)
+                # collect all images that need to be blended:
+                image_paths = list(image_sequence[tp] for image_sequence in image_sequences)
 
-            # Write file:
-            if overwrite or not exists(filepath):
-                aprint(f"Writing file: {filename} in folder: {output_path}")
-                imageio.imwrite(filepath, blended)
-            else:
-                aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
+                # Load images:
+                images = list(imageio.imread(image_path) for image_path in image_paths)
 
-    with asection(f"Blending  {input_paths}, saving to {output_path}, for a total of {nb_timepoints} time points"):
-        if workers <= 0:
-            workers = os.cpu_count() // 2
+                if scales is None and translations is None:
+                    # Blend images:
+                    blended = blend_color_images(images=images,
+                                                 alphas=alphas,
+                                                 modes=modes)
+                else:
+                    # Insert images:
+                    aprint("Note: the first mode, scale, translation and alphas are ignored")
+                    blended = images[0]
+                    for inset_image, mode, scale, alpha, trans in zip(images[1:], modes[1:], scales[1:], alphas[1:], translations[1:]):
+                        blended = insert_color_image(image=blended,
+                                                     inset_image=inset_image,
+                                                     scale=scale,
+                                                     translation=trans,
+                                                     border_width=border_width,
+                                                     border_color=border_color,
+                                                     border_over_image=border_over_image,
+                                                     mode=mode,
+                                                     alpha=alpha,
+                                                     background_color=background_color,
+                                                     )
 
-        Parallel(n_jobs=workers, backend=workersbackend)(delayed(_process)(tp) for tp in range(nb_timepoints))
-        aprint(f"Done!")
+                # Output file:
+                filename = f"frame_{tp:05}.png"
+                filepath = join(output_path, filename)
+
+                # Write file:
+                if overwrite or not exists(filepath):
+                    aprint(f"Writing file: {filename} in folder: {output_path}")
+                    imageio.imwrite(filepath,
+                                    Backend.to_numpy(blended),
+                                    compress_level=0)
+                else:
+                    aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
+
+        with asection(f"Blending  {input_paths}, saving to {output_path}, for a total of {nb_timepoints} time points"):
+            if workers <= 0:
+                workers = os.cpu_count() // 2
+
+            Parallel(n_jobs=workers, backend=workersbackend)(delayed(_process)(tp) for tp in range(nb_timepoints))
+
+    aprint(f"Done!")

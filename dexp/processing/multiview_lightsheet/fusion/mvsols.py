@@ -253,7 +253,7 @@ def msols_fuse_1C2L(C0L0, C0L1,
                                                     max_residual_shift=registration_max_residual_shift,
                                                     edge_filter=registration_edge_filter,
                                                     registration_method=registration_method,
-                                                    save_memory=True)
+                                                    save_memory=huge_dataset_mode)
 
             Backend.current().clear_memory_pool()
             aprint(f"Computed registration model: {new_model}, overall confidence: {new_model.overall_confidence()}")
@@ -281,7 +281,6 @@ def msols_fuse_1C2L(C0L0, C0L1,
             C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
                                                    zero_level=0 if dehaze_before_fusion else zero_level,
                                                    correction_ratio=equalisation_ratios[0],
-
                                                    copy=False)
             equalisation_ratios = (ratio,)
             aprint(f"Equalisation ratio: {ratio}")

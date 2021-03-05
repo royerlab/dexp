@@ -37,7 +37,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
                       integral: bool = True,
                       workers: int = -1,
                       workers_backend: str = 'threading',
-                      devices: Sequence[int] = (0,),
+                      device: int = 0,
                       check: bool = True,
                       stop_at_exception: bool = True,
                       debug_output=None):
@@ -71,7 +71,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
     integral: Set to True to only allow integral translations, False to allow subpixel accurate translations (induces blur!).
     workers: number of workers, if -1 then the number of workers == number of cores or devices
     workers_backend: What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread)
-    devices: Sets the CUDA devices id, e.g. 0,1,2 or ‘all’
+    device: Sets the CUDA devices id, e.g. 0,1,2
     check: Checking integrity of written file.
     stop_at_exception: True to stop as soon as there is an exception during processing.
     """
@@ -107,7 +107,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
             projections.append((*proj_axis, projection))
 
         # Perform stabilisation:
-        with BestBackend(devices[0], enable_unified_memory=True):
+        with BestBackend(device, enable_unified_memory=True):
             model = image_stabilisation_proj_(projections=projections,
                                               max_range=max_range,
                                               min_confidence=min_confidence,
@@ -138,7 +138,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
                                    clevel=compression_level)
 
         # definition of function that processes each time point:
-        def process(tp, device):
+        def process(tp):
 
             try:
                 with asection(f"Processing time point: {tp}/{nb_timepoints} ."):
@@ -178,10 +178,10 @@ def dataset_stabilize(input_dataset: BaseDataset,
 
         # start jobs:
         if workers > 1:
-            Parallel(n_jobs=workers, backend=workers_backend)(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, nb_timepoints))
+            Parallel(n_jobs=workers, backend=workers_backend)(delayed(process)(tp) for tp in range(0, nb_timepoints))
         else:
             for tp in range(0, nb_timepoints):
-                process(tp, devices[0])
+                process(tp)
 
     # printout output dataset info:
     aprint(output_dataset.info())

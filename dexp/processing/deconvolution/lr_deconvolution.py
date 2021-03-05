@@ -66,7 +66,7 @@ def lucy_richardson_deconvolution(image,
         raise ValueError("The image and PSF must have same number of dimensions!")
 
     if internal_dtype is None:
-        internal_dtype = image.dtype
+        internal_dtype = numpy.float32
 
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32

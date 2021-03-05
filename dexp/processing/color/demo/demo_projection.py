@@ -95,6 +95,16 @@ def demo_projection(length_xy=120, display=True):
                                                     legend_size=0.2
                                                     )
 
+    with asection("color_max_projection_transparent"):
+        color_max_projection_transparent = project_image(image,
+                                                         mode='colormax',
+                                                         attenuation=0.1,
+                                                         cmap='rainbow',
+                                                         dlim=(0.3, 0.7),
+                                                         legend_size=0.2,
+                                                         transparency=True,
+                                                         )
+
     color_legend = depth_color_scale_legend(cmap='rainbow',
                                             start=0,
                                             end=100,
@@ -118,6 +128,7 @@ def demo_projection(length_xy=120, display=True):
             viewer.add_image(_c(color_max_projection_bottom), name='color_max_projection_bottom', rgb=True)
             viewer.add_image(_c(max_color_projection), name='max_color_projection', rgb=True)
             viewer.add_image(_c(max_color_projection_bottom), name='max_color_projection_bottom', rgb=True)
+            viewer.add_image(_c(color_max_projection_transparent), name='color_max_projection_transparent', rgb=True)
             viewer.grid.enabled = True
 
 

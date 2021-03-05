@@ -45,9 +45,9 @@ def demo_blend(n=8, alphas=(1, 1, 0.9), scales=None, translations=None, display=
     sp = Backend.get_sp_module()
 
     with asection("Prepare dataset..."):
-        image_u = logo()
-        image_v = astronaut()[0:500, 0:500]
-        image_w = gray2rgba(camera()[0:500, 0:500])
+        image_u = Backend.to_backend(logo())
+        image_v = Backend.to_backend(astronaut()[0:500, 0:500])
+        image_w = Backend.to_backend(gray2rgba(camera()[0:500, 0:500]))
 
         # modulate alpha channel:
         image_u[:, 0:256, 3] = 128
@@ -77,18 +77,18 @@ def demo_blend(n=8, alphas=(1, 1, 0.9), scales=None, translations=None, display=
             # Save images from first sequence:
             for i, image_u in enumerate(images_u):
                 from PIL import Image
-                im = Image.fromarray(image_u)
+                im = Image.fromarray(Backend.to_numpy(image_u))
                 im.save(join(folder_u, f"frame_{i:05}.png"))
 
             # Save images from second sequence:
             for i, image_v in enumerate(images_v):
                 from PIL import Image
-                im = Image.fromarray(image_v)
+                im = Image.fromarray(Backend.to_numpy(image_v))
                 im.save(join(folder_v, f"frame_{i:05}.png"))
 
             # Create png files for image w image_w
             from PIL import Image
-            im = Image.fromarray(image_w)
+            im = Image.fromarray(Backend.to_numpy(image_w))
             path_w = join(tmpdir, f"someimage.png")
             im.save(path_w)
 

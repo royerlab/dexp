@@ -33,7 +33,7 @@ def register_warp_multiscale_nd(image_a,
     margin_ratios : ratio that determines the margin size relative to the chunk size.
     min_chunk : minimal chunk size
     min_margin : minimum margin size
-    save_memory : Moves data out of device memory as soon as ppossible during iterations to avoid memory overflows for very lareg images, incurs a largely negligible performance cost.
+    save_memory : Moves data out of device memory as soon as possible during iterations to avoid memory overflows for very large images, incurs a largely negligible performance cost.
     force_numpy: Forces output model to be allocated with numpy arrays.
     all additional kwargs are passed to register_warp_nd
 

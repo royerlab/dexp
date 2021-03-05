@@ -5,33 +5,29 @@ from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.border import add_border
 
 
-def insert_color_image(image,
-                       inset_image,
-                       scale: Union[float, Tuple[float, ...]] = 1,
-                       translation: Union[str, Sequence[Tuple[Union[int, float], ...]]] = None,
-                       border_width: int = 0,
-                       border_color: Tuple[float, float, float, float] = None,
-                       border_over_image: bool = False,
-                       mode: str = 'max',
-                       alpha: float = 1,
-                       background_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
+def resize_color_image(image,
+                       new_size: Tuple[int, int],
+                       mode: str = 'canvas',
+                       placement: str = 'center',
+                       pad_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
+                       preserve_aspect_ratio : bool = True,
                        rgba_value_max: float = 255):
     """
-    Inserts an inset image into a base image.
-    After scaling the inset image must be smaller than the base image.
+    Resizes an image to a given new size.
+    There are two resizing modes: 'canvas' resizes the canvas around the ianmge without touching the original pixels, paddding or cropping is done as needed.
+    In 'image' mode, the actual image is resized. Setting preserve_aspect_ratio to True preserves the aspect ratio,
+    and a padding color is used where needed.
+
+
 
     Parameters
     ----------
-    image: Base image.
-    inset_image: Inset image to place in base image.
-    scale: scale factor for inset image -- scaling happens before translation.
-    translation: positions of the insets in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
-    width: Width of border added to insets.
-    color: Border color.
-    over_image: If True the border is not added but overlayed over the image, the image does not change size.
-    mode: blending mode.
-    alpha: inset transparency.
-    background_color: background color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.
+    image: image to resize.
+    new_size: New image size as a tuple (nw, nh) of integers.
+    mode: Two modes are available: 'image' mode resizes the image itself, possibly preserving the aspect ratio, 'canvas' resizes the image canvas, padding or cropping as necessary.
+    placement: places the image within the canvas
+    pad_color: Padding color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.
+    preserve_aspect_ratio: Border color.
     rgba_value_max: Max value for the pixel/voxel values.
 
     Returns
@@ -45,7 +41,8 @@ def insert_color_image(image,
 
     # Move to backend:
     image = Backend.to_backend(image)
-    inset_image = Backend.to_backend(inset_image)
+
+    
 
     # Normalise scale:
     if type(scale) == int or type(scale) == float:

@@ -22,7 +22,7 @@ def demo_overlay_numpy():
 def demo_overlay_cupy():
     try:
         with CupyBackend():
-            demo_overlay(display=True)
+            demo_overlay(n=64, display=True)
             return True
 
     except ModuleNotFoundError:
@@ -38,7 +38,7 @@ def demo_overlay(n=16, display=True):
         image = gray2rgba(camera())
 
         # generate reference 'ground truth' timelapse
-        images = (image.copy() for _ in range(n))
+        images = (Backend.to_backend(image.copy()) for _ in range(n))
 
         # modify each image:
         images = (sp.ndimage.shift(image, shift=(random.uniform(-1, 2), random.uniform(-2, 1), 0)) for image in images)
@@ -57,7 +57,7 @@ def demo_overlay(n=16, display=True):
             # Save images from first sequence:
             for i, image_u in enumerate(images):
                 from PIL import Image
-                im = Image.fromarray(image_u)
+                im = Image.fromarray(Backend.to_numpy(image_u))
                 im.save(join(input_folder, f"frame_{i:05}.png"))
 
         with asection("Overlay..."):

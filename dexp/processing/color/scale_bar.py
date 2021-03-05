@@ -44,6 +44,9 @@ def insert_scale_bar(image,
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
+    # Move to backend:
+    image = Backend.to_backend(image)
+
     if color is None:
         color = (1, 1, 1, 1)
 
@@ -52,6 +55,10 @@ def insert_scale_bar(image,
 
     # Bar length in pixels/voxels:
     bar_length = length_in_unit / pixel_scale
+
+    # Replace um with µm:
+    if unit.strip() == 'um':
+        unit = 'µm'
 
     scale_bar_array = _generate_scale_bar_image(width,
                                                 height,

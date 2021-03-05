@@ -46,6 +46,12 @@ class Backend(ABC):
                 return NumpyBackend()
 
     @staticmethod
+    def set(backend: 'Backend'):
+        if not hasattr(Backend._local, 'backend_stack'):
+            Backend._local.backend_stack = []
+        Backend._local.backend_stack.append(backend)
+
+    @staticmethod
     def to_numpy(array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         return Backend.current()._to_numpy(array, dtype=dtype, force_copy=force_copy)
 

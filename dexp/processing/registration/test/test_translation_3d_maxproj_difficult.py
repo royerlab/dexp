@@ -11,7 +11,7 @@ def test_register_translation_3d_maxproj_diff_numpy():
     with NumpyBackend():
         register_translation_3d_maxproj_diff(register_translation_2d_dexp)
 
-    # Lesson: skimage registration code is as robust!
+    # Lesson: skimage registration code is not as robust!
     # register_translation_nD(backend, register_translation_2d_skimage)
 
 
@@ -20,7 +20,7 @@ def test_register_translation_3d_maxproj_diff_cupy():
         with CupyBackend():
             register_translation_3d_maxproj_diff(register_translation_2d_dexp)
 
-        # Lesson: skimage registration code is as robust!
+        # Lesson: skimage registration code is not as robust!
         # register_translation_nD(backend, register_translation_2d_skimage)
 
     except ModuleNotFoundError:

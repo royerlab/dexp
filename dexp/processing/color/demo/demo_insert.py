@@ -25,8 +25,8 @@ def demo_insert_cupy():
 def demo_insert(display=True):
     xp = Backend.get_xp_module()
 
-    image_u = astronaut()
-    image_v = logo()[::4, ::4, 0:3]
+    image_u = Backend.to_backend(astronaut())
+    image_v = Backend.to_backend(logo()[::4, ::4, 0:3])
 
     with asection("insert_bl"):
         insert_bl = insert_color_image(image=image_u,
