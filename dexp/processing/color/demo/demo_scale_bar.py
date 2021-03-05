@@ -32,14 +32,14 @@ def demo_scale_bar(display=True):
 
     with asection("Apply scale bar..."):
         image_with_scale_bar_br, _ = insert_scale_bar(image,
-                                                      length_in_unit=100,
+                                                      length_in_unit=50,
                                                       pixel_scale=0.406,
                                                       translation='bottom_right',
                                                       color=(1, 1, 1, 1),
                                                       )
     with asection("Apply scale bar..."):
         image_with_scale_bar_tl, _ = insert_scale_bar(image,
-                                                      length_in_unit=100,
+                                                      length_in_unit=50,
                                                       pixel_scale=0.406,
                                                       translation='top_left',
                                                       color=(1, 1, 1, 1),
@@ -48,7 +48,7 @@ def demo_scale_bar(display=True):
 
     with asection("Apply scale bar..."):
         image_with_scale_bar_tr, _ = insert_scale_bar(image,
-                                                      length_in_unit=100,
+                                                      length_in_unit=50,
                                                       pixel_scale=0.406,
                                                       translation='top_right',
                                                       color=(1, 0.9, 1, 1),
@@ -56,7 +56,7 @@ def demo_scale_bar(display=True):
                                                       )
     with asection("Apply scale bar..."):
         image_with_scale_bar_bl, _ = insert_scale_bar(image,
-                                                      length_in_unit=100,
+                                                      length_in_unit=50,
                                                       pixel_scale=0.406,
                                                       translation='bottom_left',
                                                       color=(1, 0.9, 1, 1),
