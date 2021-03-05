@@ -1,10 +1,10 @@
 import numpy
-from cairo._cairo import ImageSurface
+
 
 from dexp.processing.backends.backend import Backend
 
 
-def get_array_for_cairo_surface(surface: ImageSurface):
+def get_array_for_cairo_surface(surface: 'ImageSurface'):
     """
     Returns an array given a ImageSurface from PyCairo.
 
@@ -17,6 +17,9 @@ def get_array_for_cairo_surface(surface: ImageSurface):
     RGBA numpy array of shape: (...,4)
 
     """
+    from cairo._cairo import ImageSurface
+    surface: ImageSurface
+
 
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
