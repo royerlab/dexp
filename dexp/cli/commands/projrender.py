@@ -9,9 +9,9 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
 
 @click.command()
 @click.argument('input_paths', nargs=-1)
-@click.option('--output_path', '-o', default=None, help='Output folder to store rendered PNGs. Default is: frames_<channel_name>')
-@click.option('--channels', '-c', default=None, help='list of channels to color, all channels when ommited.')
-@click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
+@click.option('--output_path', '-o', type=str, default=None, help='Output folder to store rendered PNGs. Default is: frames_<channel_name>')
+@click.option('--channels', '-c', type=str, default=None, help='list of channels to color, all channels when ommited.')
+@click.option('--slicing', '-s', type=str, default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
 @click.option('--axis', '-ax', type=int, default=0, help='Sets the projection axis: 0->Z, 1->Y, 2->X ', show_default=True)  # , help='dataset slice'
 @click.option('--dir', '-di', type=int, default=-1, help='Sets the projection direction: -1 -> top to bottom, +1 -> bottom to top.', show_default=True)  # , help='dataset slice'
