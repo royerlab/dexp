@@ -13,7 +13,7 @@ from dexp.cli.dexp_main import _default_workers_backend
 
 @click.command()
 @click.argument('input_paths', nargs=-1)
-@click.option('--output_path', '-o', type=str, default=None, help='Output folder for blended frames.')
+@click.option('--output_path', '-o', type=str, default=None, help='Output folder for stacked frames.')
 @click.option('--orientation', '-r', type=str, default='horiz', help='Stitching mode: horiz, vert', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='Force overwrite of output images.', show_default=True)
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, set to -1 for maximum number of workers', show_default=True)  #

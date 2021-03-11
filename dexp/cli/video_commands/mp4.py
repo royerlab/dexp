@@ -27,7 +27,7 @@ from arbol.arbol import aprint, asection
               help='Sets the quality of the video by modulating the bit rate. Set to a higher value for higher quality, or lower (negative ok) value for lower quality. Means different things for different codecs.',
               show_default=True)
 @click.option('--width', '-wi', type=int, default=0,
-              help='Video frame width, recomended values: 1280(HD720), 1920(HD1080), 2048(2K), 3840(UHD-1), 4096(4K), 7680(8K). If zero then original size preserved, '
+              help='Video frame width, recommended values: 1280(HD720), 1920(HD1080), 2048(2K), 3840(UHD-1), 4096(4K), 7680(8K). If zero then original size preserved, '
                    'if -1 the best fit is found while allowing some downscaling. Height is automatically determined to preserve aspect ratio,'
                    ' and is forced to be a multiple of 32.',
               show_default=True)
@@ -61,7 +61,7 @@ def mp4(input_path,
             scale_option = f'-vf scale={width}:-8:flags=bicubic' if width > 0 else ''
             # black_background_filter = f'-filter_complex "{scale_option};color=black,format={pixelformat}[c];[c][0]scale2ref[c][i];[c][i]overlay=format=auto:shortest=1,setsar=1"'
 
-            # some codec wizardry to be able to effectively modulate
+            # some codec wizardry to be able to effectively modulate quality
             quality = f'-rc vbr -cq {26 - quality} -qmin {26 - quality} -qmax {26 - quality} -b:v 0 ' if 'nvenc' in codec else f'-crf {21 - quality}'
 
             ffmpeg_command = f"ffmpeg -hwaccel auto -framerate {framerate} -start_number 0 -i '{input_path}/{prefix}%0{leading}d.{extension}'  " \

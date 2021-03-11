@@ -136,8 +136,8 @@ def blend_color_image_sequences(input_paths: Sequence[str],
                     aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
 
         with asection(f"Blending  {input_paths}, saving to {output_path}, for a total of {nb_timepoints} time points"):
-            if workers <= 0:
-                workers = os.cpu_count() // 2
+            if workers == -1:
+                workers = min(10, os.cpu_count() // 2)
 
             Parallel(n_jobs=workers, backend=workersbackend)(delayed(_process)(tp) for tp in range(nb_timepoints))
 

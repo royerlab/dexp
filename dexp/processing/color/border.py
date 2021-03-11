@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union
 
 from dexp.processing.backends.backend import Backend
 
@@ -45,11 +45,9 @@ def add_border(image,
 
     shape = image.shape
 
-    # Padding
-    pad_width = ((width, width), (width, width))
-
     # New image with border:
     new_shape = shape if over_image else (shape[0],) + tuple(s + 2 * width for s in shape[1:])
+
     image_with_border = xp.zeros(shape=new_shape, dtype=image.dtype)
 
     for i, channel in enumerate(image):
@@ -58,10 +56,10 @@ def add_border(image,
             channel = channel[..., width:-width, width:-width]
 
         padded_channel = xp.pad(channel,
-                                pad_width=pad_width,
+                                pad_width=width,
                                 mode='constant',
                                 constant_values=value)
-        image_with_border[i,] = padded_channel
+        image_with_border[i,...] = padded_channel
 
     image_with_border = image_with_border.transpose(1, 2, 0)
 

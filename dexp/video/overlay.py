@@ -78,8 +78,8 @@ def add_overlays_image_sequence(input_path: str,
     else:
         raise ValueError("Input path must be folder containing at least one image")
 
-    if workers <= 0:
-        workers = os.cpu_count() // 2
+    if workers == -1:
+        workers = min(8, os.cpu_count() // 2)
 
     # Number of timepoints:
     nb_timepoints = len(png_file_paths)

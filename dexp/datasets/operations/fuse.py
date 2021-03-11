@@ -42,6 +42,7 @@ def dataset_fuse(dataset,
                  devices,
                  check,
                  stop_at_exception=True):
+
     views = tuple(dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for channel in channels)
 
     with asection(f"views:"):

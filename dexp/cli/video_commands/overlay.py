@@ -6,7 +6,7 @@ from dexp.video.overlay import add_overlays_image_sequence
 
 @click.command()
 @click.argument('input_path', type=str)
-@click.option('--output_path', '-o', type=str, default=None, help='Output folder for blended frames.')
+@click.option('--output_path', '-o', type=str, default=None, help='Output folder for overlayed frames.')
 @click.option('--scalebar/--no-scalebar', '-sb/-nsb', default=True,
               help='True to insert scale bar.',
               show_default=True)
