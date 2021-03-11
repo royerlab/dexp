@@ -16,7 +16,7 @@ from dexp.video.blend import blend_color_image_sequences
 @click.option('--scales', '-s', type=str, default=None,
               help='List of scales ‘s’ for each input image, starting with the second one (first image has always a scale of 1). Scaled images must be of same dimension or smaller than the first images. ',
               show_default=True)
-@click.option('--translations', '-t', type=str, default=None, help='List of translations ‘x0,y0;x1,y1;...’ for each input image, starting with the second one (first image is always at 0,0). ',
+@click.option('--translations', '-t', type=str, default=None, help='List of translations ‘x0,y0*x1,y1;...’ for each input image, starting with the second one (first image is always at 0,0). ',
               show_default=True)
 @click.option('--borderwidth', '-bw', type=int, default=0, help='Border width added to insets. ', show_default=True)
 @click.option('--bordercolor', '-bc', type=str, default='1,1,1,1', help='Border color in RGBA format. For example: 1,1,1,1 is white.', show_default=True)
@@ -61,7 +61,7 @@ def blend(input_paths,
     if translations is None:
         translations = ((0, 0),) * number_of_inputs
     else:
-        translations = tuple(tuple(float(v) for v in xy.split(',')) for xy in translations.split(';'))
+        translations = tuple(tuple(float(v) for v in xy.split(',')) for xy in translations.split('*'))
 
     bordercolor = tuple(float(v) for v in bordercolor.split(','))
 
