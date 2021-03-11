@@ -65,8 +65,8 @@ from dexp.video.overlay import add_overlays_image_sequence
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, set to -1 for maximum number of workers', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--device', '-d', type=int, default=0, help='Sets the CUDA devices id, e.g. 0,1,2', show_default=True)  #
-def overlay(input_path,
-            output_path,
+def overlay(input_path: str,
+            output_path: str,
             scalebar,
             barlength,
             barscale,
@@ -90,8 +90,9 @@ def overlay(input_path,
             device):
     # Default output path:
     if output_path is None:
-        basename = input_path + '_overlay'
-        output_path = 'frames_' + basename
+        output_path = input_path + '_overlay'
+    elif output_path.starts_with('_'):
+        output_path = input_path + output_path
 
     # Parse bar position:
     if ',' in barpos:

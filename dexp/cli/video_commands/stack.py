@@ -23,8 +23,9 @@ def stack(input_paths, output_path, orientation, overwrite, workers, workersback
         workers = os.cpu_count() // 2
 
     if output_path is None:
-        basename = '_'.join([os.path.basename(os.path.normpath(p)).replace('frames_', '') for p in input_paths])
-        output_path = 'frames_' + basename
+        output_path = input_paths[0] + '_stack'
+    elif output_path.starts_with('_'):
+        output_path = input_paths[0] + output_path
 
     os.makedirs(output_path, exist_ok=True)
 
