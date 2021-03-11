@@ -1,5 +1,7 @@
 from typing import Union, Tuple, Sequence
 
+from arbol import aprint
+
 from dexp.processing.backends.backend import Backend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.border import add_border
@@ -56,15 +58,19 @@ def insert_color_image(image,
         scale = scale + (1,)
 
     # Scale inset image:
-    inset_image = sp.ndimage.zoom(inset_image, zoom=scale)
+    if any(s != 1 for s in scale):
+        aprint(f"Scaling image by: {scale}")
+        inset_image = sp.ndimage.zoom(inset_image, zoom=scale)
 
     # Add border:
-    inset_image = add_border(inset_image,
-                             width=border_width,
-                             color=border_color,
-                             over_image=border_over_image,
-                             rgba_value_max=rgba_value_max,
-                             )
+    if border_width != 0:
+        aprint(f"Adding border of width: {border_width}, and color: {border_color}")
+        inset_image = add_border(inset_image,
+                                 width=border_width,
+                                 color=border_color,
+                                 over_image=border_over_image,
+                                 rgba_value_max=rgba_value_max,
+                                 )
 
     # Check that if after scaling, the inset image is smaller than the base image:
     if any(u > v for u, v in zip(inset_image.shape, image.shape)):

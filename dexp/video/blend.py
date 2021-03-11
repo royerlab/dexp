@@ -32,10 +32,10 @@ def blend_color_image_sequences(input_paths: Sequence[str],
 
     Parameters
     ----------
-    input_paths : Paths to folders containing images in some (lexicographic) order, or to single images (that will be broacasted). If of different lengths the result's length is the shortest of the input sequences.
+    input_paths : Paths to folders containing images in some (lexicographic) order, or to single images (that will be broadcasted). If of different lengths the result's length is the shortest of the input sequences.
     output_path : Path to save the blended images.
     modes : Blending modes for each input sequence.
-    alphas :  Alpha transparency applied to each input sequence.
+    alphas : Alpha transparency applied to each input sequence.
     scales : Scaling ('zoom' in scipy parlance) applied to each input sequence.
     translations : Translation applied to each input sequence.
     background_color:  Background color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.
@@ -85,14 +85,13 @@ def blend_color_image_sequences(input_paths: Sequence[str],
 
     with BestBackend(device, exclusive=True, enable_unified_memory=True):
 
-        current_backend = Backend.current()
-
-        def _process(tp: int):
+        def _process(backend: Backend, tp: int):
 
             with asection(f'processing time point: {tp}'):
 
                 # We set the backend of this thread to be the same as its parent thread:
-                Backend.set(current_backend)
+                if backend is not None:
+                    Backend.set(backend)
 
                 # collect all images that need to be blended:
                 image_paths = list(image_sequence[tp] for image_sequence in image_sequences)
@@ -104,12 +103,22 @@ def blend_color_image_sequences(input_paths: Sequence[str],
                     # Blend images:
                     blended = blend_color_images(images=images,
                                                  alphas=alphas,
-                                                 modes=modes)
+                                                 modes=modes,
+                                                 background_color=background_color)
                 else:
-                    # Insert images:
-                    aprint("Note: the first mode, scale, translation and alphas are ignored")
-                    blended = images[0]
-                    for inset_image, mode, scale, alpha, trans in zip(images[1:], modes[1:], scales[1:], alphas[1:], translations[1:]):
+                    xp = Backend.get_xp_module()
+                    sp = Backend.get_sp_module()
+
+                    # Prepare background image:
+                    blended = xp.zeros(shape=images[0].shape,
+                                       dtype=images[0].dtype)
+
+                    # Fill with background color:
+                    for channel in range(4):
+                        blended[:, channel] = background_color[channel]
+
+                    # Insert each image at a different location with different blending
+                    for inset_image, mode, scale, alpha, trans in zip(images, modes, scales, alphas, translations):
                         blended = insert_color_image(image=blended,
                                                      inset_image=inset_image,
                                                      scale=scale,
@@ -119,7 +128,7 @@ def blend_color_image_sequences(input_paths: Sequence[str],
                                                      border_over_image=border_over_image,
                                                      mode=mode,
                                                      alpha=alpha,
-                                                     background_color=background_color,
+                                                     background_color=(0, 0, 0, 0),
                                                      )
 
                 # Output file:
@@ -139,6 +148,12 @@ def blend_color_image_sequences(input_paths: Sequence[str],
             if workers <= 0:
                 workers = os.cpu_count() // 2
 
-            Parallel(n_jobs=workers, backend=workersbackend)(delayed(_process)(tp) for tp in range(nb_timepoints))
+            backend = Backend.current()
+
+            if workers > 1:
+                Parallel(n_jobs=workers, backend=workersbackend)(delayed(_process)(backend, tp) for tp in range(nb_timepoints))
+            else:
+                for tp in range(nb_timepoints):
+                    _process(None, tp)
 
     aprint(f"Done!")

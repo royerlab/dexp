@@ -1,4 +1,4 @@
-from typing import Union, Tuple, Sequence
+from typing import Tuple
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.color.blend import blend_color_images
@@ -10,7 +10,7 @@ def resize_color_image(image,
                        mode: str = 'canvas',
                        placement: str = 'center',
                        pad_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
-                       preserve_aspect_ratio : bool = True,
+                       preserve_aspect_ratio: bool = True,
                        rgba_value_max: float = 255):
     """
     Resizes an image to a given new size.
@@ -41,8 +41,6 @@ def resize_color_image(image,
 
     # Move to backend:
     image = Backend.to_backend(image)
-
-    
 
     # Normalise scale:
     if type(scale) == int or type(scale) == float:

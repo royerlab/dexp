@@ -1,9 +1,6 @@
-import os
-
 import click
 from arbol.arbol import aprint
 
-from dexp.cli.dexp_main import _default_workers_backend
 from dexp.video.blend import blend_color_image_sequences
 
 
@@ -21,12 +18,12 @@ from dexp.video.blend import blend_color_image_sequences
               show_default=True)
 @click.option('--translations', '-t', type=str, default=None, help='List of translations ‘x0,y0;x1,y1;...’ for each input image, starting with the second one (first image is always at 0,0). ',
               show_default=True)
-@click.option('--borderwidth', '-bw', type=int, default=1, help='Border width added to insets. ', show_default=True)
+@click.option('--borderwidth', '-bw', type=int, default=0, help='Border width added to insets. ', show_default=True)
 @click.option('--bordercolor', '-bc', type=str, default='1,1,1,1', help='Border color in RGBA format. For example: 1,1,1,1 is white.', show_default=True)
 @click.option('--borderover', '-bo', is_flag=True, help='Border is overlayed on top of inset images, without increasing their size. ', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='Force overwrite of output images.', show_default=True)
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, set to -1 for maximum number of workers', show_default=True)  #
-@click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
+@click.option('--workersbackend', '-wkb', type=str, default='threading', help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 def blend(input_paths,
           output_path,
           modes,
@@ -39,16 +36,33 @@ def blend(input_paths,
           overwrite,
           workers,
           workersbackend):
+    number_of_inputs = len(input_paths)
+
     if output_path is None:
-        basename = '_'.join([os.path.basename(os.path.normpath(p)).replace('frames_', '') for p in input_paths])
-        output_path = 'frames_' + basename
+        output_path = input_paths[0] + '_blend'
+    elif output_path.starts_with('_'):
+        output_path = input_paths[0] + output_path
 
     if ',' in modes:
         modes = tuple(mode.strip() for mode in modes.split(','))
+    else:
+        modes = (modes,) * number_of_inputs
 
-    alphas = tuple(float(alpha) for alpha in alphas.split(','))
-    scales = tuple(float(scale) for scale in scales.split(','))
-    translations = tuple(tuple(float(v) for v in xy.split(',')) for xy in translations.split(';'))
+    if alphas is None:
+        alphas = (1.0,) * number_of_inputs
+    else:
+        alphas = tuple(float(alpha) for alpha in alphas.split(','))
+
+    if scales is None:
+        scales = (1,) * number_of_inputs
+    else:
+        scales = tuple(float(scale) for scale in scales.split(','))
+
+    if translations is None:
+        translations = ((0, 0),) * number_of_inputs
+    else:
+        translations = tuple(tuple(float(v) for v in xy.split(',')) for xy in translations.split(';'))
+
     bordercolor = tuple(float(v) for v in bordercolor.split(','))
 
     if len(input_paths) <= 1:
