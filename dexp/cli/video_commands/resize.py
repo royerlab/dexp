@@ -63,7 +63,7 @@ def resize(input_path,
     # Default output path:
     if output_path is None:
         output_path = input_path + '_resized'
-    elif output_path.starts_with('_'):
+    elif output_path.startswith('_'):
         output_path = input_path + output_path
 
     if crop is not None:

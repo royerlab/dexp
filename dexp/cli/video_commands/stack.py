@@ -24,7 +24,7 @@ def stack(input_paths, output_path, orientation, overwrite, workers, workersback
 
     if output_path is None:
         output_path = input_paths[0] + '_stack'
-    elif output_path.starts_with('_'):
+    elif output_path.startswith('_'):
         output_path = input_paths[0] + output_path
 
     os.makedirs(output_path, exist_ok=True)

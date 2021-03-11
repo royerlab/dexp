@@ -40,7 +40,7 @@ def blend(input_paths,
 
     if output_path is None:
         output_path = input_paths[0] + '_blend'
-    elif output_path.starts_with('_'):
+    elif output_path.startswith('_'):
         output_path = input_paths[0] + output_path
 
     if ',' in modes:

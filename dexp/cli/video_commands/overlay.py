@@ -91,7 +91,7 @@ def overlay(input_path: str,
     # Default output path:
     if output_path is None:
         output_path = input_path + '_overlay'
-    elif output_path.starts_with('_'):
+    elif output_path.startswith('_'):
         output_path = input_path + output_path
 
     # Parse bar position:
