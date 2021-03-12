@@ -146,7 +146,7 @@ def add_overlays_image_sequence(input_path: str,
                     with asection(f"Writing file: {filename} in folder: {output_path}"):
                         imageio.imwrite(filepath,
                                         Backend.to_numpy(image_with_scale_bar),
-                                        compress_level=0)
+                                        compress_level=1)
                 else:
                     aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
 

@@ -140,7 +140,7 @@ def blend_color_image_sequences(input_paths: Sequence[str],
                     aprint(f"Writing file: {filename} in folder: {output_path}")
                     imageio.imwrite(filepath,
                                     Backend.to_numpy(blended),
-                                    compress_level=0)
+                                    compress_level=1)
                 else:
                     aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
 

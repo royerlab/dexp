@@ -101,7 +101,7 @@ def dataset_projection_rendering(input_dataset: BaseDataset,
                                 with asection(f"Saving frame {tp} as: {filename}"):
                                     imageio.imwrite(filename,
                                                     Backend.to_numpy(projection),
-                                                    compress_level=0)
+                                                    compress_level=1)
 
                 except Exception as error:
                     aprint(error)
