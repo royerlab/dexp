@@ -11,7 +11,7 @@ def insert_time_stamp(image: 'Array',
                       start_time: float = 0,
                       time_interval: float = 1,
                       margin: float = 1,
-                      translation: Union[str, Sequence[Tuple[Union[int, float], ...]]] = 'top_right',
+                      translation: Union[str, Tuple[Union[int, float], ...]] = 'top_right',
                       color: Tuple[float, float, float, float] = None,
                       number_format: str = '{:.1f}',
                       font_name: str = "Helvetica",
@@ -31,7 +31,7 @@ def insert_time_stamp(image: 'Array',
     start_time: Start time for time stamp
     time_interval: Time interval inn units of time between consecutive images.
     margin: margin around bar expressed in units relative to the text height
-    translation: Positions of the time stamp in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
+    translation: Positions of the time stamp in pixels in numpy order: (y, x). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
     color: Color of the bar and text as tuple of 4 values: (R, G, B, A)
     number_format: Format string to represent the start and end values.
     font_name: Font name.
@@ -86,14 +86,19 @@ def insert_time_stamp(image: 'Array',
     margin_width = margin * text_height
 
     # Set the position of the time stamp
-    if 'top' in translation:
-        y = margin_height + text_height
-    elif 'bottom' in translation:
-        y = height - (margin_height + text_height)
-    if 'left' in translation:
-        x = margin_width
-    elif 'right' in translation:
-        x = width - (margin_width + text_width)
+    if type(translation) == str:
+        if 'top' in translation:
+            y = margin_height + text_height
+        elif 'bottom' in translation:
+            y = height - (margin_height + text_height)
+        if 'left' in translation:
+            x = margin_width
+        elif 'right' in translation:
+            x = width - (margin_width + text_width)
+    elif type(translation) == tuple:
+        y, x = translation
+    else:
+        raise ValueError(f"Invalid translation: {translation}")
 
     def generate_time_stamp(timepoint: int):
         # Create surface:

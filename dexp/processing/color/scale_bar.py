@@ -10,7 +10,7 @@ def insert_scale_bar(image,
                      pixel_scale: float = 1,
                      bar_height: int = 4,
                      margin: float = 1,
-                     translation: Union[str, Sequence[Tuple[Union[int, float], ...]]] = 'bottom_right',
+                     translation: Union[str, Tuple[Union[int, float], ...]] = 'bottom_right',
                      color: Tuple[float, float, float, float] = None,
                      number_format: str = '{:.1f}',
                      font_name: str = "Helvetica",
@@ -27,7 +27,7 @@ def insert_scale_bar(image,
     pixel_scale: conversion factor from pixels to units -- what is the side length of a pixel/voxel in units.
     bar_height: Height of th scale bar in pixels
     margin: margin around bar expressed in units relative to the text height
-    translation: Positions of the scale bar in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
+    translation: Positions of the scale bar in pixels in numpy order: (y, x). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
     color: Color of the bar and text as tuple of 4 values: (R, G, B, A)
     number_format: Format string to represent the start and end values.
     font_name: Font name.
@@ -129,14 +129,20 @@ def _generate_scale_bar_image(width,
     context.set_source_rgba(*color)
 
     # Set the position of the bar, that is the left-most end of it, including the margin:
-    if 'top' in translation:
-        y = margin_height
-    elif 'bottom' in translation:
-        y = height - (margin_height + bar_height)
-    if 'left' in translation:
-        x = margin_width
-    elif 'right' in translation:
-        x = width - (margin_width + bar_length / 2 + max(bar_length / 2, text_width / 2))
+    if type(translation) == str:
+        if 'top' in translation:
+            y = margin_height
+        elif 'bottom' in translation:
+            y = height - (margin_height + bar_height)
+        if 'left' in translation:
+            x = margin_width
+        elif 'right' in translation:
+            x = width - (margin_width + bar_length / 2 + max(bar_length / 2, text_width / 2))
+    elif type(translation) == tuple:
+        y, x = translation
+    else:
+        raise ValueError(f"Invalid translation: {translation}")
+
 
     # We draw the scale bar itself:
     context.rectangle(x, y - bar_height / 2, bar_length, bar_height)

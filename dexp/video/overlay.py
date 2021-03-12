@@ -48,12 +48,12 @@ def add_overlays_image_sequence(input_path: str,
     scale_bar_length_in_unit: Length of scale bar in the provided unit.
     scale_bar_pixel_scale: conversion factor from pixels to units -- what is the side length of a pixel/voxel in units.
     scale_bar_bar_height: Height of th scale bar in pixels
-    scale_bar_translation: Positions of the scale bar in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
+    scale_bar_translation: Positions of the scale bar in pixels in numpy order: (y, x). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
     scale_bar_unit: Scale bar unit name.
     time_stamp: True to insert time stamp.
     time_stamp_start_time: Start time for time stamp
     time_stamp_time_interval: Time interval inn units of time between consecutive images.
-    time_stamp_translation: Positions of the time stamp in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
+    time_stamp_translation: Positions of the time stamp in pixels in numpy order: (y, x). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
     time_stamp_unit: Time stamp time unit name.
     margin: margin around bar expressed in units relative to the text height
     color: Color of the bar and text as tuple of 4 values: (R, G, B, A)
