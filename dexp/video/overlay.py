@@ -106,49 +106,51 @@ def add_overlays_image_sequence(input_path: str,
 
     def _process(tp: int):
         with asection(f'Processing time point: {tp}'):
-            with BestBackend(device, exclusive=True, enable_unified_memory=True):
 
-                # Get image path:
-                image_path = png_file_paths[tp]
+            # Output file:
+            filename = f"frame_{tp:05}.png"
+            filepath = join(output_path, filename)
 
-                # get image:
-                image = imageio.imread(image_path)
+            # Write file:
+            if overwrite or not exists(filepath):
+                with BestBackend(device, exclusive=True, enable_unified_memory=True):
 
-                # Apply time stamp:
-                if time_stamp:
-                    with asection("Applying time stamp..."):
-                        image = insert_time_stamp(image=image,
-                                                  time_point_index=tp,
-                                                  nb_time_points=nb_timepoints,
-                                                  start_time=time_stamp_start_time,
-                                                  time_interval=time_stamp_time_interval,
-                                                  unit=time_stamp_unit,
-                                                  margin=margin,
-                                                  translation=time_stamp_translation,
-                                                  color=color,
-                                                  number_format=number_format,
-                                                  font_name=font_name,
-                                                  font_size=font_size,
-                                                  mode=mode)
+                    # Get image path:
+                    image_path = png_file_paths[tp]
 
-                # Apply scale bar:
-                image_with_scale_bar = blend_color_images(images=(image,
-                                                                  scale_bar_image),
-                                                          alphas=(1, 1),
-                                                          modes=('max', mode))
+                    # get image:
+                    image = imageio.imread(image_path)
 
-                # Output file:
-                filename = f"frame_{tp:05}.png"
-                filepath = join(output_path, filename)
+                    # Apply time stamp:
+                    if time_stamp:
+                        with asection("Applying time stamp..."):
+                            image = insert_time_stamp(image=image,
+                                                      time_point_index=tp,
+                                                      nb_time_points=nb_timepoints,
+                                                      start_time=time_stamp_start_time,
+                                                      time_interval=time_stamp_time_interval,
+                                                      unit=time_stamp_unit,
+                                                      margin=margin,
+                                                      translation=time_stamp_translation,
+                                                      color=color,
+                                                      number_format=number_format,
+                                                      font_name=font_name,
+                                                      font_size=font_size,
+                                                      mode=mode)
 
-                # Write file:
-                if overwrite or not exists(filepath):
+                    # Apply scale bar:
+                    image_with_scale_bar = blend_color_images(images=(image,
+                                                                      scale_bar_image),
+                                                              alphas=(1, 1),
+                                                              modes=('max', mode))
+
+
                     with asection(f"Writing file: {filename} in folder: {output_path}"):
                         imageio.imwrite(filepath,
                                         Backend.to_numpy(image_with_scale_bar),
                                         compress_level=1)
-                else:
-                    aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
+            else:
+                aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
 
     with asection(f"Adding time-stamp ({insert_time_stamp}) and scale-bar ({insert_scale_bar}) to: {input_path}, and saving to {output_path}, for a total of {nb_timepoints} time points"):
         Parallel(n_jobs=workers, backend=workersbackend)(delayed(_process)(tp) for tp in range(nb_timepoints))

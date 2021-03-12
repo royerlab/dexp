@@ -89,58 +89,62 @@ def blend_color_image_sequences(input_paths: Sequence[str],
 
             with asection(f'processing time point: {tp}'):
 
-                # We set the backend of this thread to be the same as its parent thread:
-                if backend is not None:
-                    Backend.set(backend)
-
-                # collect all images that need to be blended:
-                image_paths = list(image_sequence[tp] for image_sequence in image_sequences)
-
-                # Load images:
-                images = list(imageio.imread(image_path) for image_path in image_paths)
-
-                if scales is None and translations is None:
-                    # Blend images:
-                    blended = blend_color_images(images=images,
-                                                 alphas=alphas,
-                                                 modes=modes,
-                                                 background_color=background_color)
-                else:
-                    xp = Backend.get_xp_module()
-                    sp = Backend.get_sp_module()
-
-                    # Prepare background image:
-                    blended = xp.zeros(shape=images[0].shape,
-                                       dtype=images[0].dtype)
-
-                    # Fill with background color:
-                    for channel in range(4):
-                        blended[:, channel] = background_color[channel]
-
-                    # Insert each image at a different location with different blending
-                    for inset_image, mode, scale, alpha, trans in zip(images, modes, scales, alphas, translations):
-                        blended = insert_color_image(image=blended,
-                                                     inset_image=inset_image,
-                                                     scale=scale,
-                                                     translation=trans,
-                                                     border_width=border_width,
-                                                     border_color=border_color,
-                                                     border_over_image=border_over_image,
-                                                     mode=mode,
-                                                     alpha=alpha,
-                                                     background_color=(0, 0, 0, 0),
-                                                     )
-
                 # Output file:
                 filename = f"frame_{tp:05}.png"
                 filepath = join(output_path, filename)
 
                 # Write file:
                 if overwrite or not exists(filepath):
-                    aprint(f"Writing file: {filename} in folder: {output_path}")
-                    imageio.imwrite(filepath,
-                                    Backend.to_numpy(blended),
-                                    compress_level=1)
+
+                    # We set the backend of this thread to be the same as its parent thread:
+                    if backend is not None:
+                        Backend.set(backend)
+
+                    # collect all images that need to be blended:
+                    image_paths = list(image_sequence[tp] for image_sequence in image_sequences)
+
+                    # Load images:
+                    images = list(imageio.imread(image_path) for image_path in image_paths)
+
+                    if scales is None and translations is None:
+                        # Blend images:
+                        blended = blend_color_images(images=images,
+                                                     alphas=alphas,
+                                                     modes=modes,
+                                                     background_color=background_color)
+                    else:
+                        xp = Backend.get_xp_module()
+                        sp = Backend.get_sp_module()
+
+                        # Prepare background image:
+                        blended = xp.zeros(shape=images[0].shape,
+                                           dtype=images[0].dtype)
+
+                        # Fill with background color:
+                        for channel in range(4):
+                            blended[:, channel] = background_color[channel]
+
+                        # Insert each image at a different location with different blending
+                        for inset_image, mode, scale, alpha, trans in zip(images, modes, scales, alphas, translations):
+                            blended = insert_color_image(image=blended,
+                                                         inset_image=inset_image,
+                                                         scale=scale,
+                                                         translation=trans,
+                                                         border_width=border_width,
+                                                         border_color=border_color,
+                                                         border_over_image=border_over_image,
+                                                         mode=mode,
+                                                         alpha=alpha,
+                                                         background_color=(0, 0, 0, 0),
+                                                         )
+
+
+
+
+                        aprint(f"Writing file: {filename} in folder: {output_path}")
+                        imageio.imwrite(filepath,
+                                        Backend.to_numpy(blended),
+                                        compress_level=1)
                 else:
                     aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
 
