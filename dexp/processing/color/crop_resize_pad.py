@@ -35,7 +35,6 @@ def crop_resize_pad_color_image(image,
     Cropped, resized, and padded image.
 
     """
-
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
@@ -43,43 +42,62 @@ def crop_resize_pad_color_image(image,
     image = Backend.to_backend(image)
 
     # Normalisation of crop parameter:
-    if type(crop) is int:
-        crop = (crop,) * (image.ndim-1)
-    if type(crop[0]) is int:
-        crop = tuple((c, c) for c in crop)
+    if crop is not None:
 
-    # build the slice object to crop the image
-    slicing = tuple(slice(l, -r) for l, r in crop)+(slice(None), )
+        if type(crop) is int:
+            crop = (crop,) * (image.ndim-1)
+        if type(crop[0]) is int:
+            crop = tuple((c, c) for c in crop)
 
-    # Crop:
-    image = image[slicing]
+        # build the slice object to crop the image
+        slicing = tuple(slice(l if l > 0 else None, -r if r > 0 else None) for l, r in crop)+(slice(None), )
 
-    # computing resize factors:
-    factors = tuple(ns / s for ns, s in zip(resize, image.shape[:-1])) + (1,)
+        # Crop:
+        image = image[slicing]
 
-    # Resizing:
-    image = sp.ndimage.zoom(input=image,
-                            zoom=factors,
-                            order=resize_order,
-                            mode=resize_mode)
+    # Normalise resize:
+    if resize is not None:
+
+        # computing resize factors:
+        factors = tuple(ns / s for ns, s in zip(resize, image.shape[:-1]))
+
+        # find all non negative factors:
+        factors_no_negatives = tuple(factor for factor in factors if factor>0)
+
+        # compute the average (most case all factors are equal!)
+        avg_factor = sum(factors_no_negatives) / len(factors_no_negatives)
+
+        # we replace the negative values with the average:
+        factors = tuple((factor if factor > 0 else avg_factor) for factor in factors)
+
+        # handle channel dim:
+        factors = factors + (1,)
+
+        # Resizing:
+        image = sp.ndimage.zoom(input=image,
+                                zoom=factors,
+                                order=resize_order,
+                                mode=resize_mode)
 
     # Number of channels:
     nb_channels = image.shape[-1]
 
+    # Normalise pad_width:
+    if pad_width is not None:
 
-    # Adding a colored border:
-    padded_channels = []
-    for channel_index in range(nb_channels):
-        channel = image[..., channel_index]
+        # Adding a colored border:
+        padded_channels = []
+        for channel_index in range(nb_channels):
+            channel = image[..., channel_index]
 
-        value = pad_color[channel_index]*rgba_value_max
-        padded_channel = xp.pad(channel,
-                                pad_width=pad_width,
-                                mode=pad_mode,
-                                constant_values=value)
-        padded_channels.append(padded_channel)
+            value = pad_color[channel_index]*rgba_value_max
+            padded_channel = xp.pad(channel,
+                                    pad_width=pad_width,
+                                    mode=pad_mode,
+                                    constant_values=value)
+            padded_channels.append(padded_channel)
 
-    # Stacking:
-    padded_image = xp.stack(padded_channels, axis=-1)
+        # Stacking:
+        image = xp.stack(padded_channels, axis=-1)
 
-    return padded_image
+    return image

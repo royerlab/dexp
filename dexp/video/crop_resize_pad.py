@@ -9,6 +9,7 @@ from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
+from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.color.crop_resize_pad import crop_resize_pad_color_image
 
 
@@ -47,6 +48,10 @@ def crop_resize_pad_image_sequence(input_path: str,
     device: Device on  which to run the overlay computation (if a non-CPU device is available).
     """
 
+    # accomodate cupy limits:
+    if type(Backend.current()) == CupyBackend:
+        resize_order = min(resize_order, 1)
+
     # ensure folder exists:
     os.makedirs(output_path, exist_ok=True)
 
@@ -68,32 +73,33 @@ def crop_resize_pad_image_sequence(input_path: str,
         with asection(f'Processing time point: {tp}'):
             with BestBackend(device, exclusive=True, enable_unified_memory=True):
 
-                # Get image path:
-                image_path = png_file_paths[tp]
-
-                # get image:
-                image = imageio.imread(image_path)
-
-                resized_image = crop_resize_pad_color_image(image=image,
-                                                            crop=crop,
-                                                            resize=resize,
-                                                            resize_order=resize_order,
-                                                            resize_mode=resize_mode,
-                                                            pad_width=pad_width,
-                                                            pad_mode=pad_mode,
-                                                            pad_color=pad_color,
-                                                            rgba_value_max=rgba_value_max)
-
                 # Output file:
                 filename = f"frame_{tp:05}.png"
                 filepath = join(output_path, filename)
 
                 # Write file:
                 if overwrite or not exists(filepath):
+
+                    # Get image path:
+                    image_path = png_file_paths[tp]
+
+                    # get image:
+                    image = imageio.imread(image_path)
+
+                    resized_image = crop_resize_pad_color_image(image=image,
+                                                                crop=crop,
+                                                                resize=resize,
+                                                                resize_order=resize_order,
+                                                                resize_mode=resize_mode,
+                                                                pad_width=pad_width,
+                                                                pad_mode=pad_mode,
+                                                                pad_color=pad_color,
+                                                                rgba_value_max=rgba_value_max)
+
                     with asection(f"Writing file: {filename} in folder: {output_path}"):
                         imageio.imwrite(filepath,
                                         Backend.to_numpy(resized_image),
-                                        compress_level=0)
+                                        compress_level=1)
                 else:
                     aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
 
