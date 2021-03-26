@@ -42,9 +42,11 @@ def dataset_projection_rendering(input_dataset: BaseDataset,
 
         # Ensures that the output folder exists per channel:
         if len(channels) == 1:
-            makedirs(output_path, exist_ok=True)
+            channel_output_path = output_path
         else:
-            makedirs(output_path + f'_{channel}', exist_ok=True)
+            channel_output_path = output_path + f'_{channel}'
+
+        makedirs(channel_output_path, exist_ok=True)
 
         with asection(f"Channel '{channel}' shape: {input_dataset.shape(channel)}:"):
             aprint(input_dataset.info(channel))
@@ -64,7 +66,7 @@ def dataset_projection_rendering(input_dataset: BaseDataset,
                 try:
                     with asection(f"Rendering Frame     : {tp:05}"):
 
-                        filename = join(output_path, f"frame_{tp:05}.png")
+                        filename = join(channel_output_path, f"frame_{tp:05}.png")
 
                         if overwrite or not exists(filename):
 
