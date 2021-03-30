@@ -110,12 +110,12 @@ def equalise_intensity(image1,
     else:
         correction_ratio = Backend.to_backend(correction_ratio, dtype=internal_dtype)
 
-    # remove zero level an clip:
+    # remove zero level and clip:
     if zero_level != 0:
+        image1 = image1.clip(zero_level, None, out=image1)
         image1 -= zero_level
+        image2 = image2.clip(zero_level, None, out=image2)
         image2 -= zero_level
-    image1.clip(0, None, out=image1)
-    image2.clip(0, None, out=image2)
 
     # compute inverse ratios and cast to internal type:
     inverse_correction_ratio = 1 / correction_ratio
