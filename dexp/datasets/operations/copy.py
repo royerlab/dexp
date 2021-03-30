@@ -1,6 +1,7 @@
 import os
 from typing import Sequence
 
+import numpy
 from arbol.arbol import aprint, asection
 
 from dexp.datasets.base_dataset import BaseDataset
@@ -48,6 +49,7 @@ def dataset_copy(dataset: BaseDataset,
                     aprint(f"Processing time point: {tp} ...")
                     tp_array = array[tp].compute()
                     if zerolevel != 0:
+                        tp_array = numpy.clip(tp_array, a_min=zerolevel)
                         tp_array -= zerolevel
                     dest_dataset.write_stack(channel=channel,
                                              time_point=tp,
