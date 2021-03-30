@@ -21,7 +21,7 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
 @click.option('--clim', '-cl', type=str, default=None, help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]')
 @click.option('--attenuation', '-at', type=float, default=0.1, help='Sets the projection attenuation coefficient, should be within [0, 1] ideally close to 0. Larger values mean more attenuation.',
               show_default=True)  # , help='dataset slice'
-@click.option('--gamma', '-g', type=int, default=1, help='Sets the gamma coefficient pre-applied to the raw voxel values (before projection or any subsequent processing).', show_default=True)  # , help='dataset slice'
+@click.option('--gamma', '-g', type=float, default=1.0, help='Sets the gamma coefficient pre-applied to the raw voxel values (before projection or any subsequent processing).', show_default=True)  # , help='dataset slice'
 @click.option('--dlim', '-dl', type=str, default=None,
               help='Sets the depth limits. Depth limits. For example, a value of (0.1, 0.7) means that the colormap start at a normalised depth of 0.1, and ends at a normalised depth of 0.7, other values are clipped. Only used for colormax mode.',
               show_default=True)  # , help='dataset slice'
