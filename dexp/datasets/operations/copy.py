@@ -49,7 +49,8 @@ def dataset_copy(dataset: BaseDataset,
                     aprint(f"Processing time point: {tp} ...")
                     tp_array = array[tp].compute()
                     if zerolevel != 0:
-                        tp_array = numpy.clip(tp_array, a_min=zerolevel)
+                        tp_array = numpy.array(tp_array)
+                        tp_array = numpy.clip(tp_array, a_min=zerolevel, a_max=None, out=tp_array)
                         tp_array -= zerolevel
                     dest_dataset.write_stack(channel=channel,
                                              time_point=tp,
