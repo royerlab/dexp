@@ -8,7 +8,7 @@ from dexp.datasets.base_dataset import BaseDataset
 
 
 def dataset_copy(dataset: BaseDataset,
-                 path: str,
+                 dest_path: str,
                  channels: Sequence[str],
                  slicing,
                  store: str,
@@ -19,10 +19,11 @@ def dataset_copy(dataset: BaseDataset,
                  workers: int,
                  workersbackend: str,
                  check: bool):
+
     # Create destination dataset:
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
-    dest_dataset = ZDataset(path, mode, store)
+    dest_dataset = ZDataset(dest_path, mode, store)
 
     # Process each channel:
     for channel in dataset._selected_channels(channels):
