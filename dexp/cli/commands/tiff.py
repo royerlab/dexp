@@ -17,7 +17,7 @@ from dexp.datasets.operations.tiff import dataset_tiff
 @click.option('--project', '-p', type=int, default=None, help='max projection over given axis (0->T, 1->Z, 2->Y, 3->X)')  # , help='dataset slice'
 @click.option('--split', is_flag=True, help='Splits dataset along first dimension, be carefull, if you slice to a single time point this will split along z!')  # , help='dataset slice'
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level, 0 means no compression, max is 9', show_default=True)  # , help='dataset slice'
-@click.option('--workers', '-k', default=-1, help='Number of worker threads to spawn. If -1 then num workers = num cores', show_default=True)  #
+@click.option('--workers', '-k', default=-4, help='Number of worker threads to spawn. Negative numbers n correspond to: number_of _cores / |n|', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)
 def tiff(input_paths,
          output_path,

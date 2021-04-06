@@ -63,7 +63,7 @@ def dataset_copy(dataset: BaseDataset,
             from joblib import Parallel, delayed
 
             if workers == -1:
-                workers = os.cpu_count() // 2
+                workers = max(1, os.cpu_count() // abs(workers))
 
             aprint(f"Number of workers: {workers}")
             Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp) for tp in range(0, shape[0]))

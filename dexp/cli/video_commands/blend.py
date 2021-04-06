@@ -2,6 +2,7 @@ import click
 from arbol.arbol import aprint
 
 from dexp.video.blend import blend_color_image_sequences
+from dexp.cli.dexp_main import _default_workers_backend
 
 
 @click.command()
@@ -23,7 +24,7 @@ from dexp.video.blend import blend_color_image_sequences
 @click.option('--borderover', '-bo', is_flag=True, help='Border is overlayed on top of inset images, without increasing their size. ', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='Force overwrite of output images.', show_default=True)
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, set to -1 for maximum number of workers', show_default=True)  #
-@click.option('--workersbackend', '-wkb', type=str, default='threading', help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
+@click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--device', '-d', type=int, default=0, help='Sets the CUDA devices id, e.g. 0,1,2', show_default=True)  #
 def blend(input_paths,
           output_path,

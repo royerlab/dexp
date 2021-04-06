@@ -36,7 +36,7 @@ def dataset_tiff(dataset: BaseDataset,
         arrays = list([array.max(axis=project) for array in arrays])
 
     if workers == -1:
-        workers = os.cpu_count() // 2
+        workers = max(1, os.cpu_count() // abs(workers))
     aprint(f"Number of workers: {workers}")
 
     if one_file_per_first_dim:

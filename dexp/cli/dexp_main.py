@@ -6,7 +6,7 @@ from dexp.processing.utils.mkl_util import set_mkl_threads
 _default_store = 'dir'
 _default_clevel = 3
 _default_codec = 'zstd'
-_default_workers_backend = 'loky'
+_default_workers_backend = 'threading'
 
 set_mkl_threads()
 

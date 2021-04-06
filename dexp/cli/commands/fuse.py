@@ -37,7 +37,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--regedgefilter', '-ref', is_flag=True, help='Use this flag to apply an edge filter to help registration.', show_default=True)  #
 @click.option('--hugedataset', '-hd', is_flag=True, help='Use this flag to indicate that the the dataset is _huge_ and that memory allocation should be optimised at the detriment of processing speed.', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
-@click.option('--workersbackend', '-wkb', type=str, default='threading', help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
+@click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def fuse(input_paths,

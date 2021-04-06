@@ -172,8 +172,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
 
         # Set number of workers:
         if workers == -1:
-            # Note: for some reason, having two many threads running concurently seems to lead to a freeze. Unclear why.
-            workers = max(4, os.cpu_count() // 4)
+            workers = max(1, os.cpu_count() // abs(workers))
         aprint(f"Number of workers: {workers}")
 
         # start jobs:
