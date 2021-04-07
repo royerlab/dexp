@@ -20,24 +20,28 @@ Once these prerequisites are satified, you can install **dexp**.
 
 **dexp** can simply be installed with:
 
-```
-pip install dexp
-```
-
-Instakling this way will not install [CuPy](https://cupy.dev/), to install cupy you have to also specify
-which CUDA version you have installed, for example the following installs **dexp** for CUDA 11.2:
-
+To installs **dexp** with GPU support (CUDA 11.2) do:
 ```
 pip install dexp[cuda112]
 ```
-Other available CUDa versions (from [CuPy](https://cupy.dev/)) are: cuda111, cuda110, cuda102, cuda101, cuda100.
+Other available CUDA versions (from [CuPy](https://cupy.dev/)) are: cuda111, cuda110, cuda102, cuda101, cuda100.
 
+If instead you do not wish to add CUDA support, you can instead do:
+```
+pip install dexp
+```
 
 ### How to use **dexp** ?
 
 First you need a dataset aqquired on a light-sheet microscope, see [here](https://github.com/royerlab/dexp/wiki/dexp_datasets) for supported microscopes and formats.
 
 Second, you can use any of the commands [here](https://github.com/royerlab/dexp/wiki/dexp_commands) to process your data.
+The list of commands can be found by :
+
+```
+dexp --help
+```
+
 
 ### Example usage
 
