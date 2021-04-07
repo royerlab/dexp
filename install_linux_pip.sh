@@ -1,5 +1,7 @@
 # Run this to create a new env:
-#conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; ./install_linux.sh
+#conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; ./install_linux_pip.sh
+
+sudo apt install libcairo2-dev pkg-config python3-dev
 
 pip install --upgrade pip
 
@@ -28,11 +30,9 @@ pip install simple-zarr-server requests aiohttp --upgrade
 pip install colorcet --upgrade
 pip install python-telegram-bot --upgrade
 pip install PyYAML --upgrade
-
-sudo apt install libcairo2-dev pkg-config python3-dev
 pip install pycairo==1.11.1
 
-pip install cupy-cuda111==9.0.0b2 --no-cache-dir
+pip install cupy-cuda111==9.0.0b3 --no-cache-dir
 
 python -m cupyx.tools.install_library --library cudnn --cuda 11.1
 python -m cupyx.tools.install_library --library cutensor --cuda 11.1
