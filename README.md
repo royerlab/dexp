@@ -1,6 +1,12 @@
-## DEXP
+![fishcolorproj](https://user-images.githubusercontent.com/1870994/113943035-b61b0c00-97b6-11eb-8cfd-ac78e2976ebb.png)
+## DEXP | Light-sheet Dataset EXploration and Processing 
 
-Dataset Exploration and Processing Tool
+DEXP is a [Cupy](https://cupy.dev/), [Zarr](https://zarr.readthedocs.io/en/stable/), and [DASK](https://dask.org/) based library for mannaging, processing and visualizing light-sheet microscopy datasets. Currently it fully supports end-to-end processing for two kinds of light-sheet microscopes:
+
+* SimView Lightsheet microscopes with at most 2 illumination arms and 2 detection arms.
+* Single Objective Lightsheet Microscope (SOLS) using
+
+
 
 DEXP let's you view both ClearControl and Zarr formats, and copy (convert) from ClearControl format to Zarr. You can select channels and slice which lets you crop arbitrarily in time and space. You can also query information for both
 formats.
