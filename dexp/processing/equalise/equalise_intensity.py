@@ -112,9 +112,9 @@ def equalise_intensity(image1,
 
     # remove zero level and clip:
     if zero_level != 0:
-        image1 = xp.clip(a_min=zero_level, a_max=None, out=image1)
+        image1 = xp.clip(image1, a_min=zero_level, a_max=None, out=image1)
         image1 -= zero_level
-        image2 = xp.clip(a_min=zero_level, a_max=None, out=image2)
+        image2 = xp.clip(image2, a_min=zero_level, a_max=None, out=image2)
         image2 -= zero_level
 
     # compute inverse ratios and cast to internal type:
