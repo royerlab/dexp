@@ -1,10 +1,41 @@
 ![fishcolorproj](https://user-images.githubusercontent.com/1870994/113943035-b61b0c00-97b6-11eb-8cfd-ac78e2976ebb.png)
-## DEXP | Light-sheet Dataset EXploration and Processing 
+# **dexp** | Light-sheet Dataset EXploration and Processing 
 
-DEXP is a [Cupy](https://cupy.dev/), [Zarr](https://zarr.readthedocs.io/en/stable/), and [DASK](https://dask.org/) based library for mannaging, processing and visualizing light-sheet microscopy datasets. Currently it fully supports end-to-end processing for two kinds of light-sheet microscopes:
+**dexp** is a [napari](https://napari.org/), [CuPy](https://cupy.dev/), [Zarr](https://zarr.readthedocs.io/en/stable/), and [DASK](https://dask.org/) based library for managing, processing and visualizing light-sheet microscopy datasets. It consists in light-sheet specialised image processing functions (denoising, dehazing, registration, fusion, stabilization, deskewing, deconvolution), visualization functions (napari-based viewing, 2D/3D rendering, video compositing and resizing, mp4 generation), as well as dataset management functions (copy, crop, concatenation, tiff conversion). Almost all functions are GPU accelrated via [CuPy](https://cupy.dev/) but have a [numpy](https://numpy.org/)-based fallback option (not recommended). In addition to a functional API, DEXP offers a command line interface that makes it very easy to pipeline large processing jobs. 
+
+
+
+## How to install **dexp**
+
+### Prerequisites:
+
+Install Anaconda:
+https://www.anaconda.com/distribution/
+
+On windows, make sure to insatll CUDA 10.2 (exactly that version for the current version of dexp)
+
+**dexp** works on OSX and Windows, but it is recomended to use the latest version of Ubuntu.
+We recommend a machine with a top-of-the-line NVIDIA graphics card (min 12G to be confortable).
+
+The first step consists in to [install CUDA](https://github.com/royerlab/dexp/wiki/install_cuda))
+
+
+### Installation:
+
+**dexp** can simply be installed with:
+
+```
+pip install dexp
+```
+
+
+
+
+# Microscopes supported
+Currently it fully supports end-to-end processing for two kinds of light-sheet microscopes:
 
 * SimView Lightsheet microscopes with at most 2 illumination arms and 2 detection arms.
-* Single Objective Lightsheet Microscope (SOLS) using
+* Single Objective Lightsheet Microscope, both single and multi-view.
 
 
 
@@ -18,12 +49,7 @@ DEXP currently supports fusion, registration, deconvolution, isonet, vieweing wi
 
 DEXP should be run ideally on very fast machines very close to the storage.
 
-# Prerequisites:
 
-Install Anaconda:
-https://www.anaconda.com/distribution/
-
-On windows, make sure to insatll CUDA 10.2 (exactly that version for the current version of dexp)
 
 # Installation:
 
