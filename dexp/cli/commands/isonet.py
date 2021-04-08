@@ -10,6 +10,11 @@ from dexp.datasets.operations.isonet import dataset_isonet
 @click.command()
 @click.argument('input_paths', nargs=-1)  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
+@click.option('--dxy', '-dxy', type=float, required=True)
+@click.option('--dz', '-dz', type=float, required=True)
+@click.option('--binning', '-b', type=int, default=1)  # TODO help
+@click.option('--sharpening', '-sh', is_flag=True, help='Dehazes the image with a low-pass rejection filter.')
+@click.option('--channel', '-ch', default=None, help='dataset channel name')
 @click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')  #
 @click.option('--store', '-st', default=_default_store, help='Zarr store: ‘dir’, ‘ndir’, or ‘zip’', show_default=True)
 @click.option('--codec', '-z', default=_default_codec, help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ', show_default=True)  #
@@ -21,6 +26,11 @@ from dexp.datasets.operations.isonet import dataset_isonet
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def isonet(input_paths,
            output_path,
+           dxy,
+           dz,
+           sharpening,
+           binning,
+           channel,
            slicing,
            store,
            codec,
@@ -37,6 +47,9 @@ def isonet(input_paths,
     with asection(f"Applying Isonet to: {input_paths}, saving result to: {output_path}, slicing: {slicing} "):
         dataset_isonet(input_dataset,
                        output_path,
+                       dxy=dxy,
+                       dz=dz,
+                       channel=channel,
                        slicing=slicing,
                        store=store,
                        compression=codec,
@@ -45,8 +58,10 @@ def isonet(input_paths,
                        context=context,
                        mode=mode,
                        max_epochs=max_epochs,
-                       check=check
-                       )
+                       check=check,
+                       sharpening=sharpening,
+                       binning=binning,
+                       training_tp_index=None)
 
         input_dataset.close()
         aprint("Done!")
