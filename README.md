@@ -40,7 +40,7 @@ brew install cairo
 
 The following line will delete any existing dexp environment, recreate it, and install **dexp** with support for CUDA 11.2:
 ```
-conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; pip install dexp[cuda112]
+conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; pip install dexp[color,cuda112]
 ```
 
 ### Leveraging extra CUDA libraries for faster processing:
