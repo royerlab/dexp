@@ -31,7 +31,7 @@ If instead you do not wish to add CUDA support, you can instead do:
 pip install dexp
 ```
 
-### Quick one-line installation:
+### Quick one-line environment setup and installation:
 
 The following line will delete any existing dexp environment, recreate it, and install **dexp** with support for CUDA 11.2:
 ```
