@@ -45,7 +45,7 @@ conda deactivate; conda env remove --name dexp; conda create -y --name dexp pyth
 
 ### Leveraging extra CUDA libraries for faster processing:
 
-If you want you **dexp** installation to be even faster, you can install additional libraries such as CUDNN and CUTENSOR 
+If you want you **dexp** CUDA-based processing to be even faster, you can install additional libraries such as CUDNN and CUTENSOR 
 with the following command:
 
 ```
