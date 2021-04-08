@@ -14,6 +14,9 @@ from dexp.datasets.open_dataset import glob_datasets
 @click.option('--store', '-st', default=_default_store, help='Zarr store: ‘dir’, ‘ndir’, or ‘zip’', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='Forces overwrite of target', show_default=True)
 def add(input_paths, output_path, channels, rename, store, overwrite):
+    """ Adds the channels selected from INPUT_PATHS to the given output dataset (created if not existing).
+    """
+
     input_dataset, input_paths = glob_datasets(input_paths)
     output_path = _get_output_path(input_paths[0], output_path, '_add')
     channels = _parse_channels(input_dataset, channels)

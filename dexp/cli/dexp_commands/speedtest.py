@@ -4,6 +4,9 @@ from arbol.arbol import aprint, asection
 
 @click.command()
 def speedtest():
+    """ Estimates storage medium speed.
+    """
+
     import os
     cwd = os.getcwd()
 

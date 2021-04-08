@@ -39,6 +39,9 @@ def blend(input_paths,
           workers,
           workersbackend,
           device):
+    """ Blends videos or still images together, using different alphas, blend modes, and possibly with rescaling, translation, and added borders.
+    """
+
     number_of_inputs = len(input_paths)
 
     if output_path is None:

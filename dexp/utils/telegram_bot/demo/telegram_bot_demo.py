@@ -3,7 +3,7 @@ from skimage.data import camera
 from telegram import Update
 from telegram.ext import MessageHandler, Filters, CallbackContext, CommandHandler
 
-from dexp.cli.telegram_bot.telegram_bot import TelegramBot
+from dexp.utils.telegram_bot.telegram_bot import TelegramBot
 
 
 def demo_telegram_bot():

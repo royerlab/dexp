@@ -17,7 +17,8 @@ def get_array_for_cairo_surface(surface: 'ImageSurface'):
     RGBA numpy array of shape: (...,4)
 
     """
-    from cairo._cairo import ImageSurface
+
+    from cairocffi import ImageSurface
     surface: ImageSurface
 
 

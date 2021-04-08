@@ -58,6 +58,9 @@ def stabilize(input_paths,
               workersbackend,
               device,
               check):
+    """ Stabilises dataset against translations across time.
+    """
+
     input_dataset, input_paths = glob_datasets(input_paths)
     output_path = _get_output_path(input_paths[0], output_path, "_stabilized")
 

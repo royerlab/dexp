@@ -88,6 +88,9 @@ def overlay(input_path: str,
             workers,
             workersbackend,
             device):
+    """ Adds scale bars and timestamps to videos.
+    """
+
     # Default output path:
     if output_path is None:
         output_path = input_path + '_overlay'

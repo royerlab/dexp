@@ -11,8 +11,8 @@
 **dexp** works on OSX and Windows, but it is recomended to use the latest version of Ubuntu.
 We recommend a machine with a top-of-the-line NVIDIA graphics card (min 12G to be confortable).
 
-First, make sure to have a [working python installation](https://github.com/royerlab/dexp/wiki/install_python) 
-Second, make sure to have a compatible and functional [CUDA installation](https://github.com/royerlab/dexp/wiki/install_cuda)
+First, make sure to have a [working python installation](https://github.com/royerlab/dexp/wiki/Installing-Python) 
+Second, make sure to have a compatible and functional [CUDA installation](https://github.com/royerlab/dexp/wiki/Installing-CUDA)
 
 Once these prerequisites are satified, you can install **dexp**.
 
@@ -31,6 +31,11 @@ If instead you do not wish to add CUDA support, you can instead do:
 pip install dexp
 ```
 
+**For OSX users:** Before installating dexp, you will first need to install cairo:
+```
+brew install cairo
+```
+
 ### Quick one-line environment setup and installation:
 
 The following line will delete any existing dexp environment, recreate it, and install **dexp** with support for CUDA 11.2:
@@ -44,9 +49,9 @@ If you want you **dexp** installation to be even faster, you can install additio
 with the following command:
 
 ```
-python setup.py cudalibs --cuda 11.2
+install cudalibs 11.2
 ```
-Change the version accordingly...
+Change the CUDA version accordingly...
 
 ### How to use **dexp** ?
 

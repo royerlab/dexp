@@ -12,6 +12,9 @@ from dexp.datasets.operations.serve import dataset_serve
 def serve(input_paths,
           host,
           port):
+    """ Serves dataset across network.
+    """
+
     input_dataset, input_paths = glob_datasets(input_paths)
 
     with asection(f"Serving dataset(s): {input_paths}"):

@@ -24,6 +24,9 @@ def view(input_paths,
          windowsize,
          projectionsonly
          ):
+    """ Views dataset using napari (napari.org)
+    """
+
     slicing = _parse_slicing(slicing)
 
     name = input_paths[0] + '...' if len(input_paths) > 1 else ''

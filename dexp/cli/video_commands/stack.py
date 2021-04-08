@@ -20,6 +20,9 @@ from dexp.processing.backends.backend import Backend
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, set to -1 for maximum number of workers', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)
 def stack(input_paths, output_path, orientation, overwrite, workers, workersbackend):
+    """ Stacks video vertically or horizontally (video = folder of images).
+    """
+
     if workers <= 0:
         workers = os.cpu_count() // 2
 
