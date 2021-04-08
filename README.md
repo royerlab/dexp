@@ -31,6 +31,13 @@ If instead you do not wish to add CUDA support, you can instead do:
 pip install dexp
 ```
 
+### Quick one-line installation:
+
+The following line will delete any existing dexp environment, recreate it, and install **dexp** with support for CUDA 11.2:
+```
+conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; pip install dexp[cuda112]
+```
+
 ### How to use **dexp** ?
 
 First you need a dataset aqquired on a light-sheet microscope, see [here](https://github.com/royerlab/dexp/wiki/dexp_datasets) for supported microscopes and formats.
