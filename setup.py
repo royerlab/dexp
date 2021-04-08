@@ -55,8 +55,6 @@ REQUIRED = [
     'gputil',
     'gpustat',
     'arbol',
-    'colorama',
-    'ansicolors',
     'simple-zarr-server',
     'requests',
     'aiohttp',
@@ -74,6 +72,7 @@ EXTRAS = {
     'cuda102': [f'cupy-cuda102=={CUPY_VERSION}', ],
     'cuda101': [f'cupy-cuda101=={CUPY_VERSION}', ],
     'cuda100': [f'cupy-cuda100=={CUPY_VERSION}', ],
+    'color': ['colorama', 'ansicolors',]
 }
 
 
