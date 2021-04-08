@@ -44,9 +44,9 @@ If you want you **dexp** installation to be even faster, you can install additio
 with the following command:
 
 ```
-python setup.py cudalibs --cuda 11.2
+install cudalibs 11.2
 ```
-Change the version accordingly...
+Change the CUDA version accordingly...
 
 ### How to use **dexp** ?
 
