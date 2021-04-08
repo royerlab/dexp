@@ -20,9 +20,9 @@ Once these prerequisites are satified, you can install **dexp**.
 
 **dexp** can simply be installed with:
 
-To installs **dexp** with GPU support (CUDA 11.2) do:
+To installs **dexp** with GPU support (CUDA 11.2) and colored console output do:
 ```
-pip install dexp[cuda112]
+pip install dexp[color, cuda112]
 ```
 Other available CUDA versions (from [CuPy](https://cupy.dev/)) are: cuda111, cuda110, cuda102, cuda101, cuda100.
 
