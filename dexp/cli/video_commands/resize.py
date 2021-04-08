@@ -60,6 +60,9 @@ def resize(input_path,
            workers,
            workersbackend,
            device):
+    """ Resizes video
+    """
+
     # Default output path:
     if output_path is None:
         output_path = input_path + '_resized'

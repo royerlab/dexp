@@ -33,6 +33,9 @@ def copy(input_paths,
          workers,
          workersbackend,
          check):
+    """ Copies a dataset, channels can be selected, cropping can be performed, compression can be changed, ...
+    """
+
     input_dataset, input_paths = glob_datasets(input_paths)
     output_path = _get_output_path(input_paths[0], output_path, '_copy')
     slicing = _parse_slicing(slicing)

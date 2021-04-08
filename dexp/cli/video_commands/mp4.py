@@ -48,6 +48,9 @@ def mp4(input_path,
         width,
         pixelformat,
         overwrite):
+    """ Converts a folder of images into an MP4 video file.
+    """
+
     if output_path is None:
         videofilepath = os.path.basename(os.path.normpath(input_path)) + '.mp4'
     else:

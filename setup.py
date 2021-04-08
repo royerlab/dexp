@@ -24,7 +24,12 @@ AUTHOR = 'Jordao Bragantini, Ahmet Can Solak, Loic A Royer'
 REQUIRES_PYTHON = '>=3.8.0'
 
 from datetime import datetime
-VERSION = datetime.today().strftime('%Y.%m.%d')+'b'
+now = datetime.now()
+seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+minutes_since_midnight = int(seconds_since_midnight//60)
+ten_minutes_since_midnight = int(seconds_since_midnight//600)
+VERSION = datetime.today().strftime('%Y.%m.%d')+f'.{minutes_since_midnight}'
+print(f"Version: {VERSION}")
 
 CUPY_VERSION = '9.0.0b3'
 
@@ -58,7 +63,7 @@ REQUIRED = [
     'colorcet',
     'python-telegram-bot',
     'PyYAML',
-    'pycairo',
+    'cairocffi',
 ]
 
 # What packages are optional?
@@ -131,44 +136,13 @@ class UploadCommand(Command):
         self.status('Building Source and Wheel (universal) distribution…')
         os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
 
-        self.status('Uploading the package to PyPI via Twine…')
+        self.status(f'Uploading version `{about["__version__"]}` of the package to PyPI via Twine…')
         os.system('twine upload dist/*')
 
         self.status('Pushing git tags…')
         os.system('git tag v{0}'.format(about['__version__']))
         os.system('git push --tags')
 
-        sys.exit()
-
-# Install additiona libraries:
-class InstalLibsCommand(Command):
-    """Support setup.py upload."""
-
-    description = 'Install additional native libraries'
-    user_options = [('cuda=', 'c', 'CUDA version (11.2, 11.1, 11.0, ...)'),]
-
-    @staticmethod
-    def status(s):
-        """Prints things in bold."""
-        print('\033[1m{0}\033[0m'.format(s))
-
-    def initialize_options(self):
-        self.cuda = None
-
-    def finalize_options(self):
-        if self.cuda is None:
-            raise Exception("Parameter --cuda is missing")
-
-    def run(self):
-        from os.path import expanduser
-        home = expanduser("~")
-        if not exists(join(home, f'.cupy/cuda_lib/{self.cuda}')):
-            self.status(f'Installing CUDNN for CUDA {self.cuda}')
-            os.system(f'python -m cupyx.tools.install_library --library cudnn --cuda {self.cuda}')
-            self.status(f'Installing CUTENSOR for CUDA {self.cuda}')
-            os.system(f'python -m cupyx.tools.install_library --library cutensor --cuda {self.cuda}')
-        else:
-            self.status(f'Libraries already installed')
         sys.exit()
 
 
@@ -188,11 +162,10 @@ setup(
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
 
-    # entry_points={
-    #     'console_scripts': ['mycli=mymodule:cli'],
-    # },
     entry_points={
-    'console_scripts': ['dexp=dexp.cli.dexp_main:cli', 'video=dexp.cli.video_main:cli']
+    'console_scripts': ['dexp=dexp.cli.dexp_main:cli',
+                        'video=dexp.cli.video_main:cli',
+                        'install=dexp.cli.install_main:cli']
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
@@ -214,8 +187,7 @@ setup(
     ],
     # $ setup.py publish support.
     cmdclass={
-        'upload': UploadCommand,
-        'cudalibs': InstalLibsCommand
+        'upload': UploadCommand
     },
 )
 

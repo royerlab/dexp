@@ -54,7 +54,7 @@ def depth_color_scale_legend(cmap,
     color_ramp = rgb_colormap(depth_ramp, cmap=cmap, bytes=False)
 
     # Create a Cairo surface:
-    import cairo
+    import cairocffi as cairo
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     context = cairo.Context(surface)
     context.scale(width, height)

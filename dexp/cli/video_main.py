@@ -8,10 +8,11 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 def cli():
     aprint("__________________________________________")
     aprint("  DEXP -- Data EXploration & Processing   ")
-    aprint("  Video editing commands                  ")
+    aprint("  Video editing dexp_commands                  ")
     aprint("  Royer lab                               ")
     aprint("__________________________________________")
     aprint("")
+    aprint("Note: videos are folders of images (typically PNGs), final step is to convert such image sequences into MP4s")
     # input("Press Enter to continue...")
 
 

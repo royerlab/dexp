@@ -42,6 +42,9 @@ def deskew(input_paths,
            workersbackend,
            devices,
            check):
+    """ Deskews all or selected channels of a dataset.
+    """
+
     input_dataset, input_paths = glob_datasets(input_paths)
     output_path = _get_output_path(input_paths[0], output_path, "_deconv")
 

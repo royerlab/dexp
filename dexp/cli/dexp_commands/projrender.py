@@ -66,6 +66,9 @@ def projrender(input_paths,
                devices,
                stop_at_exception=True
                ):
+    """ Renders datatset using 2D projections.
+    """
+
     input_dataset, input_paths = glob_datasets(input_paths)
     channels = _parse_channels(input_dataset, channels)
     slicing = _parse_slicing(slicing)

@@ -9,6 +9,9 @@ from dexp.datasets.open_dataset import glob_datasets
 @click.argument('input_paths', nargs=-1)  # ,  help='input path'
 @click.option('--channels', '-c', default=None, help='List of channels, all channels when ommited.')
 def check(input_paths, channels):
+    """ Checks the integrity of a dataset.
+    """
+
     input_dataset, input_paths = glob_datasets(input_paths)
     channels = _parse_channels(input_dataset, channels)
 

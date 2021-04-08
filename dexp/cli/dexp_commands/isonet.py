@@ -30,6 +30,9 @@ def isonet(input_paths,
            mode,
            max_epochs,
            check):
+    """ Recovers isotropic resolution using the ISONET approach (Weigert et al.)
+    """
+
     input_dataset, input_paths = glob_datasets(input_paths)
     output_path = _get_output_path(input_paths[0], output_path, '_isonet')
     slicing = _parse_slicing(slicing)

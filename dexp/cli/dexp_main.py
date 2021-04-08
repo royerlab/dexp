@@ -27,7 +27,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 def cli():
     aprint("__________________________________________")
     aprint("  DEXP -- Data EXploration & Processing   ")
-    aprint("  Dataset processing commands             ")
+    aprint("  Dataset processing dexp_commands             ")
     aprint("  Royer lab                               ")
     aprint("__________________________________________")
     aprint("")
@@ -50,24 +50,24 @@ def cli():
     pass
 
 
-from dexp.cli.commands.info import info
-from dexp.cli.commands.check import check
-from dexp.cli.commands.copy import copy
-from dexp.cli.commands.add import add
-from dexp.cli.commands.tiff import tiff
-from dexp.cli.commands.view import view
-from dexp.cli.commands.serve import serve
+from dexp.cli.dexp_commands.info import info
+from dexp.cli.dexp_commands.check import check
+from dexp.cli.dexp_commands.copy import copy
+from dexp.cli.dexp_commands.add import add
+from dexp.cli.dexp_commands.tiff import tiff
+from dexp.cli.dexp_commands.view import view
+from dexp.cli.dexp_commands.serve import serve
 
-from dexp.cli.commands.deskew import deskew
-from dexp.cli.commands.fuse import fuse
-from dexp.cli.commands.deconv import deconv
-from dexp.cli.commands.stabilize import stabilize
-from dexp.cli.commands.isonet import isonet
+from dexp.cli.dexp_commands.deskew import deskew
+from dexp.cli.dexp_commands.fuse import fuse
+from dexp.cli.dexp_commands.deconv import deconv
+from dexp.cli.dexp_commands.stabilize import stabilize
+from dexp.cli.dexp_commands.isonet import isonet
 
-from dexp.cli.commands.speedtest import speedtest
+from dexp.cli.dexp_commands.speedtest import speedtest
 
 from dexp.cli.video_commands.volrender import volrender
-from dexp.cli.commands.projrender import projrender
+from dexp.cli.dexp_commands.projrender import projrender
 
 cli.add_command(info)
 cli.add_command(check)

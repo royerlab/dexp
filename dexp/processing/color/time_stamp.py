@@ -60,7 +60,7 @@ def insert_time_stamp(image: 'Array',
     height, width = image.shape[:-1]
 
     # Dummy surface just for computing text width and height:
-    import cairo
+    import cairocffi as cairo
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     context = cairo.Context(surface)
     context.scale(1, 1)
@@ -102,7 +102,7 @@ def insert_time_stamp(image: 'Array',
 
     def generate_time_stamp(timepoint: int):
         # Create surface:
-        import cairo
+        import cairocffi as cairo
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
         context = cairo.Context(surface)
         context.scale(1, 1)

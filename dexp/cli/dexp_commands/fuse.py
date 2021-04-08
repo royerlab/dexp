@@ -68,6 +68,9 @@ def fuse(input_paths,
          workersbackend,
          devices,
          check):
+    """ Fuses the views of a multi-view light-sheet microscope dataset (available: simview and mvsols)
+    """
+
     input_dataset, input_paths = glob_datasets(input_paths)
     output_path = _get_output_path(input_paths[0], output_path, "_fused")
 

@@ -94,7 +94,7 @@ def _generate_scale_bar_image(width,
                               number_format,
                               unit):
     # Create surface:
-    import cairo
+    import cairocffi as cairo
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     context = cairo.Context(surface)
     context.scale(1, 1)

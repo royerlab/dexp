@@ -22,6 +22,9 @@ from dexp.datasets.open_dataset import glob_datasets
 @click.option('--clim', '-cl', type=str, default='0,1024', help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]')
 @click.option('--options', '-opt', type=str, default=None, help='Render options, e.g: \'gamma=1.2,box=True\'. Important: no white spaces!!! Complete list with defaults will be displayed on first run')
 def volrender(input_paths, output_path, channels=None, slicing=None, overwrite=False, aspect=None, colormap='viridis', rendersize=1536, clim=None, options=None):
+    """ Renders 3D volumetric video
+    """
+
     input_dataset, input_paths = glob_datasets(input_paths)
     channels = _parse_channels(input_dataset, channels)
     slicing = _parse_slicing(slicing)
