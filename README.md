@@ -38,6 +38,16 @@ The following line will delete any existing dexp environment, recreate it, and i
 conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; pip install dexp[cuda112]
 ```
 
+### Leveraging extra CUDA libraries for faster processing:
+
+If you want you **dexp** installation to be even faster, you can install additional libraries such as CUDNN and CUTENSOR 
+with the following command:
+
+```
+python setup.py cudalibs --cuda 11.2
+```
+Change the version accordingly...
+
 ### How to use **dexp** ?
 
 First you need a dataset aqquired on a light-sheet microscope, see [here](https://github.com/royerlab/dexp/wiki/dexp_datasets) for supported microscopes and formats.
