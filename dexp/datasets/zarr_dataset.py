@@ -55,7 +55,7 @@ class ZDataset(BaseDataset):
 
         super().__init__(dask_backed=False)
 
-        self._folder = path
+        self._path = path
         self._store = None
         self._root_group = None
         self._arrays = {}
@@ -193,12 +193,14 @@ class ZDataset(BaseDataset):
         return self.get_array(channel).dtype
 
     def info(self, channel: str = None) -> str:
+        info_str = ''
         if channel:
-            info_str = f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}"
+            info_str += f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}"
             info_str += "\n"
             info_str += str(self._arrays[channel].info)
             return info_str
         else:
+            info_str += f"Dataset at location: {self._path}"
             info_str = "Zarr tree: \n"
             info_str += str(self._root_group.tree())
             info_str += "\n\n"

@@ -2,7 +2,7 @@ import click
 from arbol.arbol import aprint, asection
 
 from dexp.cli.dexp_main import _default_workers_backend
-from dexp.cli.utils import _parse_channels, _parse_slicing, _get_output_path, _parse_devices
+from dexp.cli.parsing import _parse_channels, _parse_slicing, _get_output_path, _parse_devices
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.projrender import dataset_projection_rendering
 

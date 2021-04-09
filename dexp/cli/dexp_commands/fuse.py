@@ -3,7 +3,7 @@ from arbol.arbol import aprint, asection
 
 from dexp.cli.dexp_main import _default_codec, _default_store, _default_clevel
 from dexp.cli.dexp_main import _default_workers_backend
-from dexp.cli.utils import _parse_channels, _get_output_path, _parse_slicing, _parse_devices
+from dexp.cli.parsing import _parse_channels, _get_output_path, _parse_slicing, _parse_devices
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.fuse import dataset_fuse
 

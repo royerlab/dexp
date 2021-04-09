@@ -15,7 +15,8 @@ def dataset_view(input_dataset: BaseDataset,
                  colormap: str,
                  name: str,
                  windowsize: int,
-                 projections_only):
+                 projections_only: bool,
+                 volume_only: bool):
     # Annoying napari induced warnings:
     import warnings
     warnings.filterwarnings("ignore")
@@ -34,28 +35,29 @@ def dataset_view(input_dataset: BaseDataset,
             array = input_dataset.get_array(channel, wrap_with_dask=True)
 
             try:
-                for axis in range(array.ndim - 1):
-                    proj_array = input_dataset.get_projection_array(channel, axis=axis, wrap_with_dask=True)
+                if not volume_only:
+                    for axis in range(array.ndim - 1):
+                        proj_array = input_dataset.get_projection_array(channel, axis=axis, wrap_with_dask=True)
 
-                    shape = (proj_array.shape[0], 1,) + proj_array.shape[1:]
-                    proj_array = reshape(proj_array, shape=shape)
+                        shape = (proj_array.shape[0], 1,) + proj_array.shape[1:]
+                        proj_array = reshape(proj_array, shape=shape)
 
-                    if proj_array is not None:
-                        proj_layer = viewer.add_image(proj_array,
-                                                      name=channel + '_proj_' + str(axis),
-                                                      contrast_limits=contrast_limits,
-                                                      blending='additive',
-                                                      colormap=colormap, )
+                        if proj_array is not None:
+                            proj_layer = viewer.add_image(proj_array,
+                                                          name=channel + '_proj_' + str(axis),
+                                                          contrast_limits=contrast_limits,
+                                                          blending='additive',
+                                                          colormap=colormap, )
 
-                        if aspect is not None:
-                            if axis == 0:
-                                proj_layer.scale = (1, 1)
-                            elif axis == 1:
-                                proj_layer.scale = (aspect, 1)
-                            elif axis == 2:
-                                proj_layer.scale = (aspect, 1)
+                            if aspect is not None:
+                                if axis == 0:
+                                    proj_layer.scale = (1, 1)
+                                elif axis == 1:
+                                    proj_layer.scale = (aspect, 1)
+                                elif axis == 2:
+                                    proj_layer.scale = (aspect, 1)
 
-                            aprint(f"Setting aspect ratio for projection (layer.scale={proj_layer.scale})")
+                                aprint(f"Setting aspect ratio for projection (layer.scale={proj_layer.scale})")
 
             except KeyError:
                 aprint("Warning: can't find projections!")

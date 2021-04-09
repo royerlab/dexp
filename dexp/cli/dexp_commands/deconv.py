@@ -3,7 +3,7 @@ from arbol.arbol import aprint, asection
 
 from dexp.cli.dexp_main import _default_store, _default_codec, _default_clevel
 from dexp.cli.dexp_main import _default_workers_backend
-from dexp.cli.utils import _parse_channels, _get_output_path, _parse_slicing, _parse_devices
+from dexp.cli.parsing import _parse_channels, _get_output_path, _parse_slicing, _parse_devices
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.deconv import dataset_deconv
 
@@ -28,11 +28,13 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--blindspot', '-bs', type=int, default=0, help='Blindspot based noise reduction. Provide size of kernel to use, must be an odd number: 3(recommended), 5, 7. 0 means no blindspot. ', show_default=True)
 @click.option('--backprojection', '-bp', type=str, default='tpsf', help='Back projection operator, can be: ‘tpsf’ (transposed PSF = classic) or ‘wb’ (Wiener-Butterworth =  accelerated) ', show_default=True)
 @click.option('--objective', '-obj', type=str, default='nikon16x08na', help='Microscope objective to use for computing psf, can be: nikon16x08na or olympus20x10na', show_default=True)
+@click.option('--numape', '-na', type=float, default=None, help='Overrides NA value for objective.', show_default=True)
 @click.option('--dxy', '-dxy', type=float, default=0.485, help='Voxel size along x and y in microns', show_default=True)
 @click.option('--dz', '-dz', type=float, default=4 * 0.485, help='Voxel size along z in microns', show_default=True)
 @click.option('--xysize', '-sxy', type=int, default=31, help='PSF size along xy in voxels', show_default=True)
 @click.option('--zsize', '-sz', type=int, default=31, help='PSF size along z in voxels', show_default=True)
-@click.option('--downscalexy2', '-d', is_flag=False, help='Downscales along x and y for faster deconvolution (but worse quality of course)', show_default=True)  #
+@click.option('--showpsf', '-sp', is_flag=True, help='Show point spread function (PSF) with napari', show_default=True)
+@click.option('--scaling', '-s', type=str, default='1,1,1', help='Scales input image along the three axis: sz,sy,sx (numpy order). For example: 2,1,1 upscales along z by a factor 2', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
@@ -53,9 +55,11 @@ def deconv(input_paths,
            blindspot,
            backprojection,
            objective,
+           numape,
            dxy, dz,
            xysize, zsize,
-           downscalexy2,
+           showpsf,
+           scaling,
            workers,
            workersbackend,
            devices,
@@ -69,6 +73,9 @@ def deconv(input_paths,
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
     devices = _parse_devices(devices)
+
+    if ',' in scaling:
+        scaling = tuple(float(v) for v in scaling.split(','))
 
     with asection(f"Deconvolving dataset: {input_paths}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "):
         dataset_deconv(input_dataset,
@@ -87,11 +94,13 @@ def deconv(input_paths,
                        blind_spot=blindspot,
                        back_projection=backprojection,
                        objective=objective,
+                       numerical_aperture=numape,
                        dxy=dxy,
                        dz=dz,
                        xy_size=xysize,
                        z_size=zsize,
-                       downscalexy2=downscalexy2,
+                       show_psf=showpsf,
+                       scaling=scaling,
                        workers=workers,
                        workersbackend=workersbackend,
                        devices=devices,

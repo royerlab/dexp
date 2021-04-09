@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.utils import _parse_channels, _parse_slicing
+from dexp.cli.parsing import _parse_channels, _parse_slicing
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.view import dataset_view
 
@@ -15,6 +15,7 @@ from dexp.datasets.operations.view import dataset_view
 @click.option('--colormap', '-cm', type=str, default='viridis', help='sets colormap, e.g. viridis, gray, magma, plasma, inferno ', show_default=True)
 @click.option('--windowsize', '-ws', type=int, default=1536, help='Sets the napari window size. i.e. -ws 400 sets the window to 400x400', show_default=True)
 @click.option('--projectionsonly', '-po', is_flag=True, help='To view only the projections, if present.', show_default=True)
+@click.option('--volumeonly', '-vo', is_flag=True, help='To view only the volumetric data.', show_default=True)
 def view(input_paths,
          channels,
          slicing,
@@ -22,7 +23,8 @@ def view(input_paths,
          clim,
          colormap,
          windowsize,
-         projectionsonly
+         projectionsonly,
+         volumeonly
          ):
     """ Views dataset using napari (napari.org)
     """
@@ -60,6 +62,7 @@ def view(input_paths,
                          colormap=colormap,
                          slicing=slicing,
                          windowsize=windowsize,
-                         projections_only=projectionsonly)
+                         projections_only=projectionsonly,
+                         volume_only=volumeonly)
             input_dataset.close()
             aprint("Done!")

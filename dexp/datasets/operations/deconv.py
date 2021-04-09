@@ -29,19 +29,24 @@ def dataset_deconv(dataset: BaseDataset,
                    blind_spot: int,
                    back_projection: str,
                    objective: str,
+                   numerical_aperture: float,
                    dxy: float,
                    dz: float,
                    xy_size: int,
                    z_size: int,
-                   downscalexy2: bool,
+                   show_psf: bool,
+                   scaling: Tuple[float],
                    workers: int,
                    workersbackend: str,
                    devices: Sequence[int],
                    check: bool,
-                   stop_at_exception: bool = True):
+                   stop_at_exception: bool = True,):
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(path, mode, store)
+
+    sz, sy, sx = scaling
+    aprint(f"Input images will be scaled by: (sz,sy,sx)={scaling}")
 
     for channel in dataset._selected_channels(channels):
 
@@ -50,7 +55,7 @@ def dataset_deconv(dataset: BaseDataset,
         if slicing is not None:
             array = array[slicing]
 
-        shape = array.shape
+        shape = tuple(int(round(u*v)) for u, v in zip(array.shape, (1,)+scaling))
         chunks = ZDataset._default_chunks
         nb_timepoints = shape[0]
 
@@ -61,17 +66,31 @@ def dataset_deconv(dataset: BaseDataset,
                                               codec=compression,
                                               clevel=compression_level)
 
-        psf_kwargs = {'dxy': dxy * (2 if downscalexy2 else 1),
-                      'dz': dz,
-                      'xy_size': xy_size,
-                      'z_size': z_size}
+        #This is not ideal but difficult to avoid right now:
+        sxy = (sx+sy)/2
 
-        aprint(f"PSF parameters: {psf_kwargs}")
+        psf_kwargs = {'dxy': dxy / sxy,
+                      'dz': dz / sz,
+                      'xy_size': int(round(xy_size * sxy)),
+                      'z_size': int(round(z_size * sz))}
+
+        aprint(f"psf_kwargs: {psf_kwargs}")
+
+        if numerical_aperture is not None:
+            aprint(f"Numerical aperture overridden to a value of: {numerical_aperture}")
+            psf_kwargs['NA'] = numerical_aperture
 
         if objective == 'nikon16x08na':
             psf_kernel = nikon16x08na(**psf_kwargs)
         elif objective == 'olympus20x10na':
             psf_kernel = olympus20x10na(**psf_kwargs)
+
+        if show_psf:
+            from napari import gui_qt, Viewer
+            with gui_qt():
+                viewer = Viewer(title=f"DEXP | viewing PSF with napari", ndisplay=3)
+                viewer.add_image(psf_kernel)
+
 
         def process(tp, device):
 
@@ -81,14 +100,19 @@ def dataset_deconv(dataset: BaseDataset,
 
                 with BestBackend(device, exclusive=True):
 
-                    if downscalexy2:
-                        tp_array = downscale_local_mean(tp_array, factors=(1, 2, 2)).astype(tp_array.dtype)
+                    if sz != 1.0 or sy != 1.0 or sx != 1.0:
+                        with asection(f"Applying scaling {(sz, sy, sx)} to image."):
+                            sp = Backend.get_sp_module()
+                            tp_array = Backend.to_backend(tp_array)
+                            tp_array = sp.ndimage.interpolation.zoom(tp_array, zoom=(sz, sy, sx), order=1)
+                            tp_array = Backend.to_numpy(tp_array)
 
                     if method == 'lr':
                         min_value = tp_array.min()
                         max_value = tp_array.max()
 
                         def f(image):
+
                             return lucy_richardson_deconvolution(image=image,
                                                                  psf=psf_kernel,
                                                                  num_iterations=num_iterations,
@@ -136,6 +160,8 @@ def dataset_deconv(dataset: BaseDataset,
         else:
             for tp in range(0, nb_timepoints):
                 process(tp, devices[0])
+
+
     aprint(dest_dataset.info())
     if check:
         dest_dataset.check_integrity()

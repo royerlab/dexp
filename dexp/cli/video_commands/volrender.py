@@ -6,7 +6,7 @@ import click
 import numpy
 from arbol.arbol import section, aprint, asection
 
-from dexp.cli.utils import _parse_channels, _parse_slicing
+from dexp.cli.parsing import _parse_channels, _parse_slicing
 from dexp.datasets.open_dataset import glob_datasets
 
 
