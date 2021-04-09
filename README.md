@@ -20,9 +20,9 @@ Once these prerequisites are satified, you can install **dexp**.
 
 **dexp** can simply be installed with:
 
-To installs **dexp** with GPU support (CUDA 11.2) do:
+To installs **dexp** with GPU support (CUDA 11.2) and colored console output do:
 ```
-pip install dexp[cuda112]
+pip install dexp[color, cuda112]
 ```
 Other available CUDA versions (from [CuPy](https://cupy.dev/)) are: cuda111, cuda110, cuda102, cuda101, cuda100.
 
@@ -40,12 +40,12 @@ brew install cairo
 
 The following line will delete any existing dexp environment, recreate it, and install **dexp** with support for CUDA 11.2:
 ```
-conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; pip install dexp[cuda112]
+conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; pip install dexp[color,cuda112]
 ```
 
 ### Leveraging extra CUDA libraries for faster processing:
 
-If you want you **dexp** installation to be even faster, you can install additional libraries such as CUDNN and CUTENSOR 
+If you want you **dexp** CUDA-based processing to be even faster, you can install additional libraries such as CUDNN and CUTENSOR 
 with the following command:
 
 ```
