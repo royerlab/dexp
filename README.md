@@ -53,6 +53,10 @@ install cudalibs 11.2
 ```
 Change the CUDA version accordingly...
 
+### Versions
+
+The list of released versions can be found [here](https://pypi.org/project/dexp/#history). The version format is: YYYY.MM.DD.M where YYYY is the year, MM the month, dd the day, and M is the number of elapsed minutes of the day. Git tags are automatically set to link pipy versions to github tagged versions so that the corresponding code can be inspected on github, probably the most important feature. This is a very simple and semantically clear versionning scheme that accomodates for a rapid rate of updates. 
+
 ### How to use **dexp** ?
 
 First you need a dataset aqquired on a light-sheet microscope, see [here](https://github.com/royerlab/dexp/wiki/dexp_datasets) for supported microscopes and formats.
@@ -63,7 +67,6 @@ The list of commands can be found by :
 ```
 dexp --help
 ```
-
 
 ### Example usage
 
