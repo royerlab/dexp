@@ -50,7 +50,6 @@ REQUIRED = [
     'dask-image',
     'distributed',
     'zarr',
-    'napari[all]',
     'cachey',
     'gputil',
     'gpustat',
@@ -73,7 +72,8 @@ EXTRAS = {
     'cuda102': [f'cupy-cuda102=={CUPY_VERSION}', ],
     'cuda101': [f'cupy-cuda101=={CUPY_VERSION}', ],
     'cuda100': [f'cupy-cuda100=={CUPY_VERSION}', ],
-    'color': ['colorama', 'ansicolors',]
+    'color': ['colorama', 'ansicolors',],
+    'napari': ['napari[all]',]
 }
 
 
