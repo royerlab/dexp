@@ -34,7 +34,7 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--xysize', '-sxy', type=int, default=31, help='PSF size along xy in voxels', show_default=True)
 @click.option('--zsize', '-sz', type=int, default=31, help='PSF size along z in voxels', show_default=True)
 @click.option('--showpsf', '-sp', is_flag=True, help='Show point spread function (PSF) with napari', show_default=True)
-@click.option('--scaling', '-s', type=str, default='1,1,1', help='Scales input image along the three axis: sz,sy,sx (numpy order). For example: 2,1,1 upscales along z by a factor 2', show_default=True)  #
+@click.option('--scaling', '-sc', type=str, default='1,1,1', help='Scales input image along the three axis: sz,sy,sx (numpy order). For example: 2,1,1 upscales along z by a factor 2', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
