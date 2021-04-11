@@ -24,7 +24,7 @@ To installs **dexp** with GPU support (CUDA 11.2), colored console output, and [
 ```
 pip install dexp[color, cuda112, napari]
 ```
-Other available CUDA versions (from [CuPy](https://cupy.dev/)) are: cuda111, cuda110, cuda102, cuda101, cuda100.
+Other available CUDA versions (from [CuPy](https://cupy.dev/)) are: cuda111, cuda110, cuda102, cuda101, cuda100. We recommend using the most recent CUDA version that your system supports, and avoiding versions below 10.0
 
 If instead you do not wish to add CUDA support, you can instead do:
 ```
