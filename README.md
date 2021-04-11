@@ -1,5 +1,5 @@
 ![fishcolorproj](https://user-images.githubusercontent.com/1870994/113943035-b61b0c00-97b6-11eb-8cfd-ac78e2976ebb.png)
-# **dexp** | Light-sheet Dataset EXploration and Processing 
+# **dexp** | light-sheet Dataset EXploration and Processing 
 
 **dexp** is a [napari](https://napari.org/), [CuPy](https://cupy.dev/), [Zarr](https://zarr.readthedocs.io/en/stable/), and [DASK](https://dask.org/) based library for managing, processing and visualizing light-sheet microscopy datasets. It consists in light-sheet specialised image processing functions (equalisation, denoising, dehazing, registration, fusion, stabilization, deskewing, deconvolution), visualization functions (napari-based viewing, 2D/3D rendering, video compositing and resizing, mp4 generation), as well as dataset management functions (copy, crop, concatenation, tiff conversion). Almost all functions are GPU accelerated via [CuPy](https://cupy.dev/) but also have a [numpy](https://numpy.org/)-based fallback option for testing on small datasets. In addition to a functional API, DEXP offers a command line interface that makes it very easy for non-coders to pipeline large processing jobs all the way from a large multi-terabyte raw dataset to fully processed and rendered video in MP4 format. 
 
