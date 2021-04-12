@@ -1,28 +1,29 @@
 import numpy
+from arbol import aprint
 
 from dexp.optics.psf.microscope_psf import MicroscopePSF
 
 
-def nikon16x08na(xy_size=17, z_size=17, dxy=0.485, dz=2, wvl=0.561):
+def nikon16x08na(xy_size=17, z_size=17, dxy=0.485, dz=2, wvl=0.561, NA=0.8):
     return generate_psf(dxy=dxy,
                         dz=dz,
                         xy_size=xy_size,
                         z_size=z_size,
                         M=16,
-                        NA=0.8,
+                        NA=NA,
                         n=1.33,
                         wd=3000,
                         tl=165.0 * 1.0e+3,
                         wvl=wvl)
 
 
-def olympus20x10na(xy_size=17, z_size=17, dxy=0.439, dz=1.5, wvl=0.561):
+def olympus20x10na(xy_size=17, z_size=17, dxy=0.439, dz=1.8, wvl=0.561, NA=1.0):
     return generate_psf(dxy=dxy,
                         dz=dz,
                         xy_size=xy_size,
                         z_size=z_size,
-                        M=16,
-                        NA=0.8,
+                        M=20,
+                        NA=NA,
                         n=1.33,
                         wd=2000,
                         tl=133.0 * 1.0e+3,
@@ -65,5 +66,7 @@ def generate_psf(dxy, dz, xy_size, z_size, M=16, NA=0.8, n=1.33, wd=3000, tl=133
     )
 
     psf_xyz_array /= psf_xyz_array.sum()
+
+    aprint(f"Generating PSF for parameters: {psf_gen.parameters}")
 
     return psf_xyz_array

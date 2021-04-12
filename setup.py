@@ -50,13 +50,10 @@ REQUIRED = [
     'dask-image',
     'distributed',
     'zarr',
-    'napari[all]',
     'cachey',
     'gputil',
     'gpustat',
     'arbol',
-    'colorama',
-    'ansicolors',
     'simple-zarr-server',
     'requests',
     'aiohttp',
@@ -68,12 +65,15 @@ REQUIRED = [
 
 # What packages are optional?
 EXTRAS = {
+    'source': [f'cupy=={CUPY_VERSION}', ],
     'cuda112': [f'cupy-cuda112=={CUPY_VERSION}', ],
     'cuda111': [f'cupy-cuda111=={CUPY_VERSION}', ],
     'cuda110': [f'cupy-cuda110=={CUPY_VERSION}', ],
     'cuda102': [f'cupy-cuda102=={CUPY_VERSION}', ],
     'cuda101': [f'cupy-cuda101=={CUPY_VERSION}', ],
     'cuda100': [f'cupy-cuda100=={CUPY_VERSION}', ],
+    'color': ['colorama', 'ansicolors',],
+    'napari': ['napari[all]',]
 }
 
 

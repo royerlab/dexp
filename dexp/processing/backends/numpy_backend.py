@@ -8,6 +8,9 @@ from dexp.processing.backends.backend import Backend
 
 
 class NumpyBackend(Backend):
+    """
+    NumpyBackend
+    """
 
     def __init__(self, *args, **kwargs):
         """ Instanciates a Numpy-based Image Processing backend

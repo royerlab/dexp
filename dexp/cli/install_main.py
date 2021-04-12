@@ -10,7 +10,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 def cli():
     aprint("__________________________________________")
     aprint("  DEXP -- Data EXploration & Processing   ")
-    aprint("  System installation dexp_commands            ")
+    aprint("  System installation commands            ")
     aprint("  Royer lab                               ")
     aprint("__________________________________________")
     aprint("")

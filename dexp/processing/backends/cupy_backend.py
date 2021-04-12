@@ -12,6 +12,9 @@ from dexp.processing.backends.backend import Backend
 
 
 class CupyBackend(Backend):
+    """
+    CupyBackend
+    """
     _dexp_cuda_cluster = None
     _dexp_dask_client = None
 

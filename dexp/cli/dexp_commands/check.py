@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import asection, aprint
 
-from dexp.cli.utils import _parse_channels
+from dexp.cli.parsing import _parse_channels
 from dexp.datasets.open_dataset import glob_datasets
 
 
