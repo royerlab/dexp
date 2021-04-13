@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'dexp'
-copyright = '2021, CZ Biohub'
+copyright = '2021. Chan Zuckerberg Biohub. All rights reserved'
 author = 'CZ Biohub'
 
 
