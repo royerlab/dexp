@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Optional
 
 import numpy
 from arbol.arbol import aprint
@@ -10,7 +10,7 @@ from dexp.utils.timeit import timeit
 
 def dataset_isonet(dataset: BaseDataset,
                    path: str,
-                   channel: Sequence[str],
+                   channel: Optional[Sequence[str]],
                    slicing,
                    store: str,
                    compression: str,
@@ -20,9 +20,9 @@ def dataset_isonet(dataset: BaseDataset,
                    mode: str,
                    dxy: float,
                    dz: float,
-                   binning: bool,
+                   binning: int,
                    sharpening: bool,
-                   training_tp_index: int,
+                   training_tp_index: Optional[int],
                    max_epochs: int,
                    check: bool):
     if channel is None:
@@ -82,7 +82,7 @@ def dataset_isonet(dataset: BaseDataset,
                     tp_array = dehazing(tp_array, mode='hybrid', min=0, max=1024, margin_pad=False)
 
                 aprint("Applying IsoNet to image...")
-                tp_array = isonet.apply_pair(tp_array)
+                tp_array = isonet.apply(tp_array)
 
                 aprint(f'Result: image of shape: {tp_array.shape}, dtype: {tp_array.dtype} ')
 

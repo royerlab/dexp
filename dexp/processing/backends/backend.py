@@ -6,6 +6,9 @@ import numpy
 
 
 class Backend(ABC):
+    """
+    Some description.
+    """
 
     def __init__(self):
         """ Instanciates an Image Processing backend

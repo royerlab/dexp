@@ -1,7 +1,6 @@
 from typing import Tuple, Union
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.color.border import add_border
 
 
 def crop_resize_pad_color_image(image,
