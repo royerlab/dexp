@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Install &mdash; dexp  documentation</title>
@@ -85,7 +84,7 @@
               
             
             
-              <p><span class="caption-text">Getting Started</span></p>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-install-dexp">How to install <strong>dexp</strong></a><ul>
@@ -99,25 +98,12 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contact_us.html">Contact us</a></li>
 </ul>
-<p><span class="caption-text">Dexp Commands</span></p>
+<p class="caption"><span class="caption-text">Commands</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/add.html">add</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/check.html">check</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/copy.html">copy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/deconv.html">deconv</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/deskew.html">deskew</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/fuse.html">fuse</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/info.html">info</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/isonet.html">isonet</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/projrender.html">projrender</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/serve.html">serve</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/speedtest.html">speedtest</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/stabilize.html">stabilize</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/tiff.html">tiff</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/view.html">view</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dexp_commands/volrender.html">volrender</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/dexp_commands.html">dexp commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/video_commands.html">video commands</a></li>
 </ul>
-<p><span class="caption-text">API</span></p>
+<p class="caption"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../api/introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/processing.html">Processing</a></li>
@@ -189,19 +175,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="install">
+  <div class="section" id="install">
 <h1>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h1>
-<section id="how-to-install-dexp">
+<div class="section" id="how-to-install-dexp">
 <h2>How to install <strong>dexp</strong><a class="headerlink" href="#how-to-install-dexp" title="Permalink to this headline">¶</a></h2>
-<section id="prerequisites">
+<div class="section" id="prerequisites">
 <h3>Prerequisites:<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
 <p><strong>dexp</strong> works on OSX and Windows, but it is recomended to use the latest version of Ubuntu.
 We recommend a machine with a top-of-the-line NVIDIA graphics card (min 12G to be confortable).</p>
 <p>First, make sure to have a <a class="reference external" href="https://github.com/royerlab/dexp/wiki/install_python">working python installation</a> .
 Second, make sure to have a compatible and functional <a class="reference external" href="https://github.com/royerlab/dexp/wiki/install_cuda">CUDA installation</a> .</p>
 <p>Once these prerequisites are satified, you can install <strong>dexp</strong>.</p>
-</section>
-<section id="installation">
+</div>
+<div class="section" id="installation">
 <h3>Installation:<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
 <p><strong>dexp</strong> can simply be installed with:</p>
 <p>To installs <strong>dexp</strong> with GPU support (CUDA 11.2) do:</p>
@@ -213,8 +199,8 @@ Second, make sure to have a compatible and functional <a class="reference extern
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install dexp
 </pre></div>
 </div>
-</section>
-<section id="quick-one-line-environment-setup-and-installation">
+</div>
+<div class="section" id="quick-one-line-environment-setup-and-installation">
 <h3>Quick one-line environment setup and installation:<a class="headerlink" href="#quick-one-line-environment-setup-and-installation" title="Permalink to this headline">¶</a></h3>
 <p>The following line will delete any existing dexp environment, recreate it, and install <strong>dexp</strong> with support for CUDA 11.2:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda deactivate
@@ -224,8 +210,8 @@ conda activate dexp
 pip install dexp<span class="o">[</span>cuda112<span class="o">]</span>
 </pre></div>
 </div>
-</section>
-<section id="leveraging-extra-cuda-libraries-for-faster-processing">
+</div>
+<div class="section" id="leveraging-extra-cuda-libraries-for-faster-processing">
 <h3>Leveraging extra CUDA libraries for faster processing:<a class="headerlink" href="#leveraging-extra-cuda-libraries-for-faster-processing" title="Permalink to this headline">¶</a></h3>
 <p>If you want you <strong>dexp</strong> installation to be even faster, you can install additional libraries such as CUDNN and CUTENSOR
 with the following command:</p>
@@ -233,9 +219,9 @@ with the following command:</p>
 </pre></div>
 </div>
 <p>Change the version accordingly…</p>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
            </div>
