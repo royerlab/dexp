@@ -61,7 +61,7 @@ The list of released versions can be found [here](https://pypi.org/project/dexp/
 
 First you need a dataset aqquired on a light-sheet microscope, see [here](https://github.com/royerlab/dexp/wiki/dexp-dataset-formats) for supported microscopes and formats.
 
-In depth documentation can be found [here](https://royerlab.github.io/dexp/index.html)
+In depth documentation can be found [here](https://royerlab.github.io/dexp/index.html) for both command line  commands and for the python API.
 
 
 
