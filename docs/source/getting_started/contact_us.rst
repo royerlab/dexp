@@ -2,7 +2,7 @@
 Contact Us
 ==========
 
-*Dexp is cool.*
+Feel free to reach us at our github repository: https://github.com/royerlab/dexp
 
-asdfasdf
+
 
