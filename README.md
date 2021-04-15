@@ -11,7 +11,7 @@
 **dexp** works on OSX and Windows, but it is recomended to use the latest version of Ubuntu.
 We recommend a machine with a top-of-the-line NVIDIA graphics card (min 12G to be confortable).
 
-First, make sure to have a [working python installation](https://github.com/royerlab/dexp/wiki/Installing-Python) 
+First, make sure to have a [working python installation](https://github.com/royerlab/dexp/wiki/Installing-Python).  
 Second, make sure to have a compatible and functional [CUDA installation](https://github.com/royerlab/dexp/wiki/Installing-CUDA)
 
 Once these prerequisites are satified, you can install **dexp**.
