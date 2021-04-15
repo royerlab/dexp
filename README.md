@@ -11,7 +11,7 @@
 **dexp** works on OSX and Windows, but it is recomended to use the latest version of Ubuntu.
 We recommend a machine with a top-of-the-line NVIDIA graphics card (min 12G to be confortable).
 
-First, make sure to have a [working python installation](https://github.com/royerlab/dexp/wiki/Installing-Python) 
+First, make sure to have a [working python installation](https://github.com/royerlab/dexp/wiki/Installing-Python).  
 Second, make sure to have a compatible and functional [CUDA installation](https://github.com/royerlab/dexp/wiki/Installing-CUDA)
 
 Once these prerequisites are satified, you can install **dexp**.
@@ -59,16 +59,9 @@ The list of released versions can be found [here](https://pypi.org/project/dexp/
 
 ### How to use **dexp** ?
 
-First you need a dataset aqquired on a light-sheet microscope, see [here](https://github.com/royerlab/dexp/wiki/dexp_datasets) for supported microscopes and formats.
+First you need a dataset aqquired on a light-sheet microscope, see [here](https://github.com/royerlab/dexp/wiki/dexp-dataset-formats) for supported microscopes and formats.
 
-Second, you can use any of the commands [here](https://github.com/royerlab/dexp/wiki/dexp_commands) to process your data.
-The list of commands can be found by :
-
-```
-dexp --help
-```
-
-### Example usage
+In depth documentation can be found [here](https://royerlab.github.io/dexp/index.html) for both command line  commands and for the python API.
 
 
 

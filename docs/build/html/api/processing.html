@@ -1,0 +1,1512 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Processing &mdash; dexp  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Volume Render" href="volume_render.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> dexp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/contact_us.html">Contact us</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Commands</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/dexp_commands.html">dexp commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/video_commands.html">video commands</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Processing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#backends">Backends</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#color">Color</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deconvolution">Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deskew">Deskew</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#equalise">Equalise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#filters">Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fusion">Fusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#registration">Registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#restoration">Restoration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="volume_render.html">Volume Render</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dexp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Processing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/api/processing.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="processing">
+<h1>Processing<a class="headerlink" href="#processing" title="Permalink to this headline">¶</a></h1>
+<p>Processing module has various submodules. Here summary and detailed
+documentation of some of the submodules:</p>
+<dl>
+<dt>Backends</dt><dd><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.backends.backend.Backend" title="dexp.processing.backends.backend.Backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">backend.Backend</span></code></a>()</p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.backends.best_backend.BestBackend" title="dexp.processing.backends.best_backend.BestBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">best_backend.BestBackend</span></code></a>(*args, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.backends.cupy_backend.CupyBackend" title="dexp.processing.backends.cupy_backend.CupyBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cupy_backend.CupyBackend</span></code></a>([device_id])</p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.backends.numpy_backend.NumpyBackend" title="dexp.processing.backends.numpy_backend.NumpyBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy_backend.NumpyBackend</span></code></a>(*args, **kwargs)</p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Color</dt><dd><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.color.blend.blend_color_images" title="dexp.processing.color.blend.blend_color_images"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blend.blend_color_images</span></code></a>(images[, modes, …])</p></td>
+<td><p>Blends multiple images together according to a blend mode</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.color.border.add_border" title="dexp.processing.color.border.add_border"><code class="xref py py-obj docutils literal notranslate"><span class="pre">border.add_border</span></code></a>(image[, width, color, …])</p></td>
+<td><p>Adds a color border to an image</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.color.cairo_utils.get_array_for_cairo_surface" title="dexp.processing.color.cairo_utils.get_array_for_cairo_surface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cairo_utils.get_array_for_cairo_surface</span></code></a>(surface)</p></td>
+<td><p>Returns an array given a ImageSurface from PyCairo.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.color.colormap.rgb_colormap" title="dexp.processing.color.colormap.rgb_colormap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">colormap.rgb_colormap</span></code></a>(image[, cmap, bytes, …])</p></td>
+<td><p>Takes an image and returns a new image of same shape + an RGB dimension.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.color.conversions.gray2rgba" title="dexp.processing.color.conversions.gray2rgba"><code class="xref py py-obj docutils literal notranslate"><span class="pre">conversions.gray2rgba</span></code></a>(image[, alpha, …])</p></td>
+<td><p>Create a RGBA representation of a gray-level image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.color.crop_resize_pad.crop_resize_pad_color_image" title="dexp.processing.color.crop_resize_pad.crop_resize_pad_color_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crop_resize_pad.crop_resize_pad_color_image</span></code></a>(image)</p></td>
+<td><p>Crops, resizes and then pad an RGB(A) image.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.color.insert.insert_color_image" title="dexp.processing.color.insert.insert_color_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert.insert_color_image</span></code></a>(image, inset_image)</p></td>
+<td><p>Inserts an inset image into a base image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.color.projection.project_image" title="dexp.processing.color.projection.project_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">projection.project_image</span></code></a>(image[, axis, dir, …])</p></td>
+<td><p>Projects an image along a given axis given a specified method (max projection, max projection color-coded depth, …) and produces a rendered RGB image.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.color.projection_legend.depth_color_scale_legend" title="dexp.processing.color.projection_legend.depth_color_scale_legend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">projection_legend.depth_color_scale_legend</span></code></a>(…)</p></td>
+<td><p>Produces a color bar legend.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.color.scale_bar.insert_scale_bar" title="dexp.processing.color.scale_bar.insert_scale_bar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_bar.insert_scale_bar</span></code></a>(image[, …])</p></td>
+<td><p>Inserts a scale bar into an image.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.color.time_stamp.insert_time_stamp" title="dexp.processing.color.time_stamp.insert_time_stamp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_stamp.insert_time_stamp</span></code></a>(image, …[, …])</p></td>
+<td><p>Inserts a scale bar into an image.</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Deconvolution</dt><dd><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.deconvolution.lr_deconvolution.lucy_richardson_deconvolution" title="dexp.processing.deconvolution.lr_deconvolution.lucy_richardson_deconvolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lr_deconvolution.lucy_richardson_deconvolution</span></code></a>(…)</p></td>
+<td><p>Deconvolves an nD image given a point-spread-function.</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Deskew</dt><dd><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.deskew.yang_deskew.yang_deskew" title="dexp.processing.deskew.yang_deskew.yang_deskew"><code class="xref py py-obj docutils literal notranslate"><span class="pre">yang_deskew.yang_deskew</span></code></a>(image, flip, dx, dz, …)</p></td>
+<td><p>Resampling</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Equalise</dt><dd><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.equalise.equalise_intensity.equalise_intensity" title="dexp.processing.equalise.equalise_intensity.equalise_intensity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">equalise_intensity.equalise_intensity</span></code></a>(…[, …])</p></td>
+<td><p>Equalise intensity between two images</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Filters</dt><dd><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.filters.butterworth_filter.butterworth_filter" title="dexp.processing.filters.butterworth_filter.butterworth_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">butterworth_filter.butterworth_filter</span></code></a>(image)</p></td>
+<td><p>Applies a Butterworth filter to an image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.filters.fft_convolve.fft_convolve" title="dexp.processing.filters.fft_convolve.fft_convolve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fft_convolve.fft_convolve</span></code></a>(image1, image2[, …])</p></td>
+<td><p>Fast FFT based convolution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.filters.sobel_filter.sobel_filter" title="dexp.processing.filters.sobel_filter.sobel_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sobel_filter.sobel_filter</span></code></a>(image[, exponent, …])</p></td>
+<td><p>Computes the Sobel magnitude filter response for a given image.</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Fusion</dt><dd><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.fusion.dct_fusion.fuse_dct_nd" title="dexp.processing.fusion.dct_fusion.fuse_dct_nd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dct_fusion.fuse_dct_nd</span></code></a>(image_a, image_b[, …])</p></td>
+<td><p>Fuses two images in DCT domain by picking coefficients with maximal magnitude.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.fusion.dft_fusion.fuse_dft_nd" title="dexp.processing.fusion.dft_fusion.fuse_dft_nd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dft_fusion.fuse_dft_nd</span></code></a>(image_a, image_b[, …])</p></td>
+<td><p>Fuses two images in DFT domain by picking coefficients with maximal magnitude.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.fusion.tg_fusion.fuse_tg_nd" title="dexp.processing.fusion.tg_fusion.fuse_tg_nd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tg_fusion.fuse_tg_nd</span></code></a>(image_a, image_b[, …])</p></td>
+<td><p>Fuses two images by picking regions from one or the other image based on the local image quality measured by using the magnitude of the Sobel gradient – similarly as in the Tenengrad focus metric.</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Registration</dt><dd><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.registration.sequence.image_stabilisation" title="dexp.processing.registration.sequence.image_stabilisation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sequence.image_stabilisation</span></code></a>(image[, axis, …])</p></td>
+<td><p>Computes a sequence stabilisation model for an image sequence indexed along a specified axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.registration.sequence.image_sequence_stabilisation" title="dexp.processing.registration.sequence.image_sequence_stabilisation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sequence.image_sequence_stabilisation</span></code></a>(…[, …])</p></td>
+<td><p>Computes a sequence stabilisation model for an image sequence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.registration.sequence_proj.image_stabilisation_proj" title="dexp.processing.registration.sequence_proj.image_stabilisation_proj"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sequence_proj.image_stabilisation_proj</span></code></a>(image)</p></td>
+<td><p>Computes a sequence stabilisation model for an image sequence indexed along a specified axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.registration.sequence_proj.image_stabilisation_proj_" title="dexp.processing.registration.sequence_proj.image_stabilisation_proj_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sequence_proj.image_stabilisation_proj_</span></code></a>(…)</p></td>
+<td><p>Same as ‘sequence_stabilisation_proj’ but takes projections instead, usefull if the projections are already available.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.registration.translation_2d.register_translation_2d_skimage" title="dexp.processing.registration.translation_2d.register_translation_2d_skimage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translation_2d.register_translation_2d_skimage</span></code></a>(…)</p></td>
+<td><p>Registers two 2D images using just a translation-only model using skimage registration code.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.registration.translation_2d.register_translation_2d_dexp" title="dexp.processing.registration.translation_2d.register_translation_2d_dexp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translation_2d.register_translation_2d_dexp</span></code></a>(…)</p></td>
+<td><p>Registers two 2D images using just a translation-only model using dexp own registration code.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.registration.translation_nd.register_translation_nd" title="dexp.processing.registration.translation_nd.register_translation_nd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translation_nd.register_translation_nd</span></code></a>(…)</p></td>
+<td><p>Registers two nD images using just a translation-only model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.registration.translation_nd_proj.register_translation_proj_nd" title="dexp.processing.registration.translation_nd_proj.register_translation_proj_nd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translation_nd_proj.register_translation_proj_nd</span></code></a>(…)</p></td>
+<td><p>Registers two nD (n=2 or 3) images using just a translation-only model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.registration.warp_multiscale_nd.register_warp_multiscale_nd" title="dexp.processing.registration.warp_multiscale_nd.register_warp_multiscale_nd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">warp_multiscale_nd.register_warp_multiscale_nd</span></code></a>(…)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.registration.warp_nd.register_warp_nd" title="dexp.processing.registration.warp_nd.register_warp_nd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">warp_nd.register_warp_nd</span></code></a>(*args, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Restoration</dt><dd><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.restoration.aap_correction.axis_aligned_pattern_correction" title="dexp.processing.restoration.aap_correction.axis_aligned_pattern_correction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aap_correction.axis_aligned_pattern_correction</span></code></a>(image)</p></td>
+<td><p>Axis aligned pattern correction</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.restoration.clean_dark_regions.clean_dark_regions" title="dexp.processing.restoration.clean_dark_regions.clean_dark_regions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clean_dark_regions.clean_dark_regions</span></code></a>(image, …)</p></td>
+<td><p>Clean Dark Regions</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.restoration.dehazing.dehaze" title="dexp.processing.restoration.dehazing.dehaze"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dehazing.dehaze</span></code></a>(image[, size, downscale, …])</p></td>
+<td><p>Dehazes an image by means of a non-linear low-pass rejection filter.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.restoration.lipshitz_correction.lipschitz_continuity_correction" title="dexp.processing.restoration.lipshitz_correction.lipschitz_continuity_correction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lipshitz_correction.lipschitz_continuity_correction</span></code></a>(image)</p></td>
+<td><p>‘Lipshitz continuity correction’</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="dexp.processing.backends.backend.Backend">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dexp.processing.backends.backend.</span></code><code class="sig-name descname"><span class="pre">Backend</span></code><a class="reference internal" href="../_modules/dexp/processing/backends/backend.html#Backend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.backends.backend.Backend" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.backends.backend.Backend.close" title="dexp.processing.backends.backend.Backend.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</p></td>
+<td><p>Releases all ressources allocated/cached by backend (if can be done safely)</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 68%" />
+<col style="width: 32%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>clear_memory_pool</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>copy</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>current</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_sp_module</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>get_xp_module</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>reset</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>set</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>to_backend</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>to_numpy</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="dexp.processing.backends.backend.Backend.close">
+<code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/backends/backend.html#Backend.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.backends.backend.Backend.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Releases all ressources allocated/cached by backend (if can be done safely)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.backends.best_backend.BestBackend">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.backends.best_backend.</span></code><code class="sig-name descname"><span class="pre">BestBackend</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/backends/best_backend.html#BestBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.backends.best_backend.BestBackend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dexp.processing.backends.cupy_backend.CupyBackend">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dexp.processing.backends.cupy_backend.</span></code><code class="sig-name descname"><span class="pre">CupyBackend</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclusive</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_streaming</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_memory_pool</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_memory_pool_clearing</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_unified_memory</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cub</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cutensor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_fft_planning</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_dask_cuda_cluster</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_dask_cuda_nvlink</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/backends/cupy_backend.html#CupyBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.backends.cupy_backend.CupyBackend" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.backends.cupy_backend.CupyBackend.available_devices" title="dexp.processing.backends.cupy_backend.CupyBackend.available_devices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">available_devices</span></code></a>([order, maxLoad, maxMemory])</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dexp.processing.backends.cupy_backend.CupyBackend.close" title="dexp.processing.backends.cupy_backend.CupyBackend.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</p></td>
+<td><p>Releases all ressources allocated/cached by backend (if can be done safely)</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 68%" />
+<col style="width: 32%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>clear_memory_pool</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>copy</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>current</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_sp_module</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>get_xp_module</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>num_devices</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>reset</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>set</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>synchronise</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>to_backend</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>to_numpy</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="dexp.processing.backends.cupy_backend.CupyBackend.available_devices">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">available_devices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'first'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxLoad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxMemory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/backends/cupy_backend.html#CupyBackend.available_devices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.backends.cupy_backend.CupyBackend.available_devices" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>order</strong><span class="classifier">first –&gt; select the GPU with the lowest ID (DEFAULT)</span></dt><dd><p>last –&gt; select the GPU with the highest ID
+random –&gt; select a random available GPU
+load –&gt; select the GPU with the lowest load
+memory –&gt; select the GPU with the most memory available</p>
+</dd>
+<dt><strong>maxLoad :</strong></dt><dd></dd>
+<dt><strong>maxMemory</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dexp.processing.backends.cupy_backend.CupyBackend.close">
+<code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dexp.processing.backends.cupy_backend.CupyBackend.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Releases all ressources allocated/cached by backend (if can be done safely)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dexp.processing.backends.numpy_backend.NumpyBackend">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dexp.processing.backends.numpy_backend.</span></code><code class="sig-name descname"><span class="pre">NumpyBackend</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/backends/numpy_backend.html#NumpyBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.backends.numpy_backend.NumpyBackend" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dexp.processing.backends.numpy_backend.NumpyBackend.close" title="dexp.processing.backends.numpy_backend.NumpyBackend.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</p></td>
+<td><p>Releases all ressources allocated/cached by backend (if can be done safely)</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 68%" />
+<col style="width: 32%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>clear_memory_pool</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>copy</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>current</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_sp_module</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>get_xp_module</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>reset</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>set</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>to_backend</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>to_numpy</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="dexp.processing.backends.numpy_backend.NumpyBackend.close">
+<code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dexp.processing.backends.numpy_backend.NumpyBackend.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Releases all ressources allocated/cached by backend (if can be done safely)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="color">
+<h2>Color<a class="headerlink" href="#color" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dexp.processing.color.blend.blend_color_images">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.blend.</span></code><code class="sig-name descname"><span class="pre">blend_color_images</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">images:</span> <span class="pre">Union[Generator[Any,</span> <span class="pre">Any,</span> <span class="pre">None],</span> <span class="pre">Sequence[Any]],</span> <span class="pre">modes:</span> <span class="pre">Union[str,</span> <span class="pre">Sequence[str]]</span> <span class="pre">=</span> <span class="pre">'max',</span> <span class="pre">alphas:</span> <span class="pre">Optional[Sequence[float]]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">background_color:</span> <span class="pre">Tuple[float,</span> <span class="pre">float,</span> <span class="pre">float,</span> <span class="pre">float]</span> <span class="pre">=</span> <span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0),</span> <span class="pre">rgba_value_max:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">255,</span> <span class="pre">internal_dtype=&lt;class</span> <span class="pre">'numpy.float32'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/blend.html#blend_color_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.blend.blend_color_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Blends multiple images together according to a blend mode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>images: Sequence of images to blend.</strong></dt><dd></dd>
+<dt><strong>modes: Blending modes. Either one for all images, or one per image in the form of a sequence. Blending modes are: ‘mean’, ‘add’, ‘satadd’, ‘max’, ‘alpha’</strong></dt><dd></dd>
+<dt><strong>alphas: Optional sequence of alpha values to use for blending, must be of same length as the sequence of images, optional.</strong></dt><dd></dd>
+<dt><strong>background_color: Background color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.</strong></dt><dd></dd>
+<dt><strong>rgba_value_max: Max value for the pixel/voxel values.</strong></dt><dd></dd>
+<dt><strong>internal_dtype: dtype for internal computation</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Blended image</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.color.border.add_border">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.border.</span></code><code class="sig-name descname"><span class="pre">add_border</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">over_image</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_value_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">255</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/border.html#add_border"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.border.add_border" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a color border to an image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image: Base image.</strong></dt><dd></dd>
+<dt><strong>width: Width of border.</strong></dt><dd></dd>
+<dt><strong>color: Border color as tuple (R, G, B, A) of normalised floats.</strong></dt><dd></dd>
+<dt><strong>over_image: If True the border is not added but overlayed over the image, the image does not change size.</strong></dt><dd></dd>
+<dt><strong>rgba_value_max: max value for rgba values.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Image with border added or overlayed</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.color.cairo_utils.get_array_for_cairo_surface">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.cairo_utils.</span></code><code class="sig-name descname"><span class="pre">get_array_for_cairo_surface</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ImageSurface</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/cairo_utils.html#get_array_for_cairo_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.cairo_utils.get_array_for_cairo_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an array given a ImageSurface from PyCairo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>surface</strong><span class="classifier">surface</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>RGBA numpy array of shape: (…,4)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.color.colormap.rgb_colormap">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.colormap.</span></code><code class="sig-name descname"><span class="pre">rgb_colormap</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bytes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/colormap.html#rgb_colormap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.colormap.rgb_colormap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes an image and returns a new image of same shape + an RGB dimension.
+Colors are determined by a provided colormap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">Image to project</span></dt><dd></dd>
+<dt><strong>cmap: Color map to use, can be a string or a cmap object</strong></dt><dd></dd>
+<dt><strong>bytes: If true the returned RGB values will be bytes (uint8) between 0 and 255</strong></dt><dd></dd>
+<dt><strong>internal_dtype: dtype for internal computation</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>RGB image of shape (…, 3 or 4).</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.color.conversions.gray2rgba">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.conversions.</span></code><code class="sig-name descname"><span class="pre">gray2rgba</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_value_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">255</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/conversions.html#gray2rgba"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.conversions.gray2rgba" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a RGBA representation of a gray-level image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">array_like</span></dt><dd><p>Input image.</p>
+</dd>
+<dt><strong>alpha</strong><span class="classifier">array_like, optional</span></dt><dd><p>Alpha channel of the output image. It may be a scalar or an
+array that can be broadcast to <code class="docutils literal notranslate"><span class="pre">image</span></code>. If not specified it is
+set to the maximum limit corresponding to the <code class="docutils literal notranslate"><span class="pre">image</span></code> dtype.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>rgba</strong><span class="classifier">ndarray</span></dt><dd><p>RGBA image. A new dimension of length 4 is added to input
+image shape.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.color.crop_resize_pad.crop_resize_pad_color_image">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.crop_resize_pad.</span></code><code class="sig-name descname"><span class="pre">crop_resize_pad_color_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crop</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize_order</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize_mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'constant'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'constant'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_value_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">255</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/crop_resize_pad.html#crop_resize_pad_color_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.crop_resize_pad.crop_resize_pad_color_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crops, resizes and then pad an RGB(A) image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image: image to resize.</strong></dt><dd></dd>
+<dt><strong>crop: Crop image by removing a given number of pixels/voxels per axis. For example: ((10,20),(10,20)) crops 10 pixels on the left for axis 0, 20 pixels from the right of axis 0, and the same for axis 2.</strong></dt><dd></dd>
+<dt><strong>resize: After cropping, the image is resized to the given shape. If any entry in the tuple is -1 then that position in the shape is automatically determined based on the existing shape to preserve aspect ratio.</strong></dt><dd></dd>
+<dt><strong>resize_order: The order of the spline interpolation, default is 3. The order has to be in the range 0-5.</strong></dt><dd></dd>
+<dt><strong>resize_mode: optional The mode parameter determines how the input array is extended beyond its boundaries. Can be: ‘reflect’, ‘constant’, ‘nearest’, ‘mirror’, ‘wrap’.</strong></dt><dd></dd>
+<dt><strong>pad_width: After cropping and resizing, padding is performed. The provided tuple is interpreted similarly to cropping.</strong></dt><dd></dd>
+<dt><strong>pad_mode: Padding mode, see numpy.pad for the available modes.</strong></dt><dd></dd>
+<dt><strong>pad_color: Padding color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.</strong></dt><dd></dd>
+<dt><strong>rgba_value_max: max value for rgba values.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Cropped, resized, and padded image.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.color.insert.insert_color_image">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.insert.</span></code><code class="sig-name descname"><span class="pre">insert_color_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inset_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border_width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border_color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border_over_image</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_value_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">255</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/insert.html#insert_color_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.insert.insert_color_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts an inset image into a base image.
+After scaling the inset image must be smaller than the base image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image: Base image.</strong></dt><dd></dd>
+<dt><strong>inset_image: Inset image to place in base image.</strong></dt><dd></dd>
+<dt><strong>scale: scale factor for inset image – scaling happens before translation.</strong></dt><dd></dd>
+<dt><strong>translation: positions of the insets in pixels in natural order: (x, y). Can also be a string: ‘bottom_left’, ‘bottom_right’, ‘top_left’, ‘top_right’.</strong></dt><dd></dd>
+<dt><strong>width: Width of border added to insets.</strong></dt><dd></dd>
+<dt><strong>color: Border color.</strong></dt><dd></dd>
+<dt><strong>over_image: If True the border is not added but overlayed over the image, the image does not change size.</strong></dt><dd></dd>
+<dt><strong>mode: blending mode.</strong></dt><dd></dd>
+<dt><strong>alpha: inset transparency.</strong></dt><dd></dd>
+<dt><strong>background_color: background color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.</strong></dt><dd></dd>
+<dt><strong>rgba_value_max: Max value for the pixel/voxel values.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Image with inset inserted.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.color.projection.project_image">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.projection.</span></code><code class="sig-name descname"><span class="pre">project_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dir</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attenuation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attenuation_min_density</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.002</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attenuation_filtering</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clim</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalisation_quantile</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlim</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth_stabilisation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgb_gamma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transparency</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_scale</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'depth</span> <span class="pre">(voxels)'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_title_color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_position</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'bottom_left'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_alpha</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/projection.html#project_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.projection.project_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Projects an image along a given axis given a specified method (max projection, max projection color-coded depth, …)
+and produces a rendered RGB image. This function offers features similar to volume rendering:
+attenuation, projection direction direction, …</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">Image to project</span></dt><dd></dd>
+<dt><strong>axis</strong><span class="classifier">axis along which to project</span></dt><dd></dd>
+<dt><strong>dir</strong><span class="classifier">projection direction, can be either ‘-1’ for looking from top, or ‘1’ for looking from bottom – convention is that top corresponds to the positive direction of the projection axis.</span></dt><dd></dd>
+<dt><strong>mode</strong><span class="classifier">projection mode, can be: ‘max’ for max projection, ‘colormax’ and ‘maxcolor’ for max color projections. Explanation: colormax applies first max and then colorises,</span></dt><dd><p>maxcolor, first colorises each voxel then computes the max. This means that maxcolor is 3x more memory intensive (with current implementation).</p>
+</dd>
+<dt><strong>attenuation</strong><span class="classifier">How much to attenuate when projecting.</span></dt><dd></dd>
+<dt><strong>attenuation_min_density</strong><span class="classifier">Minimal density for attenuation. The higher the darker structures at the back will be, independently of whether there is something in front.</span></dt><dd></dd>
+<dt><strong>attenuation_filtering: standard deviation of the gaussian filter used to preprocess the image for the purpose of computing the attenuation map.</strong></dt><dd></dd>
+<dt><strong>gamma: Gamma correction to apply.</strong></dt><dd></dd>
+<dt><strong>clim</strong><span class="classifier">color limits for applying the colormap.</span></dt><dd></dd>
+<dt><strong>normalisation_quantile</strong><span class="classifier">Quantile value for image normalisation (robust min and max for normalising the image between 0 and 1).</span></dt><dd></dd>
+<dt><strong>cmap: Color map to use, can be a string or a cmap object</strong></dt><dd></dd>
+<dt><strong>Important: this does not affect sharpness of the final image, it only affects the sharpness of the attenuation itself.</strong></dt><dd></dd>
+<dt><strong>dlim: Depth limits. For example, a value of (0.1, 0.7) means that the colormap start at a normalised depth of 0.1, and ends at a normalised depth of 0.7, other values are clipped.</strong></dt><dd></dd>
+<dt><strong>depth_stabilisation: Uses the center of mass calculation to shift the center of the depth color map to teh center of mass of the image content.</strong></dt><dd></dd>
+<dt><strong>rgb_gamma: Gamma correction applied to the resulting RGB image.</strong></dt><dd></dd>
+<dt><strong>transparency: If True, the best attempt is made to use alpha transparency in the resulting image. Not available in all modes. RGB output is not ‘alpha pre-multiplied’.</strong></dt><dd></dd>
+<dt><strong>legend_size: Multiplicative factor to control size of legend. If 0, no legend is generated.</strong></dt><dd></dd>
+<dt><strong>legend_scale: Float that gives the scale in some unit of each voxel (along the projection direction). Only in color projection modes.</strong></dt><dd></dd>
+<dt><strong>legend_title: title for the color-coded depth legend.</strong></dt><dd></dd>
+<dt><strong>legend_title_color: Legend title color as a tuple of normalised floats: (R, G, B, A)  (values between 0 and 1).</strong></dt><dd></dd>
+<dt><strong>legend_position: Position of the legend in pixels in natural order: (x, y). Can also be a string: ‘bottom_left’, ‘bottom_right’, ‘top_left’, ‘top_right’.</strong></dt><dd></dd>
+<dt><strong>legend_alpha: Transparency for legend (1 means opaque, 0 means completely transparent)</strong></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">dtype for internal computation</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Projected image of shape (…, 3 or 4), legend image of shape (…, 3 or 4)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.color.projection_legend.depth_color_scale_legend">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.projection_legend.</span></code><code class="sig-name descname"><span class="pre">depth_color_scale_legend</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flip</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_format</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'{:.1f}'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">font_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Helvetica'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">font_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">32.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bar_height</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_resolution</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">512</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/projection_legend.html#depth_color_scale_legend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.projection_legend.depth_color_scale_legend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a color bar legend.</p>
+<p>Note: if you need to specify the unit as microns, use this symbol: μm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cmap: Color map to use</strong></dt><dd></dd>
+<dt><strong>flip: Set to rue to flip the colormap</strong></dt><dd></dd>
+<dt><strong>start: Start value</strong></dt><dd></dd>
+<dt><strong>end: End value</strong></dt><dd></dd>
+<dt><strong>number_format: Format string to represent the start and end values.</strong></dt><dd></dd>
+<dt><strong>font_name: Font name.</strong></dt><dd></dd>
+<dt><strong>font_size: Font size in pixels.</strong></dt><dd></dd>
+<dt><strong>title: Title for bar legend</strong></dt><dd></dd>
+<dt><strong>color: Title color as a tuple of normalised floats: (R, G, B, A)  (values between 0 and 1).</strong></dt><dd></dd>
+<dt><strong>bar_height: Height of the color bar in relative units [0,1].</strong></dt><dd></dd>
+<dt><strong>size: Overall size factor (default: 1)</strong></dt><dd></dd>
+<dt><strong>pixel_resolution: Base resolution in pixels to color at (pixels per unit of scale).</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.color.scale_bar.insert_scale_bar">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.scale_bar.</span></code><code class="sig-name descname"><span class="pre">insert_scale_bar</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_in_unit</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_scale</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bar_height</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'bottom_right'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_format</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'{:.1f}'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">font_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Helvetica'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">font_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'μm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'max'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/scale_bar.html#insert_scale_bar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.scale_bar.insert_scale_bar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts a scale bar into an image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image: Image into which to insert the scale bar.</strong></dt><dd></dd>
+<dt><strong>length_in_unit: Length of scale bar in the provided unit.</strong></dt><dd></dd>
+<dt><strong>pixel_scale: conversion factor from pixels to units – what is the side length of a pixel/voxel in units.</strong></dt><dd></dd>
+<dt><strong>bar_height: Height of th scale bar in pixels</strong></dt><dd></dd>
+<dt><strong>margin: margin around bar expressed in units relative to the text height</strong></dt><dd></dd>
+<dt><strong>translation: Positions of the scale bar in pixels in numpy order: (y, x). Can also be a string: ‘bottom_left’, ‘bottom_right’, ‘top_left’, ‘top_right’.</strong></dt><dd></dd>
+<dt><strong>color: Color of the bar and text as tuple of 4 values: (R, G, B, A)</strong></dt><dd></dd>
+<dt><strong>number_format: Format string to represent the start and end values.</strong></dt><dd></dd>
+<dt><strong>font_name: Font name.</strong></dt><dd></dd>
+<dt><strong>font_size: Font size in pixels.</strong></dt><dd></dd>
+<dt><strong>unit: Unit name.</strong></dt><dd></dd>
+<dt><strong>mode: Blending mode. See function ‘blend_color_images’ for available blending modes.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Image with inserted scale bar.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.color.time_stamp.insert_time_stamp">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.color.time_stamp.</span></code><code class="sig-name descname"><span class="pre">insert_time_stamp</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_point_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_time_points</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_interval</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'top_right'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_format</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'{:.1f}'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">font_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Helvetica'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">font_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'s'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/color/time_stamp.html#insert_time_stamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.color.time_stamp.insert_time_stamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts a scale bar into an image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image: Image into which to insert the time stamp.</strong></dt><dd></dd>
+<dt><strong>time_point_index: Index (starting at 0 for start time) of the image.</strong></dt><dd></dd>
+<dt><strong>nb_time_points: Total number of time points.</strong></dt><dd></dd>
+<dt><strong>start_time: Start time for time stamp</strong></dt><dd></dd>
+<dt><strong>time_interval: Time interval inn units of time between consecutive images.</strong></dt><dd></dd>
+<dt><strong>margin: margin around bar expressed in units relative to the text height</strong></dt><dd></dd>
+<dt><strong>translation: Positions of the time stamp in pixels in numpy order: (y, x). Can also be a string: ‘bottom_left’, ‘bottom_right’, ‘top_left’, ‘top_right’.</strong></dt><dd></dd>
+<dt><strong>color: Color of the bar and text as tuple of 4 values: (R, G, B, A)</strong></dt><dd></dd>
+<dt><strong>number_format: Format string to represent the start and end values.</strong></dt><dd></dd>
+<dt><strong>font_name: Font name.</strong></dt><dd></dd>
+<dt><strong>font_size: Font size in pixels.</strong></dt><dd></dd>
+<dt><strong>unit: Unit name.</strong></dt><dd></dd>
+<dt><strong>mode: Blending mode. See function ‘blend_color_images’ for available blending modes.</strong></dt><dd></dd>
+<dt><strong>alpha: Inset transparency.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Image with inserted time stamp.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="deconvolution">
+<h2>Deconvolution<a class="headerlink" href="#deconvolution" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dexp.processing.deconvolution.lr_deconvolution.lucy_richardson_deconvolution">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.deconvolution.lr_deconvolution.</span></code><code class="sig-name descname"><span class="pre">lucy_richardson_deconvolution</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">image</span></em>, <em class="sig-param"><span class="pre">psf</span></em>, <em class="sig-param"><span class="pre">num_iterations:</span> <span class="pre">Optional[int]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">max_correction:</span> <span class="pre">Optional[float]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">power:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.0</span></em>, <em class="sig-param"><span class="pre">back_projection='tpsf'</span></em>, <em class="sig-param"><span class="pre">wb_cutoffs:</span> <span class="pre">Optional[Union[float</span></em>, <em class="sig-param"><span class="pre">Tuple[float</span></em>, <em class="sig-param"><span class="pre">...]]]</span> <span class="pre">=</span> <span class="pre">0.9</span></em>, <em class="sig-param"><span class="pre">wb_beta:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.05</span></em>, <em class="sig-param"><span class="pre">wb_order:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">2</span></em>, <em class="sig-param"><span class="pre">padding:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></em>, <em class="sig-param"><span class="pre">padding_mode:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'edge'</span></em>, <em class="sig-param"><span class="pre">normalise_input:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></em>, <em class="sig-param"><span class="pre">normalise_minmax:</span> <span class="pre">Optional[Tuple[float</span></em>, <em class="sig-param"><span class="pre">float]]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">clip_output:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">blind_spot:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></em>, <em class="sig-param"><span class="pre">blind_spot_mode:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'median+uniform'</span></em>, <em class="sig-param"><span class="pre">blind_spot_axis_exclusion:</span> <span class="pre">Optional[Union[str</span></em>, <em class="sig-param"><span class="pre">Tuple[int</span></em>, <em class="sig-param"><span class="pre">...]]]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">convolve_method=&lt;function</span> <span class="pre">fft_convolve&gt;</span></em>, <em class="sig-param"><span class="pre">internal_dtype=None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/deconvolution/lr_deconvolution.html#lucy_richardson_deconvolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.deconvolution.lr_deconvolution.lucy_richardson_deconvolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deconvolves an nD image given a point-spread-function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">image to deconvolve</span></dt><dd></dd>
+<dt><strong>psf</strong><span class="classifier">point-spread-function (must have the same number of dimensions as image!)</span></dt><dd></dd>
+<dt><strong>num_iterations</strong><span class="classifier">number of iterations</span></dt><dd></dd>
+<dt><strong>max_correction</strong><span class="classifier">Lucy-Richardson correction will remain clamped within [1/mc, mc] (before back projection)</span></dt><dd></dd>
+<dt><strong>power</strong><span class="classifier">power to elevate coorection (before back projection)</span></dt><dd></dd>
+<dt><strong>back_projection</strong><span class="classifier">back projection operator to use: ‘tpsf’ or ‘wb’.</span></dt><dd></dd>
+<dt><strong>padding</strong><span class="classifier">padding (see numpy/cupy pad function)</span></dt><dd></dd>
+<dt><strong>padding_mode</strong><span class="classifier">padding mode (see numpy/cupy pad function)</span></dt><dd></dd>
+<dt><strong>normalise_input</strong><span class="classifier">This deconvolution code assumes values within [0, 1], by default input images are normalised to that range, but if already normalised, then normalisation can be ommited.</span></dt><dd></dd>
+<dt><strong>normalise_minmax</strong><span class="classifier">Use the given tuple (min, max) for normalisation</span></dt><dd></dd>
+<dt><strong>blind_spot</strong><span class="classifier">If zero, blind-spot is disabled. If blind_spot&gt;0 it is active and the integer represents the blind-spot kernel support. A value of 3 or 5 are good and help reduce the impact of noise on deconvolution.</span></dt><dd></dd>
+<dt><strong>blind_spot_mode</strong><span class="classifier">blind-spot mode, can be ‘mean’ or ‘median’</span></dt><dd></dd>
+<dt><strong>blind_spot_axis_exclusion</strong><span class="classifier">if None no axis is excluded from the blind-spot support kernel, otherwise if a tuple of ints is provided, these refer to the</span></dt><dd></dd>
+<dt><strong>then the support kernel is clipped along these axis. For example for a 3D stack where the sampling along z (first axis) is poor, use: (0,) so that blind-spot kernel does not extend in z.</strong></dt><dd></dd>
+<dt><strong>convolve_method</strong><span class="classifier">convolution method to use</span></dt><dd></dd>
+<dt><strong>clip_output</strong><span class="classifier">Clip output to input range, or not</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">dtype to use internally for computation.</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Deconvolved image</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="deskew">
+<h2>Deskew<a class="headerlink" href="#deskew" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dexp.processing.deskew.yang_deskew.yang_deskew">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.deskew.yang_deskew.</span></code><code class="sig-name descname"><span class="pre">yang_deskew</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flip</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_split</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/deskew/yang_deskew.html#yang_deskew"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.deskew.yang_deskew.yang_deskew" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resampling</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">input image (skewed 3D stack)</span></dt><dd></dd>
+<dt><strong>flip</strong><span class="classifier">True for view 0 and False for view 1</span></dt><dd></dd>
+<dt><strong>dz</strong><span class="classifier">float, scanning step (stage or galvo scanning step, not the same as the distance between the slices)</span></dt><dd></dd>
+<dt><strong>dx</strong><span class="classifier">float, pixel size of the camera</span></dt><dd></dd>
+<dt><strong>angle</strong><span class="classifier">float, incident angle of the light sheet, angle between the light sheet and the optical axis</span></dt><dd></dd>
+<dt><strong>num_split</strong><span class="classifier">number of splits to break down the data into pieces (along y, axis=2) to fit into the memory of GPU</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="equalise">
+<h2>Equalise<a class="headerlink" href="#equalise" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dexp.processing.equalise.equalise_intensity.equalise_intensity">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.equalise.equalise_intensity.</span></code><code class="sig-name descname"><span class="pre">equalise_intensity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">90</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantile_low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantile_high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.99</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_axis</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_voxels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correction_ratio</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/equalise/equalise_intensity.html#equalise_intensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.equalise.equalise_intensity.equalise_intensity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Equalise intensity between two images</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image1</strong><span class="classifier">first image to equalise</span></dt><dd></dd>
+<dt><strong>image2</strong><span class="classifier">second image to equalise</span></dt><dd></dd>
+<dt><strong>zero_level</strong><span class="classifier">zero level – removes this value if that’s the minimal voxel value expected for both images</span></dt><dd></dd>
+<dt><strong>quantile_low, quantile_high</strong><span class="classifier">quantile for computing the robust min and max values in image</span></dt><dd></dd>
+<dt><strong>project_axis</strong><span class="classifier">Axis over which to project image to speed up computation</span></dt><dd></dd>
+<dt><strong>max_voxels</strong><span class="classifier">maximal number of voxels to use to compute min and max values.</span></dt><dd></dd>
+<dt><strong>correction_ratio</strong><span class="classifier">If provided, this value is used instead of calculating the equalisation value based on the two images.</span></dt><dd></dd>
+<dt><strong>This is the value that should be multiplied to the second image (image2) so as to equalise it to teh first image (image1).</strong></dt><dd></dd>
+<dt><strong>copy</strong><span class="classifier">Set to True to force copy of images.</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">dtype to use internally for computation.</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>The two arrays intensity equalised.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="filters">
+<h2>Filters<a class="headerlink" href="#filters" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dexp.processing.filters.butterworth_filter.butterworth_filter">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.filters.butterworth_filter.</span></code><code class="sig-name descname"><span class="pre">butterworth_filter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoffs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoffs_in_freq_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'reflect'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_fft</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/filters/butterworth_filter.html#butterworth_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.filters.butterworth_filter.butterworth_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a Butterworth filter to an image.
+The Butterworth filter is a type of signal processing filter designed to have a frequency response
+as flat as possible in the passband. It is also referred to as a maximally flat magnitude filter.
+It was first described in 1930 by the British engineer and physicist Stephen Butterworth in his paper
+entitled “On the Theory of Filter Amplifiers”. (source: wikipedia, <a class="reference external" href="https://en.wikipedia.org/wiki/Butterworth_filter">https://en.wikipedia.org/wiki/Butterworth_filter</a>)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">image to apply filter to</span></dt><dd></dd>
+<dt><strong>shape</strong><span class="classifier">filter shape</span></dt><dd></dd>
+<dt><strong>cutoffs</strong><span class="classifier">Butterworth cutoffs.</span></dt><dd></dd>
+<dt><strong>cutoffs_in_freq_units</strong><span class="classifier">If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]</span></dt><dd></dd>
+<dt><strong>order</strong><span class="classifier">Butterworth filter order</span></dt><dd></dd>
+<dt><strong>mode</strong><span class="classifier">mode for convolution</span></dt><dd></dd>
+<dt><strong>use_fft</strong><span class="classifier">True to use FFT</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">internal dtype used for computation</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Filtered image.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.filters.fft_convolve.fft_convolve">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.filters.fft_convolve.</span></code><code class="sig-name descname"><span class="pre">fft_convolve</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'reflect'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_place</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/filters/fft_convolve.html#fft_convolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.filters.fft_convolve.fft_convolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fast FFT based convolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image1</strong><span class="classifier">First image</span></dt><dd></dd>
+<dt><strong>image2</strong><span class="classifier">Second image</span></dt><dd></dd>
+<dt><strong>mode</strong><span class="classifier">Not supported!</span></dt><dd></dd>
+<dt><strong>in_place</strong><span class="classifier">If true then the two input images might be modified and reused for the result.</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Convolved image: image1 ○ image2</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.filters.sobel_filter.sobel_filter">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.filters.sobel_filter.</span></code><code class="sig-name descname"><span class="pre">sobel_filter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exponent</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_compression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise_input</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_place_normalisation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/filters/sobel_filter.html#sobel_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.filters.sobel_filter.sobel_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Sobel magnitude filter response for a given image.</p>
+<p>The Sobel operator, sometimes called the Sobel–Feldman operator or Sobel filter,
+is used in image processing and computer vision, particularly within edge detection
+algorithms where it creates an image emphasising edges. It is named after Irwin Sobel
+and Gary Feldman, colleagues at the Stanford Artificial Intelligence Laboratory (SAIL).
+Sobel and Feldman presented the idea of an “Isotropic 3x3 Image Gradient Operator” at
+a talk at SAIL in 1968. Technically, it is a discrete differentiation operator,
+computing an approximation of the gradient of the image intensity function.
+At each point in the image, the result of the Sobel–Feldman operator is either the
+corresponding gradient vector or the norm of this vector. The Sobel–Feldman operator
+is based on convolving the image with a small, separable, and integer-valued filter
+in the horizontal and vertical directions and is therefore relatively inexpensive in
+terms of computations. On the other hand, the gradient approximation that it produces
+is relatively crude, in particular for high-frequency variations in the image.</p>
+<p>(Source: wikipedia, <a class="reference external" href="https://en.wikipedia.org/wiki/Sobel_operator">https://en.wikipedia.org/wiki/Sobel_operator</a>)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">image to apply filter on</span></dt><dd></dd>
+<dt><strong>exponent</strong><span class="classifier">Exponent to use for the magnitude (norm) of the gradient, 2 for L2, and 1 for L1…</span></dt><dd></dd>
+<dt><strong>gamma</strong><span class="classifier">After normalisation, applies thte given gamma value.</span></dt><dd></dd>
+<dt><strong>log_compression</strong><span class="classifier">Before normalisation, applies log compression – usefull to reduce the impact of high intensity values versus contrast.</span></dt><dd></dd>
+<dt><strong>normalise_input</strong><span class="classifier">True to normalise input image between 0 and 1 before applying filter</span></dt><dd></dd>
+<dt><strong>in_place_normalisation</strong><span class="classifier">If True then input image can be modified during normalisation.</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">dtype for internal computation.</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Filtered image</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="fusion">
+<h2>Fusion<a class="headerlink" href="#fusion" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dexp.processing.fusion.dct_fusion.fuse_dct_nd">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.fusion.dct_fusion.</span></code><code class="sig-name descname"><span class="pre">fuse_dct_nd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/fusion/dct_fusion.html#fuse_dct_nd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.fusion.dct_fusion.fuse_dct_nd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fuses two images in DCT domain by picking coefficients with maximal magnitude.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image_a</strong><span class="classifier">First image to fuse</span></dt><dd></dd>
+<dt><strong>image_b</strong><span class="classifier">Second image to fuse</span></dt><dd></dd>
+<dt><strong>cutoff</strong><span class="classifier">frequency cutoff</span></dt><dd></dd>
+<dt><strong>clip</strong><span class="classifier">Clip fused image to the min and max voxel values of the original images</span></dt><dd></dd>
+<dt><strong>– i.e. the fused image must remain within the bounds of the original images.</strong></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">dtype for internal computation</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Fused image.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.fusion.dft_fusion.fuse_dft_nd">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.fusion.dft_fusion.</span></code><code class="sig-name descname"><span class="pre">fuse_dft_nd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/fusion/dft_fusion.html#fuse_dft_nd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.fusion.dft_fusion.fuse_dft_nd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fuses two images in DFT domain by picking coefficients with maximal magnitude.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image_a</strong><span class="classifier">First image to fuse</span></dt><dd></dd>
+<dt><strong>image_b</strong><span class="classifier">Second image to fuse</span></dt><dd></dd>
+<dt><strong>cutoff</strong><span class="classifier">frequency cutoff</span></dt><dd></dd>
+<dt><strong>clip</strong><span class="classifier">Clip fused image to the min and max voxel values of the original images</span></dt><dd></dd>
+<dt><strong>– i.e. the fused image must remain within the bounds of the original images.</strong></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">dtype for internal computation</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Fused image.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.fusion.tg_fusion.fuse_tg_nd">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.fusion.tg_fusion.</span></code><code class="sig-name descname"><span class="pre">fuse_tg_nd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downscale</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sharpness</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">24</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tenengrad_smoothing</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blend_map_smoothing</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_axis</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_exponent</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_strength</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_display_blend_map</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/fusion/tg_fusion.html#fuse_tg_nd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.fusion.tg_fusion.fuse_tg_nd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fuses two images by picking regions from one or the other image based on the local image quality
+measured by using the magnitude of the Sobel gradient – similarly as in the Tenengrad focus metric.
+A smooth blend map is computed that blends the two images based on local image quality. A bias can be
+introduced to favor one side of an axis versus another.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image_a</strong><span class="classifier">First image to fuse</span></dt><dd></dd>
+<dt><strong>image_b</strong><span class="classifier">Second image to fuse</span></dt><dd></dd>
+<dt><strong>downscale</strong><span class="classifier">How much to downscale the two images in order to compute the blend map.</span></dt><dd></dd>
+<dt><strong>A value of 2 is good to achieve both coarse denoising and reduce compute load.</strong></dt><dd></dd>
+<dt><strong>sharpness</strong><span class="classifier">How ‘sharp’ should be the choice between the two images.</span></dt><dd></dd>
+<dt><strong>A large value makes sure that most of the time the voxel values of one or the other image</strong></dt><dd></dd>
+<dt><strong>are picked with very little mixing even if local image quality between .</strong></dt><dd></dd>
+<dt><strong>tenengrad_smoothing</strong><span class="classifier">How much to smooth the tenengrad map</span></dt><dd></dd>
+<dt><strong>blend_map_smoothing</strong><span class="classifier">How much to smooth the blend map</span></dt><dd></dd>
+<dt><strong>bias_axis</strong><span class="classifier">Along which axis should a bias be introduced in the blend map. None for no bias.</span></dt><dd></dd>
+<dt><strong>bias_exponent</strong><span class="classifier">Exponent for the bias</span></dt><dd></dd>
+<dt><strong>bias_strength</strong><span class="classifier">Bias strength – zero means no bias</span></dt><dd></dd>
+<dt><strong>clip</strong><span class="classifier">clip output to input images min and max values.</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">dtype for internal computation</span></dt><dd></dd>
+<dt><strong>_display_blend_map</strong><span class="classifier">For debugging purposes, we can display the images to fuse, the blend map and result.</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="registration">
+<h2>Registration<a class="headerlink" href="#registration" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dexp.processing.registration.sequence.image_stabilisation">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.registration.sequence.</span></code><code class="sig-name descname"><span class="pre">image_stabilisation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dask.array.core.Array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dexp.processing.registration.model.sequence_registration_model.SequenceRegistrationModel</span><a class="reference internal" href="../_modules/dexp/processing/registration/sequence.html#image_stabilisation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.registration.sequence.image_stabilisation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a sequence stabilisation model for an image sequence indexed along a specified axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image: image to stabilise</strong></dt><dd></dd>
+<dt><strong>axis: sequence axis along which to stabilise image</strong></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">internal dtype for computation</span></dt><dd></dd>
+<dt><strong>**kwargs: argument passthrough to the pairwise registration method.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Sequence registration model</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.registration.sequence.image_sequence_stabilisation">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.registration.sequence.</span></code><code class="sig-name descname"><span class="pre">image_sequence_stabilisation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_sequence</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">dask.array.core.Array</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preload_images</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'translation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_confidence</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_com</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounding_box</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_error</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_reg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_reg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug_output</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dexp.processing.registration.model.sequence_registration_model.SequenceRegistrationModel</span><a class="reference internal" href="../_modules/dexp/processing/registration/sequence.html#image_sequence_stabilisation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.registration.sequence.image_sequence_stabilisation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a sequence stabilisation model for an image sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image: image to stabilise</strong></dt><dd></dd>
+<dt><strong>axis: sequence axis along which to stabilise image</strong></dt><dd></dd>
+<dt><strong>mode: registration mode. For now only ‘translation’ is available.</strong></dt><dd></dd>
+<dt><strong>max_range: maximal distance, in time points, between pairs of images to registrate.</strong></dt><dd></dd>
+<dt><strong>min_confidence: minimal confidence to accept a pairwise registration</strong></dt><dd></dd>
+<dt><strong>enable_com: enable center of mass fallback when standard registration fails.</strong></dt><dd></dd>
+<dt><strong>quantile: quantile to cut-off background in center-of-mass calculation</strong></dt><dd></dd>
+<dt><strong>bounding_box: if True, the center of mass of the bounding box of non-zero pixels is returned.</strong></dt><dd></dd>
+<dt><strong>tolerance: tolerance for linear solver.</strong></dt><dd></dd>
+<dt><strong>order_error: order for linear solver error term.</strong></dt><dd></dd>
+<dt><strong>order_reg: order for linear solver regularisation term.</strong></dt><dd></dd>
+<dt><strong>alpha_reg: multiplicative coefficient for regularisation term.</strong></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">internal dtype for computation</span></dt><dd></dd>
+<dt><strong>**kwargs: argument passthrough to the pairwise registration method, see ‘register_translation_nd’.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Sequence registration model</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.registration.sequence_proj.image_stabilisation_proj">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.registration.sequence_proj.</span></code><code class="sig-name descname"><span class="pre">image_stabilisation_proj</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dask.array.core.Array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'max-min'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dexp.processing.registration.model.sequence_registration_model.SequenceRegistrationModel</span><a class="reference internal" href="../_modules/dexp/processing/registration/sequence_proj.html#image_stabilisation_proj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.registration.sequence_proj.image_stabilisation_proj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a sequence stabilisation model for an image sequence indexed along a specified axis.
+Instead of running a full nD registration, this uses projections instead, economising memory and compute.
+Stabilises all 2D projections and then combines the information to figure out what is the best
+stabilisation for the whole nD image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image: image to stabilise</strong></dt><dd></dd>
+<dt><strong>axis: sequence axis along which to stabilise image</strong></dt><dd></dd>
+<dt><strong>projection_type</strong><span class="classifier">Projection type to use when in ‘projection’ mode: ‘mean’, ‘min’, ‘max’, ‘max-min’</span></dt><dd></dd>
+<dt><strong>kwargs: argument passthrough to the ‘sequence_stabilisation’ method.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>sequence registration model</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.registration.sequence_proj.image_stabilisation_proj_">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.registration.sequence_proj.</span></code><code class="sig-name descname"><span class="pre">image_stabilisation_proj_</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">projections</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndim</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_best</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug_output</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dexp.processing.registration.model.sequence_registration_model.SequenceRegistrationModel</span><a class="reference internal" href="../_modules/dexp/processing/registration/sequence_proj.html#image_stabilisation_proj_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.registration.sequence_proj.image_stabilisation_proj_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as ‘sequence_stabilisation_proj’ but takes projections instead, usefull if the projections are already available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>projections: List of projections as a list of tuples: (u, v, projection) where u and v are the axis indices and projection is an array where the first axis is the stabilisation axis.</strong></dt><dd></dd>
+<dt><strong>ndim: number of dimensions of original array</strong></dt><dd></dd>
+<dt><strong>keep_best: keep only the best n stabilised projections</strong></dt><dd></dd>
+<dt><strong>kwargs: argument passthrough to the ‘sequence_stabilisation’ method.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Sequence registration model</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.registration.translation_2d.register_translation_2d_skimage">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.registration.translation_2d.</span></code><code class="sig-name descname"><span class="pre">register_translation_2d_skimage</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upsample_factor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_numpy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dexp.processing.registration.model.translation_registration_model.TranslationRegistrationModel</span><a class="reference internal" href="../_modules/dexp/processing/registration/translation_2d.html#register_translation_2d_skimage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.registration.translation_2d.register_translation_2d_skimage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers two 2D images using just a translation-only model using skimage registration code.
+Warning: Works well unless images have lots of noise or overlap is partial.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image_a</strong><span class="classifier">First image</span></dt><dd></dd>
+<dt><strong>image_b</strong><span class="classifier">Second Image</span></dt><dd></dd>
+<dt><strong>upsample_factor</strong><span class="classifier">Upsampling factor for sub-pixel accuracy</span></dt><dd></dd>
+<dt><strong>force_numpy</strong><span class="classifier">Forces output model to be allocated with numpy arrays.</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">internal dtype for computation</span></dt><dd></dd>
+<dt><strong>kwargs</strong><span class="classifier">additional optional parameters</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Translation-only registration model</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.registration.translation_2d.register_translation_2d_dexp">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.registration.translation_2d.</span></code><code class="sig-name descname"><span class="pre">register_translation_2d_dexp</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_b</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dexp.processing.registration.model.translation_registration_model.TranslationRegistrationModel</span><a class="reference internal" href="../_modules/dexp/processing/registration/translation_2d.html#register_translation_2d_dexp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.registration.translation_2d.register_translation_2d_dexp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers two 2D images using just a translation-only model using dexp own registration code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image_a</strong><span class="classifier">First image</span></dt><dd></dd>
+<dt><strong>image_b</strong><span class="classifier">Second Image</span></dt><dd></dd>
+<dt><strong>kwargs</strong><span class="classifier">additional optional parameters</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Translation-only registration model</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.registration.translation_nd.register_translation_nd">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.registration.translation_nd.</span></code><code class="sig-name descname"><span class="pre">register_translation_nd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">denoise_input_sigma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_compression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_filter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_range_ratio</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.999</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_numpy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_display_phase_correlation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dexp.processing.registration.model.translation_registration_model.TranslationRegistrationModel</span><a class="reference internal" href="../_modules/dexp/processing/registration/translation_nd.html#register_translation_nd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.registration.translation_nd.register_translation_nd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers two nD images using just a translation-only model.
+This uses a full nD robust phase correlation based approach.</p>
+<p>Note: it is recommended to normalise the images to [0, 1] range before registering them, otherwise there might be precision and overflow issues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image_a</strong><span class="classifier">First image to register</span></dt><dd></dd>
+<dt><strong>image_b</strong><span class="classifier">Second image to register</span></dt><dd></dd>
+<dt><strong>denoise_input_sigma</strong><span class="classifier">Uses a Gaussian filter to denoise input images.</span></dt><dd></dd>
+<dt><strong>gamma</strong><span class="classifier">gamma correction on max projections as a preprocessing before phase correlation.</span></dt><dd></dd>
+<dt><strong>log_compression</strong><span class="classifier">Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)</span></dt><dd></dd>
+<dt><strong>edge_filter</strong><span class="classifier">apply sobel edge filter to input images.</span></dt><dd></dd>
+<dt><strong>max_range_ratio</strong><span class="classifier">maximal range for correlation.</span></dt><dd></dd>
+<dt><strong>decimate</strong><span class="classifier">How much to decimate when computing floor level</span></dt><dd></dd>
+<dt><strong>quantile</strong><span class="classifier">Quantile to use for robust min and max</span></dt><dd></dd>
+<dt><strong>sigma</strong><span class="classifier">sigma for Gaussian smoothing of phase correlogram</span></dt><dd></dd>
+<dt><strong>force_numpy</strong><span class="classifier">Forces output model to be allocated with numpy arrays.</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">internal dtype for computation</span></dt><dd></dd>
+<dt><strong>_display_phase_correlation</strong><span class="classifier">For debugging purposes the phase correlation can be displayed with napari</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Translation-only registration model</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.registration.translation_nd_proj.register_translation_proj_nd">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.registration.translation_nd_proj.</span></code><code class="sig-name descname"><span class="pre">register_translation_proj_nd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">image_a</span></em>, <em class="sig-param"><span class="pre">image_b</span></em>, <em class="sig-param"><span class="pre">register_translation_2d:</span> <span class="pre">Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">register_translation_2d_dexp&gt;</span></em>, <em class="sig-param"><span class="pre">drop_worse:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></em>, <em class="sig-param"><span class="pre">force_numpy:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">internal_dtype=None</span></em>, <em class="sig-param"><span class="pre">**kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/registration/translation_nd_proj.html#register_translation_proj_nd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.registration.translation_nd_proj.register_translation_proj_nd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers two nD (n=2 or 3) images using just a translation-only model.
+This method uses projections along 2 or 3 axis and then performs phase correlation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image_a</strong><span class="classifier">First image to register</span></dt><dd></dd>
+<dt><strong>image_b</strong><span class="classifier">Second image to register</span></dt><dd></dd>
+<dt><strong>register_translation_2d</strong><span class="classifier">2d registration method to use</span></dt><dd></dd>
+<dt><strong>drop_worse: drops the worst 2D registrations before combining the projection registration vectors to a full nD registration vector.</strong></dt><dd></dd>
+<dt><strong>force_numpy</strong><span class="classifier">Forces output model to be allocated with numpy arrays.</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">Internal dtype for computation</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Translation-only registration model</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.registration.warp_multiscale_nd.register_warp_multiscale_nd">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.registration.warp_multiscale_nd.</span></code><code class="sig-name descname"><span class="pre">register_warp_multiscale_nd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dexp.processing.registration.warp_multiscale_nd.register_warp_multiscale_nd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.registration.warp_nd.register_warp_nd">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.registration.warp_nd.</span></code><code class="sig-name descname"><span class="pre">register_warp_nd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dexp.processing.registration.warp_nd.register_warp_nd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="restoration">
+<h2>Restoration<a class="headerlink" href="#restoration" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dexp.processing.restoration.aap_correction.axis_aligned_pattern_correction">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.restoration.aap_correction.</span></code><code class="sig-name descname"><span class="pre">axis_aligned_pattern_correction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_combinations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robust_statistics</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_place</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/restoration/aap_correction.html#axis_aligned_pattern_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.restoration.aap_correction.axis_aligned_pattern_correction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Axis aligned pattern correction</p>
+<p>Corrects fixed, axis aligned, offset patterns along any combination of axis.
+Given a list of tuples of axis that defines axis-aligned volumes, intensity fluctuations
+of these volumes are stabilised.
+For example, this this class you can suppress intensity fluctuationa over time,
+suppress fixed offsets per pixel over time, suppress intensity fluctuations per row, per column. etc…</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">image to correct</span></dt><dd></dd>
+<dt><strong>axis_combinations</strong><span class="classifier">List of tuples of axis in the order of correction</span></dt><dd></dd>
+<dt><strong>percentile</strong><span class="classifier">percentile value used for stabilisation</span></dt><dd></dd>
+<dt><strong>sigma</strong><span class="classifier">sigma used for Gaussian filtering the computed percentile values.</span></dt><dd></dd>
+<dt><strong>in_place</strong><span class="classifier">True if the input image may be modified in-place.</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">internal dtype for computation</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.restoration.clean_dark_regions.clean_dark_regions">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.restoration.clean_dark_regions.</span></code><code class="sig-name descname"><span class="pre">clean_dark_regions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'uniform'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_place</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/restoration/clean_dark_regions.html#clean_dark_regions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.restoration.clean_dark_regions.clean_dark_regions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean Dark Regions</p>
+<p>Filters out noise in dark regions to facilitate compression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">image to correct</span></dt><dd></dd>
+<dt><strong>threshold</strong><span class="classifier">threshold for ‘dark’ voxel values.</span></dt><dd></dd>
+<dt><strong>size</strong><span class="classifier">filter size</span></dt><dd></dd>
+<dt><strong>mode</strong><span class="classifier">cleaning approach: ‘none’, ‘min’, ‘uniform’, and ‘median’</span></dt><dd></dd>
+<dt><strong>in_place</strong><span class="classifier">True if the input image may be modified in-place.</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">internal dtype for computation</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Cleaned image</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.restoration.dehazing.dehaze">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.restoration.dehazing.</span></code><code class="sig-name descname"><span class="pre">dehaze</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downscale</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimal_zero_level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_max_level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_place</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/restoration/dehazing.html#dehaze"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.restoration.dehazing.dehaze" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dehazes an image by means of a non-linear low-pass rejection filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">image to filter</span></dt><dd></dd>
+<dt><strong>size</strong><span class="classifier">filter size</span></dt><dd></dd>
+<dt><strong>downscale</strong><span class="classifier">downscale factor for speeding up computation of the haze map.</span></dt><dd></dd>
+<dt><strong>minimal_zero_level</strong><span class="classifier">minimal zero level to substract</span></dt><dd></dd>
+<dt><strong>in_place</strong><span class="classifier">True if the input image may be modified in-place.</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">internal dtype for computation</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Dehazed image</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dexp.processing.restoration.lipshitz_correction.lipschitz_continuity_correction">
+<code class="sig-prename descclassname"><span class="pre">dexp.processing.restoration.lipshitz_correction.</span></code><code class="sig-name descname"><span class="pre">lipschitz_continuity_correction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iterations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correction_percentile</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lipschitz</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_proportion_corrected</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_place</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dexp/processing/restoration/lipshitz_correction.html#lipschitz_continuity_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dexp.processing.restoration.lipshitz_correction.lipschitz_continuity_correction" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘Lipshitz continuity correction’</p>
+<p>‘Broken’ pixels on detectors typically blink or are very dim or very bright, in any case they are ‘out of context’.
+In many cases they will locally break Lipshitz continuity implied by diffraction limited imaging. Here is a simple
+greedy scheme that starts with the  ost infringing voxels and incrementally filters them using local median filtering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">image to correct</span></dt><dd></dd>
+<dt><strong>num_iterations</strong><span class="classifier">number of iterations</span></dt><dd></dd>
+<dt><strong>correction_percentile</strong><span class="classifier">percentile of pixels to correct per iteration</span></dt><dd></dd>
+<dt><strong>lipschitz</strong><span class="classifier">lipschitz continuity constant</span></dt><dd></dd>
+<dt><strong>max_proportion_corrected</strong><span class="classifier">max proportion of pixels to correct overall</span></dt><dd></dd>
+<dt><strong>decimation</strong><span class="classifier">decimation for speeding up percentile computation</span></dt><dd></dd>
+<dt><strong>in_place</strong><span class="classifier">True if the input image may be modified in-place.</span></dt><dd></dd>
+<dt><strong>internal_dtype</strong><span class="classifier">internal dtype</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Lipschitz corrected image</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="volume_render.html" class="btn btn-neutral float-right" title="Volume Render" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021. Chan Zuckerberg Biohub. All rights reserved.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

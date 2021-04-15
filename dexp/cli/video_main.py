@@ -13,7 +13,7 @@ def cli():
     aprint("__________________________________________")
     aprint("")
     aprint("Note: videos are folders of images (typically PNGs), final step is to convert such image sequences into MP4s")
-    # input("Press Enter to continue...")
+    #input("Press Enter to continue...")
 
 
 from dexp.cli.video_commands.overlay import overlay

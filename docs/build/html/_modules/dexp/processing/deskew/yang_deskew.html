@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>dexp.processing.deskew.yang_deskew &mdash; dexp  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> dexp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/contact_us.html">Contact us</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Commands</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../commands/dexp_commands.html">dexp commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../commands/video_commands.html">video commands</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/volume_render.html">Volume Render</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">dexp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dexp.processing.deskew.yang_deskew</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dexp.processing.deskew.yang_deskew</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">from</span> <span class="nn">dexp.processing.backends.backend</span> <span class="kn">import</span> <span class="n">Backend</span>
+
+
+<div class="viewcode-block" id="yang_deskew"><a class="viewcode-back" href="../../../../api/processing.html#dexp.processing.deskew.yang_deskew.yang_deskew">[docs]</a><span class="k">def</span> <span class="nf">yang_deskew</span><span class="p">(</span><span class="n">image</span><span class="p">,</span>
+                <span class="n">flip</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+                <span class="n">dx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                <span class="n">dz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                <span class="n">num_split</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;  Resampling</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image  : input image (skewed 3D stack)</span>
+<span class="sd">    flip   : True for view 0 and False for view 1</span>
+<span class="sd">    dz     : float, scanning step (stage or galvo scanning step, not the same as the distance between the slices)</span>
+<span class="sd">    dx     : float, pixel size of the camera</span>
+<span class="sd">    angle  : float, incident angle of the light sheet, angle between the light sheet and the optical axis</span>
+<span class="sd">    num_split : number of splits to break down the data into pieces (along y, axis=2) to fit into the memory of GPU</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># we don&#39;t want to move the image to the backend just now,</span>
+    <span class="c1"># as it might be a very large image and we can actually defer moving it to the backend as</span>
+    <span class="c1"># after splitting...</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_xp_module</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">flip</span><span class="p">:</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># rotate the data</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="c1"># deskew and rotate</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">resampling_vertical_split</span><span class="p">(</span><span class="n">image</span><span class="p">,</span>
+                                      <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span>
+                                      <span class="n">dz</span><span class="o">=</span><span class="n">dz</span><span class="p">,</span>
+                                      <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span>
+                                      <span class="n">num_split</span><span class="o">=</span><span class="n">num_split</span><span class="p">)</span>
+
+    <span class="c1"># flip along axis x</span>
+    <span class="k">if</span> <span class="n">flip</span><span class="p">:</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_xp_module</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">image</span></div>
+
+
+<span class="k">def</span> <span class="nf">resampling_vertical_split</span><span class="p">(</span><span class="n">image</span><span class="p">,</span>
+                              <span class="n">dz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+                              <span class="n">dx</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+                              <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">45</span><span class="p">,</span>
+                              <span class="n">num_split</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Same as resampling_vertical but splits the input image so that computation can fit in GPU memory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image   : input image (skewed 3D stack)</span>
+<span class="sd">    dz     : float, scanning step (stage or galvo scanning step, not the same as the distance between the slices)</span>
+<span class="sd">    dx     : float, pixel size of the camera</span>
+<span class="sd">    angle  : float, incident angle of the light sheet, angle between the light sheet and the optical axis</span>
+<span class="sd">    num_split  : number of splits to break down the data into pieces (along y, axis=2) to fit into the memory of GPU</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Resampled image.</span>
+<span class="sd">    Important note: for scalability reasons, the returned image is always numpy image.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">num_split</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">resampling_vertical</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">dz</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_xp_module</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">data_gpu_splits</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">num_split</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_split</span><span class="p">):</span>
+            <span class="n">data_resampled</span> <span class="o">=</span> <span class="n">resampling_vertical</span><span class="p">(</span><span class="n">data_gpu_splits</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">dz</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">data_resampled</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">output</span><span class="p">,</span> <span class="n">Backend</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">data_resampled</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">def</span> <span class="nf">resampling_vertical</span><span class="p">(</span><span class="n">image</span><span class="p">,</span>
+                        <span class="n">dz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                        <span class="n">dx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                        <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Resampling of the image by interpolation along vertical direction.</span>
+<span class="sd">    Here we assume the dz is integer multiple of dx * cos(angle * pi / 180),</span>
+<span class="sd">    one can also pre-interpolate the data within along the z&#39; axis if this is not the case</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image  : input image (skewed 3D stack)</span>
+<span class="sd">    dz     : float, scanning step (stage or galvo scanning step, not the same as the distance between the slices)</span>
+<span class="sd">    dx     : float, pixel size of the camera</span>
+<span class="sd">    angle  : float, incident angle of the light sheet, angle between the light sheet and the optical axis</span>
+<span class="sd">    num_split  : number of splits to break down the data into pieces (along y, axis=2) to fit into the memory of GPU</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Resampled image</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_xp_module</span><span class="p">()</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_sp_module</span><span class="p">()</span>
+
+    <span class="p">(</span><span class="n">nz</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="n">zres</span> <span class="o">=</span> <span class="n">dz</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">)</span>
+    <span class="n">xres</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">)</span>
+
+    <span class="n">resample_factor</span> <span class="o">=</span> <span class="n">dz</span> <span class="o">/</span> <span class="n">xres</span>
+    <span class="n">resample_factor_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">resample_factor</span><span class="p">))</span>
+
+    <span class="n">nz_new</span><span class="p">,</span> <span class="n">ny_new</span><span class="p">,</span> <span class="n">nx_new</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">resample_factor_int</span><span class="p">)),</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span> <span class="o">+</span> <span class="n">nz</span> <span class="o">*</span> <span class="n">resample_factor_int</span>
+    <span class="n">data_reassign</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nz_new</span><span class="p">,</span> <span class="n">ny_new</span><span class="p">,</span> <span class="n">nx_new</span><span class="p">),</span> <span class="n">xp</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="p">):</span>
+        <span class="n">x_start</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">x_end</span> <span class="o">=</span> <span class="n">nz</span> <span class="o">*</span> <span class="n">resample_factor_int</span> <span class="o">+</span> <span class="n">x</span>
+        <span class="n">data_reassign</span><span class="p">[</span><span class="n">x</span> <span class="o">//</span> <span class="n">resample_factor_int</span><span class="p">,</span> <span class="p">:,</span> <span class="n">x_start</span><span class="p">:</span><span class="n">x_end</span><span class="p">:</span><span class="n">resample_factor_int</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">del</span> <span class="n">image</span>
+
+    <span class="c1"># rescale the data, interpolate along z</span>
+    <span class="n">data_rescale</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">data_reassign</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="p">(</span><span class="n">resample_factor_int</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">data_reassign</span>
+
+    <span class="n">data_interp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nz_new</span><span class="p">,</span> <span class="n">ny_new</span><span class="p">,</span> <span class="n">nx_new</span><span class="p">),</span> <span class="n">dtype</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nz_new</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">resample_factor_int</span><span class="p">):</span>
+            <span class="n">data_interp</span><span class="p">[</span><span class="n">z</span><span class="p">,</span> <span class="p">:,</span> <span class="n">k</span><span class="p">::</span><span class="n">resample_factor_int</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">data_rescale</span><span class="p">[</span><span class="n">z</span> <span class="o">*</span> <span class="n">resample_factor_int</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="p">:,</span> <span class="n">k</span><span class="p">::</span><span class="n">resample_factor_int</span><span class="p">]</span>
+    <span class="k">del</span> <span class="n">data_rescale</span>
+
+    <span class="c1"># rescale the data, to have voxel the same along x an y;</span>
+    <span class="c1"># remove the first z slice which has artifacts due to resampling</span>
+    <span class="n">image_final</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">data_interp</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">zoom</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">xres</span> <span class="o">/</span> <span class="n">dx</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">image_final</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021. Chan Zuckerberg Biohub. All rights reserved.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

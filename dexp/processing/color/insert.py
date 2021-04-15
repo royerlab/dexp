@@ -107,6 +107,10 @@ def insert_color_image(image,
         shift = translation + (0,)
     else:
         raise ValueError(f"Unsupported translation: {translation}")
+    # cast to int:
+    shift = tuple(int(round(u)) for u in shift)
+
+    # translate:
     padded_inset_image = xp.roll(padded_inset_image, axis=axis, shift=shift)
 
     # Blend images together:

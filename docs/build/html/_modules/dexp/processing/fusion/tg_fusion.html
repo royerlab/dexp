@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>dexp.processing.fusion.tg_fusion &mdash; dexp  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> dexp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/contact_us.html">Contact us</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Commands</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../commands/dexp_commands.html">dexp commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../commands/video_commands.html">video commands</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/volume_render.html">Volume Render</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">dexp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dexp.processing.fusion.tg_fusion</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dexp.processing.fusion.tg_fusion</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">dexp.processing.backends.backend</span> <span class="kn">import</span> <span class="n">Backend</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.backends.numpy_backend</span> <span class="kn">import</span> <span class="n">NumpyBackend</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.filters.sobel_filter</span> <span class="kn">import</span> <span class="n">sobel_filter</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.utils.blend_images</span> <span class="kn">import</span> <span class="n">blend_images</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.utils.element_wise_affine</span> <span class="kn">import</span> <span class="n">element_wise_affine</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.utils.fit_shape</span> <span class="kn">import</span> <span class="n">fit_to_shape</span>
+
+
+<div class="viewcode-block" id="fuse_tg_nd"><a class="viewcode-back" href="../../../../api/processing.html#dexp.processing.fusion.tg_fusion.fuse_tg_nd">[docs]</a><span class="k">def</span> <span class="nf">fuse_tg_nd</span><span class="p">(</span><span class="n">image_a</span><span class="p">,</span>
+               <span class="n">image_b</span><span class="p">,</span>
+               <span class="n">downscale</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+               <span class="n">sharpness</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span>
+               <span class="n">tenengrad_smoothing</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+               <span class="n">blend_map_smoothing</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+               <span class="n">bias_axis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+               <span class="n">bias_exponent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+               <span class="n">bias_strength</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+               <span class="n">clip</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+               <span class="n">internal_dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">_display_blend_map</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fuses two images by picking regions from one or the other image based on the local image quality</span>
+<span class="sd">    measured by using the magnitude of the Sobel gradient -- similarly as in the Tenengrad focus metric.</span>
+<span class="sd">    A smooth blend map is computed that blends the two images based on local image quality. A bias can be</span>
+<span class="sd">    introduced to favor one side of an axis versus another.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image_a : First image to fuse</span>
+<span class="sd">    image_b : Second image to fuse</span>
+<span class="sd">    downscale : How much to downscale the two images in order to compute the blend map.</span>
+<span class="sd">    A value of 2 is good to achieve both coarse denoising and reduce compute load.</span>
+<span class="sd">    sharpness : How &#39;sharp&#39; should be the choice between the two images.</span>
+<span class="sd">    A large value makes sure that most of the time the voxel values of one or the other image</span>
+<span class="sd">    are picked with very little mixing even if local image quality between .</span>
+<span class="sd">    tenengrad_smoothing : How much to smooth the tenengrad map</span>
+<span class="sd">    blend_map_smoothing : How much to smooth the blend map</span>
+<span class="sd">    bias_axis : Along which axis should a bias be introduced in the blend map. None for no bias.</span>
+<span class="sd">    bias_exponent : Exponent for the bias</span>
+<span class="sd">    bias_strength : Bias strength -- zero means no bias</span>
+<span class="sd">    clip : clip output to input images min and max values.</span>
+<span class="sd">    internal_dtype : dtype for internal computation</span>
+
+<span class="sd">    _display_blend_map : For debugging purposes, we can display the images to fuse, the blend map and result.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_xp_module</span><span class="p">()</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_sp_module</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">image_a</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">image_b</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Arrays must have the same shape&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">image_a</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">image_b</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Arrays must have the same dtype&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">internal_dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">internal_dtype</span> <span class="o">=</span> <span class="n">image_a</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">Backend</span><span class="o">.</span><span class="n">current</span><span class="p">())</span> <span class="ow">is</span> <span class="n">NumpyBackend</span><span class="p">:</span>
+        <span class="n">internal_dtype</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">float32</span>
+
+    <span class="n">original_dtype</span> <span class="o">=</span> <span class="n">image_a</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="n">image_a</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">to_backend</span><span class="p">(</span><span class="n">image_a</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">internal_dtype</span><span class="p">)</span>
+    <span class="n">image_b</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">to_backend</span><span class="p">(</span><span class="n">image_b</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">internal_dtype</span><span class="p">)</span>
+
+    <span class="n">min_a</span><span class="p">,</span> <span class="n">max_a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">image_a</span><span class="p">),</span> <span class="n">xp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">image_a</span><span class="p">)</span>
+    <span class="n">min_b</span><span class="p">,</span> <span class="n">max_b</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">image_b</span><span class="p">),</span> <span class="n">xp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">image_b</span><span class="p">)</span>
+    <span class="n">min_value</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_a</span><span class="p">,</span> <span class="n">min_b</span><span class="p">)</span>
+    <span class="n">max_value</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_a</span><span class="p">,</span> <span class="n">max_b</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">min_a</span><span class="p">,</span> <span class="n">max_a</span><span class="p">,</span> <span class="n">min_b</span><span class="p">,</span> <span class="n">max_b</span>
+
+    <span class="c1"># downscale to speed up computation and reduce noise</span>
+    <span class="n">d_image_a</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">image_a</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">downscale</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">d_image_b</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">image_b</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">downscale</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Denoise further:</span>
+    <span class="n">d_image_a</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">d_image_a</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+    <span class="n">d_image_b</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">d_image_b</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+
+    <span class="c1"># Compute Tenengrad filter:</span>
+    <span class="n">t_image_a</span> <span class="o">=</span> <span class="n">sobel_filter</span><span class="p">(</span><span class="n">d_image_a</span><span class="p">,</span> <span class="n">exponent</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">normalise_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">in_place_normalisation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">t_image_b</span> <span class="o">=</span> <span class="n">sobel_filter</span><span class="p">(</span><span class="n">d_image_b</span><span class="p">,</span> <span class="n">exponent</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">normalise_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">in_place_normalisation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">d_image_a</span><span class="p">,</span> <span class="n">d_image_b</span>
+
+    <span class="c1"># Apply maximum filter:</span>
+    <span class="n">t_image_a</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">maximum_filter</span><span class="p">(</span><span class="n">t_image_a</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">tenengrad_smoothing</span><span class="p">)</span>
+    <span class="n">t_image_b</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">maximum_filter</span><span class="p">(</span><span class="n">t_image_b</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">tenengrad_smoothing</span><span class="p">)</span>
+
+    <span class="c1"># Apply smoothing filter:</span>
+    <span class="n">t_image_a</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">uniform_filter</span><span class="p">(</span><span class="n">t_image_a</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">tenengrad_smoothing</span><span class="p">))</span>
+    <span class="n">t_image_b</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">uniform_filter</span><span class="p">(</span><span class="n">t_image_b</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">tenengrad_smoothing</span><span class="p">))</span>
+
+    <span class="c1"># Normalise:</span>
+
+    <span class="n">t_min_value</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">t_image_a</span><span class="p">),</span> <span class="n">xp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">t_image_b</span><span class="p">))</span>
+    <span class="n">t_max_value</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">t_image_a</span><span class="p">),</span> <span class="n">xp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">t_image_b</span><span class="p">))</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">t_max_value</span> <span class="o">-</span> <span class="n">t_min_value</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">internal_dtype</span><span class="p">)</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">t_min_value</span> <span class="o">/</span> <span class="p">(</span><span class="n">t_max_value</span> <span class="o">-</span> <span class="n">t_min_value</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">internal_dtype</span><span class="p">)</span>
+    <span class="n">t_image_a</span> <span class="o">=</span> <span class="n">element_wise_affine</span><span class="p">(</span><span class="n">t_image_a</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">t_image_a</span><span class="p">)</span>
+    <span class="n">t_image_b</span> <span class="o">=</span> <span class="n">element_wise_affine</span><span class="p">(</span><span class="n">t_image_b</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">t_image_b</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">t_min_value</span><span class="p">,</span> <span class="n">t_max_value</span>
+
+    <span class="c1"># Add bias:</span>
+    <span class="k">if</span> <span class="n">bias_axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">bias_strength</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">t_image_a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">bias_axis</span><span class="p">]</span>
+        <span class="n">bias_vector</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">length</span><span class="p">)</span>
+        <span class="n">bias_vector</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">bias_vector</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">bias_vector</span><span class="p">)</span> <span class="o">**</span> <span class="n">bias_exponent</span><span class="p">)</span>
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">s</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">bias_axis</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">t_image_a</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="n">bias_vector</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">bias_vector</span><span class="p">,</span> <span class="n">newshape</span><span class="o">=</span><span class="n">new_shape</span><span class="p">)</span>
+        <span class="n">t_image_a</span> <span class="o">-=</span> <span class="n">bias_strength</span> <span class="o">*</span> <span class="n">bias_vector</span>
+        <span class="n">t_image_b</span> <span class="o">+=</span> <span class="n">bias_strength</span> <span class="o">*</span> <span class="n">bias_vector</span>
+        <span class="k">del</span> <span class="n">bias_vector</span>
+
+    <span class="c1"># compute the absolute difference and sign:</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">t_image_a</span>
+    <span class="n">diff</span> <span class="o">-=</span> <span class="n">t_image_b</span>
+    <span class="k">del</span> <span class="n">t_image_b</span>
+
+    <span class="n">sgn_diff</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span>
+    <span class="n">abs_diff</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">diff</span><span class="p">)</span>
+    <span class="n">abs_diff</span> <span class="o">**=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">sharpness</span>
+    <span class="k">del</span> <span class="n">diff</span>
+
+    <span class="c1"># compute blending map:</span>
+    <span class="n">blend_map</span> <span class="o">=</span> <span class="n">abs_diff</span>
+    <span class="n">blend_map</span> <span class="o">*=</span> <span class="n">sgn_diff</span>
+    <span class="n">blend_map</span> <span class="o">=</span> <span class="n">element_wise_affine</span><span class="p">(</span><span class="n">blend_map</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">blend_map</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">sgn_diff</span>
+
+    <span class="c1"># Upscale blending map back to original size:</span>
+    <span class="n">blend_map</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">blend_map</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="n">downscale</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Padding to recover original image size:</span>
+    <span class="n">blend_map</span> <span class="o">=</span> <span class="n">fit_to_shape</span><span class="p">(</span><span class="n">blend_map</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">image_a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># Smooth blend map to have less seams:</span>
+    <span class="n">blend_map</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">uniform_filter</span><span class="p">(</span><span class="n">blend_map</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">blend_map_smoothing</span><span class="p">)</span>
+
+    <span class="c1"># Fuse using blending map:</span>
+    <span class="n">image_fused</span> <span class="o">=</span> <span class="n">blend_images</span><span class="p">(</span><span class="n">image_a</span><span class="p">,</span> <span class="n">image_b</span><span class="p">,</span> <span class="n">blend_map</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_display_blend_map</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">image_a</span><span class="p">,</span> <span class="n">image_b</span><span class="p">,</span> <span class="n">blend_map</span>
+
+    <span class="k">if</span> <span class="n">clip</span><span class="p">:</span>
+        <span class="n">image_fused</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">image_fused</span><span class="p">,</span> <span class="n">min_value</span><span class="p">,</span> <span class="n">max_value</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">image_fused</span><span class="p">)</span>
+
+    <span class="c1"># Adjust type:</span>
+    <span class="n">image_fused</span> <span class="o">=</span> <span class="n">image_fused</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">original_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">_display_blend_map</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">napari</span> <span class="kn">import</span> <span class="n">Viewer</span><span class="p">,</span> <span class="n">gui_qt</span>
+        <span class="k">with</span> <span class="n">gui_qt</span><span class="p">():</span>
+            <span class="k">def</span> <span class="nf">_c</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">Backend</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+            <span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">()</span>
+            <span class="n">viewer</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span><span class="n">_c</span><span class="p">(</span><span class="n">image_a</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;image_a&#39;</span><span class="p">,</span> <span class="n">contrast_limits</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+            <span class="n">viewer</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span><span class="n">_c</span><span class="p">(</span><span class="n">image_b</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;image_b&#39;</span><span class="p">,</span> <span class="n">contrast_limits</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+            <span class="n">viewer</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span><span class="n">_c</span><span class="p">(</span><span class="n">blend_map</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;blend_map&#39;</span><span class="p">)</span>
+            <span class="n">viewer</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span><span class="n">_c</span><span class="p">(</span><span class="n">image_fused</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;image_fused&#39;</span><span class="p">,</span> <span class="n">contrast_limits</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">image_fused</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021. Chan Zuckerberg Biohub. All rights reserved.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>dexp.processing.color.scale_bar &mdash; dexp  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> dexp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/contact_us.html">Contact us</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Commands</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../commands/dexp_commands.html">dexp commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../commands/video_commands.html">video commands</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/volume_render.html">Volume Render</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">dexp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dexp.processing.color.scale_bar</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dexp.processing.color.scale_bar</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">from</span> <span class="nn">dexp.processing.backends.backend</span> <span class="kn">import</span> <span class="n">Backend</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.color.blend</span> <span class="kn">import</span> <span class="n">blend_color_images</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.color.cairo_utils</span> <span class="kn">import</span> <span class="n">get_array_for_cairo_surface</span>
+
+
+<div class="viewcode-block" id="insert_scale_bar"><a class="viewcode-back" href="../../../../api/processing.html#dexp.processing.color.scale_bar.insert_scale_bar">[docs]</a><span class="k">def</span> <span class="nf">insert_scale_bar</span><span class="p">(</span><span class="n">image</span><span class="p">,</span>
+                     <span class="n">length_in_unit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                     <span class="n">pixel_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                     <span class="n">bar_height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+                     <span class="n">margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                     <span class="n">translation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;bottom_right&#39;</span><span class="p">,</span>
+                     <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">number_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="p">,</span>
+                     <span class="n">font_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Helvetica&quot;</span><span class="p">,</span>
+                     <span class="n">font_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+                     <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;μm&#39;</span><span class="p">,</span>
+                     <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;max&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inserts a scale bar into an image.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image: Image into which to insert the scale bar.</span>
+<span class="sd">    length_in_unit: Length of scale bar in the provided unit.</span>
+<span class="sd">    pixel_scale: conversion factor from pixels to units -- what is the side length of a pixel/voxel in units.</span>
+<span class="sd">    bar_height: Height of th scale bar in pixels</span>
+<span class="sd">    margin: margin around bar expressed in units relative to the text height</span>
+<span class="sd">    translation: Positions of the scale bar in pixels in numpy order: (y, x). Can also be a string: &#39;bottom_left&#39;, &#39;bottom_right&#39;, &#39;top_left&#39;, &#39;top_right&#39;.</span>
+<span class="sd">    color: Color of the bar and text as tuple of 4 values: (R, G, B, A)</span>
+<span class="sd">    number_format: Format string to represent the start and end values.</span>
+<span class="sd">    font_name: Font name.</span>
+<span class="sd">    font_size: Font size in pixels.</span>
+<span class="sd">    unit: Unit name.</span>
+<span class="sd">    mode: Blending mode. See function &#39;blend_color_images&#39; for available blending modes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Image with inserted scale bar.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_xp_module</span><span class="p">()</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_sp_module</span><span class="p">()</span>
+
+    <span class="c1"># Move to backend:</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">to_backend</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Image shape:</span>
+    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Bar length in pixels/voxels:</span>
+    <span class="n">bar_length</span> <span class="o">=</span> <span class="n">length_in_unit</span> <span class="o">/</span> <span class="n">pixel_scale</span>
+
+    <span class="c1"># Replace um with µm:</span>
+    <span class="k">if</span> <span class="n">unit</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;um&#39;</span><span class="p">:</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;µm&#39;</span>
+
+    <span class="n">scale_bar_array</span> <span class="o">=</span> <span class="n">_generate_scale_bar_image</span><span class="p">(</span><span class="n">width</span><span class="p">,</span>
+                                                <span class="n">height</span><span class="p">,</span>
+                                                <span class="n">translation</span><span class="p">,</span>
+                                                <span class="n">bar_height</span><span class="p">,</span>
+                                                <span class="n">bar_length</span><span class="p">,</span>
+                                                <span class="n">margin</span><span class="p">,</span>
+                                                <span class="n">color</span><span class="p">,</span>
+                                                <span class="n">font_name</span><span class="p">,</span>
+                                                <span class="n">font_size</span><span class="p">,</span>
+                                                <span class="n">length_in_unit</span><span class="p">,</span>
+                                                <span class="n">number_format</span><span class="p">,</span>
+                                                <span class="n">unit</span><span class="p">)</span>
+
+    <span class="c1"># Blend images:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">blend_color_images</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">scale_bar_array</span><span class="p">),</span>
+                                <span class="n">alphas</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                                <span class="n">modes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">scale_bar_array</span></div>
+
+
+<span class="k">def</span> <span class="nf">_generate_scale_bar_image</span><span class="p">(</span><span class="n">width</span><span class="p">,</span>
+                              <span class="n">height</span><span class="p">,</span>
+                              <span class="n">translation</span><span class="p">,</span>
+                              <span class="n">bar_height</span><span class="p">,</span>
+                              <span class="n">bar_length</span><span class="p">,</span>
+                              <span class="n">margin</span><span class="p">,</span>
+                              <span class="n">color</span><span class="p">,</span>
+                              <span class="n">font_name</span><span class="p">,</span>
+                              <span class="n">font_size</span><span class="p">,</span>
+                              <span class="n">length_in_unit</span><span class="p">,</span>
+                              <span class="n">number_format</span><span class="p">,</span>
+                              <span class="n">unit</span><span class="p">):</span>
+    <span class="c1"># Create surface:</span>
+    <span class="kn">import</span> <span class="nn">cairocffi</span> <span class="k">as</span> <span class="nn">cairo</span>
+    <span class="n">surface</span> <span class="o">=</span> <span class="n">cairo</span><span class="o">.</span><span class="n">ImageSurface</span><span class="p">(</span><span class="n">cairo</span><span class="o">.</span><span class="n">FORMAT_ARGB32</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">cairo</span><span class="o">.</span><span class="n">Context</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Configure text rendering:</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">select_font_face</span><span class="p">(</span><span class="n">font_name</span><span class="p">,</span>
+                             <span class="n">cairo</span><span class="o">.</span><span class="n">FONT_SLANT_NORMAL</span><span class="p">,</span>
+                             <span class="n">cairo</span><span class="o">.</span><span class="n">FONT_WEIGHT_NORMAL</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">set_font_size</span><span class="p">(</span><span class="n">font_size</span><span class="p">)</span>
+
+    <span class="c1"># text to be rendered:</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">number_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">length_in_unit</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># determine text height and width:</span>
+    <span class="n">text_width</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">text_extents</span><span class="p">(</span><span class="n">text</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">text_height</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">text_extents</span><span class="p">(</span><span class="n">text</span><span class="p">)[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># Margins:</span>
+    <span class="n">margin_height</span> <span class="o">=</span> <span class="n">margin</span> <span class="o">*</span> <span class="n">text_height</span>
+    <span class="n">margin_width</span> <span class="o">=</span> <span class="n">margin</span> <span class="o">*</span> <span class="n">text_height</span>
+
+    <span class="c1"># First we turn off antialiasing, works better:</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">set_antialias</span><span class="p">(</span><span class="n">cairo</span><span class="o">.</span><span class="n">ANTIALIAS_NONE</span><span class="p">)</span>
+
+    <span class="c1"># Turn off alpha blending and clears the image:</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">set_operator</span><span class="p">(</span><span class="n">cairo</span><span class="o">.</span><span class="n">OPERATOR_SOURCE</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">set_source_rgba</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span>
+
+    <span class="c1"># We set the color for the bar:</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">set_source_rgba</span><span class="p">(</span><span class="o">*</span><span class="n">color</span><span class="p">)</span>
+
+    <span class="c1"># Set the position of the bar, that is the left-most end of it, including the margin:</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">translation</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;top&#39;</span> <span class="ow">in</span> <span class="n">translation</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">margin_height</span>
+        <span class="k">elif</span> <span class="s1">&#39;bottom&#39;</span> <span class="ow">in</span> <span class="n">translation</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">height</span> <span class="o">-</span> <span class="p">(</span><span class="n">margin_height</span> <span class="o">+</span> <span class="n">bar_height</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;left&#39;</span> <span class="ow">in</span> <span class="n">translation</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">margin_width</span>
+        <span class="k">elif</span> <span class="s1">&#39;right&#39;</span> <span class="ow">in</span> <span class="n">translation</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">width</span> <span class="o">-</span> <span class="p">(</span><span class="n">margin_width</span> <span class="o">+</span> <span class="n">bar_length</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">bar_length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">text_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">translation</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">translation</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid translation: </span><span class="si">{</span><span class="n">translation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+    <span class="c1"># We draw the scale bar itself:</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">-</span> <span class="n">bar_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">bar_length</span><span class="p">,</span> <span class="n">bar_height</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span>
+
+    <span class="c1"># Turn on antialiasing again for text:</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">set_antialias</span><span class="p">(</span><span class="n">cairo</span><span class="o">.</span><span class="n">ANTIALIAS_SUBPIXEL</span><span class="p">)</span>
+
+    <span class="c1"># Turn back on alpha blending:</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">set_operator</span><span class="p">(</span><span class="n">cairo</span><span class="o">.</span><span class="n">OPERATOR_OVER</span><span class="p">)</span>
+
+    <span class="c1"># Set text color:</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">set_source_rgba</span><span class="p">(</span><span class="o">*</span><span class="n">color</span><span class="p">)</span>
+
+    <span class="c1"># draw text at correct location:</span>
+    <span class="k">if</span> <span class="s1">&#39;top&#39;</span> <span class="ow">in</span> <span class="n">translation</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">move_to</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">bar_length</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">text_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">text_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">move_to</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">bar_length</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">text_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span> <span class="o">-</span> <span class="n">text_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">show_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="c1"># Get array from surface:</span>
+    <span class="n">surface_array</span> <span class="o">=</span> <span class="n">get_array_for_cairo_surface</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">surface_array</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021. Chan Zuckerberg Biohub. All rights reserved.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
