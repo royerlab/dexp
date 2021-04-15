@@ -68,7 +68,6 @@ The list of commands can be found by :
 dexp --help
 ```
 
-### Example usage
 
 
 
