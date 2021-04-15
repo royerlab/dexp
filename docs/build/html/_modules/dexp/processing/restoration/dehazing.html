@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>dexp.processing.restoration.dehazing &mdash; dexp  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> dexp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/contact_us.html">Contact us</a></li>
+</ul>
+<p><span class="caption-text">Dexp Commands</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/add.html">add</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/check.html">check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/copy.html">copy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/deconv.html">deconv</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/deskew.html">deskew</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/fuse.html">fuse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/info.html">info</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/isonet.html">isonet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/projrender.html">projrender</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/serve.html">serve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/speedtest.html">speedtest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/stabilize.html">stabilize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/tiff.html">tiff</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/view.html">view</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/volrender.html">volrender</a></li>
+</ul>
+<p><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/volume_render.html">Volume Render</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">dexp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dexp.processing.restoration.dehazing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dexp.processing.restoration.dehazing</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">from</span> <span class="nn">dexp.processing.backends.backend</span> <span class="kn">import</span> <span class="n">Backend</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.backends.numpy_backend</span> <span class="kn">import</span> <span class="n">NumpyBackend</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.utils.fit_shape</span> <span class="kn">import</span> <span class="n">fit_to_shape</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.utils.nan_to_zero</span> <span class="kn">import</span> <span class="n">nan_to_zero</span>
+
+
+<div class="viewcode-block" id="dehaze"><a class="viewcode-back" href="../../../../api/processing.html#dexp.processing.restoration.dehazing.dehaze">[docs]</a><span class="k">def</span> <span class="nf">dehaze</span><span class="p">(</span><span class="n">image</span><span class="p">,</span>
+           <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">21</span><span class="p">,</span>
+           <span class="n">downscale</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+           <span class="n">minimal_zero_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+           <span class="n">correct_max_level</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+           <span class="n">in_place</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+           <span class="n">internal_dtype</span><span class="o">=</span><span class="kc">None</span>
+           <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dehazes an image by means of a non-linear low-pass rejection filter.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : image to filter</span>
+<span class="sd">    size : filter size</span>
+<span class="sd">    downscale : downscale factor for speeding up computation of the haze map.</span>
+<span class="sd">    minimal_zero_level : minimal zero level to substract</span>
+<span class="sd">    in_place : True if the input image may be modified in-place.</span>
+<span class="sd">    internal_dtype : internal dtype for computation</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dehazed image</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_sp_module</span><span class="p">()</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_xp_module</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">internal_dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">internal_dtype</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">Backend</span><span class="o">.</span><span class="n">current</span><span class="p">())</span> <span class="ow">is</span> <span class="n">NumpyBackend</span><span class="p">:</span>
+        <span class="n">internal_dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float32</span>
+
+    <span class="n">original_dtype</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">to_backend</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">internal_dtype</span><span class="p">,</span> <span class="n">force_copy</span><span class="o">=</span><span class="ow">not</span> <span class="n">in_place</span><span class="p">)</span>
+    <span class="c1"># original_image = image.copy()</span>
+
+    <span class="n">minimal_zero_level</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">minimal_zero_level</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">internal_dtype</span><span class="p">)</span>
+
+    <span class="c1"># get rid of low values due to noise:</span>
+    <span class="n">image_zero_level</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">maximum_filter</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="c1"># downscale to speed up the rest of the computation:</span>
+    <span class="n">downscaled_image</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">image_zero_level</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">downscale</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># find min values:</span>
+    <span class="n">image_zero_level</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">minimum_filter</span><span class="p">(</span><span class="n">downscaled_image</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span> <span class="o">//</span> <span class="n">downscale</span><span class="p">))</span>
+
+    <span class="c1"># expand reach of these min values:</span>
+    <span class="n">image_zero_level</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">maximum_filter</span><span class="p">(</span><span class="n">image_zero_level</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span> <span class="o">//</span> <span class="n">downscale</span><span class="p">))</span>
+
+    <span class="c1"># smooth out:</span>
+    <span class="n">image_zero_level</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">image_zero_level</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span> <span class="o">//</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">downscale</span><span class="p">)))</span>
+
+    <span class="c1"># scale up again:</span>
+    <span class="n">image_zero_level</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">image_zero_level</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="n">downscale</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Padding to recover original image size:</span>
+    <span class="n">image_zero_level</span> <span class="o">=</span> <span class="n">fit_to_shape</span><span class="p">(</span><span class="n">image_zero_level</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># Ensure that we remove at least the minimum zero level:</span>
+    <span class="k">if</span> <span class="n">minimal_zero_level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">image_zero_level</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">image_zero_level</span><span class="p">,</span> <span class="n">minimal_zero_level</span><span class="p">)</span>
+
+    <span class="c1"># remove zero level:</span>
+    <span class="n">image</span> <span class="o">-=</span> <span class="n">image_zero_level</span>
+    <span class="k">del</span> <span class="n">image_zero_level</span>
+
+    <span class="c1"># clip:</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">correct_max_level</span><span class="p">:</span>
+        <span class="c1"># get image max level before:</span>
+        <span class="c1"># twice filtering is to match the extent reached for the zero_level image (see above combination of min then max filters)</span>
+        <span class="n">downscaled_image</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">maximum_filter</span><span class="p">(</span><span class="n">downscaled_image</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span> <span class="o">//</span> <span class="n">downscale</span><span class="p">))</span>
+        <span class="n">image_max_level_before</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">downscaled_image</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span> <span class="o">//</span> <span class="n">downscale</span><span class="p">))</span>
+
+        <span class="c1"># get image max level after:</span>
+        <span class="n">downscaled_image_after</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">maximum_filter</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">downscaled_image_after</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">interpolation</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">downscaled_image_after</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">downscale</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">image_max_level_after</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">maximum_filter</span><span class="p">(</span><span class="n">downscaled_image_after</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span> <span class="o">//</span> <span class="n">downscale</span><span class="p">))</span>
+        <span class="n">image_max_level_after</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">image_max_level_after</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span> <span class="o">//</span> <span class="n">downscale</span><span class="p">))</span>
+
+        <span class="c1"># Correction ratio:</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">internal_dtype</span><span class="p">)</span>
+        <span class="n">correction_ratio</span> <span class="o">=</span> <span class="n">image_max_level_before</span>
+        <span class="n">correction_ratio</span> <span class="o">/=</span> <span class="p">(</span><span class="n">image_max_level_after</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="n">correction_ratio</span> <span class="o">=</span> <span class="n">nan_to_zero</span><span class="p">(</span><span class="n">correction_ratio</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">image_max_level_after</span>
+        <span class="n">correction_ratio</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">correction_ratio</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="n">downscale</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">correction_ratio</span> <span class="o">=</span> <span class="n">fit_to_shape</span><span class="p">(</span><span class="n">correction_ratio</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">image</span> <span class="o">*=</span> <span class="n">correction_ratio</span>
+        <span class="k">del</span> <span class="n">correction_ratio</span>
+
+    <span class="c1"># convert back to original dtype</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">original_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># from napari import gui_qt, Viewer</span>
+    <span class="c1"># with gui_qt():</span>
+    <span class="c1">#     def _c(array):</span>
+    <span class="c1">#         return backend.to_numpy(array)</span>
+    <span class="c1">#     viewer = Viewer()</span>
+    <span class="c1">#     viewer.add_image(_c(image), name=&#39;original_image&#39;)</span>
+    <span class="c1">#     viewer.add_image(_c(image_zero_level), name=&#39;image_zero_level&#39;)</span>
+    <span class="c1">#     viewer.add_image(_c(image), name=&#39;dehazed&#39;)</span>
+
+    <span class="k">return</span> <span class="n">image</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021. Chan Zuckerberg Biohub. All rights reserved.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

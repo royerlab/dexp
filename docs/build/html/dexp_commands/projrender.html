@@ -1,0 +1,486 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Projrender &mdash; dexp  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Serve" href="serve.html" />
+    <link rel="prev" title="Isonet" href="isonet.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> dexp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/contact_us.html">Contact us</a></li>
+</ul>
+<p><span class="caption-text">Dexp Commands</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="add.html">add</a></li>
+<li class="toctree-l1"><a class="reference internal" href="check.html">check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copy.html">copy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deconv.html">deconv</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deskew.html">deskew</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fuse.html">fuse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="info.html">info</a></li>
+<li class="toctree-l1"><a class="reference internal" href="isonet.html">isonet</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">projrender</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#projrender">projrender</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="serve.html">serve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="speedtest.html">speedtest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stabilize.html">stabilize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tiff.html">tiff</a></li>
+<li class="toctree-l1"><a class="reference internal" href="view.html">view</a></li>
+<li class="toctree-l1"><a class="reference internal" href="volrender.html">volrender</a></li>
+</ul>
+<p><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/volume_render.html">Volume Render</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dexp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Projrender</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/dexp_commands/projrender.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="projrender">
+<h1>Projrender<a class="headerlink" href="#projrender" title="Permalink to this headline">¶</a></h1>
+<section id="projrender">
+<h2>projrender<a class="headerlink" href="#projrender" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>projrender <span class="o">[</span>OPTIONS<span class="o">]</span> <span class="o">[</span>INPUT_PATHS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-projrender-o">
+<span id="cmdoption-projrender-output_path"></span><span id="cmdoption-projrender-output-path"></span><code class="sig-name descname"><span class="pre">-o</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output_path</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output_path&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output folder to store rendered PNGs. Default is: frames_&lt;channel_name&gt;</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-c">
+<span id="cmdoption-projrender-channels"></span><code class="sig-name descname"><span class="pre">-c</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--channels</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;channels&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of channels to color, all channels when ommited.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-s">
+<span id="cmdoption-projrender-slicing"></span><code class="sig-name descname"><span class="pre">-s</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--slicing</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;slicing&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-w">
+<span id="cmdoption-projrender-overwrite"></span><code class="sig-name descname"><span class="pre">-w</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--overwrite</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-projrender-w" title="Permalink to this definition">¶</a></dt>
+<dd><p>to force overwrite of target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>False</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-ax">
+<span id="cmdoption-projrender-axis"></span><code class="sig-name descname"><span class="pre">-ax</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--axis</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;axis&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-ax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the projection axis: 0-&gt;Z, 1-&gt;Y, 2-&gt;X</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-di">
+<span id="cmdoption-projrender-dir"></span><code class="sig-name descname"><span class="pre">-di</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--dir</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dir&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-di" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the projection direction: -1 -&gt; top to bottom, +1 -&gt; bottom to top.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>-1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-m">
+<span id="cmdoption-projrender-mode"></span><code class="sig-name descname"><span class="pre">-m</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--mode</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;mode&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the projection mode: ‘max’: classic max projection, ‘colormax’: color max projection, i.e. color codes for depth, ‘maxcolor’ same as colormax but first does depth-coding by color and then max projects (acheives some level of transparency).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>colormax</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-cl">
+<span id="cmdoption-projrender-clim"></span><code class="sig-name descname"><span class="pre">-cl</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--clim</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;clim&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-cl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-at">
+<span id="cmdoption-projrender-attenuation"></span><code class="sig-name descname"><span class="pre">-at</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--attenuation</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;attenuation&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-at" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the projection attenuation coefficient, should be within [0, 1] ideally close to 0. Larger values mean more attenuation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>0.1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-g">
+<span id="cmdoption-projrender-gamma"></span><code class="sig-name descname"><span class="pre">-g</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--gamma</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;gamma&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the gamma coefficient pre-applied to the raw voxel values (before projection or any subsequent processing).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>1.0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-dl">
+<span id="cmdoption-projrender-dlim"></span><code class="sig-name descname"><span class="pre">-dl</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--dlim</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dlim&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-dl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the depth limits. Depth limits. For example, a value of (0.1, 0.7) means that the colormap start at a normalised depth of 0.1, and ends at a normalised depth of 0.7, other values are clipped. Only used for colormax mode.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-cm">
+<span id="cmdoption-projrender-colormap"></span><code class="sig-name descname"><span class="pre">-cm</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--colormap</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;colormap&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-cm" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets colormap, e.g. viridis, gray, magma, plasma, inferno. Use a rainbow colormap such as turbo, bmy, or rainbow (recommended) for color-coded depth modes.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-cg">
+<span id="cmdoption-projrender-rgbgamma"></span><code class="sig-name descname"><span class="pre">-cg</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--rgbgamma</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;rgbgamma&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-cg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gamma correction applied to the resulting RGB image. Usefull to brighten image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>1.0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-t">
+<span id="cmdoption-projrender-transparency"></span><code class="sig-name descname"><span class="pre">-t</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--transparency</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-projrender-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables transparency output when possible. Good for rendering on white (e.g. on paper).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>False</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-lsi">
+<span id="cmdoption-projrender-legendsize"></span><code class="sig-name descname"><span class="pre">-lsi</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--legendsize</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;legendsize&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-lsi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiplicative factor to control size of legend. If 0, no legend is generated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>1.0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-lsc">
+<span id="cmdoption-projrender-legendscale"></span><code class="sig-name descname"><span class="pre">-lsc</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--legendscale</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;legendscale&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-lsc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Float that gives the scale in some unit of each voxel (along the projection direction). Only in color projection modes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>1.0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-lt">
+<span id="cmdoption-projrender-legendtitle"></span><code class="sig-name descname"><span class="pre">-lt</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--legendtitle</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;legendtitle&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-lt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Title for the color-coded depth legend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>color-coded depth (voxels)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-ltc">
+<span id="cmdoption-projrender-legendtitlecolor"></span><code class="sig-name descname"><span class="pre">-ltc</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--legendtitlecolor</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;legendtitlecolor&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-ltc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Legend title color as a tuple of normalised floats: R, G, B, A  (values between 0 and 1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>1,1,1,1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-lp">
+<span id="cmdoption-projrender-legendposition"></span><code class="sig-name descname"><span class="pre">-lp</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--legendposition</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;legendposition&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-lp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Position of the legend in pixels in natural order: x,y. Can also be a string: bottom_left, bottom_right, top_left, or top_right.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>bottom_left</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-la">
+<span id="cmdoption-projrender-legendalpha"></span><code class="sig-name descname"><span class="pre">-la</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--legendalpha</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;legendalpha&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-la" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transparency for legend (1 means opaque, 0 means completely transparent)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-sp">
+<span id="cmdoption-projrender-step"></span><code class="sig-name descname"><span class="pre">-sp</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--step</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;step&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-sp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process every ‘step’ frames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-k">
+<span id="cmdoption-projrender-workers"></span><code class="sig-name descname"><span class="pre">-k</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--workers</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;workers&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of worker threads to spawn, if -1 then num workers = num devices</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>-1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-wkb">
+<span id="cmdoption-projrender-workersbackend"></span><code class="sig-name descname"><span class="pre">-wkb</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--workersbackend</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;workersbackend&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-wkb" title="Permalink to this definition">¶</a></dt>
+<dd><p>What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>threading</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-projrender-d">
+<span id="cmdoption-projrender-devices"></span><code class="sig-name descname"><span class="pre">-d</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--devices</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;devices&gt;</span></code><a class="headerlink" href="#cmdoption-projrender-d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the CUDA devices id, e.g. 0,1,2 or ‘all’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt id="cmdoption-projrender-arg-INPUT_PATHS">
+<span id="cmdoption-projrender-arg-input-paths"></span><code class="sig-name descname"><span class="pre">INPUT_PATHS</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-projrender-arg-INPUT_PATHS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional argument(s)</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="serve.html" class="btn btn-neutral float-right" title="Serve" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="isonet.html" class="btn btn-neutral float-left" title="Isonet" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021. Chan Zuckerberg Biohub. All rights reserved.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
