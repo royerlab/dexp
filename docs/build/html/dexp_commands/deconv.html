@@ -1,0 +1,485 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Deconv &mdash; dexp  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Deskew" href="deskew.html" />
+    <link rel="prev" title="Copy" href="copy.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> dexp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/contact_us.html">Contact us</a></li>
+</ul>
+<p><span class="caption-text">Dexp Commands</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="add.html">add</a></li>
+<li class="toctree-l1"><a class="reference internal" href="check.html">check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copy.html">copy</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">deconv</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#deconv">deconv</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deskew.html">deskew</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fuse.html">fuse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="info.html">info</a></li>
+<li class="toctree-l1"><a class="reference internal" href="isonet.html">isonet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projrender.html">projrender</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serve.html">serve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="speedtest.html">speedtest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stabilize.html">stabilize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tiff.html">tiff</a></li>
+<li class="toctree-l1"><a class="reference internal" href="view.html">view</a></li>
+<li class="toctree-l1"><a class="reference internal" href="volrender.html">volrender</a></li>
+</ul>
+<p><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/volume_render.html">Volume Render</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dexp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Deconv</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/dexp_commands/deconv.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="deconv">
+<h1>Deconv<a class="headerlink" href="#deconv" title="Permalink to this headline">¶</a></h1>
+<section id="deconv">
+<h2>deconv<a class="headerlink" href="#deconv" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>deconv <span class="o">[</span>OPTIONS<span class="o">]</span> <span class="o">[</span>INPUT_PATHS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-deconv-o">
+<span id="cmdoption-deconv-output_path"></span><span id="cmdoption-deconv-output-path"></span><code class="sig-name descname"><span class="pre">-o</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output_path</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output_path&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-o" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-c">
+<span id="cmdoption-deconv-channels"></span><code class="sig-name descname"><span class="pre">-c</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--channels</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;channels&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of channels, all channels when ommited.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-s">
+<span id="cmdoption-deconv-slicing"></span><code class="sig-name descname"><span class="pre">-s</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--slicing</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;slicing&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z)</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-st">
+<span id="cmdoption-deconv-store"></span><code class="sig-name descname"><span class="pre">-st</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--store</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;store&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-st" title="Permalink to this definition">¶</a></dt>
+<dd><p>Zarr store: ‘dir’, ‘ndir’, or ‘zip’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>dir</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-z">
+<span id="cmdoption-deconv-codec"></span><code class="sig-name descname"><span class="pre">-z</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--codec</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;codec&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-z" title="Permalink to this definition">¶</a></dt>
+<dd><p>compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>zstd</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-l">
+<span id="cmdoption-deconv-clevel"></span><code class="sig-name descname"><span class="pre">-l</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--clevel</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;clevel&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-l" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compression level</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>3</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-w">
+<span id="cmdoption-deconv-overwrite"></span><code class="sig-name descname"><span class="pre">-w</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--overwrite</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-deconv-w" title="Permalink to this definition">¶</a></dt>
+<dd><p>to force overwrite of target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>False</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-cs">
+<span id="cmdoption-deconv-chunksize"></span><code class="sig-name descname"><span class="pre">-cs</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--chunksize</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;chunksize&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-cs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Chunk size for tiled computation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>512</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-m">
+<span id="cmdoption-deconv-method"></span><code class="sig-name descname"><span class="pre">-m</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--method</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;method&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deconvolution method: for now only lr (Lucy Richardson)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>lr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-i">
+<span id="cmdoption-deconv-iterations"></span><code class="sig-name descname"><span class="pre">-i</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--iterations</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;iterations&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of deconvolution iterations. More iterations takes longer, will be sharper, but might also be potentially more noisy depending on method. The default number of iterations depends on the other parameters, in particular it depends on the choice of backprojection operator. For ‘wb’ as little as 3 iterations suffice.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-mc">
+<span id="cmdoption-deconv-maxcorrection"></span><code class="sig-name descname"><span class="pre">-mc</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--maxcorrection</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;maxcorrection&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-mc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Max correction in folds per iteration. By default there is no limit</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-pw">
+<span id="cmdoption-deconv-power"></span><code class="sig-name descname"><span class="pre">-pw</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--power</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;power&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-pw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Correction exponent, default for standard LR is 1, set to &gt;1 for acceleration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>1.0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-bs">
+<span id="cmdoption-deconv-blindspot"></span><code class="sig-name descname"><span class="pre">-bs</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--blindspot</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;blindspot&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-bs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Blindspot based noise reduction. Provide size of kernel to use, must be an odd number: 3(recommended), 5, 7. 0 means no blindspot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-bp">
+<span id="cmdoption-deconv-backprojection"></span><code class="sig-name descname"><span class="pre">-bp</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--backprojection</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;backprojection&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-bp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Back projection operator, can be: ‘tpsf’ (transposed PSF = classic) or ‘wb’ (Wiener-Butterworth =  accelerated)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>tpsf</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-obj">
+<span id="cmdoption-deconv-objective"></span><code class="sig-name descname"><span class="pre">-obj</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--objective</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;objective&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-obj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Microscope objective to use for computing psf, can be: nikon16x08na or olympus20x10na</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>nikon16x08na</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-dxy">
+<span id="cmdoption-deconv-dxy"></span><code class="sig-name descname"><span class="pre">-dxy</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--dxy</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dxy&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-dxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Voxel size along x and y in microns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>0.485</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-dz">
+<span id="cmdoption-deconv-dz"></span><code class="sig-name descname"><span class="pre">-dz</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--dz</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dz&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-dz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Voxel size along z in microns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>1.94</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-sxy">
+<span id="cmdoption-deconv-xysize"></span><code class="sig-name descname"><span class="pre">-sxy</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--xysize</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;xysize&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-sxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>PSF size along xy in voxels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>31</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-sz">
+<span id="cmdoption-deconv-zsize"></span><code class="sig-name descname"><span class="pre">-sz</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--zsize</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;zsize&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-sz" title="Permalink to this definition">¶</a></dt>
+<dd><p>PSF size along z in voxels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>31</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-d">
+<span id="cmdoption-deconv-downscalexy2"></span><code class="sig-name descname"><span class="pre">-d</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--downscalexy2</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;downscalexy2&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downscales along x and y for faster deconvolution (but worse quality of course)</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-k">
+<span id="cmdoption-deconv-workers"></span><code class="sig-name descname"><span class="pre">-k</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--workers</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;workers&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of worker threads to spawn, if -1 then num workers = num devices</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>-1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-wkb">
+<span id="cmdoption-deconv-workersbackend"></span><code class="sig-name descname"><span class="pre">-wkb</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--workersbackend</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;workersbackend&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-wkb" title="Permalink to this definition">¶</a></dt>
+<dd><p>What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>threading</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-0">
+<span id="cmdoption-deconv-devices"></span><code class="sig-name descname"><span class="pre">-d</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--devices</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;devices&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the CUDA devices id, e.g. 0,1,2 or ‘all’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deconv-ck">
+<span id="cmdoption-deconv-check"></span><code class="sig-name descname"><span class="pre">-ck</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--check</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;check&gt;</span></code><a class="headerlink" href="#cmdoption-deconv-ck" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checking integrity of written file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>True</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt id="cmdoption-deconv-arg-INPUT_PATHS">
+<span id="cmdoption-deconv-arg-input-paths"></span><code class="sig-name descname"><span class="pre">INPUT_PATHS</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-deconv-arg-INPUT_PATHS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional argument(s)</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="deskew.html" class="btn btn-neutral float-right" title="Deskew" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="copy.html" class="btn btn-neutral float-left" title="Copy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021. Chan Zuckerberg Biohub. All rights reserved.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

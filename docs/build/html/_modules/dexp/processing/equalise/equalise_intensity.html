@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>dexp.processing.equalise.equalise_intensity &mdash; dexp  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> dexp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/contact_us.html">Contact us</a></li>
+</ul>
+<p><span class="caption-text">Dexp Commands</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/add.html">add</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/check.html">check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/copy.html">copy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/deconv.html">deconv</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/deskew.html">deskew</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/fuse.html">fuse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/info.html">info</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/isonet.html">isonet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/projrender.html">projrender</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/serve.html">serve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/speedtest.html">speedtest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/stabilize.html">stabilize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/tiff.html">tiff</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/view.html">view</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dexp_commands/volrender.html">volrender</a></li>
+</ul>
+<p><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/volume_render.html">Volume Render</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">dexp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dexp.processing.equalise.equalise_intensity</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dexp.processing.equalise.equalise_intensity</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">arbol</span> <span class="kn">import</span> <span class="n">aprint</span>
+
+<span class="kn">from</span> <span class="nn">dexp.processing.backends.backend</span> <span class="kn">import</span> <span class="n">Backend</span>
+<span class="kn">from</span> <span class="nn">dexp.processing.backends.numpy_backend</span> <span class="kn">import</span> <span class="n">NumpyBackend</span>
+
+
+<div class="viewcode-block" id="equalise_intensity"><a class="viewcode-back" href="../../../../api/processing.html#dexp.processing.equalise.equalise_intensity.equalise_intensity">[docs]</a><span class="k">def</span> <span class="nf">equalise_intensity</span><span class="p">(</span><span class="n">image1</span><span class="p">,</span>
+                       <span class="n">image2</span><span class="p">,</span>
+                       <span class="n">zero_level</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span>
+                       <span class="n">quantile_low</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                       <span class="n">quantile_high</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+                       <span class="n">project_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                       <span class="n">max_voxels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">1e7</span><span class="p">,</span>
+                       <span class="n">correction_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                       <span class="n">internal_dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Equalise intensity between two images</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image1 : first image to equalise</span>
+<span class="sd">    image2 : second image to equalise</span>
+<span class="sd">    zero_level : zero level -- removes this value if that&#39;s the minimal voxel value expected for both images</span>
+<span class="sd">    quantile_low, quantile_high : quantile for computing the robust min and max values in image</span>
+<span class="sd">    project_axis : Axis over which to project image to speed up computation</span>
+<span class="sd">    max_voxels : maximal number of voxels to use to compute min and max values.</span>
+<span class="sd">    correction_ratio : If provided, this value is used instead of calculating the equalisation value based on the two images.</span>
+<span class="sd">    This is the value that should be multiplied to the second image (image2) so as to equalise it to teh first image (image1).</span>
+<span class="sd">    copy : Set to True to force copy of images.</span>
+<span class="sd">    internal_dtype : dtype to use internally for computation.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    The two arrays intensity equalised.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">get_xp_module</span><span class="p">()</span>
+
+    <span class="c1"># Sanity checks:</span>
+    <span class="k">if</span> <span class="n">image1</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">image2</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Two images must have same dtype!&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">internal_dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">internal_dtype</span> <span class="o">=</span> <span class="n">image1</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">Backend</span><span class="o">.</span><span class="n">current</span><span class="p">())</span> <span class="ow">is</span> <span class="n">NumpyBackend</span><span class="p">:</span>
+        <span class="n">internal_dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float32</span>
+
+    <span class="c1"># Save original dtype:</span>
+    <span class="n">original_dtype</span> <span class="o">=</span> <span class="n">image1</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="c1"># Move images to backend.</span>
+    <span class="n">image1</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">to_backend</span><span class="p">(</span><span class="n">image1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">internal_dtype</span><span class="p">,</span> <span class="n">force_copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
+    <span class="n">image2</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">to_backend</span><span class="p">(</span><span class="n">image2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">internal_dtype</span><span class="p">,</span> <span class="n">force_copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
+
+    <span class="c1"># If not provided, compute correction ratio:</span>
+    <span class="k">if</span> <span class="n">correction_ratio</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># To reduce computation effort, we operate on the max projected images:</span>
+        <span class="n">proj_image1</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">image1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">project_axis</span><span class="p">)</span>
+        <span class="n">proj_image2</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">image2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">project_axis</span><span class="p">)</span>
+
+        <span class="c1"># instead of computing the rations on all voxels, we reduce to a dense subset:</span>
+        <span class="n">reduction</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">proj_image1</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">max_voxels</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">strided_image1</span> <span class="o">=</span> <span class="n">proj_image1</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[::</span><span class="n">reduction</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">strided_image2</span> <span class="o">=</span> <span class="n">proj_image2</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[::</span><span class="n">reduction</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># We determine a robust maximum for voxel intensities:</span>
+        <span class="n">highvalue1</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">strided_image1</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">quantile_high</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;higher&#39;</span><span class="p">)</span>
+        <span class="n">highvalue2</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">strided_image2</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">quantile_high</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;higher&#39;</span><span class="p">)</span>
+
+        <span class="c1"># we set a &#39;high-value&#39; threshold to the minimum of both robust maximums:</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">highvalue1</span><span class="p">,</span> <span class="n">highvalue2</span><span class="p">)</span>
+
+        <span class="c1"># We find the voxels that are above that threshold in both images:</span>
+        <span class="n">mask1</span> <span class="o">=</span> <span class="n">strided_image1</span> <span class="o">&gt;=</span> <span class="n">threshold</span>
+        <span class="n">mask2</span> <span class="o">=</span> <span class="n">strided_image2</span> <span class="o">&gt;=</span> <span class="n">threshold</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">mask1</span><span class="p">,</span> <span class="n">mask2</span><span class="p">)</span>
+
+        <span class="c1"># And extract these values from both images:</span>
+        <span class="n">highvalues1</span> <span class="o">=</span> <span class="n">strided_image1</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">highvalues2</span> <span class="o">=</span> <span class="n">strided_image2</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+        <span class="c1"># And a robust minimum:</span>
+        <span class="n">lowvalue1</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">strided_image1</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">quantile_low</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">lowvalue2</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">strided_image2</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">quantile_low</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+
+        <span class="c1"># Compute ratios:</span>
+        <span class="n">range1</span> <span class="o">=</span> <span class="n">highvalues1</span> <span class="o">-</span> <span class="n">lowvalue1</span>
+        <span class="n">range2</span> <span class="o">=</span> <span class="n">highvalues2</span> <span class="o">-</span> <span class="n">lowvalue2</span>
+        <span class="n">ratios</span> <span class="o">=</span> <span class="p">(</span><span class="n">range1</span> <span class="o">/</span> <span class="n">range2</span><span class="p">)</span>
+
+        <span class="c1"># Keep only valid ratios:</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">range1</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">range2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">ratios</span> <span class="o">=</span> <span class="n">ratios</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+
+        <span class="c1"># Free memory:</span>
+        <span class="k">del</span> <span class="n">mask</span><span class="p">,</span> <span class="n">mask1</span><span class="p">,</span> <span class="n">mask2</span><span class="p">,</span> <span class="n">highvalues1</span><span class="p">,</span> <span class="n">highvalues2</span><span class="p">,</span> <span class="n">strided_image1</span><span class="p">,</span> <span class="n">strided_image2</span>
+
+        <span class="c1"># Number of values in ratio:</span>
+        <span class="n">nb_values</span> <span class="o">=</span> <span class="n">ratios</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">if</span> <span class="n">nb_values</span> <span class="o">&lt;</span> <span class="mi">16</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No enough values (</span><span class="si">{</span><span class="n">nb_values</span><span class="si">}</span><span class="s2">&lt;16) to compute correction ratio! Relax percentile or reduction! &quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">nb_values</span> <span class="o">&lt;</span> <span class="mi">128</span><span class="p">:</span>
+            <span class="n">aprint</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: too few ratio values (</span><span class="si">{</span><span class="n">nb_values</span><span class="si">}</span><span class="s2">&lt;128) to compute correction ratio! Relax percentile or reduction!&quot;</span><span class="p">)</span>
+
+        <span class="n">correction_ratio</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">ratios</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">internal_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">q</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">correction_ratio</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">to_backend</span><span class="p">(</span><span class="n">correction_ratio</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">internal_dtype</span><span class="p">)</span>
+
+    <span class="c1"># remove zero level and clip:</span>
+    <span class="k">if</span> <span class="n">zero_level</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">image1</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">image1</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="n">zero_level</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">image1</span><span class="p">)</span>
+        <span class="n">image1</span> <span class="o">-=</span> <span class="n">zero_level</span>
+        <span class="n">image2</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">image2</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="n">zero_level</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">image2</span><span class="p">)</span>
+        <span class="n">image2</span> <span class="o">-=</span> <span class="n">zero_level</span>
+
+    <span class="c1"># compute inverse ratios and cast to internal type:</span>
+    <span class="n">inverse_correction_ratio</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">correction_ratio</span>
+    <span class="n">correction_ratio</span> <span class="o">=</span> <span class="n">correction_ratio</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">internal_dtype</span><span class="p">)</span>
+    <span class="n">inverse_correction_ratio</span> <span class="o">=</span> <span class="n">inverse_correction_ratio</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">internal_dtype</span><span class="p">)</span>
+
+    <span class="c1"># Apply correction ratio while only increasing intensity of the dimmer image:</span>
+    <span class="k">if</span> <span class="n">correction_ratio</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">image2</span> <span class="o">*=</span> <span class="n">correction_ratio</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">image1</span> <span class="o">*=</span> <span class="n">inverse_correction_ratio</span>
+
+    <span class="c1"># cast back to original dtype:</span>
+    <span class="n">image1</span> <span class="o">=</span> <span class="n">image1</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">original_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">image2</span> <span class="o">=</span> <span class="n">image2</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">original_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># KEEP FOR DEBUGGING:</span>
+    <span class="c1"># from napari import Viewer</span>
+    <span class="c1"># import napari</span>
+    <span class="c1"># with napari.gui_qt():</span>
+    <span class="c1">#     def _c(array):</span>
+    <span class="c1">#         return backend.to_numpy(array)</span>
+    <span class="c1">#</span>
+    <span class="c1">#     viewer = Viewer()</span>
+    <span class="c1">#     viewer.add_image(_c(image1), name=&#39;image_1&#39;)</span>
+    <span class="c1">#     viewer.add_image(_c(image1), name=&#39;image_2&#39;)</span>
+
+    <span class="k">return</span> <span class="n">image1</span><span class="p">,</span> <span class="n">image2</span><span class="p">,</span> <span class="n">correction_ratio</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021. Chan Zuckerberg Biohub. All rights reserved.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

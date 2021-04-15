@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Deskew &mdash; dexp  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Fuse" href="fuse.html" />
+    <link rel="prev" title="Deconv" href="deconv.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> dexp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/contact_us.html">Contact us</a></li>
+</ul>
+<p><span class="caption-text">Dexp Commands</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="add.html">add</a></li>
+<li class="toctree-l1"><a class="reference internal" href="check.html">check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copy.html">copy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deconv.html">deconv</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">deskew</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#deskew">deskew</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fuse.html">fuse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="info.html">info</a></li>
+<li class="toctree-l1"><a class="reference internal" href="isonet.html">isonet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projrender.html">projrender</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serve.html">serve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="speedtest.html">speedtest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stabilize.html">stabilize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tiff.html">tiff</a></li>
+<li class="toctree-l1"><a class="reference internal" href="view.html">view</a></li>
+<li class="toctree-l1"><a class="reference internal" href="volrender.html">volrender</a></li>
+</ul>
+<p><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/volume_render.html">Volume Render</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dexp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Deskew</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/dexp_commands/deskew.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="deskew">
+<h1>Deskew<a class="headerlink" href="#deskew" title="Permalink to this headline">¶</a></h1>
+<section id="deskew">
+<h2>deskew<a class="headerlink" href="#deskew" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>deskew <span class="o">[</span>OPTIONS<span class="o">]</span> <span class="o">[</span>INPUT_PATHS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-deskew-o">
+<span id="cmdoption-deskew-output_path"></span><span id="cmdoption-deskew-output-path"></span><code class="sig-name descname"><span class="pre">-o</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output_path</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output_path&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-o" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-c">
+<span id="cmdoption-deskew-channels"></span><code class="sig-name descname"><span class="pre">-c</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--channels</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;channels&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of channels for the view in standard order for the microscope type (C0L0, C0L1, C1L0, C1L1,…)</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-s">
+<span id="cmdoption-deskew-slicing"></span><code class="sig-name descname"><span class="pre">-s</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--slicing</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;slicing&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z)</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-st">
+<span id="cmdoption-deskew-store"></span><code class="sig-name descname"><span class="pre">-st</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--store</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;store&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-st" title="Permalink to this definition">¶</a></dt>
+<dd><p>Zarr store: ‘dir’, ‘ndir’, or ‘zip’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>dir</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-z">
+<span id="cmdoption-deskew-codec"></span><code class="sig-name descname"><span class="pre">-z</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--codec</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;codec&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-z" title="Permalink to this definition">¶</a></dt>
+<dd><p>compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-l">
+<span id="cmdoption-deskew-clevel"></span><code class="sig-name descname"><span class="pre">-l</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--clevel</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;clevel&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-l" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compression level</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>3</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-w">
+<span id="cmdoption-deskew-overwrite"></span><code class="sig-name descname"><span class="pre">-w</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--overwrite</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-deskew-w" title="Permalink to this definition">¶</a></dt>
+<dd><p>to force overwrite of target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>False</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-zl">
+<span id="cmdoption-deskew-zerolevel"></span><code class="sig-name descname"><span class="pre">-zl</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--zerolevel</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;zerolevel&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-zl" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘zero-level’ i.e. the pixel values in the restoration (to be substracted)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>110</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-ch">
+<span id="cmdoption-deskew-cliphigh"></span><code class="sig-name descname"><span class="pre">-ch</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--cliphigh</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;cliphigh&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-ch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clips voxel values above the given value, if zero no clipping is done</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>1024</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-dhs">
+<span id="cmdoption-deskew-dehaze_size"></span><span id="cmdoption-deskew-dehaze-size"></span><code class="sig-name descname"><span class="pre">-dhs</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--dehaze_size</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dehaze_size&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-dhs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter size (scale) for dehazing the final regsitered and fused image to reduce effect of scattered and out-of-focus light. Set to zero to deactivate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>65</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-ddt">
+<span id="cmdoption-deskew-dark_denoise_threshold"></span><span id="cmdoption-deskew-dark-denoise-threshold"></span><code class="sig-name descname"><span class="pre">-ddt</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--dark_denoise_threshold</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dark_denoise_threshold&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-ddt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Threshold for denoises the dark pixels of the image – helps increase compression ratio. Set to zero to deactivate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-k">
+<span id="cmdoption-deskew-workers"></span><code class="sig-name descname"><span class="pre">-k</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--workers</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;workers&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of worker threads to spawn, if -1 then num workers = num devices</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>-1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-wkb">
+<span id="cmdoption-deskew-workersbackend"></span><code class="sig-name descname"><span class="pre">-wkb</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--workersbackend</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;workersbackend&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-wkb" title="Permalink to this definition">¶</a></dt>
+<dd><p>What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>threading</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-d">
+<span id="cmdoption-deskew-devices"></span><code class="sig-name descname"><span class="pre">-d</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--devices</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;devices&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the CUDA devices id, e.g. 0,1,2 or ‘all’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-deskew-ck">
+<span id="cmdoption-deskew-check"></span><code class="sig-name descname"><span class="pre">-ck</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--check</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;check&gt;</span></code><a class="headerlink" href="#cmdoption-deskew-ck" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checking integrity of written file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>True</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt id="cmdoption-deskew-arg-INPUT_PATHS">
+<span id="cmdoption-deskew-arg-input-paths"></span><code class="sig-name descname"><span class="pre">INPUT_PATHS</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-deskew-arg-INPUT_PATHS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional argument(s)</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="fuse.html" class="btn btn-neutral float-right" title="Fuse" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="deconv.html" class="btn btn-neutral float-left" title="Deconv" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021. Chan Zuckerberg Biohub. All rights reserved.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
