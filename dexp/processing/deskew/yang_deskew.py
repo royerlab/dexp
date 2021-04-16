@@ -77,12 +77,12 @@ def resampling_vertical_split(image,
     else:
         xp = Backend.get_xp_module(image)
         data_gpu_splits = xp.array_split(image, num_split, axis=1)
+        data_cpu_splits = []
         for k in range(num_split):
             data_resampled = resampling_vertical(data_gpu_splits[k], dz, dx, angle=angle)
-            if k == 0:
-                output = Backend.to_numpy(data_resampled)
-            else:
-                output = numpy.concatenate((output, Backend.to_numpy(data_resampled)), axis=1)
+            data_cpu_splits.append(Backend.to_numpy(data_resampled))
+
+        output = numpy.concatenate(data_cpu_splits, axis=1)
 
     return output
 
