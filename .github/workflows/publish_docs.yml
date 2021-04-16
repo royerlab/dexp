@@ -10,13 +10,19 @@ jobs:
     steps:
       - name: Commit documentation changes
         run: |
-          git clone https://github.com/royerlab/dexp.git
-          cd dexp
+          rm -rf gh-pages
           mkdir gh-pages
-          cp -r docs/build/html/* gh-pages/
-          cd gh-pages
+          git clone https://github.com/royerlab/dexp.git
+          cd dexp/docs/
+          ls
+          make clean
+          make html
+          cp -r build/html/* ../../gh-pages/.
+          git fetch origin
+          git checkout gh-pages
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          cp -rf ../gh-pages/* .
           git add .
           git commit -m "Update documentation" -a || true
           # The above command will fail if no changes were present, so we ignore
@@ -25,5 +31,4 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           branch: gh-pages
-          directory: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
