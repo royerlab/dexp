@@ -59,16 +59,9 @@ The list of released versions can be found [here](https://pypi.org/project/dexp/
 
 ### How to use **dexp** ?
 
-First you need a dataset aqquired on a light-sheet microscope, see [here](https://github.com/royerlab/dexp/wiki/dexp_datasets) for supported microscopes and formats.
+First you need a dataset aqquired on a light-sheet microscope, see [here](https://github.com/royerlab/dexp/wiki/dexp-dataset-formats) for supported microscopes and formats.
 
-Second, you can use any of the commands [here](https://github.com/royerlab/dexp/wiki/dexp_commands) to process your data.
-The list of commands can be found by :
-
-```
-dexp --help
-```
-
-### Example usage
+In depth documentation can be found [here](https://royerlab.github.io/dexp/index.html) for both command line  commands and for the python API.
 
 
 

@@ -37,23 +37,10 @@ TBD.
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: Dexp Commands
+   :caption: Commands
 
-   add <dexp_commands/add.rst>
-   check <dexp_commands/check>
-   copy <dexp_commands/copy>
-   deconv <dexp_commands/deconv>
-   deskew <dexp_commands/deskew>
-   fuse <dexp_commands/fuse>
-   info <dexp_commands/info>
-   isonet <dexp_commands/isonet>
-   projrender <dexp_commands/projrender>
-   serve <dexp_commands/serve>
-   speedtest <dexp_commands/speedtest>
-   stabilize <dexp_commands/stabilize>
-   tiff <dexp_commands/tiff>
-   view <dexp_commands/view>
-   volrender <dexp_commands/volrender>
+   dexp commands <commands/dexp_commands.rst>
+   video commands <commands/video_commands.rst>
 
 .. toctree::
    :maxdepth: 2
