@@ -45,7 +45,9 @@ def view(input_paths,
                          contrast_limits,
                          colormap,
                          slicing,
-                         windowsize)
+                         windowsize,
+                         projectionsonly,
+                         volumeonly)
             aprint("Done!")
 
 
