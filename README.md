@@ -53,6 +53,29 @@ install cudalibs 11.2
 ```
 Change the CUDA version accordingly...
 
+### Zarr dataset structure
+The zarr dataset is organized as below:
+```folder tree
+/
+ └── channel1
+     ├── channel1 
+     ├── channel1_projection_0 (optional)
+     ├── channel1_projection_1 (optional)
+     └── channel1_projection_2 (optional)
+  └── channel2
+     ├── channel2 
+     ├── channel2_projection_0 (optional)
+     ├── channel2_projection_1 (optional)
+     └── channel2_projection_2 (optional)
+  └── more channels   
+```
+Channels (zarr group) could be of a particular emission color (e.g. DAPI, GFP, etc), or/and of a particular imaging views 
+(e.g. view1 and view2 in a dual view acquisition).
+Under each channel group, there could be multiple zarr array. The array that has the same name as the group name is typically 
+a n-dimentional stack (e.g. time-z-y-x). The projections of that nd array are optional (useful for quick exploration of the 
+nd stack).
+
+        
 ### Versions
 
 The list of released versions can be found [here](https://pypi.org/project/dexp/#history). The version format is: YYYY.MM.DD.M where YYYY is the year, MM the month, dd the day, and M is the number of elapsed minutes of the day. Git tags are automatically set to link pipy versions to github tagged versions so that the corresponding code can be inspected on github, probably the most important feature. This is a very simple and semantically clear versionning scheme that accomodates for a rapid rate of updates. 
