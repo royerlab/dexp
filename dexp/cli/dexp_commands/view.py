@@ -4,6 +4,7 @@ from arbol.arbol import aprint, asection
 from dexp.cli.parsing import _parse_channels, _parse_slicing
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.view import dataset_view
+from dexp.datasets.operations.view_remote import dataset_view_remote
 
 
 @click.command()
@@ -33,21 +34,19 @@ def view(input_paths,
 
     name = input_paths[0] + '...' if len(input_paths) > 1 else ''
 
-    contrast_limits = list(float(v.strip()) for v in clim.split(','))
+    contrast_limits = tuple(float(v.strip()) for v in clim.split(','))
 
     if len(input_paths) == 1 and 'http' in input_paths[0]:
 
         with asection(f"Viewing dataset at: {input_paths}, channels: {channels}, slicing: {slicing}, aspect:{aspect} "):
-            dataset_view(input_paths,
-                         name,
-                         aspect,
-                         channels,
-                         contrast_limits,
-                         colormap,
-                         slicing,
-                         windowsize,
-                         projectionsonly,
-                         volumeonly)
+            dataset_view_remote(input_path=input_paths[0],
+                         name=name,
+                         aspect=aspect,
+                         channels=channels,
+                         contrast_limits=contrast_limits,
+                         colormap=colormap,
+                         slicing=slicing,
+                         windowsize=windowsize)
             aprint("Done!")
 
 
