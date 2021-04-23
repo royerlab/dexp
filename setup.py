@@ -19,8 +19,8 @@ from setuptools.command.install import install
 NAME = 'dexp'
 DESCRIPTION = 'Light-sheet Dataset EXploration and Processing'
 URL = 'https://github.com/royerlab/dexp'
-EMAIL = 'jordao.bragantini@czbiohub.org, ahmetcan.solak@czbiohub.org, loic.royer@czbiohub.org'
-AUTHOR = 'Jordao Bragantini, Ahmet Can Solak, Loic A Royer'
+EMAIL = 'jordao.bragantini@czbiohub.org, ahmetcan.solak@czbiohub.org, bin.yang@czbiohub.org, loic.royer@czbiohub.org'
+AUTHOR = 'Jordao Bragantini, Ahmet Can Solak, Bin Yang, Loic A Royer'
 REQUIRES_PYTHON = '>=3.7.0'
 
 from datetime import datetime
