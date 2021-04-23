@@ -91,7 +91,9 @@ The list of released versions can be found [here](https://pypi.org/project/dexp/
 
 In depth documentation can be found [here](https://royerlab.github.io/dexp/index.html) for both command line  commands and for the python API.
 
+### Contributors:
 
+Jordao Bragantini, Ahmet Can Solak, Bin Yang, and Loic A Royer
 
 
 
