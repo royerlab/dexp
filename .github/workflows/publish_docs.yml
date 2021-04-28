@@ -13,14 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'royerlab/dexp'
     steps:
+      - name: Clone main repo
+        uses: actions/checkout@${GITHUB_REF##*/}
+        with:
+          path: main
       - name: Install Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
+      - name: list files
+        run: |
+          ls
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          ls
           python -m pip install -e .
       - name: Run tests
         run : |
