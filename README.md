@@ -53,17 +53,47 @@ install cudalibs 11.2
 ```
 Change the CUDA version accordingly...
 
+### **dexp** Zarr dataset structure
+
+The zarr datasets injested and written by **dexp** are organized as below:
+
+```folder tree
+/ (root)
+ └── channel1 (group)
+     ├── channel1 (array)
+     ├── channel1_projection_0 (optional)
+     ├── channel1_projection_1 (optional)
+     └── channel1_projection_2 (optional)
+  └── channel2 (group)
+     ├── channel2 (array)
+     ├── channel2_projection_0 (optional)
+     ├── channel2_projection_1 (optional)
+     └── channel2_projection_2 (optional)
+  └── more channels ...   
+```
+
+Channels (zarr group) could be of a particular emission color (e.g. DAPI, GFP, etc), or/and of a particular imaging views 
+(e.g. view1 and view2 in a dual view acquisition).
+Under each channel group, there could be multiple zarr array. The array that has the same name as the group name is typically 
+a n-dimentional stack (e.g. time-z-y-x). The projections of that nd array are optional (useful for quick exploration of the 
+nd stack). When writting output datasets **dexp** automatically generates these projections. Future versions of **dexp** might 
+add more such convenience arrays, high in the list is of course downscaled version sof the stacks for faster visualisation and 
+browsing...
+
+Note: Our goal is to eventually transition to a ome-zarr and/or ngff storage by defaut for both reading and writting.
+For reading we have also support for specific dataset produced by our light-sheet microscopes, see [here](https://github.com/royerlab/dexp/wiki/dexp-dataset-formats) for supported microscopes and formats. This is currently limited but contributions are very welcome! 
+        
 ### Versions
 
 The list of released versions can be found [here](https://pypi.org/project/dexp/#history). The version format is: YYYY.MM.DD.M where YYYY is the year, MM the month, dd the day, and M is the number of elapsed minutes of the day. Git tags are automatically set to link pipy versions to github tagged versions so that the corresponding code can be inspected on github, probably the most important feature. This is a very simple and semantically clear versionning scheme that accomodates for a rapid rate of updates. 
 
 ### How to use **dexp** ?
 
-First you need a dataset aqquired on a light-sheet microscope, see [here](https://github.com/royerlab/dexp/wiki/dexp-dataset-formats) for supported microscopes and formats.
-
 In depth documentation can be found [here](https://royerlab.github.io/dexp/index.html) for both command line  commands and for the python API.
 
+### Contributors:
 
+Jordao Bragantini, Ahmet Can Solak, Bin Yang, and Loic A Royer
 
 
 

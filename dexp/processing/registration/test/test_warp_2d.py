@@ -29,4 +29,4 @@ def register_warp_2d(warp_grid_size=3, reg_grid_size=6):
     print(f"error_unwarped = {error_unwarped}")
 
     assert error_unwarped < error_warped
-    assert error_unwarped < 20
+    assert error_unwarped < 23

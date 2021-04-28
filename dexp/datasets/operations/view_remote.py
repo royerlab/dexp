@@ -3,10 +3,8 @@ from typing import Sequence, Tuple
 from arbol import aprint, asection
 from zarr.errors import ArrayNotFoundError
 
-from dexp.datasets.base_dataset import BaseDataset
 
-
-def dataset_view_remote(input_paths: BaseDataset,
+def dataset_view_remote(input_path: str,
                         name: str,
                         aspect: float,
                         channels: Sequence[str],
@@ -21,8 +19,6 @@ def dataset_view_remote(input_paths: BaseDataset,
     if channels is None:
         aprint("Channel(s) must be specified!")
         return
-
-    input_path = input_paths[0]
 
     if ':' not in input_path.replace("http://", ""):
         input_path = f'{input_path}:8000'
