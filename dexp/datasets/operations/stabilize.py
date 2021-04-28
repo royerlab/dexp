@@ -11,14 +11,15 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.sequence_proj import image_stabilisation_proj_
+from dexp.processing.registration.sequence import image_stabilisation
 
 
 def dataset_stabilize(input_dataset: BaseDataset,
                       output_path: str,
                       channels: Sequence[str],
                       slicing=None,
-                      zarr_store: str = 'dir',
-                      compression_codec: str = 'zstd',
+                      zarr_store: str = "dir",
+                      compression_codec: str = "zstd",
                       compression_level: int = 3,
                       overwrite: bool = False,
                       max_range: int = 7,
@@ -35,14 +36,15 @@ def dataset_stabilize(input_dataset: BaseDataset,
                       edge_filter: bool = False,
                       pad: bool = True,
                       integral: bool = True,
+                      detrend: bool = False,
+                      maxproj: bool = True,
                       workers: int = -1,
-                      workers_backend: str = 'threading',
+                      workers_backend: str = "threading",
                       device: int = 0,
                       check: bool = True,
                       stop_at_exception: bool = True,
                       debug_output=None):
     """
-
     Takes an input dataset and performs image stabilisation and outputs a stabilised dataset with given selected slice & channels in Zarr format with given store type, compression, etc...
 
     Parameters
@@ -69,6 +71,8 @@ def dataset_stabilize(input_dataset: BaseDataset,
     edge_filter : apply sobel edge filter to input images.
     pad: pad input dataset.
     integral: Set to True to only allow integral translations, False to allow subpixel accurate translations (induces blur!).
+    detrend: removes linear detrend from stabilized image.
+    maxproj: uses maximum intensity projection to compute the volume stabilization.
     workers: number of workers, if -1 then the number of workers == number of cores or devices
     workers_backend: What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread)
     device: Sets the CUDA devices id, e.g. 0,1,2
@@ -96,35 +100,64 @@ def dataset_stabilize(input_dataset: BaseDataset,
         chunks = ZDataset._default_chunks
         nb_timepoints = shape[0]
 
-        # Obtain projections:
-        projections = []
-        for axis in range(array.ndim - 1):
-            projection = input_dataset.get_projection_array(channel=channel, axis=axis, wrap_with_dask=False)
-            if slicing is not None:
-                projection = projection[slicing]
+        if not maxproj:
+            with BestBackend(device, enable_unified_memory=True):
+                model = image_stabilisation(
+                    image=array,
+                    axis=0,
+                    detrend=detrend,
+                    preload_images=False,
+                    max_range=max_range,
+                    min_confidence=min_confidence,
+                    enable_com=enable_com,
+                    quantile=quantile,
+                    tolerance=tolerance,
+                    order_error=order_error,
+                    order_reg=order_reg,
+                    alpha_reg=alpha_reg,
+                    sigma=phase_correlogram_sigma,
+                    denoise_input_sigma=denoise_input_sigma,
+                    log_compression=log_compression,
+                    edge_filter=edge_filter,
+                    internal_dtype=numpy.float16,
+                    debug_output=debug_output,
+                )
+                model.to_numpy()
 
-            proj_axis = list(1 + a for a in range(array.ndim - 1) if a != axis)
-            projections.append((*proj_axis, projection))
+        else:  # stabilized with maximum intensity projection
+            projections = []
+            for axis in range(array.ndim - 1):
+                projection = input_dataset.get_projection_array(
+                    channel=channel, axis=axis, wrap_with_dask=False
+                )
+                if slicing is not None:
+                    projection = projection[slicing]
 
-        # Perform stabilisation:
-        with BestBackend(device, enable_unified_memory=True):
-            model = image_stabilisation_proj_(projections=projections,
-                                              max_range=max_range,
-                                              min_confidence=min_confidence,
-                                              enable_com=enable_com,
-                                              quantile=quantile,
-                                              tolerance=tolerance,
-                                              order_error=order_error,
-                                              order_reg=order_reg,
-                                              alpha_reg=alpha_reg,
-                                              sigma=phase_correlogram_sigma,
-                                              denoise_input_sigma=denoise_input_sigma,
-                                              log_compression=log_compression,
-                                              edge_filter=edge_filter,
-                                              ndim=ndim - 1,
-                                              internal_dtype=numpy.float16,
-                                              debug_output=debug_output)
-            model.to_numpy()
+                proj_axis = list(1 + a for a in range(array.ndim - 1) if a != axis)
+                projections.append((*proj_axis, projection))
+
+            # Perform stabilisation:
+            with BestBackend(device, enable_unified_memory=True):
+                model = image_stabilisation_proj_(
+                    projections=projections,
+                    max_range=max_range,
+                    min_confidence=min_confidence,
+                    enable_com=enable_com,
+                    quantile=quantile,
+                    tolerance=tolerance,
+                    order_error=order_error,
+                    order_reg=order_reg,
+                    alpha_reg=alpha_reg,
+                    sigma=phase_correlogram_sigma,
+                    denoise_input_sigma=denoise_input_sigma,
+                    log_compression=log_compression,
+                    edge_filter=edge_filter,
+                    ndim=ndim - 1,
+                    internal_dtype=numpy.float16,
+                    debug_output=debug_output,
+                    detrend=detrend,
+                )
+                model.to_numpy()
 
         # Shape of the resulting array:
         padded_shape = (nb_timepoints,) + model.padded_shape(shape[1:])
