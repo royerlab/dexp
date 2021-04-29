@@ -39,6 +39,7 @@ jobs:
           cp -r build/html/* ../gh-pages/.
           cd ..
           git fetch origin
+          git stash
           git checkout gh-pages --
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
