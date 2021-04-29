@@ -1,3 +1,5 @@
+name: Publish Docs
+
 on: [push]
 
 #on:
@@ -5,111 +7,42 @@ on: [push]
 #    branches:
 #      - master
 
-name: Publish Docs
-
 jobs:
-  test:
-    name: Tests
+  build:
+    name: Build & Publish Docs
     runs-on: ubuntu-latest
     if: github.repository == 'royerlab/dexp'
-
-    strategy:
-      matrix:
-        python-version: [3.7]
-
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - name: Install Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: 3.7
+      - name: Install Dependencies
+          run: |
+            python -m pip install --upgrade pip
+            python -m pip install -e .
+            python -m pip install -r docs/requirements.txt
+      - name: Commit documentation changes
+        run: |
+          rm -rf gh-pages
+          mkdir gh-pages
+          git clone https://github.com/royerlab/dexp.git
+          cd dexp/docs/
+          ls
+          make clean
+          make html
+          cp -r build/html/* ../../gh-pages/.
+          git fetch origin
+          git checkout gh-pages
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          cp -rf ../gh-pages/* .
+          git add .
+          git commit -m "Update documentation" -a || true
+          # The above command will fail if no changes were present, so we ignore
+          # the return code.
+      - name: Push changes
+        uses: ad-m/github-push-action@master
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pytest
-          pip install -e .
-      - name: Lint with flake8
-        run: |
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 --ignore E501 . --count --exit-zero --max-complexity=10 --statistics
-      - name: Test with pytest
-        run: |
-          pytest
-  lint:
-    name: Lint Check
-    runs-on: ubuntu-latest
-    if: github.repository == 'royerlab/dexp'
-
-    strategy:
-      matrix:
-        python-version: [ 3.7 ]
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8
-      - name: Lint with flake8
-        run: |
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 --ignore E501 . --count --exit-zero --max-complexity=10 --statistics
-
-#    steps:
-#      - name: Clone main repo
-#        uses: actions/checkout@master
-#        with:
-#          path: main
-#      - name: Install Python
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: 3.7
-#      - name: Install Dependencies
-#        run: |
-#          python -m pip install --upgrade pip
-#          python -m pip install -e .
-#      - name: Run tests
-#        run : |
-#          python -m pytest .
-#  build:
-#    name: Build & Publish Docs
-#    runs-on: ubuntu-latest
-#    if: github.repository == 'royerlab/dexp'
-#    steps:
-#      - name: Install Python
-#          uses: actions/setup-python@v2
-#          with:
-#            python-version: 3.7
-#      - name: Install Dependencies
-#          run: |
-#            python -m pip install --upgrade pip
-#            python -m pip install -e .
-#            python -m pip install -r docs/requirements.txt
-#      - name: Commit documentation changes
-#        run: |
-#          rm -rf gh-pages
-#          mkdir gh-pages
-#          git clone https://github.com/royerlab/dexp.git
-#          cd dexp/docs/
-#          ls
-#          make clean
-#          make html
-#          cp -r build/html/* ../../gh-pages/.
-#          git fetch origin
-#          git checkout gh-pages
-#          git config --local user.email "action@github.com"
-#          git config --local user.name "GitHub Action"
-#          cp -rf ../gh-pages/* .
-#          git add .
-#          git commit -m "Update documentation" -a || true
-#          # The above command will fail if no changes were present, so we ignore
-#          # the return code.
-#      - name: Push changes
-#        uses: ad-m/github-push-action@master
-#        with:
-#          branch: gh-pages
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
