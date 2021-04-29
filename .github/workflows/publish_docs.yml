@@ -34,17 +34,17 @@ jobs:
           rm -rf gh-pages
           mkdir gh-pages
           ls
-          git clone https://github.com/royerlab/dexp.git
-          cd dexp/docs/
+          cd docs/
           ls
           make clean
           make html
-          cp -r build/html/* ../../gh-pages/.
+          cp -r build/html/* ../gh-pages/.
+          cd ..
           git fetch origin
           git checkout gh-pages
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          cp -rf ../gh-pages/* .
+          cp -rf gh-pages/* .
           git add .
           git commit -m "Update documentation" -a || true
           # The above command will fail if no changes were present, so we ignore
