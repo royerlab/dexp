@@ -30,8 +30,10 @@ jobs:
           pip install -r docs/requirements-docs.txt
       - name: Commit documentation changes
         run: |
+          ls
           rm -rf gh-pages
           mkdir gh-pages
+          ls
           git clone https://github.com/royerlab/dexp.git
           cd dexp/docs/
           ls
