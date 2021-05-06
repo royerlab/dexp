@@ -1,9 +1,10 @@
 import multiprocessing
 import os
 import shutil
+import sys
 from multiprocessing.pool import ThreadPool
 from os.path import isfile, isdir, exists
-from typing import Tuple, Sequence, Any, Union
+from typing import Tuple, Sequence, Any, Union, Optional
 
 import dask
 import numpy
@@ -223,6 +224,22 @@ class ZDataset(BaseDataset):
         for name in self._root_group.attrs:
             attrs[name] = self._root_group.attrs[name]
         return attrs
+
+    def set_cli_history(self, parent: Optional['ZDataset']):
+        key = 'cli_history'
+        cli_history = []
+        if parent is not None:
+            parent_metadata = parent.get_metadata()
+            cli_history = parent_metadata.get(key, [])
+
+        if key in self._root_group.attrs:
+            # TODO: this needs to be reevaluated, e.g. when a channel is copied from another dataset some
+            #  information might be lost since two histories would be necessary to keep track of both sources
+            raise ValueError(f'{key} attribute already exists on this dataset')
+
+        command = os.path.basename(sys.argv[0]) + ' ' + ' '.join(sys.argv[1:])
+        cli_history.append(command)
+        self._root_group.attrs[key] = cli_history
 
     def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False):
         array = self._arrays[channel]

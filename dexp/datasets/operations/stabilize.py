@@ -220,5 +220,6 @@ def dataset_stabilize(input_dataset: BaseDataset,
     if check:
         output_dataset.check_integrity()
 
+    output_dataset.set_cli_history(parent=input_dataset if isinstance(input_dataset, ZDataset) else None)
     # close destination dataset:
     output_dataset.close()
