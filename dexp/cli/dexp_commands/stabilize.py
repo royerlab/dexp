@@ -12,6 +12,7 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
 @click.argument('input_paths', nargs=-1)  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='List of channels, all channels when omitted.')
+@click.option('--reference-channel', '-rc', default=None, help='Reference channel for single stabilization model computation.')
 @click.option('--slicing', '-s', default=None, help='Dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')
 @click.option('--store', '-st', default=_default_store, help='Zarr store: ‘dir’, ‘ndir’, or ‘zip’', show_default=True)
 @click.option('--codec', '-z', default=_default_codec, help='Compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ', show_default=True)
@@ -39,6 +40,7 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
 def stabilize(input_paths,
               output_path,
               channels,
+              reference_channel,
               slicing,
               store,
               codec,
@@ -75,6 +77,7 @@ def stabilize(input_paths,
         dataset_stabilize(input_dataset,
                           output_path,
                           channels=channels,
+                          reference_channel=reference_channel,
                           slicing=slicing,
                           zarr_store=store,
                           compression_codec=codec,
