@@ -193,7 +193,7 @@ class ZDataset(BaseDataset):
     def dtype(self, channel: str):
         return self.get_array(channel).dtype
 
-    def info(self, channel: str = None) -> str:
+    def info(self, channel: str = None, cli_history: bool = True) -> str:
         info_str = ''
         if channel:
             info_str += f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}"
@@ -216,13 +216,14 @@ class ZDataset(BaseDataset):
             info_str += str(array.info)
             info_str += '\n'
 
-        key = 'cli_history'
-        if key in self._root_group.attrs:
-            info_str += "\nCommand line history:\n/\n"
-            commands_list = self._root_group.attrs[key]
-            for command in commands_list[:-1]:
-                info_str += " ├──" + command + "\n"
-            info_str += " └──" + commands_list[-1] + "\n"
+        if cli_history:
+            key = 'cli_history'
+            if key in self._root_group.attrs:
+                info_str += "\nCommand line history:\n/\n"
+                commands_list = self._root_group.attrs[key]
+                for command in commands_list[:-1]:
+                    info_str += " ├──" + command + "\n"
+                info_str += " └──" + commands_list[-1] + "\n"
 
         return info_str
 
