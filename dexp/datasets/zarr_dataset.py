@@ -216,6 +216,14 @@ class ZDataset(BaseDataset):
             info_str += str(array.info)
             info_str += '\n'
 
+        key = 'cli_history'
+        if key in self._root_group.attrs:
+            info_str += "\nCommand line history:\n/\n"
+            commands_list = self._root_group.attrs[key]
+            for command in commands_list[:-1]:
+                info_str += " ├──" + command + "\n"
+            info_str += " └──" + commands_list[-1] + "\n"
+
         return info_str
 
     def get_metadata(self):
@@ -233,12 +241,10 @@ class ZDataset(BaseDataset):
             cli_history = parent_metadata.get(key, [])
 
         if key in self._root_group.attrs:
-            # TODO: this needs to be reevaluated, e.g. when a channel is copied from another dataset some
-            #  information might be lost since two histories would be necessary to keep track of both sources
-            raise ValueError(f'{key} attribute already exists on this dataset')
+            cli_history += self._root_group.attrs[key]
 
-        command = os.path.basename(sys.argv[0]) + ' ' + ' '.join(sys.argv[1:])
-        cli_history.append(command)
+        new_command = os.path.basename(sys.argv[0]) + ' ' + ' '.join(sys.argv[1:])
+        cli_history.append(new_command)
         self._root_group.attrs[key] = cli_history
 
     def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False):
