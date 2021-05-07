@@ -83,14 +83,15 @@ class CCDataset(BaseDataset):
     def _get_array_for_stack_file(self, file_name, shape=None):
 
         try:
-            with open(file_name, 'rb') as my_file:
-                aprint(f"Accessing file: {file_name}")
-                buffer = my_file.read()
+            #with open(file_name, 'rb') as my_file:
+            aprint(f"Accessing file: {file_name}")
+            #buffer = my_file.read()
 
-                dt = numpy.dtype(uint16)
-                dt = dt.newbyteorder('L')
+            dt = numpy.dtype(uint16)
+            dt = dt.newbyteorder('L')
 
-                array = frombuffer(buffer, dtype=dt)
+            #array = frombuffer(buffer, dtype=dt)
+            array = numpy.fromfile(file_name, dtype=dt)
 
             if not shape is None:
                 array = array.reshape(shape)
