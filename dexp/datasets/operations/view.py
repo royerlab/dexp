@@ -39,6 +39,10 @@ def dataset_view(input_dataset: BaseDataset,
                     for axis in range(array.ndim - 1):
                         proj_array = input_dataset.get_projection_array(channel, axis=axis, wrap_with_dask=True)
 
+                        # if the data format does not support projections we skip:
+                        if proj_array is None:
+                            continue
+
                         shape = (proj_array.shape[0], 1,) + proj_array.shape[1:]
                         proj_array = reshape(proj_array, shape=shape)
 

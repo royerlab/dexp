@@ -15,18 +15,9 @@ from zarr import open_group, convenience, CopyError, Blosc, Group
 from dexp.datasets.base_dataset import BaseDataset
 # Configure multithreading for Dask:
 from dexp.processing.backends.backend import Backend
+from dexp.utils.config_dask import config_dask
 
-_cpu_count = multiprocessing.cpu_count() // 2
-# aprint(f"Number of cores on system: {_cpu_count}")
-_nb_threads = max(1, _cpu_count)
-dask.config.set(scheduler='threads')
-dask.config.set(pool=ThreadPool(_nb_threads))
-
-# Configure multithreading for Blosc:
-blosc.set_nthreads(_nb_threads)
-
-
-# aprint(f"Number of threads used by BLOSC: {blosc.get_nthreads()}")
+config_dask()
 
 
 class ZDataset(BaseDataset):
