@@ -1,5 +1,6 @@
 from arbol import aprint
 from numpy import s_
+from typing import Tuple, Optional
 
 
 def _get_output_path(input_path, output_path, postfix=''):
@@ -55,3 +56,9 @@ def _parse_devices(devices):
         devices = tuple(int(device.strip()) for device in devices.split(','))
 
     return devices
+
+
+def _parse_chunks(chunks: Optional[str]) -> Optional[Tuple[int]]:
+    if chunks is not None:
+        chunks = eval(chunks)
+    return chunks

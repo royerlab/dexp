@@ -166,5 +166,6 @@ def dataset_deconv(dataset: BaseDataset,
     if check:
         dest_dataset.check_integrity()
 
+    dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
     # close destination dataset:
     dest_dataset.close()

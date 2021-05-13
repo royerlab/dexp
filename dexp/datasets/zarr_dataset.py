@@ -1,9 +1,10 @@
 import multiprocessing
 import os
 import shutil
+import sys
 from multiprocessing.pool import ThreadPool
 from os.path import isfile, isdir, exists
-from typing import Tuple, Sequence, Any, Union
+from typing import Tuple, Sequence, Any, Union, Optional
 
 import dask
 import numpy
@@ -183,7 +184,7 @@ class ZDataset(BaseDataset):
     def dtype(self, channel: str):
         return self.get_array(channel).dtype
 
-    def info(self, channel: str = None) -> str:
+    def info(self, channel: str = None, cli_history: bool = True) -> str:
         info_str = ''
         if channel:
             info_str += f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}"
@@ -206,6 +207,15 @@ class ZDataset(BaseDataset):
             info_str += str(array.info)
             info_str += '\n'
 
+        if cli_history:
+            key = 'cli_history'
+            if key in self._root_group.attrs:
+                info_str += "\nCommand line history:\n/\n"
+                commands_list = self._root_group.attrs[key]
+                for command in commands_list[:-1]:
+                    info_str += " ├──" + command + "\n"
+                info_str += " └──" + commands_list[-1] + "\n"
+
         return info_str
 
     def get_metadata(self):
@@ -214,6 +224,20 @@ class ZDataset(BaseDataset):
         for name in self._root_group.attrs:
             attrs[name] = self._root_group.attrs[name]
         return attrs
+
+    def set_cli_history(self, parent: Optional['ZDataset']):
+        key = 'cli_history'
+        cli_history = []
+        if parent is not None:
+            parent_metadata = parent.get_metadata()
+            cli_history = parent_metadata.get(key, [])
+
+        if key in self._root_group.attrs:
+            cli_history += self._root_group.attrs[key]
+
+        new_command = os.path.basename(sys.argv[0]) + ' ' + ' '.join(sys.argv[1:])
+        cli_history.append(new_command)
+        self._root_group.attrs[key] = cli_history
 
     def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False):
         array = self._arrays[channel]

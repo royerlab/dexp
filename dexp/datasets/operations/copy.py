@@ -1,5 +1,5 @@
 import os
-from typing import Sequence
+from typing import Sequence, Optional
 
 import numpy
 from arbol.arbol import aprint, asection
@@ -12,6 +12,7 @@ def dataset_copy(dataset: BaseDataset,
                  channels: Sequence[str],
                  slicing,
                  store: str,
+                 chunks: Optional[Sequence[int]],
                  compression: str,
                  compression_level: int,
                  overwrite: bool,
@@ -36,7 +37,8 @@ def dataset_copy(dataset: BaseDataset,
 
             shape = array.shape
             dtype = array.dtype
-            chunks = ZDataset._default_chunks
+            if chunks is None:
+                chunks = ZDataset._default_chunks
 
             dest_dataset.add_channel(name=channel,
                                      shape=shape,
@@ -72,5 +74,6 @@ def dataset_copy(dataset: BaseDataset,
     if check:
         dest_dataset.check_integrity()
 
+    dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
     # close destination dataset:
     dest_dataset.close()

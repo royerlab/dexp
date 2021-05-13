@@ -1,3 +1,4 @@
+import os
 import tempfile
 from os.path import join
 
@@ -173,3 +174,36 @@ def test_add_channels_to():
         zdataset1.close()
         zdataset2.close()
         zdataset1_reloaded.close()
+
+
+def test_zarr_cli_history():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        print('created temporary directory', tmpdir)
+
+        # self, path:str, mode:str ='r', store:str ='dir'
+        source_path = join(tmpdir, 'test.zarr')
+        zdataset = ZDataset(path=source_path,
+                            mode='w',
+                            store='dir')
+
+        zdataset.add_channel(name='first',
+                             shape=(5, 20, 20, 20),
+                             chunks=(1, 10, 10, 10),
+                             dtype='f4',
+                             codec='zstd',
+                             clevel=3)
+
+        first_copy = join(tmpdir, 'first.zarr.zip')
+        first_command = f'dexp copy {source_path} -o {first_copy}'
+        os.system(first_command)
+
+        second_copy = join(tmpdir, 'second.zarr.zip')
+        second_command = f'dexp copy {first_copy} -o {second_copy}'
+        os.system(second_command)
+
+        first_ds = ZDataset(first_copy)
+        second_ds = ZDataset(second_copy)
+
+        assert first_command in first_ds.get_metadata()['cli_history']
+        assert first_command in second_ds.get_metadata()['cli_history']
+        assert second_command in second_ds.get_metadata()['cli_history']
