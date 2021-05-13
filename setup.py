@@ -61,6 +61,7 @@ REQUIRED = [
     'python-telegram-bot',
     'PyYAML',
     'cairocffi',
+    'blosc'
 ]
 
 # What packages are optional?

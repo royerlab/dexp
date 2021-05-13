@@ -1,7 +1,8 @@
+import os
 import re
 from fnmatch import fnmatch
 from os import listdir, cpu_count
-from os.path import join
+from os.path import join, exists
 from typing import Sequence, Tuple, Any
 
 import dask
@@ -13,9 +14,10 @@ from dask import array, delayed
 from numpy import uint16, frombuffer
 
 from dexp.datasets.base_dataset import BaseDataset
+from dexp.io.compress_array import decompress_array
+from dexp.utils.config_dask import config_dask
 
-numcodecs.blosc.use_threads = True
-numcodecs.blosc.set_nthreads(cpu_count() // 2)
+config_dask()
 
 
 class CCDataset(BaseDataset):
@@ -45,6 +47,8 @@ class CCDataset(BaseDataset):
         self._times_sec = {}
         self._shapes = {}
         self._time_points = {}
+
+        self._is_compressed = self._find_out_if_compressed(path)
 
         for channel in self._channels:
             self._parse_channel(channel)
@@ -78,25 +82,45 @@ class CCDataset(BaseDataset):
 
     def _get_stack_file_name(self, channel, time_point):
 
-        return join(self.folder, 'stacks', channel, str(time_point).zfill(6) + '.raw')
+        compressed_file_name = join(self.folder, 'stacks', channel, str(time_point).zfill(6) + '.blc')
+        raw_file_name = join(self.folder, 'stacks', channel, str(time_point).zfill(6) + '.raw')
 
-    def _get_array_for_stack_file(self, file_name, shape=None):
+        if self._is_compressed is None:
+            if exists(compressed_file_name):
+                self._is_compressed = True
+            else:
+                self._is_compressed = False
+
+        if self._is_compressed:
+            return compressed_file_name
+        else:
+            return raw_file_name
+
+
+    def _get_array_for_stack_file(self, file_name, shape=None, dtype=None):
 
         try:
-            #with open(file_name, 'rb') as my_file:
-            aprint(f"Accessing file: {file_name}")
-            #buffer = my_file.read()
+            if file_name.endswith('.raw'):
+                aprint(f"Accessing file: {file_name}")
 
-            dt = numpy.dtype(uint16)
-            dt = dt.newbyteorder('L')
+                dt = numpy.dtype(uint16)
+                dt = dt.newbyteorder('L')
 
-            #array = frombuffer(buffer, dtype=dt)
-            array = numpy.fromfile(file_name, dtype=dt)
+                array = numpy.fromfile(file_name, dtype=dt)
 
+            elif file_name.endswith('.blc'):
+                array = numpy.empty(shape=shape, dtype=dtype)
+                with open(file_name, "rb") as binary_file:
+                    # Read the whole file at once
+                    data = binary_file.read()
+                    decompress_array(data, array)
+
+            # Reshape array:
             if not shape is None:
                 array = array.reshape(shape)
 
             return array
+
 
         except FileNotFoundError:
             aprint(f"Could not find file: {file_name} for array of shape: {shape}")
@@ -105,19 +129,21 @@ class CCDataset(BaseDataset):
     def _get_slice_array_for_stack_file_and_z(self, file_name, shape, z):
 
         try:
-            with open(file_name, 'rb') as file:
+            if file_name.endswith('.raw'):
                 aprint(f"Accessing file: {file_name} at z={z}")
 
                 length = shape[1] * shape[2] * numpy.dtype(uint16).itemsize
                 offset = z * length
 
-                file.seek(offset)
+                dt = numpy.dtype(uint16)
+                dt = dt.newbyteorder('L')
 
-                buffer = file.read(length)
-                array = frombuffer(buffer, dtype=uint16)
+                array = numpy.fromfile(file_name, offset=offset, count=length, dtype=dt)
+            elif file_name.endswith('.blc'):
+                raise NotImplementedError("This type of access is not yet supported")
 
-                array = array.reshape(shape[1:])
-                return array
+            array = array.reshape(shape[1:])
+            return array
 
         except FileNotFoundError:
             aprint(f"Could  not find file: {file_name} for array of shape: {shape} at z={z}")
@@ -152,36 +178,29 @@ class CCDataset(BaseDataset):
 
     def get_array(self, channel: str, per_z_slice: bool = True, wrap_with_dask: bool = False):
 
-        if False:
-            # For some reason this is slower, should have been faster!:
-            # Construct a small Dask array for every lazy value:
-            arrays = [self.get_stack(channel, time_point, per_z_slice) for time_point in self._time_points[channel]]
-            stacked_array = array.stack(arrays, axis=0)  # Stack all small Dask arrays into one
-            return stacked_array
+        # Lazy and memorized version of get_stack:
+        lazy_get_stack = delayed(self.get_stack, pure=True)
+        #self.cache.memoize()
 
-        else:
-            # Lazy and memorized version of get_stack:
-            lazy_get_stack = delayed(self.cache.memoize(self.get_stack), pure=True)
+        # Lazily load each stack for each time point:
+        lazy_stacks = [lazy_get_stack(channel, time_point, per_z_slice) for time_point in self._time_points[channel]]
 
-            # Lazily load each stack for each time point:
-            lazy_stacks = [lazy_get_stack(channel, time_point, per_z_slice) for time_point in self._time_points[channel]]
+        # Construct a small Dask array for every lazy value:
+        arrays = [array.from_delayed(lazy_stack,
+                                     dtype=uint16,
+                                     shape=self._shapes[(channel, 0)])
+                  for lazy_stack in lazy_stacks]
 
-            # Construct a small Dask array for every lazy value:
-            arrays = [array.from_delayed(lazy_stack,
-                                         dtype=uint16,
-                                         shape=self._shapes[(channel, 0)])
-                      for lazy_stack in lazy_stacks]
+        stacked_array = array.stack(arrays, axis=0)  # Stack all small Dask arrays into one
 
-            stacked_array = array.stack(arrays, axis=0)  # Stack all small Dask arrays into one
-
-            return stacked_array
+        return stacked_array
 
     def get_stack(self, channel, time_point, per_z_slice=True):
 
         file_name = self._get_stack_file_name(channel, time_point)
         shape = self._shapes[(channel, time_point)]
 
-        if per_z_slice:
+        if per_z_slice and not self._is_compressed:
 
             lazy_get_slice_array_for_stack_file_and_z = delayed(self.cache.memoize(self._get_slice_array_for_stack_file_and_z), pure=True)
 
@@ -196,7 +215,7 @@ class CCDataset(BaseDataset):
             stack = array.stack(arrays, axis=0)
 
         else:
-            stack = self._get_array_for_stack_file(file_name, shape=shape)
+            stack = self._get_array_for_stack_file(file_name, shape=shape, dtype=uint16)
 
         return stack
 
@@ -204,11 +223,7 @@ class CCDataset(BaseDataset):
         raise NotImplementedError('Not implemented!')
 
     def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = True) -> Any:
-        array = self.get_array(channel=channel,
-                               per_z_slice=False,
-                               wrap_with_dask=True)
-        projection = dask.array.max(array, axis=axis + 1)
-        return projection
+        return None
 
     def write_array(self, channel: str, array: numpy.ndarray):
         raise NotImplementedError('Not implemented!')
@@ -219,3 +234,11 @@ class CCDataset(BaseDataset):
     def check_integrity(self, channels: Sequence[str]) -> bool:
         # TODO: actually implement!
         return True
+
+    def _find_out_if_compressed(self, path):
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if file.endswith(".blc"):
+                    return True
+
+        return False
