@@ -1,7 +1,8 @@
-from typing import List, Sequence
+from typing import List
 
 import numpy
 from arbol import aprint, asection
+import dask
 from dask.array import Array
 
 from dexp.processing.backends.backend import Backend
@@ -14,62 +15,31 @@ from dexp.processing.utils.linear_solver import linsolve
 
 
 def image_stabilisation(image: 'Array',
-                        axis: int = 0,
+                        axis: int,
+                        preload_images: bool = True,
+                        mode: str = 'translation',
+                        max_range: int = 7,
+                        min_confidence: float = 0.5,
+                        enable_com: bool = False,
+                        quantile: float = 0.5,
+                        bounding_box: bool = False,
+                        tolerance: float = 1e-7,
+                        order_error: float = 2.0,
+                        order_reg: float = 1.0,
+                        alpha_reg: float = 0.1,
+                        detrend: bool = False,
+                        debug_output: str = None,
                         internal_dtype=None,
                         **kwargs
                         ) -> SequenceRegistrationModel:
     """
-    Computes a sequence stabilisation model for an image sequence indexed along a specified axis.
-
-
-    Parameters
-    ----------
-    image: image to stabilise
-    axis: sequence axis along which to stabilise image
-    internal_dtype : internal dtype for computation
-    **kwargs: argument passthrough to the pairwise registration method.
-
-    Returns
-    -------
-    Sequence registration model
-
-    """
-    xp = Backend.get_xp_module()
-
-    image = Backend.to_backend(image, dtype=internal_dtype)
-
-    length = image.shape[axis]
-    image_sequence = list(xp.take(image, axis=axis, indices=range(0, length)))
-
-    return image_sequence_stabilisation(image_sequence=image_sequence,
-                                        internal_dtype=internal_dtype,
-                                        **kwargs)
-
-
-def image_sequence_stabilisation(image_sequence: Sequence['Array'],
-                                 preload_images: bool = True,
-                                 mode: str = 'translation',
-                                 max_range: int = 7,
-                                 min_confidence: float = 0.5,
-                                 enable_com: bool = False,
-                                 quantile: float = 0.5,
-                                 bounding_box: bool = False,
-                                 tolerance: float = 1e-7,
-                                 order_error: float = 2.0,
-                                 order_reg: float = 1.0,
-                                 alpha_reg: float = 0.1,
-                                 debug_output: str = None,
-                                 internal_dtype=None,
-                                 **kwargs
-                                 ) -> SequenceRegistrationModel:
-    """
     Computes a sequence stabilisation model for an image sequence.
 
-
     Parameters
     ----------
-    image: image to stabilise
-    axis: sequence axis along which to stabilise image
+    image: image to stabilise.
+    axis: sequence axis along which to stabilise image.
+    preload_images: boolean indicating to preload data or not.
     mode: registration mode. For now only 'translation' is available.
     max_range: maximal distance, in time points, between pairs of images to registrate.
     min_confidence: minimal confidence to accept a pairwise registration
@@ -80,6 +50,7 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
     order_error: order for linear solver error term.
     order_reg: order for linear solver regularisation term.
     alpha_reg: multiplicative coefficient for regularisation term.
+    detrend: removes linear detrend from stabilized image.
     internal_dtype : internal dtype for computation
     **kwargs: argument passthrough to the pairwise registration method, see 'register_translation_nd'.
 
@@ -88,24 +59,22 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
     Sequence registration model
 
     """
+    assert 0 <= axis < image.ndim
+    length = image.shape[axis]
+
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
-    image_sequence = list(image_sequence)
-
+    image_sequence = None
     if preload_images:
         with asection(f"Preloading images to backend..."):
-            image_sequence = list(Backend.to_backend(image) for image in image_sequence)
-
-    length = len(image_sequence)
+            image_sequence = list(Backend.to_backend(xp.take(image, i, axis=axis) for i in range(length)))
 
     scales = list(i for i in range(max_range) if i < length)
 
     aprint(f"Scales: {scales}")
 
     with asection(f"Registering image sequence of length: {length}"):
-
-        ndim = image_sequence[0].ndim
+        ndim = image.ndim - 1
 
         uv_set = set()
         with asection(f"Enumerating pairwise registrations needed..."):
@@ -113,7 +82,6 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
             for scale_index, scale in enumerate(scales):
                 for offset in range(0, scale):
                     for u in range(offset, length, scale):
-
                         v = u + scale
 
                         # if u < 0:
@@ -128,8 +96,15 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
         pairwise_models = []
         with asection(f"Computing pairwise registrations for {len(uv_set)} (u,v) pairs..."):
             for u, v in uv_set:
-                image_u = image_sequence[u]
-                image_v = image_sequence[v]
+                if image_sequence:
+                    image_u = image_sequence[u]
+                    image_v = image_sequence[v]
+                elif isinstance(image, Array):
+                    image_u = dask.array.take(image, u, axis=axis)
+                    image_v = dask.array.take(image, v, axis=axis)
+                else:
+                    image_u = xp.take(image, u, axis=axis)
+                    image_v = xp.take(image, v, axis=axis)
                 model = _pairwise_registration(u, v,
                                                image_u, image_v,
                                                mode,
@@ -170,7 +145,9 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
                 if mode == 'translation':
 
                     # prepares list of models:
-                    translation_models: List[TranslationRegistrationModel] = list(TranslationRegistrationModel(xp.zeros((ndim,), dtype=internal_dtype)) for _ in range(length))
+                    translation_models: List[TranslationRegistrationModel] =\
+                        list(TranslationRegistrationModel(xp.zeros((ndim,), dtype=internal_dtype))
+                             for _ in range(length))
 
                     # initialise count for average:
                     for model in translation_models:
@@ -221,7 +198,8 @@ def image_sequence_stabilisation(image_sequence: Sequence['Array'],
                                          alpha_reg=alpha_reg)
 
                         # detrend:
-                        # x_opt = sp.signal.detrend(x_opt)
+                        if detrend:
+                            x_opt = sp.signal.detrend(x_opt)
 
                         # sets the shift vectors for the resulting sequence reg model, and compute average confidences:
                         for tp in range(length):

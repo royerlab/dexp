@@ -12,6 +12,7 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
 @click.argument('input_paths', nargs=-1)  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='List of channels, all channels when omitted.')
+@click.option('--reference-channel', '-rc', default=None, help='Reference channel for single stabilization model computation.')
 @click.option('--slicing', '-s', default=None, help='Dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ')
 @click.option('--store', '-st', default=_default_store, help='Zarr store: ‘dir’, ‘ndir’, or ‘zip’', show_default=True)
 @click.option('--codec', '-z', default=_default_codec, help='Compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ', show_default=True)
@@ -29,6 +30,8 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
 @click.option('--dsigma', '-ds', type=float, default=1.5, help='Sigma for Gaussian smoothing (crude denoising) of input images, zero to disable.', show_default=True)
 @click.option('--logcomp', '-lc', type=bool, default=True, help='Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads.', show_default=True)
 @click.option('--edgefilter', '-ef', type=bool, default=False, help='Applies sobel edge filter to input images.', show_default=True)
+@click.option('--detrend', '-dt', type=bool, is_flag=True, default=False, help='Remove linear trend from stabilization result', show_default=True)
+@click.option('--maxproj/--no-maxproj', '-mp/-nmp', type=bool, default=True, help='Registers using only the maximum intensity projection from each stack.', show_default=True)
 @click.option('--workers', '-k', type=int, default=-4, help='Number of worker threads to spawn. Negative numbers n correspond to: number_of _cores / |n|. Be careful, starting two many workers is know to cause trouble (unfortunately unclear why!).',
               show_default=True)
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
@@ -37,6 +40,7 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
 def stabilize(input_paths,
               output_path,
               channels,
+              reference_channel,
               slicing,
               store,
               codec,
@@ -54,6 +58,8 @@ def stabilize(input_paths,
               dsigma,
               logcomp,
               edgefilter,
+              detrend,
+              maxproj,
               workers,
               workersbackend,
               device,
@@ -71,6 +77,7 @@ def stabilize(input_paths,
         dataset_stabilize(input_dataset,
                           output_path,
                           channels=channels,
+                          reference_channel=reference_channel,
                           slicing=slicing,
                           zarr_store=store,
                           compression_codec=codec,
@@ -88,6 +95,8 @@ def stabilize(input_paths,
                           denoise_input_sigma=dsigma,
                           log_compression=logcomp,
                           edge_filter=edgefilter,
+                          detrend=detrend,
+                          maxproj=maxproj,
                           workers=workers,
                           workers_backend=workersbackend,
                           device=device,
