@@ -67,7 +67,7 @@ def image_stabilisation(image: 'Array',
     image_sequence = None
     if preload_images:
         with asection(f"Preloading images to backend..."):
-            image_sequence = list(Backend.to_backend(xp.take(image, i, axis=axis) for i in range(length)))
+            image_sequence = list(Backend.to_backend(Backend.get_xp_module(image).take(image, i, axis=axis)) for i in range(length))
 
     scales = list(i for i in range(max_range) if i < length)
 
