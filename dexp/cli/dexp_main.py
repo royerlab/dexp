@@ -53,6 +53,7 @@ def cli():
 from dexp.cli.dexp_commands.info import info
 from dexp.cli.dexp_commands.check import check
 from dexp.cli.dexp_commands.copy import copy
+from dexp.cli.dexp_commands.fastcopy import fastcopy
 from dexp.cli.dexp_commands.add import add
 from dexp.cli.dexp_commands.tiff import tiff
 from dexp.cli.dexp_commands.view import view
@@ -72,6 +73,7 @@ from dexp.cli.dexp_commands.projrender import projrender
 cli.add_command(info)
 cli.add_command(check)
 cli.add_command(copy)
+cli.add_command(fastcopy)
 cli.add_command(add)
 cli.add_command(tiff)
 cli.add_command(view)
