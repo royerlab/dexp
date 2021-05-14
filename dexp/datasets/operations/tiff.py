@@ -19,7 +19,10 @@ def dataset_tiff(dataset: BaseDataset,
                  one_file_per_first_dim: bool,
                  clevel: int,
                  workers: int,
-                 workersbackend: str):
+                 workersbackend: str,
+                 stop_at_exception: bool = True):
+
+
     selected_channels = dataset._selected_channels(channels)
 
     aprint(f"getting Dask arrays for channels {selected_channels}")
@@ -45,16 +48,25 @@ def dataset_tiff(dataset: BaseDataset,
         os.makedirs(output_path, exist_ok=True)
 
         def process(tp):
-            with asection(f'Saving time point {tp}: '):
-                for channel, array in zip(selected_channels, arrays):
-                    tiff_file_path = join(output_path, f"file{tp}_{channel}.tiff")
-                    if overwrite or not os.path.exists(tiff_file_path):
-                        stack = array[tp].compute()
-                        print(f"Writing time point: {tp} of shape: {stack.shape}, dtype:{stack.dtype} as TIFF file: '{tiff_file_path}', with compression: {clevel}")
-                        tiff_save(tiff_file_path, stack, compress=clevel)
-                        print(f"Done writing time point: {tp} !")
-                    else:
-                        print(f"File for time point (or z slice): {tp} already exists.")
+            try:
+                with asection(f'Saving time point {tp}: '):
+                    for channel, array in zip(selected_channels, arrays):
+                        tiff_file_path = join(output_path, f"file{tp}_{channel}.tiff")
+                        if overwrite or not os.path.exists(tiff_file_path):
+                            stack = array[tp].compute()
+                            print(f"Writing time point: {tp} of shape: {stack.shape}, dtype:{stack.dtype} as TIFF file: '{tiff_file_path}', with compression: {clevel}")
+                            tiff_save(tiff_file_path, stack, compress=clevel)
+                            print(f"Done writing time point: {tp} !")
+                        else:
+                            print(f"File for time point (or z slice): {tp} already exists.")
+            except Exception as error:
+                aprint(error)
+                aprint(f"Error occurred while processing time point {tp} !")
+                import traceback
+                traceback.print_exc()
+
+                if stop_at_exception:
+                    raise error
 
         if workers > 1:
             Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp) for tp in range(0, arrays[0].shape[0]))
