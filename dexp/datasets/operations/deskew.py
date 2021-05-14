@@ -91,7 +91,7 @@ def dataset_deskew(dataset,
 
             except Exception as error:
                 aprint(error)
-                aprint(f"Error occurred while processing time point {tp} !")
+                aprint(f"Error occurred while deskewing time point {tp} !")
                 import traceback
                 traceback.print_exc()
 

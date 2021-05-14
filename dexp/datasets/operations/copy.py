@@ -19,7 +19,8 @@ def dataset_copy(dataset: BaseDataset,
                  zerolevel: int,
                  workers: int,
                  workersbackend: str,
-                 check: bool):
+                 check: bool,
+                 stop_at_exception: bool = True):
 
     # Create destination dataset:
     from dexp.datasets.zarr_dataset import ZDataset
@@ -61,6 +62,10 @@ def dataset_copy(dataset: BaseDataset,
                 except Exception as error:
                     aprint(error)
                     aprint(f"Error occurred while copying time point {tp} !")
+                    import traceback
+                    traceback.print_exc()
+                    if stop_at_exception:
+                        raise error
 
             from joblib import Parallel, delayed
 

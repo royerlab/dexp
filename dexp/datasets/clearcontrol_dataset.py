@@ -1,24 +1,21 @@
 import os
 import re
 from fnmatch import fnmatch
-from os import listdir, cpu_count
+from os import listdir
 from os.path import join, exists
 from typing import Sequence, Tuple, Any
 
-import dask
-import numcodecs
 import numpy
 from arbol.arbol import aprint
 from cachey import Cache
 from dask import array, delayed
-from numpy import uint16, frombuffer
+from numpy import uint16
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.io.compress_array import decompress_array
-from dexp.utils.config_dask import config_dask
+from dexp.utils.config_dask import config_dask_and_blosc
 
-config_dask()
-
+config_dask_and_blosc()
 
 class CCDataset(BaseDataset):
 
@@ -46,6 +43,7 @@ class CCDataset(BaseDataset):
         self._nb_time_points = {}
         self._times_sec = {}
         self._shapes = {}
+        self._channel_shape = {}
         self._time_points = {}
 
         self._is_compressed = self._find_out_if_compressed(path)
@@ -75,6 +73,12 @@ class CCDataset(BaseDataset):
 
             self._times_sec[(channel, time_point)] = time_sec
             self._shapes[(channel, time_point)] = shape
+
+            if channel in self._channel_shape:
+                existing_shape = self._channel_shape[channel]
+                if shape != existing_shape:
+                    aprint(f"Warning: Channel {channel} has varying stack shape! Shape changes from {existing_shape} to {shape} at time point {time_point}")
+            self._channel_shape[channel] = shape
 
             self._time_points[channel].append(time_point)
 
@@ -180,7 +184,6 @@ class CCDataset(BaseDataset):
 
         # Lazy and memorized version of get_stack:
         lazy_get_stack = delayed(self.get_stack, pure=True)
-        #self.cache.memoize()
 
         # Lazily load each stack for each time point:
         lazy_stacks = [lazy_get_stack(channel, time_point, per_z_slice) for time_point in self._time_points[channel]]
@@ -188,14 +191,14 @@ class CCDataset(BaseDataset):
         # Construct a small Dask array for every lazy value:
         arrays = [array.from_delayed(lazy_stack,
                                      dtype=uint16,
-                                     shape=self._shapes[(channel, 0)])
+                                     shape=self._channel_shape[channel])
                   for lazy_stack in lazy_stacks]
 
         stacked_array = array.stack(arrays, axis=0)  # Stack all small Dask arrays into one
 
         return stacked_array
 
-    def get_stack(self, channel, time_point, per_z_slice=True):
+    def get_stack(self, channel, time_point, per_z_slice=True, wrap_with_dask: bool = False):
 
         file_name = self._get_stack_file_name(channel, time_point)
         shape = self._shapes[(channel, time_point)]
