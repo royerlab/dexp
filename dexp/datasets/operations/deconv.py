@@ -40,7 +40,7 @@ def dataset_deconv(dataset: BaseDataset,
                    workersbackend: str,
                    devices: Sequence[int],
                    check: bool,
-                   stop_at_exception: bool = True,):
+                   stop_at_exception: bool = True):
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(path, mode, store)
@@ -144,7 +144,7 @@ def dataset_deconv(dataset: BaseDataset,
 
             except Exception as error:
                 aprint(error)
-                aprint(f"Error occurred while processing time point {tp} !")
+                aprint(f"Error occurred while deconvolving time point {tp} !")
                 import traceback
                 traceback.print_exc()
 
