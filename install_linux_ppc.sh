@@ -21,6 +21,7 @@ conda install -y -c anaconda cffi
 conda install -y -c anaconda cairocffi
 conda install -y -c anaconda PyYAML
 conda install -y -c anaconda colorcet
+conda install -y -c conda-forge python-blosc
 
 source /apps/GCC-6.5.0/setup.GCC-6.5.0
 pip install cupy==9.0.0b3 --no-cache-dir
