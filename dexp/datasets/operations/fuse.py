@@ -33,6 +33,7 @@ def dataset_fuse(dataset,
                  dark_denoise_threshold,
                  z_pad_apodise,
                  loadreg,
+                 model_list_filename,
                  warpreg_num_iterations,
                  min_confidence,
                  max_change,
@@ -66,7 +67,6 @@ def dataset_fuse(dataset,
 
     # load registration models:
     with NumpyBackend():
-        model_list_filename = "registration_models.txt"
         if loadreg:
             aprint(f"Loading registration shifts from existing file! ({model_list_filename})")
             models = model_list_from_file(model_list_filename)
