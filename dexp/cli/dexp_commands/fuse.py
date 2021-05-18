@@ -31,6 +31,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
               help='Pads and apodises the views along z before fusion: ‘pad apo’, where pad is a padding length, and apo is apodisation length, both in voxels. If pad=apo, no original voxel is modified and only added voxels are apodised.',
               show_default=True)  #
 @click.option('--loadreg', '-lr', is_flag=True, help='Turn on to load the registration parameters from a previous run', show_default=True)  #
+@click.option('--model-filename', '-mf', help='Model filename to load or save registration model list', default='registration_models.txt', show_default=True) 
 @click.option('--warpregiter', '-wri', type=int, default=4, help='Number of iterations for warp registration (if applicable).', show_default=True)  #
 @click.option('--minconfidence', '-mc', type=float, default=0.3, help='Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.', show_default=True)  #
 @click.option('--maxchange', '-md', type=float, default=16, help='Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.', show_default=True)  #
@@ -59,6 +60,7 @@ def fuse(input_paths,
          dark_denoise_threshold,
          zpadapodise,
          loadreg,
+         model_filename,
          warpregiter,
          minconfidence,
          maxchange,
@@ -101,6 +103,7 @@ def fuse(input_paths,
                      dark_denoise_threshold=dark_denoise_threshold,
                      z_pad_apodise=zpadapodise,
                      loadreg=loadreg,
+                     model_list_filename=model_filename,
                      warpreg_num_iterations=warpregiter,
                      min_confidence=minconfidence,
                      max_change=maxchange,
