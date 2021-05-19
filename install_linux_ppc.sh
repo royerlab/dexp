@@ -2,7 +2,7 @@
 #conda deactivate; conda env remove --name dexp; conda create -y --name dexp python=3.8; conda activate dexp; ./install_linux.sh
 
 conda config --add channels anaconda
-conda install -y -c anaconda numpy
+conda install -y -c conda-forge numpy
 conda install -y -c anaconda scipy
 conda install -y -c anaconda numba
 conda install -y -c anaconda numcodecs
@@ -22,6 +22,7 @@ conda install -y -c anaconda cairocffi
 conda install -y -c anaconda PyYAML
 conda install -y -c anaconda colorcet
 conda install -y -c conda-forge python-blosc
+conda install -y -c conda-forge qtpy
 
 source /apps/GCC-6.5.0/setup.GCC-6.5.0
 pip install cupy==9.0.0b3 --no-cache-dir
