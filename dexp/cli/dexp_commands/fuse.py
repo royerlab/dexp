@@ -36,6 +36,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--minconfidence', '-mc', type=float, default=0.3, help='Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.', show_default=True)  #
 @click.option('--maxchange', '-md', type=float, default=16, help='Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.', show_default=True)  #
 @click.option('--regedgefilter', '-ref', is_flag=True, help='Use this flag to apply an edge filter to help registration.', show_default=True)  #
+@click.option('--maxproj/--no-maxproj', '-mp/-nmp', type=bool, default=True, help='Registers using only the maximum intensity projection from each stack.', show_default=True)
 @click.option('--hugedataset', '-hd', is_flag=True, help='Use this flag to indicate that the the dataset is _huge_ and that memory allocation should be optimised at the detriment of processing speed.', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
@@ -65,6 +66,7 @@ def fuse(input_paths,
          minconfidence,
          maxchange,
          regedgefilter,
+         maxproj,
          hugedataset,
          workers,
          workersbackend,
@@ -108,6 +110,7 @@ def fuse(input_paths,
                      min_confidence=minconfidence,
                      max_change=maxchange,
                      registration_edge_filter=regedgefilter,
+                     maxproj=maxproj,
                      huge_dataset=hugedataset,
                      workers=workers,
                      workersbackend=workersbackend,

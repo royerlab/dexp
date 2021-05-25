@@ -1,379 +1,188 @@
-import gc
-from typing import Sequence
+from typing import List, Tuple, Optional
 
 import numpy
-from arbol import asection, section, aprint
+import pandas as pd
+from arbol import asection, aprint
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.equalise.equalise_intensity import equalise_intensity
 from dexp.processing.filters.butterworth_filter import butterworth_filter
 from dexp.processing.fusion.dct_fusion import fuse_dct_nd
 from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
-from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
+from dexp.processing.registration.model import RegistrationModel
 from dexp.processing.registration.translation_nd import register_translation_nd
 from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
-
-
-@section("SimView 2C2L fusion")
-def simview_fuse_2C2L(C0L0, C0L1, C1L0, C1L1,
-                      equalise: bool = True,
-                      equalisation_ratios: Sequence[float] = (None, None, None),
-                      zero_level: float = 120,
-                      clip_too_high: int = 1024,
-                      fusion='tg',
-                      fusion_bias_exponent: int = 2,
-                      fusion_bias_strength_i: float = 0.5,
-                      fusion_bias_strength_d: float = 0.02,
-                      registration_mode: str = 'projection',
-                      registration_edge_filter: bool = False,
-                      registration_crop_factor_along_z: float = 0.3,
-                      registration_force_model: bool = False,
-                      registration_model: PairwiseRegistrationModel = None,
-                      registration_min_confidence: float = 0.5,
-                      registration_max_change: int = 16,
-                      dehaze_before_fusion: bool = True,
-                      dehaze_size: int = 32,
-                      dehaze_correct_max_level: bool = True,
-                      dark_denoise_threshold: int = 0,
-                      dark_denoise_size: int = 9,
-                      butterworth_filter_cutoff: float = 1,
-                      flip_camera1: bool = True,
-                      huge_dataset_mode: bool = False,
-                      internal_dtype=numpy.float16):
-    """
-
-    Parameters
-    ----------
-    C0L0 : Image for Camera 0 lightsheet 0
-    C0L1 : Image for Camera 0 lightsheet 1
-    C1L0 : Image for Camera 1 lightsheet 0
-    C1L1 : Image for Camera 1 lightsheet 1
-
-    equalise : Equalise intensity of views before fusion, or not.
-
-    equalisation_ratios: If provided, these ratios are used instead of calculating equalisation values based on the images.
-    When fusingh the four images: C0L0, C0L1, C1L0, C1L1, there are three equalisation ratios: (r0, r1, rc),
-    following the following definitions: C0L0 ~= r0 * C0L1, C1L0 ~= r1 * C1L1, and  C0lx ~= rc * C1Lx.
-
-    zero_level : Zero level: that's the minimal detector pixel value floor to substract,
-    typically for sCMOS cameras the floor is at around 100 (this is to avoid negative values
-    due to electronic noise!). Substracting a bit more than that is a good idea to clear out noise
-    in the background --  hence the default of 120.
-
-    clip_too_high : clips very high intensities, to avoid loss of precision when converting an internal format such as float16
-
-    fusion : Fusion mode, can be 'tg', 'dct', 'dft'
-
-    fusion_bias_exponent : Exponent for fusion bias
-
-    fusion_bias_strength_i, fusion_bias_strength_d : Strength of fusion bias for fusing views of different _i_llumination, and of different _d_etections. Set to zero to deactivate
-
-    registration_mode : Registration mode, can be: 'projection' or 'full'.
-    Projection mode is faster but might have occasionally  issues for certain samples. Full mode is slower and is only recomended as a last resort.
-
-    registration_edge_filter : apply edge filter to help registration
-
-    registration_crop_factor_along_z : How much to center-crop along z to estimate registration parameters between the two fused camera views. A value of 0.3 means cropping by 30% on both ends.
-
-    registration_force_model : Forces the use of the provided model (see below)
-
-    registration_model : Suggested registration model to use the two camera views (C0Lx and C1Lx) -- typically from a previous time-point or another wavelength.
-    Used only if its confidence score is higher than that of the computed registration parameters.
-
-    registration_min_confidence : Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.
-
-    registration_max_displacement : Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.
-
-    dehaze_before_fusion : Whether to dehaze the views before fusion or to dehaze the fully fused and registered final image.
-
-    dehaze_size : After all fusion and registration, the final image is dehazed to remove
-    large-scale background light caused by scattered illumination and out-of-focus light.
-    This parameter controls the scale of the low-pass filter used.
-
-    dehaze_correct_max_level : Should the dehazing correct the reduced local max intensity induced by removing the background?
-
-    dark_denoise_threshold : After all fusion and registration, the final image is processed
-    to remove any remaining noise in the dark background region (= hurts compression!).
-
-    dark_denoise_size : Controls the scale over which pixels must be below the threshold to
-    be categorised as 'dark background'.
-
-    butterworth_filter_cutoff : At the very end, butterworth_filtering may be applied to
-    smooth out spurious high frequencies in the final image. A value of 1 means no filtering,
-    a value of e.g. 0.5 means cutting off the top 50% higher frequencies, and keeping all
-    frequencies below without any change (that's the point of Butterworth filtering).
-    WARNING: Butterworth filtering is currently very slow...
-
-    huge_dataset_mode: optimises memory allocation at the detriment of processing speed to tackle really huge datasets.
-
-    internal_dtype : internal dtype
-
-
-    Returns
-    -------
-    Fully registered, fused, dehazed 3D image
-
-    """
-    xp = Backend.get_xp_module()
-
-    if C0L0.dtype != C0L1.dtype or C0L0.dtype != C1L0.dtype or C0L0.dtype != C1L1.dtype:
-        raise ValueError("The four views must have same dtype!")
-
-    if C0L0.shape != C0L1.shape or C0L0.shape != C1L0.shape or C0L0.shape != C1L1.shape:
-        raise ValueError("The four views must have same shapes!")
-
-    if type(Backend.current()) is NumpyBackend:
-        internal_dtype = numpy.float32
-
-    original_dtype = C0L0.dtype
-
-    with asection(f"Moving C0L0 and C0L1 to backend storage and converting to {internal_dtype}..."):
-        C0L0 = Backend.to_backend(C0L0, dtype=internal_dtype, force_copy=False)
-        C0L1 = Backend.to_backend(C0L1, dtype=internal_dtype, force_copy=False)
-        Backend.current().clear_memory_pool()
-
-    if clip_too_high > 0:
-        with asection(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
-            C0L0 = xp.clip(C0L0, a_min=0, a_max=clip_too_high, out=C0L0)
-            C0L1 = xp.clip(C0L1, a_min=0, a_max=clip_too_high, out=C0L1)
-            Backend.current().clear_memory_pool()
-
-    if equalise:
-        with asection(f"Equalise intensity of C0L0 relative to C0L1 ..."):
-            C0L0, C0L1, ratio0 = equalise_intensity(C0L0, C0L1,
-                                                    zero_level=zero_level,
-                                                    correction_ratio=equalisation_ratios[0],
-                                                    copy=False)
-            aprint(f"Equalisation ratio: {ratio0}")
-            Backend.current().clear_memory_pool()
-
-    if dehaze_size > 0 and dehaze_before_fusion:
-        with asection(f"Dehaze C0L0 and C0L1 ..."):
-            C0L0 = dehaze(C0L0.copy(),
-                          size=dehaze_size,
-                          minimal_zero_level=0,
-                          correct_max_level=True)
-            C0L1 = dehaze(C0L1.copy(),
-                          size=dehaze_size,
-                          minimal_zero_level=0,
-                          correct_max_level=True)
-
-            # from napari import gui_qt, Viewer
-            # with gui_qt():
-            #     def _c(array):
-            #         return Backend.to_numpy(array)
-            #
-            #     viewer = Viewer()
-            #     viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000))
-            #     viewer.add_image(_c(C0L0_dh), name='C0L0_dh', contrast_limits=(0, 1000))
-            #     viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000))
-            #     viewer.add_image(_c(C0L1_dh), name='C0L1_dh', contrast_limits=(0, 1000))
-            #
-            # C0L0 = C0L0_dh
-            # C0L1 = C0L1_dh
-            Backend.current().clear_memory_pool()
-
-    with asection(f"Fuse illumination views C0L0 and C0L1..."):
-        C0lx = fuse_illumination_views(C0L0, C0L1,
-                                       mode=fusion,
-                                       bias_exponent=fusion_bias_exponent,
-                                       bias_strength=fusion_bias_strength_i)
-
-        # from napari import gui_qt, Viewer
-        # with gui_qt():
-        #     def _c(array):
-        #         return Backend.to_numpy(array)
-        #
-        #     viewer = Viewer()
-        #     viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000))
-        #     viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000))
-        #     viewer.add_image(_c(C0lx), name='C0lx', contrast_limits=(0, 1000))
-
-        del C0L0
-        del C0L1
-        Backend.current().clear_memory_pool()
-
-    with asection(f"Moving C1L0 and C1L1 to backend storage and converting to {internal_dtype}..."):
-        C1L0 = Backend.to_backend(C1L0, dtype=internal_dtype, force_copy=False)
-        if flip_camera1:
-            C1L0 = xp.flip(C1L0, -1)
-        C1L1 = Backend.to_backend(C1L1, dtype=internal_dtype, force_copy=False)
-        if flip_camera1:
-            C1L1 = xp.flip(C1L1, -1)
-        Backend.current().clear_memory_pool()
-
-    if clip_too_high > 0:
-        with asection(f"Clipping intensities above {clip_too_high} for C0L0 & C0L1"):
-            C1L0 = xp.clip(C1L0, a_min=0, a_max=clip_too_high, out=C1L0)
-            C1L1 = xp.clip(C1L1, a_min=0, a_max=clip_too_high, out=C1L1)
-            Backend.current().clear_memory_pool()
-
-    if equalise:
-        with asection(f"Equalise intensity of C1L0 relative to C1L1 ..."):
-            C1L0, C1L1, ratio1 = equalise_intensity(C1L0, C1L1,
-                                                    zero_level=zero_level,
-                                                    correction_ratio=equalisation_ratios[1],
-                                                    copy=False)
-            Backend.current().clear_memory_pool()
-            aprint(f"Equalisation ratio: {ratio1}")
-
-    if dehaze_size > 0 and dehaze_before_fusion:
-        with asection(f"Dehaze C1L0 and C1L1 ..."):
-            C1L0 = dehaze(C1L0,
-                          size=dehaze_size,
-                          minimal_zero_level=0,
-                          correct_max_level=dehaze_correct_max_level)
-            C1L1 = dehaze(C1L1,
-                          size=dehaze_size,
-                          minimal_zero_level=0,
-                          correct_max_level=dehaze_correct_max_level)
-            Backend.current().clear_memory_pool()
-
-    with asection(f"Fuse illumination views C1L0 and C1L1..."):
-        C1Lx = fuse_illumination_views(C1L0, C1L1,
-                                       mode=fusion,
-                                       bias_exponent=fusion_bias_exponent,
-                                       bias_strength=fusion_bias_strength_i)
-
-        # from napari import gui_qt, Viewer
-        # with gui_qt():
-        #     def _c(array):
-        #         return Backend.to_numpy(array)
-        #
-        #     viewer = Viewer()
-        #     viewer.add_image(_c(C1L0), name='C1L0', contrast_limits=(0, 1000))
-        #     viewer.add_image(_c(C1L1), name='C1L1', contrast_limits=(0, 1000))
-        #     viewer.add_image(_c(C1Lx), name='C1Lx', contrast_limits=(0, 1000))
-
-        del C1L0
-        del C1L1
-        Backend.current().clear_memory_pool()
-
-    if equalise:
-        with asection(f"Equalise intensity of C0lx relative to C1Lx ..."):
-            C0lx, C1Lx, ratioc = equalise_intensity(C0lx, C1Lx,
-                                                    zero_level=0,
-                                                    correction_ratio=equalisation_ratios[2],
-                                                    copy=False)
-            aprint(f"Equalisation ratio: {ratioc}")
-            Backend.current().clear_memory_pool()
-
-    with asection(f"Register_stacks C0lx and C1Lx ..."):
-        C0lx, C1Lx, registration_model = register_detection_views(C0lx, C1Lx,
-                                                                  mode=registration_mode,
-                                                                  edge_filter=registration_edge_filter,
-                                                                  provided_model=registration_model,
-                                                                  force_model=registration_force_model,
-                                                                  min_confidence=registration_min_confidence,
-                                                                  max_change=registration_max_change,
-                                                                  crop_factor_along_z=registration_crop_factor_along_z)
-        Backend.current().clear_memory_pool()
-
-    with asection(f"Fuse detection views C0lx and C1Lx..."):
-        CxLx = fuse_detection_views(C0lx, C1Lx,
-                                    mode=fusion,
-                                    bias_exponent=fusion_bias_exponent,
-                                    bias_strength=fusion_bias_strength_d)
-        del C0lx
-        del C1Lx
-        Backend.current().clear_memory_pool()
-
-    if dehaze_size > 0 and not dehaze_before_fusion:
-        with asection(f"Dehaze CxLx ..."):
-            CxLx = dehaze(CxLx,
-                          size=dehaze_size,
-                          minimal_zero_level=0,
-                          correct_max_level=dehaze_correct_max_level)
-            Backend.current().clear_memory_pool()
-
-    if dark_denoise_threshold > 0:
-        with asection(f"Denoise dark regions of CxLx..."):
-            CxLx = clean_dark_regions(CxLx,
-                                      size=dark_denoise_size,
-                                      threshold=dark_denoise_threshold)
-            Backend.current().clear_memory_pool()
-
-    # from napari import gui_qt, Viewer
-    # with gui_qt():
-    #     def _c(array):
-    #         return backend.to_numpy(array)
-    #     viewer = Viewer()
-    #     viewer.add_image(_c(CxLx), name='CxLx', contrast_limits=(0, 1000))
-    #     viewer.add_image(_c(CxLx), name='CxLx_dehazed', contrast_limits=(0, 1000))
-    #     #viewer.add_image(_c(CxLx_denoised), name='CxLx_denoised', contrast_limits=(0, 1000))
-
-    if 0 < butterworth_filter_cutoff < 1:
-        with asection(f"Filter output using a Butterworth filter"):
-            cutoffs = (butterworth_filter_cutoff,) * CxLx.ndim
-            CxLx = butterworth_filter(CxLx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
-            Backend.current().clear_memory_pool()
-
-    with asection(f"Converting back to original dtype..."):
-        if original_dtype is numpy.uint16:
-            CxLx = xp.clip(CxLx, 0, None, out=CxLx)
-        CxLx = CxLx.astype(dtype=original_dtype, copy=False)
-        Backend.current().clear_memory_pool()
-
-    gc.collect()
-    Backend.current().clear_memory_pool()
-
-    # equalisation ratios found:
-    if None in equalisation_ratios:
-        equalisation_ratios = (ratio0, ratio1, ratioc)
-
-    return CxLx, registration_model, equalisation_ratios
-
-
-def fuse_illumination_views(CxL0, CxL1,
-                            mode: str = 'tg',
-                            smoothing: int = 12,
-                            bias_exponent: int = 2,
-                            bias_strength: float = 0.1):
-    if mode == 'tg':
-        fused = fuse_tg_nd(CxL0, CxL1, downscale=2, tenengrad_smoothing=smoothing, bias_axis=2, bias_exponent=bias_exponent, bias_strength=bias_strength)
-    elif mode == 'dct':
-        fused = fuse_dct_nd(CxL0, CxL1)
-    elif mode == 'dft':
-        fused = fuse_dft_nd(CxL0, CxL1)
-
-    return fused
-
-
-def fuse_detection_views(C0Lx, C1Lx,
-                         mode: str = 'tg',
-                         smoothing: int = 12,
-                         bias_exponent: int = 2,
-                         bias_strength: float = 0.1):
-    if mode == 'tg':
-        fused = fuse_tg_nd(C0Lx, C1Lx, downscale=2, tenengrad_smoothing=smoothing, bias_axis=0, bias_exponent=bias_exponent, bias_strength=bias_strength)
-    elif mode == 'dct':
-        fused = fuse_dct_nd(C0Lx, C1Lx)
-    elif mode == 'dft':
-        fused = fuse_dft_nd(C0Lx, C1Lx)
-    return fused
-
-
-def register_detection_views(C0Lx, C1Lx,
-                             mode='projection',
-                             edge_filter=False,
-                             integral=True,
-                             provided_model=None,
-                             force_model=False,
-                             min_confidence=0.5,
-                             max_change=16,
-                             crop_factor_along_z=0.3):
-    C0Lx = Backend.to_backend(C0Lx)
-    C1Lx = Backend.to_backend(C1Lx)
-
-    aprint(f"Provided registration model: {provided_model}, overall confidence: {0 if provided_model is None else provided_model.overall_confidence()}")
-
-    if force_model and provided_model is not None:
-        model = provided_model
-    else:
+from dexp.utils import xpArray
+from dexp.processing.multiview_lightsheet.fusion.basefusion import BaseFusion
+
+
+class SimViewFusion(BaseFusion):
+    def __init__(self,
+                 registration_model: Optional[RegistrationModel],
+                 equalise: bool,
+                 equalisation_ratios: List[Optional[float]],
+                 zero_level: float,
+                 clip_too_high: int,
+                 fusion: str,
+                 fusion_bias_exponent: int,
+                 fusion_bias_strength_i: float,
+                 fusion_bias_strength_d: float,
+                 dehaze_before_fusion: bool,
+                 dehaze_size: int,
+                 dehaze_correct_max_level: bool,
+                 dark_denoise_threshold: int,
+                 dark_denoise_size: int,
+                 butterworth_filter_cutoff: float,
+                 flip_camera1: bool,
+                 internal_dtype: numpy.dtype = numpy.float16,
+                 ):
+        super().__init__(registration_model, equalise, equalisation_ratios, zero_level, clip_too_high, fusion,
+                         dehaze_before_fusion, dehaze_size, dehaze_correct_max_level,
+                         dark_denoise_threshold, dark_denoise_size, butterworth_filter_cutoff, internal_dtype)
+
+        self._fusion_bias_exponent = fusion_bias_exponent
+        self._fusion_bias_strength_i = fusion_bias_strength_i
+        self._fusion_bias_strength_d = fusion_bias_strength_d
+        self._flip_camera1 = flip_camera1
+
+    def _preprocess_and_fuse_illumination_views(self, view0: xpArray, view1: xpArray,
+                                                flip: bool, camera: int) -> xpArray:
+        xp = Backend.get_xp_module()
+
+        with asection(f"Moving C{camera}L0 and C{camera}L1 to backend storage and converting to {self._internal_dtype} ..."):
+            view0 = Backend.to_backend(view0, dtype=self._internal_dtype, force_copy=False)
+            view1 = Backend.to_backend(view1, dtype=self._internal_dtype, force_copy=False)
+
+        if self._clip_too_high > 0:
+            with asection(f"Clipping intensities above {self._clip_too_high} for C{camera}L0 & C{camera}L1"):
+                xp.clip(view0, a_min=0, a_max=self._clip_too_high, out=view0)
+                xp.clip(view1, a_min=0, a_max=self._clip_too_high, out=view1)
+
+        if flip:
+            view0 = xp.flip(view0, -1).copy()
+            view1 = xp.flip(view1, -1).copy()
+
+        if self._equalise:
+            with asection(f"Equalise intensity of C{camera}L0 relative to C{camera}L1 ..."):
+                view0, view1, ratio = equalise_intensity(view0, view1,
+                                                         zero_level=self._zero_level,
+                                                         correction_ratio=self._equalisation_ratios[camera],
+                                                         copy=False)
+                aprint(f"Equalisation ratio: {ratio}")
+                self._equalisation_ratios[camera] = ratio
+
+        if self._dehaze_size > 0 and self._dehaze_before_fusion:
+            with asection(f"Dehaze C{camera}L0 and C{camera}L1 ..."):
+                view0 = dehaze(view0,
+                               size=self._dehaze_size,
+                               minimal_zero_level=0,
+                               correct_max_level=True)
+                view1 = dehaze(view1,
+                               size=self._dehaze_size,
+                               minimal_zero_level=0,
+                               correct_max_level=True)
+
+        with asection(f"Fuse illumination views C{camera}L0 and C{camera}L1..."):
+            fused_view = self._fuse_illumination_views(view0, view1)
+
+        return fused_view
+
+    def preprocess(self, C0L0: xpArray, C0L1: xpArray, C1L0: xpArray, C1L1: xpArray) -> Tuple[xpArray, xpArray]:
+        self._match_input(C0L0, C0L1)
+        self._match_input(C0L0, C1L0)
+        self._match_input(C0L0, C1L1)
+
+        C0Lx = self._preprocess_and_fuse_illumination_views(C0L0, C0L1, flip=False, camera=0)
+        C1Lx = self._preprocess_and_fuse_illumination_views(C1L0, C1L1, flip=self._flip_camera1, camera=1)
+
+        if self._equalise:
+            with asection(f"Equalise intensity of C0Lx relative to C1Lx ..."):
+                C0Lx, C1Lx, ratio = equalise_intensity(C0Lx, C1Lx,
+                                                       zero_level=0,
+                                                       correction_ratio=self._equalisation_ratios[2],
+                                                       copy=False)
+                aprint(f"Equalisation ratio: {ratio}")
+                self._equalisation_ratios[2] = ratio
+
+        return C0Lx, C1Lx
+
+    def postprocess(self, CxLx: xpArray) -> xpArray:
+        if self._dehaze_size > 0 and not self._dehaze_before_fusion:
+            with asection(f"Dehaze CxLx ..."):
+                CxLx = dehaze(CxLx,
+                              size=self._dehaze_size,
+                              minimal_zero_level=0,
+                              correct_max_level=self._dehaze_correct_max_level)
+
+        if self._dark_denoise_threshold > 0:
+            with asection(f"Denoise dark regions of CxLx..."):
+                CxLx = clean_dark_regions(CxLx,
+                                          size=self._dark_denoise_size,
+                                          threshold=self._dark_denoise_threshold)
+
+        if 0 < self._butterworth_filter_cutoff < 1:
+            with asection(f"Filter output using a Butterworth filter"):
+                cutoffs = (self._butterworth_filter_cutoff,) * CxLx.ndim
+                CxLx = butterworth_filter(CxLx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
+
+        return CxLx
+
+    def fuse(self, C0Lx: xpArray, C1Lx: xpArray) -> xpArray:
+        if self._registration_model is None:
+            raise RuntimeError('Registration must be computed beforehand.')
+
+        with asection(f"Register_stacks C0Lx and C1Lx ..."):
+            C0Lx, C1Lx = self._registration_model.apply_pair(C0Lx, C1Lx)
+
+        with asection(f"Fuse detection views C0lx and C1Lx..."):
+            CxLx = self._fuse_detection_views(C0Lx, C1Lx)
+
+        return CxLx
+
+    def __call__(self, C0L0: xpArray, C0L1: xpArray, C1L0: xpArray, C1L1: xpArray) -> xpArray:
+        original_dtype = C0L0.dtype
+        xp = Backend.current().get_xp_module()
+
+        C0Lx, C1Lx = self.preprocess(C0L0, C0L1, C1L0, C1L1)
+        CxLx = self.fuse(C0Lx, C1Lx)
+        CxLx = self.postprocess(CxLx)
+
+        with asection(f"Converting back to original dtype..."):
+            if original_dtype is numpy.uint16:
+                CxLx = xp.clip(CxLx, 0, None, out=CxLx)
+            CxLx = CxLx.astype(dtype=original_dtype, copy=False)
+
+        return CxLx
+
+    @staticmethod
+    def _fuse_views_generic(CxL0: xpArray, CxL1: xpArray, bias_axis: int, mode: str, smoothing: int,
+                            bias_exponent: int, bias_strength: float, downscale: int = 2) -> xpArray:
+        if mode == 'tg':
+            fused = fuse_tg_nd(CxL0, CxL1, downscale=downscale, tenengrad_smoothing=smoothing, bias_axis=bias_axis,
+                               bias_exponent=bias_exponent, bias_strength=bias_strength)
+        elif mode == 'dct':
+            fused = fuse_dct_nd(CxL0, CxL1)
+        elif mode == 'dft':
+            fused = fuse_dft_nd(CxL0, CxL1)
+        else:
+            raise NotImplementedError
+        return fused
+
+    def _fuse_illumination_views(self, CxL0: xpArray, CxL1: xpArray, smoothing: int = 12) -> xpArray:
+        return self._fuse_views_generic(CxL0, CxL1, 2, self._fusion, smoothing,
+                                        self._fusion_bias_exponent, self._fusion_bias_strength_i)
+
+    def _fuse_detection_views(self, C0Lx: xpArray, C1Lx: xpArray, smoothing: int = 12) -> xpArray:
+        return self._fuse_views_generic(C0Lx, C1Lx, 0, self._fusion, smoothing,
+                                        self._fusion_bias_exponent, self._fusion_bias_strength_d)
+
+    def compute_registration(self, C0Lx: xpArray, C1Lx: xpArray, mode: str, edge_filter: bool,
+                             crop_factor_along_z: float) -> None:
+        C0Lx = Backend.to_backend(C0Lx)
+        C1Lx = Backend.to_backend(C1Lx)
 
         depth = C0Lx.shape[0]
         crop = int(depth * crop_factor_along_z)
@@ -381,22 +190,27 @@ def register_detection_views(C0Lx, C1Lx,
         C1Lx_c = C1Lx[crop:-crop]
 
         if mode == 'projection':
-            new_model = register_translation_proj_nd(C0Lx_c, C1Lx_c,
-                                                     edge_filter=edge_filter)
+            self._registration_model = register_translation_proj_nd(C0Lx_c, C1Lx_c, edge_filter=edge_filter)
         elif mode == 'full':
-            new_model = register_translation_nd(C0Lx_c, C1Lx_c,
-                                                edge_filter=edge_filter)
-
-        new_model.integral = integral
-
-        aprint(f"Computed registration model: {new_model}, overall confidence: {new_model.overall_confidence()}")
-
-        if provided_model is None or (new_model.overall_confidence() >= min_confidence or new_model.change_relative_to(provided_model) <= max_change):
-            model = new_model
+            self._registration_model = register_translation_nd(C0Lx_c, C1Lx_c, edge_filter=edge_filter)
         else:
-            model = provided_model
+            raise NotImplementedError
 
-    aprint(f"Applying registration model: {model}, overall confidence: {model.overall_confidence()}")
-    C0Lx_reg, C1Lx_reg = model.apply_pair(C0Lx, C1Lx)
+        aprint(f"Applying registration model: {self._registration_model},"
+               f"overall confidence: {self._registration_model.overall_confidence()}")
 
-    return C0Lx_reg, C1Lx_reg, model
+
+def summary_from_simview_models(models: List[SimViewFusion]) -> pd.DataFrame:
+    df = []
+    for m in models:
+        current = {}
+        for i, eq_ratio in enumerate(m._equalisation_ratios):
+            if eq_ratio is not None:
+                current[f'eq_ratio_{i}'] = eq_ratio
+
+        if m.registration_model is not None:
+            for i, v in enumerate(m.registration_model.shift_vector):
+                current[f'shift_{i}'] = v
+            current[f'confidence'] = m.registration_model.overall_confidence()
+
+    return pd.DataFrame(df)

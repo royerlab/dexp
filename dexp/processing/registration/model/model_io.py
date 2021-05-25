@@ -1,5 +1,5 @@
 import json
-from typing import Sequence
+from typing import Sequence, Union
 
 from arbol import asection
 
@@ -10,7 +10,7 @@ from dexp.processing.registration.model.translation_registration_model import Tr
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
 
 
-def from_json(json_str: str):
+def from_json(json_str: str) -> Union[PairwiseRegistrationModel, SequenceRegistrationModel]:
     xp = Backend.get_xp_module()
     parsed_model = json.loads(json_str)
     if parsed_model['type'] == 'translation':
@@ -25,10 +25,14 @@ def from_json(json_str: str):
         model_list = list(from_json(model_json) for model_json in model_list_json)
         model = SequenceRegistrationModel(model_list=model_list)
 
+    else:
+        raise NotImplementedError
+
     return model
 
 
-def model_list_from_file(file_path: str):
+def model_list_from_file(file_path: str) \
+        -> Sequence[Union[PairwiseRegistrationModel, SequenceRegistrationModel]]:
     with open(file_path, "r") as models_file:
         lines = models_file.readlines()
 
