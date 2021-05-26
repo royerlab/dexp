@@ -86,15 +86,6 @@ def dataset_fuse(dataset,
         else:
             models = [None] * len(time_points)
 
-    # hold equalisation ratios:
-    # equalisation_ratios_reference: List[List[float]] = [[]]
-    # if microscope == 'simview':
-    #     equalisation_ratios_reference[0] = [None, None, None]
-    # elif microscope == 'mvsols':
-    #     equalisation_ratios_reference[0] = [None, ]
-    # else:
-    #     raise NotImplementedError
-
     print('creating dataset', output_shape)
     if 'fused' not in dest_dataset.channels():
         try:
@@ -108,27 +99,22 @@ def dataset_fuse(dataset,
     print('done')
 
     @dask.delayed
-    def process(i):
+    def process(i, params):
+        equalisation_ratios_reference, model = params
         tp = time_points[i]
         try:
             with asection(f"Loading channels {channels} for time point {i}/{len(time_points)}"):
                 views_tp = tuple(np.asarray(view[tp][slicing]) for view in views)
 
             with BestBackend(exclusive=True, enable_unified_memory=True):
-                model = models[i]
-
-                # If we don't have a model for that timepoint we load one from a previous timepoint
-
-                # FIXME
-                # if model is None and i >= workers:
-                #     aprint(f"we don't have a registration model for timepoint {i}/{len(time_points)}"
-                #            f"so we load one from a previous timepoint: {i - workers}")
-                #     model = models[i - workers]
+                if models[i] is not None:
+                    model = models[i]
+                # otherwise it could be a None model or from the first iteration if equalisation mode was 'first'
 
                 if microscope == 'simview':
                     fuse_obj = SimViewFusion(registration_model=model,
                                              equalise=equalise,
-                                             equalisation_ratios=[None, None, None],  # FIXME equalisation_ratios_reference[0],
+                                             equalisation_ratios=equalisation_ratios_reference,
                                              zero_level=zero_level,
                                              clip_too_high=clip_too_high,
                                              fusion=fusion,
@@ -164,7 +150,7 @@ def dataset_fuse(dataset,
                                                                                registration_max_change=max_change,
                                                                                registration_edge_filter=registration_edge_filter,
                                                                                equalise=equalise,
-                                                                               equalisation_ratios=None,  # FIXME equalisation_ratios_reference[0],
+                                                                               equalisation_ratios=equalisation_ratios_reference[0],
                                                                                zero_level=zero_level,
                                                                                clip_too_high=clip_too_high,
                                                                                fusion=fusion,
@@ -189,15 +175,6 @@ def dataset_fuse(dataset,
                 Backend.current().clear_memory_pool()
 
                 aprint(f"Last equalisation ratios: {new_equalisation_ratios}")
-                # FIXME
-                # if equalise_mode == 'first' and i == 0:
-                #     aprint(f"Equalisation mode: 'first' -> saving equalisation ratios: {new_equalisation_ratios} for subsequent time points")
-                #     if isinstance(new_equalisation_ratios[0], (np.ndarray, cupy.ndarray)) or None not in new_equalisation_ratios:
-                #         equalisation_ratios_reference[0] = list(float(Backend.to_numpy(ratio)) for ratio in new_equalisation_ratios)
-                # elif equalise_mode == 'all':
-                #     aprint(f"Equalisation mode: 'all' -> recomputing equalisation ratios for each time point.")
-                #     # No need to save, we need to recompute the ratios for each time point.
-                #     pass
 
             with asection(f"Saving fused stack for time point {i}, shape:{tp_array.shape}, dtype:{tp_array.dtype}"):
                 dest_dataset.write_stack(channel='fused',
@@ -215,22 +192,29 @@ def dataset_fuse(dataset,
             if stop_at_exception:
                 raise error
 
-        return model
-
-    # if workers == -1:
-    #     workers = len(devices)
-    # aprint(f"Number of workers: {workers}")
+        return new_equalisation_ratios, model
 
     cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
     client = Client(cluster)
     aprint('Dask Client', client)
 
-    print(time_points)
-    lazy_computations = []
-    for i in range(len(time_points)):
-        lazy_computations.append(process(i))
+    if microscope == 'simview':
+        params = ([None, None, None], None)
+    elif microscope == 'mvsols':
+        params = ([None], None)
+    else:
+        raise NotImplementedError
 
-    models = dask.compute(*lazy_computations)
+    # if equalise mode equals 'first' it creates a dependency to the first computation
+    lazy_computations = []
+    if equalise_mode == 'first':
+        params = process(0, params)
+        lazy_computations.append(params)
+
+    for i in range(1 if equalise_mode == 'first' else 0, len(time_points)):
+        lazy_computations.append(process(i, params))
+
+    models = [model for _, model in dask.compute(*lazy_computations)]
 
     if not loadreg:
         model_list_to_file(model_list_filename, models)
