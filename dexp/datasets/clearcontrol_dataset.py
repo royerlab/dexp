@@ -15,9 +15,9 @@ from numpy import uint16, frombuffer
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.io.compress_array import decompress_array
-from dexp.utils.config_dask import config_dask
+# from dexp.utils.config_dask import config_dask
 
-config_dask()
+# config_dask()
 
 
 class CCDataset(BaseDataset):

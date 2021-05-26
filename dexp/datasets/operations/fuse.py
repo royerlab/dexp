@@ -1,11 +1,14 @@
 import cupy
 import numpy as np
-from typing import Sequence, List
+from typing import List
 
 from arbol.arbol import aprint
 from arbol.arbol import asection
-from joblib import Parallel, delayed
 from zarr.errors import ContainsArrayError, ContainsGroupError
+
+import dask
+from dask.distributed import Client
+from dask_cuda import LocalCUDACluster
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
@@ -50,10 +53,11 @@ def dataset_fuse(dataset,
 
     views = tuple(dataset.get_array(channel, per_z_slice=False) for channel in channels)
 
-    with asection(f"views:"):
+    with asection(f"Views:"):
         for view, channel in zip(views, channels):
             aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 
+    output_shape = views[0][slicing].shape
     total_time_points = views[0].shape[0]
     time_points = list(range(total_time_points))
     if slicing is not None:
@@ -83,33 +87,48 @@ def dataset_fuse(dataset,
             models = [None] * len(time_points)
 
     # hold equalisation ratios:
-    equalisation_ratios_reference: List[List[float]] = [[]]
-    if microscope == 'simview':
-        equalisation_ratios_reference[0] = [None, None, None]
-    elif microscope == 'mvsols':
-        equalisation_ratios_reference[0] = [None, ]
-    else:
-        raise NotImplementedError
+    # equalisation_ratios_reference: List[List[float]] = [[]]
+    # if microscope == 'simview':
+    #     equalisation_ratios_reference[0] = [None, None, None]
+    # elif microscope == 'mvsols':
+    #     equalisation_ratios_reference[0] = [None, ]
+    # else:
+    #     raise NotImplementedError
 
-    def process(i, device, workers):
+    print('creating dataset', output_shape)
+    if 'fused' not in dest_dataset.channels():
+        try:
+            dest_dataset.add_channel('fused',
+                                     shape=output_shape,
+                                     dtype=dtype,
+                                     codec=compression,
+                                     clevel=compression_level)
+        except (ContainsArrayError, ContainsGroupError):
+                aprint(f"Other thread/process created channel before... ")
+    print('done')
+
+    @dask.delayed
+    def process(i):
         tp = time_points[i]
         try:
             with asection(f"Loading channels {channels} for time point {i}/{len(time_points)}"):
                 views_tp = tuple(np.asarray(view[tp][slicing]) for view in views)
 
-            with BestBackend(device, exclusive=True, enable_unified_memory=True):
+            with BestBackend(exclusive=True, enable_unified_memory=True):
                 model = models[i]
 
                 # If we don't have a model for that timepoint we load one from a previous timepoint
-                if model is None and i >= workers:
-                    aprint(f"we don't have a registration model for timepoint {i}/{len(time_points)}"
-                           f"so we load one from a previous timepoint: {i - workers}")
-                    model = models[i - workers]
+
+                # FIXME
+                # if model is None and i >= workers:
+                #     aprint(f"we don't have a registration model for timepoint {i}/{len(time_points)}"
+                #            f"so we load one from a previous timepoint: {i - workers}")
+                #     model = models[i - workers]
 
                 if microscope == 'simview':
                     fuse_obj = SimViewFusion(registration_model=model,
                                              equalise=equalise,
-                                             equalisation_ratios=equalisation_ratios_reference[0],
+                                             equalisation_ratios=[None, None, None],  # FIXME equalisation_ratios_reference[0],
                                              zero_level=zero_level,
                                              clip_too_high=clip_too_high,
                                              fusion=fusion,
@@ -145,7 +164,7 @@ def dataset_fuse(dataset,
                                                                                registration_max_change=max_change,
                                                                                registration_edge_filter=registration_edge_filter,
                                                                                equalise=equalise,
-                                                                               equalisation_ratios=equalisation_ratios_reference[0],
+                                                                               equalisation_ratios=None,  # FIXME equalisation_ratios_reference[0],
                                                                                zero_level=zero_level,
                                                                                clip_too_high=clip_too_high,
                                                                                fusion=fusion,
@@ -159,33 +178,26 @@ def dataset_fuse(dataset,
                                                                                illumination_correction_sigma=illumination_correction_sigma,
                                                                                registration_mode='projection' if maxproj else 'full',
                                                                                huge_dataset_mode=huge_dataset)
+                else:
+                    raise NotImplementedError
 
                 with asection(f"Moving array from backend to numpy."):
                     tp_array = Backend.to_numpy(tp_array, dtype=dtype, force_copy=False)
 
-                models[i] = model.to_numpy()
+                model = model.to_numpy()
                 del views_tp
                 Backend.current().clear_memory_pool()
 
                 aprint(f"Last equalisation ratios: {new_equalisation_ratios}")
-                if equalise_mode == 'first' and i == 0:
-                    aprint(f"Equalisation mode: 'first' -> saving equalisation ratios: {new_equalisation_ratios} for subsequent time points")
-                    if isinstance(new_equalisation_ratios[0], (np.ndarray, cupy.ndarray)) or None not in new_equalisation_ratios:
-                        equalisation_ratios_reference[0] = list(float(Backend.to_numpy(ratio)) for ratio in new_equalisation_ratios)
-                elif equalise_mode == 'all':
-                    aprint(f"Equalisation mode: 'all' -> recomputing equalisation ratios for each time point.")
-                    # No need to save, we need to recompute the ratios for each time point.
-                    pass
-
-            if 'fused' not in dest_dataset.channels():
-                try:
-                    dest_dataset.add_channel('fused',
-                                             shape=(len(time_points), ) + tp_array.shape,
-                                             dtype=dtype,
-                                             codec=compression,
-                                             clevel=compression_level)
-                except (ContainsArrayError, ContainsGroupError):
-                    aprint(f"Other thread/process created channel before... ")
+                # FIXME
+                # if equalise_mode == 'first' and i == 0:
+                #     aprint(f"Equalisation mode: 'first' -> saving equalisation ratios: {new_equalisation_ratios} for subsequent time points")
+                #     if isinstance(new_equalisation_ratios[0], (np.ndarray, cupy.ndarray)) or None not in new_equalisation_ratios:
+                #         equalisation_ratios_reference[0] = list(float(Backend.to_numpy(ratio)) for ratio in new_equalisation_ratios)
+                # elif equalise_mode == 'all':
+                #     aprint(f"Equalisation mode: 'all' -> recomputing equalisation ratios for each time point.")
+                #     # No need to save, we need to recompute the ratios for each time point.
+                #     pass
 
             with asection(f"Saving fused stack for time point {i}, shape:{tp_array.shape}, dtype:{tp_array.dtype}"):
                 dest_dataset.write_stack(channel='fused',
@@ -203,17 +215,22 @@ def dataset_fuse(dataset,
             if stop_at_exception:
                 raise error
 
-    if workers == -1:
-        workers = len(devices)
-    aprint(f"Number of workers: {workers}")
+        return model
 
-    if workers > 1:
-        parallel = Parallel(n_jobs=workers, backend=workersbackend)
-        parallel(delayed(process)(i, devices[i % len(devices)], workers)
-                 for i in range(len(time_points)))
-    else:
-        for i in range(len(time_points)):
-            process(i, devices[0], workers)
+    # if workers == -1:
+    #     workers = len(devices)
+    # aprint(f"Number of workers: {workers}")
+
+    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
+    client = Client(cluster)
+    aprint('Dask Client', client)
+
+    print(time_points)
+    lazy_computations = []
+    for i in range(len(time_points)):
+        lazy_computations.append(process(i))
+
+    models = dask.compute(*lazy_computations)
 
     if not loadreg:
         model_list_to_file(model_list_filename, models)

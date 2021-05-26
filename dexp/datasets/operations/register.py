@@ -3,7 +3,9 @@ import numpy as np
 from arbol.arbol import aprint, asection
 from typing import List
 
-from joblib import Parallel, delayed
+import dask
+from dask.distributed import Client
+from dask_cuda import LocalCUDACluster
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
@@ -49,15 +51,14 @@ def dataset_register(dataset,
     else:
         slicing = ...
 
-    models = [None] * len(time_points)
-
-    def process(i, device, workers):
+    @dask.delayed
+    def process(i):
         tp = time_points[i]
         try:
             with asection(f"Loading channels {channel} for time point {i}/{len(time_points)}"):
                 views_tp = tuple(np.asarray(view[tp][slicing]) for view in views)
 
-            with BestBackend(device, exclusive=True, enable_unified_memory=True):
+            with BestBackend(exclusive=True, enable_unified_memory=True):
                 if microscope == 'simview':
                     fuse_obj = SimViewFusion(registration_model=None,
                                              equalise=equalise,
@@ -84,10 +85,9 @@ def dataset_register(dataset,
                                                   crop_factor_along_z=0.3)
                     del C0Lx, C1Lx
                     Backend.current().clear_memory_pool()
+                    model = fuse_obj.registration_model.to_numpy()
                 else:
                     raise NotImplementedError
-
-                models[i] = fuse_obj.registration_model.to_numpy()
 
             aprint(f"Done processing time point: {i}/{len(time_points)} .")
 
@@ -100,17 +100,17 @@ def dataset_register(dataset,
             if stop_at_exception:
                 raise error
 
-    if workers == -1:
-        workers = len(devices)
-    aprint(f"Number of workers: {workers}")
+        return model
 
-    if workers > 1:
-        parallel = Parallel(n_jobs=workers, backend=workers_backend)
-        parallel(delayed(process)(i, devices[i % len(devices)], workers)
-                 for i in range(len(time_points)))
-    else:
-        for i in range(len(time_points)):
-            process(i, devices[0], workers)
+    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
+    client = Client(cluster)
+    aprint('Dask Client', client)
+
+    lazy_computations = []
+    for i in range(len(time_points)):
+        lazy_computations.append(process(i))
+
+    models = dask.compute(*lazy_computations)
 
     mode_model = compute_median_translation(models)
     model_list_to_file(model_path, [mode_model] * total_time_points)
