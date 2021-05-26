@@ -12,7 +12,7 @@ from dexp.processing.filters.butterworth_filter import butterworth_filter
 from dexp.processing.fusion.dct_fusion import fuse_dct_nd
 from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
-from dexp.processing.multiview_lightsheet.fusion.simview import fuse_illumination_views
+from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion
 from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
 from dexp.processing.registration.translation_nd import register_translation_nd
 from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
@@ -297,10 +297,10 @@ def msols_fuse_1C2L(C0L0, C0L1,
     #     viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
 
     with asection(f"Fuse detection views C0lx and C1Lx..."):
-        C1Lx = fuse_illumination_views(C0L0, C0L1,
-                                       mode=fusion,
-                                       bias_exponent=fusion_bias_exponent,
-                                       bias_strength=fusion_bias_strength_x)
+        C1Lx = SimViewFusion._fuse_views_generic(C0L0, C0L1, bias_axis=2, mode=fusion,
+                                                 bias_exponent=fusion_bias_exponent,
+                                                 bias_strength=fusion_bias_strength_x,
+                                                 smoothing=12)
         Backend.current().clear_memory_pool()
 
     if dehaze_size > 0 and not dehaze_before_fusion:
@@ -361,6 +361,8 @@ def fuse_illumination_views(CxL0, CxL1,
         fused = fuse_dct_nd(CxL0, CxL1)
     elif mode == 'dft':
         fused = fuse_dft_nd(CxL0, CxL1)
+    else:
+        raise NotImplementedError
 
     return fused
 
