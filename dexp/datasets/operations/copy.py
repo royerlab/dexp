@@ -33,8 +33,6 @@ def dataset_copy(dataset: BaseDataset,
         with asection(f"Copying channel {channel}:"):
             array = dataset.get_array(channel)
 
-            shape = array.shape
-
             total_time_points = shape[0]
             time_points = list(range(total_time_points))
             if slicing is not None:
@@ -48,6 +46,7 @@ def dataset_copy(dataset: BaseDataset,
             else:
                 slicing = ...
 
+            shape = array[0][slicing].shape
             dtype = array.dtype
             if chunks is None:
                 chunks = ZDataset._default_chunks
