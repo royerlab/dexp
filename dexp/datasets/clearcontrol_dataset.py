@@ -13,9 +13,10 @@ from numpy import uint16
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.io.compress_array import decompress_array
-from dexp.utils.config_dask import config_dask_and_blosc
+# from dexp.utils.config_dask import config_dask_and_blosc
 
-config_dask_and_blosc()
+# config_dask_and_blosc()
+
 
 class CCDataset(BaseDataset):
 

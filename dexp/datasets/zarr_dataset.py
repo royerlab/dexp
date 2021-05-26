@@ -16,9 +16,9 @@ from zarr import open_group, convenience, CopyError, Blosc, Group
 from dexp.datasets.base_dataset import BaseDataset
 # Configure multithreading for Dask:
 from dexp.processing.backends.backend import Backend
-from dexp.utils.config_dask import config_dask_and_blosc
+# from dexp.utils.config_dask import config_dask_and_blosc
 
-config_dask_and_blosc()
+# config_dask_and_blosc()
 
 
 class ZDataset(BaseDataset):
