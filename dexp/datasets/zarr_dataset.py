@@ -3,7 +3,7 @@ import os
 import shutil
 import sys
 from multiprocessing.pool import ThreadPool
-from os.path import isfile, isdir, exists
+from os.path import isfile, isdir, exists, join
 from typing import Tuple, Sequence, Any, Union, Optional
 
 import dask
@@ -16,9 +16,9 @@ from zarr import open_group, convenience, CopyError, Blosc, Group
 from dexp.datasets.base_dataset import BaseDataset
 # Configure multithreading for Dask:
 from dexp.processing.backends.backend import Backend
-# from dexp.utils.config_dask import config_dask
+# from dexp.utils.config_dask import config_dask_and_blosc
 
-# config_dask()
+# config_dask_and_blosc()
 
 
 class ZDataset(BaseDataset):
@@ -78,7 +78,15 @@ class ZDataset(BaseDataset):
         elif exists(path) and mode == 'w':
             aprint(f"Deleting '{path}' for overwrite!")
             if isdir(path):
-                shutil.rmtree(path, ignore_errors=True)
+                # This is a very dangerous operation, let's double check that the folder really holds a zarr dataset:
+                _zgroup_file = join(path, '.zgroup')
+                _zarray_file = join(path, '.zarray')
+                # We check that either of these two hiddwn files are present, and if '.zarr' is part of the name:
+                if ('.zarr' in path) and (exists(_zgroup_file) or exists(_zarray_file)):
+                    shutil.rmtree(path, ignore_errors=True)
+                else:
+                    raise ValueError("Specified path does not seem to be a zarr dataset, deletion for overwrite not performed out of abundance of caution, check path!")
+
             elif isfile(path):
                 os.remove(path)
 
