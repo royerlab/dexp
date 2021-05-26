@@ -20,7 +20,8 @@ def dataset_copy(dataset: BaseDataset,
                  workers: int,
                  workersbackend: str,
                  check: bool,
-                 stop_at_exception: bool = True):
+                 stop_at_exception: bool = True,
+                 ):
 
     # Create destination dataset:
     from dexp.datasets.zarr_dataset import ZDataset
@@ -29,14 +30,24 @@ def dataset_copy(dataset: BaseDataset,
 
     # Process each channel:
     for channel in dataset._selected_channels(channels):
-
         with asection(f"Copying channel {channel}:"):
-            array = dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True)
-
-            if slicing is not None:
-                array = array[slicing]
+            array = dataset.get_array(channel)
 
             shape = array.shape
+
+            total_time_points = shape[0]
+            time_points = list(range(total_time_points))
+            if slicing is not None:
+                aprint(f"Slicing with: {slicing}")
+                if isinstance(slicing, tuple):
+                    time_points = time_points[slicing[0]]
+                    slicing = slicing[1:]
+                else:  # slicing only over time
+                    time_points = time_points[slicing]
+                    slicing = ...
+            else:
+                slicing = ...
+
             dtype = array.dtype
             if chunks is None:
                 chunks = ZDataset._default_chunks
@@ -48,32 +59,28 @@ def dataset_copy(dataset: BaseDataset,
                                      codec=compression,
                                      clevel=compression_level)
 
-            def process(tp):
+            def process(i):
+                tp = time_points[i]
                 try:
-                    aprint(f"Processing time point: {tp} ...")
-                    tp_array = array[tp].compute()
+                    aprint(f"Processing time point: {i} ...")
+                    tp_array = array[tp][slicing]
                     if zerolevel != 0:
                         tp_array = numpy.array(tp_array)
                         tp_array = numpy.clip(tp_array, a_min=zerolevel, a_max=None, out=tp_array)
                         tp_array -= zerolevel
                     dest_dataset.write_stack(channel=channel,
-                                             time_point=tp,
+                                             time_point=i,
                                              stack_array=tp_array)
                 except Exception as error:
                     aprint(error)
-                    aprint(f"Error occurred while copying time point {tp} !")
+                    aprint(f"Error occurred while copying time point {i} !")
                     import traceback
                     traceback.print_exc()
                     if stop_at_exception:
                         raise error
 
-            from joblib import Parallel, delayed
-
-            if workers == -1:
-                workers = max(1, os.cpu_count() // abs(workers))
-
-            aprint(f"Number of workers: {workers}")
-            Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp) for tp in range(0, shape[0]))
+            for i in range(len(time_points)):
+                process(i)
 
     aprint(dest_dataset.info())
     if check:
