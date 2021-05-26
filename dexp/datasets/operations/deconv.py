@@ -1,9 +1,12 @@
-from typing import Sequence, Tuple
+from typing import Sequence, Tuple, List
 
+import numpy
 from arbol.arbol import aprint
 from arbol.arbol import asection
-from joblib import Parallel, delayed
-from skimage.transform import downscale_local_mean
+
+import dask
+from dask.distributed import Client
+from dask_cuda import LocalCUDACluster
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
@@ -38,9 +41,10 @@ def dataset_deconv(dataset: BaseDataset,
                    scaling: Tuple[float],
                    workers: int,
                    workersbackend: str,
-                   devices: Sequence[int],
+                   devices: List[int],
                    check: bool,
-                   stop_at_exception: bool = True):
+                   stop_at_exception: bool = True,
+                   ):
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(path, mode, store)
@@ -48,19 +52,36 @@ def dataset_deconv(dataset: BaseDataset,
     sz, sy, sx = scaling
     aprint(f"Input images will be scaled by: (sz,sy,sx)={scaling}")
 
+    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
+    client = Client(cluster)
+    aprint('Dask Client', client)
+
+    lazy_computation = []
+
     for channel in dataset._selected_channels(channels):
 
-        array = dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True)
+        shape = dataset.shape(channel)
+        array = dataset.get_array(channel)
 
+        total_time_points = shape[0]
+        time_points = list(range(total_time_points))
         if slicing is not None:
-            array = array[slicing]
+            aprint(f"Slicing with: {slicing}")
+            if isinstance(slicing, tuple):
+                time_points = time_points[slicing[0]]
+                slicing = slicing[1:]
+            else:  # slicing only over time
+                time_points = time_points[slicing]
+                slicing = ...
+        else:
+            slicing = ...
 
-        shape = tuple(int(round(u*v)) for u, v in zip(array.shape, (1,)+scaling))
-        chunks = ZDataset._default_chunks
-        nb_timepoints = shape[0]
+        new_shape = (len(time_points), ) + array[0][slicing].shape
+        new_shape = tuple(int(round(u*v)) for u, v in zip(new_shape, (1,)+scaling))
+        chunks = (1, 250, *shape[2:])  # trying to minimize the number of chunks per stack
 
         dest_array = dest_dataset.add_channel(name=channel,
-                                              shape=shape,
+                                              shape=new_shape,
                                               dtype=array.dtype,
                                               chunks=chunks,
                                               codec=compression,
@@ -84,6 +105,8 @@ def dataset_deconv(dataset: BaseDataset,
             psf_kernel = nikon16x08na(**psf_kwargs)
         elif objective == 'olympus20x10na':
             psf_kernel = olympus20x10na(**psf_kwargs)
+        else:
+            raise NotImplementedError
 
         if show_psf:
             from napari import gui_qt, Viewer
@@ -91,14 +114,15 @@ def dataset_deconv(dataset: BaseDataset,
                 viewer = Viewer(title=f"DEXP | viewing PSF with napari", ndisplay=3)
                 viewer.add_image(psf_kernel)
 
-
-        def process(tp, device):
-
+        @dask.delayed
+        def process(i):
+            print('BEGIN')
+            tp = time_points[i]
             try:
-                with asection(f"Loading channel: {channel} for time point {tp}/{nb_timepoints}"):
-                    tp_array = array[tp].compute()
+                with asection(f"Loading channel: {channel} for time point {i}/{len(time_points)}"):
+                    tp_array = numpy.asarray(array[tp][slicing])
 
-                with BestBackend(device, exclusive=True):
+                with BestBackend(exclusive=True, enable_unified_memory=True):
 
                     if sz != 1.0 or sy != 1.0 or sx != 1.0:
                         with asection(f"Applying scaling {(sz, sy, sx)} to image."):
@@ -112,7 +136,6 @@ def dataset_deconv(dataset: BaseDataset,
                         max_value = tp_array.max()
 
                         def f(image):
-
                             return lucy_richardson_deconvolution(image=image,
                                                                  psf=psf_kernel,
                                                                  num_iterations=num_iterations,
@@ -135,32 +158,28 @@ def dataset_deconv(dataset: BaseDataset,
                     with asection(f"Moving array from backend to numpy."):
                         tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
 
-                with asection(f"Saving deconvolved stack for time point {tp}, shape:{tp_array.shape}, dtype:{array.dtype}"):
+                with asection(f"Saving deconvolved stack for time point {i}, shape:{tp_array.shape}, dtype:{array.dtype}"):
+                    print('CHANNEL', channel)
                     dest_dataset.write_stack(channel=channel,
-                                             time_point=tp,
+                                             time_point=i,
                                              stack_array=tp_array)
-
-                aprint(f"Done processing time point: {tp}/{nb_timepoints} .")
+                aprint(f"Done processing time point: {i}/{len(time_points)} .")
 
             except Exception as error:
                 aprint(error)
-                aprint(f"Error occurred while deconvolving time point {tp} !")
+                aprint(f"Error occurred while processing time point {i} !")
                 import traceback
                 traceback.print_exc()
 
                 if stop_at_exception:
                     raise error
+            print('DONE')
+            print(dest_dataset.info(channel))
 
-        if workers == -1:
-            workers = len(devices)
-        aprint(f"Number of workers: {workers}")
+        for i in range(len(time_points)):
+            lazy_computation.append(process(i))
 
-        if workers > 1:
-            Parallel(n_jobs=workers, backend=workersbackend)(delayed(process)(tp, devices[tp % len(devices)]) for tp in range(0, nb_timepoints))
-        else:
-            for tp in range(0, nb_timepoints):
-                process(tp, devices[0])
-
+    dask.compute(*lazy_computation)
 
     aprint(dest_dataset.info())
     if check:
