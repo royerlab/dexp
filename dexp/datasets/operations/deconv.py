@@ -14,6 +14,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
+from dexp.utils.slicing import slice_from_shape
 
 
 def dataset_deconv(dataset: BaseDataset,
@@ -63,25 +64,14 @@ def dataset_deconv(dataset: BaseDataset,
         shape = dataset.shape(channel)
         array = dataset.get_array(channel)
 
-        total_time_points = shape[0]
-        time_points = list(range(total_time_points))
-        if slicing is not None:
-            aprint(f"Slicing with: {slicing}")
-            if isinstance(slicing, tuple):
-                time_points = time_points[slicing[0]]
-                slicing = slicing[1:]
-            else:  # slicing only over time
-                time_points = time_points[slicing]
-                slicing = ...
-        else:
-            slicing = ...
+        aprint(f"Slicing with: {slicing}")
+        out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
 
-        new_shape = (len(time_points), ) + array[0][slicing].shape
-        new_shape = tuple(int(round(u*v)) for u, v in zip(new_shape, (1,)+scaling))
+        out_shape = tuple(int(round(u*v)) for u, v in zip(out_shape, (1,)+scaling))
         chunks = (1, 250, *shape[2:])  # trying to minimize the number of chunks per stack
 
         dest_array = dest_dataset.add_channel(name=channel,
-                                              shape=new_shape,
+                                              shape=out_shape,
                                               dtype=array.dtype,
                                               chunks=chunks,
                                               codec=compression,
@@ -116,11 +106,10 @@ def dataset_deconv(dataset: BaseDataset,
 
         @dask.delayed
         def process(i):
-            print('BEGIN')
             tp = time_points[i]
             try:
                 with asection(f"Loading channel: {channel} for time point {i}/{len(time_points)}"):
-                    tp_array = numpy.asarray(array[tp][slicing])
+                    tp_array = numpy.asarray(array[tp][volume_slicing])
 
                 with BestBackend(exclusive=True, enable_unified_memory=True):
 
@@ -159,7 +148,6 @@ def dataset_deconv(dataset: BaseDataset,
                         tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
 
                 with asection(f"Saving deconvolved stack for time point {i}, shape:{tp_array.shape}, dtype:{array.dtype}"):
-                    print('CHANNEL', channel)
                     dest_dataset.write_stack(channel=channel,
                                              time_point=i,
                                              stack_array=tp_array)
@@ -173,8 +161,6 @@ def dataset_deconv(dataset: BaseDataset,
 
                 if stop_at_exception:
                     raise error
-            print('DONE')
-            print(dest_dataset.info(channel))
 
         for i in range(len(time_points)):
             lazy_computation.append(process(i))
