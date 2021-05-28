@@ -48,6 +48,7 @@ REQUIRED = [
     'click',
     'dask',
     'dask-image',
+    'dask-cuda',
     'distributed',
     'zarr',
     'cachey',
@@ -61,7 +62,8 @@ REQUIRED = [
     'python-telegram-bot',
     'PyYAML',
     'cairocffi',
-    'blosc'
+    'blosc',
+    'seaborn',
 ]
 
 # What packages are optional?

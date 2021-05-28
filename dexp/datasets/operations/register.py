@@ -12,6 +12,7 @@ from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.registration.model.model_io import model_list_to_file
 from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
+from dexp.utils.slicing import slice_from_shape
 
 
 def dataset_register(dataset,
@@ -38,25 +39,15 @@ def dataset_register(dataset,
         for view, channel in zip(views, channels):
             aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 
-    total_time_points = views[0].shape[0]
-    time_points = list(range(total_time_points))
-    if slicing is not None:
-        aprint(f"Slicing with: {slicing}")
-        if isinstance(slicing, tuple):
-            time_points = time_points[slicing[0]]
-            slicing = slicing[1:]
-        else:  # slicing only over time
-            time_points = time_points[slicing]
-            slicing = ...
-    else:
-        slicing = ...
+    aprint(f"Slicing with: {slicing}")
+    _, volume_slicing, time_points = slice_from_shape(views[0].shape, slicing)
 
     @dask.delayed
     def process(i):
         tp = time_points[i]
         try:
             with asection(f"Loading channels {channel} for time point {i}/{len(time_points)}"):
-                views_tp = tuple(np.asarray(view[tp][slicing]) for view in views)
+                views_tp = tuple(np.asarray(view[tp][volume_slicing]) for view in views)
 
             with BestBackend(exclusive=True, enable_unified_memory=True):
                 if microscope == 'simview':

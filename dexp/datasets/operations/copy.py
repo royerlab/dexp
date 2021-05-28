@@ -1,10 +1,10 @@
-import os
 from typing import Sequence, Optional
 
 import numpy
 from arbol.arbol import aprint, asection
 
 from dexp.datasets.base_dataset import BaseDataset
+from dexp.utils.slicing import slice_from_shape
 
 
 def dataset_copy(dataset: BaseDataset,
@@ -33,26 +33,15 @@ def dataset_copy(dataset: BaseDataset,
         with asection(f"Copying channel {channel}:"):
             array = dataset.get_array(channel)
 
-            total_time_points = shape[0]
-            time_points = list(range(total_time_points))
-            if slicing is not None:
-                aprint(f"Slicing with: {slicing}")
-                if isinstance(slicing, tuple):
-                    time_points = time_points[slicing[0]]
-                    slicing = slicing[1:]
-                else:  # slicing only over time
-                    time_points = time_points[slicing]
-                    slicing = ...
-            else:
-                slicing = ...
+            aprint(f"Slicing with: {slicing}")
+            out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
 
-            shape = array[0][slicing].shape
             dtype = array.dtype
             if chunks is None:
                 chunks = ZDataset._default_chunks
 
             dest_dataset.add_channel(name=channel,
-                                     shape=shape,
+                                     shape=out_shape,
                                      dtype=dtype,
                                      chunks=chunks,
                                      codec=compression,
@@ -62,7 +51,7 @@ def dataset_copy(dataset: BaseDataset,
                 tp = time_points[i]
                 try:
                     aprint(f"Processing time point: {i} ...")
-                    tp_array = array[tp][slicing]
+                    tp_array = array[tp][volume_slicing]
                     if zerolevel != 0:
                         tp_array = numpy.array(tp_array)
                         tp_array = numpy.clip(tp_array, a_min=zerolevel, a_max=None, out=tp_array)

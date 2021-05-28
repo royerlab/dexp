@@ -1,6 +1,4 @@
-import cupy
 import numpy as np
-from typing import List
 
 from arbol.arbol import aprint
 from arbol.arbol import asection
@@ -16,6 +14,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
 from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion
 from dexp.processing.registration.model.model_io import model_list_from_file, model_list_to_file
+from dexp.utils.slicing import slice_from_shape
 
 
 def dataset_fuse(dataset,
@@ -57,26 +56,20 @@ def dataset_fuse(dataset,
         for view, channel in zip(views, channels):
             aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 
-    output_shape = views[0][slicing].shape
-    total_time_points = views[0].shape[0]
-    time_points = list(range(total_time_points))
-    if slicing is not None:
-        aprint(f"Slicing with: {slicing}")
-        if isinstance(slicing, tuple):
-            time_points = time_points[slicing[0]]
-            slicing = slicing[1:]
-        else:  # slicing only over time
-            time_points = time_points[slicing]
-            slicing = ...
-    else:
-        slicing = ...
-
     dtype = views[0].dtype
+    aprint(f"Slicing with: {slicing}")
+    out_shape, volume_slicing, time_points = slice_from_shape(views[0].shape, slicing)
 
     # We allocate last minute once we know the shape...
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(output_path, mode, store)
+
+    dest_dataset.add_channel('fused',
+                             shape=out_shape,
+                             dtype=dtype,
+                             codec=compression,
+                             clevel=compression_level)
 
     # load registration models:
     with NumpyBackend():
@@ -86,25 +79,13 @@ def dataset_fuse(dataset,
         else:
             models = [None] * len(time_points)
 
-    print('creating dataset', output_shape)
-    if 'fused' not in dest_dataset.channels():
-        try:
-            dest_dataset.add_channel('fused',
-                                     shape=output_shape,
-                                     dtype=dtype,
-                                     codec=compression,
-                                     clevel=compression_level)
-        except (ContainsArrayError, ContainsGroupError):
-                aprint(f"Other thread/process created channel before... ")
-    print('done')
-
     @dask.delayed
     def process(i, params):
         equalisation_ratios_reference, model = params
         tp = time_points[i]
         try:
             with asection(f"Loading channels {channels} for time point {i}/{len(time_points)}"):
-                views_tp = tuple(np.asarray(view[tp][slicing]) for view in views)
+                views_tp = tuple(np.asarray(view[tp][volume_slicing]) for view in views)
 
             with BestBackend(exclusive=True, enable_unified_memory=True):
                 if models[i] is not None:
