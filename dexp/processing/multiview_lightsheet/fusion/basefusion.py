@@ -25,7 +25,7 @@ class BaseFusion:
 
         self._registration_model = registration_model
         self._equalise = equalise
-        self._equalisation_ratios = equalisation_ratios
+        self._equalisation_ratios = equalisation_ratios.copy()
         self._zero_level = zero_level
         self._clip_too_high = clip_too_high
         self._fusion = fusion
