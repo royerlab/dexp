@@ -7,29 +7,29 @@ from dexp.processing.utils.nd_slice import nd_split_slices
 
 def scatter_gather_i2v(function,
                        images: Union[Any, Tuple[Any]],
-                       chunks: Union[int, Tuple[int, ...]],
+                       tiles: Union[int, Tuple[int, ...]],
                        margins: Union[int, Tuple[int, ...]] = None,
                        to_numpy: bool = True,
                        internal_dtype=None):
     """
     Image-2-vector scatter-gather.
-    Given a n-ary function that takes n images and returns a tuple of vectors per image, we split the input arrays into chunks,
-    apply the function to each chunk computing using a given backend, and reassembling the vectors into a tuple of arrays of vectors,
-    with one vector per chunk.
+    Given a n-ary function that takes n images and returns a tuple of vectors per image, we split the input arrays into tiles,
+    apply the function to each tile computing using a given backend, and reassembling the vectors into a tuple of arrays of vectors,
+    with one vector per tile.
 
     Parameters
     ----------
     function : n-ary function. Must accept one or more arrays -- of same shape -- and return a _tuple_ of arrays as result.
     images : sequence of images (can be any backend, numpy )
-    chunks : chunks to cut input image into, can be a single integer or a tuple of integers.
-    margins : margins to add to each chunk, can be a single integer or a tuple of integers.
+    tiles : tiles to cut input image into, can be a single integer or a tuple of integers.
+    margins : margins to add to each tile, can be a single integer or a tuple of integers.
     to_numpy : should the result be a numpy array? Very usefull when the compute backend cannot hold the whole input and output images in memory.
     internal_dtype : internal dtype for computation
 
     Returns
     -------
     Result a tuple of arrays, each array having the dimension of the input images + an extra 'vector' dimensions.
-    The shape of the arrays matches the chunking of the input images. Each vector is the result of applying the
+    The shape of the arrays matches the tiling of the input images. Each vector is the result of applying the
     function to the input images. If to_numpy==True then the returned arrays are numpy array.
 
     """
@@ -51,8 +51,8 @@ def scatter_gather_i2v(function,
     if internal_dtype is None:
         internal_dtype = dtype
 
-    if type(chunks) == int:
-        chunks = (chunks,) * ndim
+    if type(tiles) == int:
+        tiles = (tiles,) * ndim
 
     if margins is None:
         margins = (0,) * ndim
@@ -60,17 +60,17 @@ def scatter_gather_i2v(function,
         margins = (margins,) * ndim
 
     # We compute the slices objects to cut the input image into batches:
-    chunk_slices = list(nd_split_slices(shape, chunks=chunks, margins=margins))
-    chunk_slices_no_margins = list(nd_split_slices(shape, chunks=chunks))
+    tile_slices = list(nd_split_slices(shape, chunks=tiles, margins=margins))
+    tile_slices_no_margins = list(nd_split_slices(shape, chunks=tiles))
 
-    # We compute the shape at the chunk level:
-    chunk_shape = tuple(math.ceil(s / c) for s, c in zip(shape, chunks))
+    # We compute the shape at the tile level:
+    tile_shape = tuple(math.ceil(s / c) for s, c in zip(shape, tiles))
 
     # Zipping together slices with and without margins:
-    slices = zip(chunk_slices, chunk_slices_no_margins)
+    slices = zip(tile_slices, tile_slices_no_margins)
 
     # Number of tiles:
-    number_of_tiles = len(chunk_slices)
+    number_of_tiles = len(tile_slices)
 
     if number_of_tiles == 1:
         # If there is only one tile, let's not be complicated about it:
@@ -82,10 +82,10 @@ def scatter_gather_i2v(function,
         results_stacked_reshaped = tuple(xp.reshape(result, newshape=(1,) * ndim + result.shape) for result in results)
     else:
         results_lists = None
-        for chunk_slice, chunk_slice_no_margins in slices:
-            image_chunks = tuple(image[chunk_slice] for image in images)
-            image_chunks = tuple(Backend.to_backend(image_chunk, dtype=internal_dtype) for image_chunk in image_chunks)
-            results = function(*image_chunks)
+        for tile_slice, tile_slice_no_margins in slices:
+            image_tiles = tuple(image[tile_slice] for image in images)
+            image_tiles = tuple(Backend.to_backend(image_tile, dtype=internal_dtype) for image_tile in image_tiles)
+            results = function(*image_tiles)
             if to_numpy:
                 results = tuple(Backend.to_numpy(result, dtype=image.dtype) for result in results)
             else:
@@ -99,6 +99,6 @@ def scatter_gather_i2v(function,
 
         rxps = tuple(Backend.get_xp_module(results_list[0]) for results_list in results_lists)
         results_stacked = tuple(rxp.stack(results_list) for rxp, results_list in zip(rxps, results_lists))
-        results_stacked_reshaped = tuple(rxp.reshape(stack, newshape=chunk_shape + results[0].shape) for rxp, stack, results in zip(rxps, results_stacked, results_lists))
+        results_stacked_reshaped = tuple(rxp.reshape(stack, newshape=tile_shape + results[0].shape) for rxp, stack, results in zip(rxps, results_stacked, results_lists))
 
     return results_stacked_reshaped

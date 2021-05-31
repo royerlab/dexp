@@ -6,9 +6,10 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels.butterworth import butterworth_kernel
+from dexp.utils import xpArray
 
 
-def butterworth_filter(image,
+def butterworth_filter(image: xpArray,
                        shape=None,
                        cutoffs: Union[float, Tuple[float, ...]] = None,
                        cutoffs_in_freq_units=False,

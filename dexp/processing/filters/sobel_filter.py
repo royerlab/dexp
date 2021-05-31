@@ -3,9 +3,10 @@ import numpy
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.utils.normalise import normalise_functions
+from dexp.utils import xpArray
 
 
-def sobel_filter(image,
+def sobel_filter(image: xpArray,
                  exponent: int = 2,
                  gamma: float = 1,
                  log_compression: bool = True,

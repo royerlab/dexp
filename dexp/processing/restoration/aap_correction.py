@@ -5,9 +5,10 @@ import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.utils import xpArray
 
 
-def axis_aligned_pattern_correction(image,
+def axis_aligned_pattern_correction(image: xpArray,
                                     axis_combinations: List[Tuple[int]] = None,
                                     quantile: float = 0.5,
                                     sigma: float = 0,

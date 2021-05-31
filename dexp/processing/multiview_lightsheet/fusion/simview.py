@@ -48,8 +48,11 @@ class SimViewFusion(BaseFusion):
         self._fusion_bias_strength_d = fusion_bias_strength_d
         self._flip_camera1 = flip_camera1
 
-    def _preprocess_and_fuse_illumination_views(self, view0: xpArray, view1: xpArray,
-                                                flip: bool, camera: int) -> xpArray:
+    def _preprocess_and_fuse_illumination_views(self,
+                                                view0: xpArray,
+                                                view1: xpArray,
+                                                flip: bool,
+                                                camera: int) -> xpArray:
         xp = Backend.get_xp_module()
 
         with asection(f"Moving C{camera}L0 and C{camera}L1 to backend storage and converting to {self._internal_dtype} ..."):

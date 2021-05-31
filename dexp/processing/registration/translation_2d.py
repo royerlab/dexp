@@ -3,9 +3,11 @@ from skimage.registration import phase_cross_correlation
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.registration.translation_nd import register_translation_nd
+from dexp.utils import xpArray
 
 
-def register_translation_2d_skimage(image_a, image_b,
+def register_translation_2d_skimage(image_a: xpArray,
+                                    image_b: xpArray,
                                     upsample_factor: int = 16,
                                     force_numpy: bool = False,
                                     internal_dtype=None,

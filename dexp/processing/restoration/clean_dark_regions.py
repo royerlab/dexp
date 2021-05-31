@@ -2,9 +2,10 @@ import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.utils import xpArray
 
 
-def clean_dark_regions(image,
+def clean_dark_regions(image: xpArray,
                        threshold: float,
                        size: int = 3,
                        mode: str = 'uniform',

@@ -1,4 +1,4 @@
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Union
 
 import numpy
 from arbol.arbol import aprint, asection
@@ -11,15 +11,15 @@ def dataset_copy(dataset: BaseDataset,
                  dest_path: str,
                  channels: Sequence[str],
                  slicing,
-                 store: str,
-                 chunks: Optional[Sequence[int]],
-                 compression: str,
-                 compression_level: int,
-                 overwrite: bool,
-                 zerolevel: int,
-                 workers: int,
-                 workersbackend: str,
-                 check: bool,
+                 store: str = 'dir',
+                 chunks: Optional[Sequence[int]] = None,
+                 compression: str = 'zstd',
+                 compression_level: int = 3,
+                 overwrite: bool = False,
+                 zerolevel: int = 0,
+                 workers: int = 1,
+                 workersbackend: str = '',
+                 check: bool = True,
                  stop_at_exception: bool = True,
                  ):
 

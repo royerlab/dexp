@@ -1,9 +1,10 @@
 import numpy
 
 from dexp.processing.backends.backend import Backend
+from dexp.utils import xpArray
 
 
-def yang_deskew(image,
+def yang_deskew(image: xpArray,
                 flip: bool,
                 dx: float,
                 dz: float,

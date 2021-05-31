@@ -5,9 +5,10 @@ from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.utils import xpArray
 
 
-def rgb_colormap(image,
+def rgb_colormap(image: xpArray,
                  cmap: Union[str, Callable] = None,
                  bytes: bool = False,
                  internal_dtype=None):

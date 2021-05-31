@@ -4,6 +4,8 @@ from typing import Any
 
 import numpy
 
+from dexp.utils import xpArray
+
 
 class Backend(ABC):
     """
@@ -55,19 +57,19 @@ class Backend(ABC):
         Backend._local.backend_stack.append(backend)
 
     @staticmethod
-    def to_numpy(array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
+    def to_numpy(array: xpArray, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         return Backend.current()._to_numpy(array, dtype=dtype, force_copy=force_copy)
 
     @staticmethod
-    def to_backend(array, dtype=None, force_copy: bool = False) -> Any:
+    def to_backend(array: xpArray, dtype=None, force_copy: bool = False) -> Any:
         return Backend.current()._to_backend(array, dtype=dtype, force_copy=force_copy)
 
     @staticmethod
-    def get_xp_module(array=None) -> Any:
+    def get_xp_module(array: xpArray=None) -> Any:
         return Backend.current()._get_xp_module(array)
 
     @staticmethod
-    def get_sp_module(array=None) -> Any:
+    def get_sp_module(array: xpArray=None) -> Any:
         return Backend.current()._get_sp_module(array)
 
     def __enter__(self):
@@ -95,7 +97,7 @@ class Backend(ABC):
         self.clear_memory_pool()
 
     @abstractmethod
-    def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
+    def _to_numpy(self, array: xpArray, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         """ Converts backend array to numpy. If array is already a numpy array it is returned unchanged.
 
         Parameters
@@ -112,7 +114,7 @@ class Backend(ABC):
         raise NotImplementedError('Method not implemented!')
 
     @abstractmethod
-    def _to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
+    def _to_backend(self, array: xpArray, dtype=None, force_copy: bool = False) -> Any:
         """ Converts numpy array to backend array, if already backend array, then it is returned unchanged
 
         Parameters
@@ -124,7 +126,7 @@ class Backend(ABC):
         raise NotImplementedError('Method not implemented!')
 
     @abstractmethod
-    def _get_xp_module(self, array=None) -> Any:
+    def _get_xp_module(self, array: xpArray=None) -> Any:
         """ Returns the numpy-like module for a given array
 
         Parameters
@@ -139,7 +141,7 @@ class Backend(ABC):
         raise NotImplementedError('Method not implemented!')
 
     @abstractmethod
-    def _get_sp_module(self, array=None) -> Any:
+    def _get_sp_module(self, array: xpArray=None) -> Any:
         """ Returns the scipy-like module for a given array
 
         Parameters

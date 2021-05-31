@@ -3,10 +3,11 @@ from arbol import aprint
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.utils import xpArray
 
 
-def equalise_intensity(image1,
-                       image2,
+def equalise_intensity(image1: xpArray,
+                       image2: xpArray,
                        zero_level=90,
                        quantile_low=0.01,
                        quantile_high=0.99,

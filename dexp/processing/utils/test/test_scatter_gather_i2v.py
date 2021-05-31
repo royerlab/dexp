@@ -40,7 +40,7 @@ def _test_scatter_gather_i2v(ndim=3, length_xy=128, splits=4, filter_size=7):
 
     with timeit("scatter_gather(f)"):
         chunks = (length_xy // splits,) * ndim
-        result1, result2 = scatter_gather_i2v(f, (image1, image2), chunks=chunks, margins=8)
+        result1, result2 = scatter_gather_i2v(f, (image1, image2), tiles=chunks, margins=8)
 
     print(result1.shape)
     print(result2.shape)

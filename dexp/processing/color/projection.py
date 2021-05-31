@@ -7,9 +7,10 @@ from dexp.processing.color.insert import insert_color_image
 from dexp.processing.color.projection_legend import depth_color_scale_legend
 from dexp.processing.utils.center_of_mass import center_of_mass
 from dexp.processing.utils.normalise import normalise_functions
+from dexp.utils import xpArray
 
 
-def project_image(image,
+def project_image(image: xpArray,
                   axis: int = 0,
                   dir: int = -1,
                   mode: str = 'max',
