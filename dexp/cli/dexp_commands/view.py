@@ -12,6 +12,7 @@ from dexp.datasets.operations.view_remote import dataset_view_remote
 @click.option('--channels', '-c', default=None, help='list of channels, all channels when ommited.')
 @click.option('--slicing', '-s', default=None, help='dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).')
 @click.option('--aspect', '-a', type=float, default=4, help='sets aspect ratio e.g. 4', show_default=True)
+@click.option('--rescale-time', '-rt', is_flag=True, help='Rescale time axis, useful when channels acquisition rate was not uniform.', show_default=True)
 @click.option('--clim', '-cl', type=str, default='0,512', help='Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]', show_default=True)
 @click.option('--colormap', '-cm', type=str, default='viridis', help='sets colormap, e.g. viridis, gray, magma, plasma, inferno ', show_default=True)
 @click.option('--windowsize', '-ws', type=int, default=1536, help='Sets the napari window size. i.e. -ws 400 sets the window to 400x400', show_default=True)
@@ -21,6 +22,7 @@ def view(input_paths,
          channels,
          slicing,
          aspect,
+         rescale_time,
          clim,
          colormap,
          windowsize,
@@ -49,7 +51,6 @@ def view(input_paths,
                          windowsize=windowsize)
             aprint("Done!")
 
-
     else:
         input_dataset, input_paths = glob_datasets(input_paths)
         channels = _parse_channels(input_dataset, channels)
@@ -64,6 +65,7 @@ def view(input_paths,
                          slicing=slicing,
                          windowsize=windowsize,
                          projections_only=projectionsonly,
-                         volume_only=volumeonly)
+                         volume_only=volumeonly,
+                         rescale_time=rescale_time)
             input_dataset.close()
             aprint("Done!")
