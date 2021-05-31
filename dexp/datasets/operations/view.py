@@ -16,24 +16,30 @@ def dataset_view(input_dataset: BaseDataset,
                  name: str,
                  windowsize: int,
                  projections_only: bool,
-                 volume_only: bool):
-    # Annoying napari induced warnings:
-    import warnings
-    warnings.filterwarnings("ignore")
-
+                 volume_only: bool,
+                 rescale_time: bool):
     from napari import gui_qt, Viewer
-    from napari._qt.qthreading import thread_worker
+    from napari.layers.utils._link_layers import link_layers, _get_common_evented_attributes
+
+    if rescale_time:
+        nb_time_points = [input_dataset.shape(channel)[0] for channel in input_dataset.channels()]
+        max_time_points = max(nb_time_points)
+        time_scales = [round(max_time_points / n) for n in nb_time_points]
+    else:
+        time_scales = [1] * len(input_dataset.channels())
+
     with gui_qt():
         viewer = Viewer(title=f"DEXP | viewing with napari: {name} ", ndisplay=2)
         viewer.grid.enabled = True
         viewer.window.resize(windowsize + 256, windowsize)
 
-        for channel in channels:
+        for time_scale, channel in zip(time_scales, channels):
             aprint(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
             aprint(input_dataset.info(channel))
 
             array = input_dataset.get_array(channel, wrap_with_dask=True)
 
+            layers = []
             try:
                 if not volume_only:
                     for axis in range(array.ndim - 1):
@@ -42,6 +48,11 @@ def dataset_view(input_dataset: BaseDataset,
                         # if the data format does not support projections we skip:
                         if proj_array is None:
                             continue
+
+                        if axis == 1:
+                            proj_array = dask.array.flip(proj_array, 1)  # flipping y
+                        elif axis == 2:
+                            proj_array = dask.array.rot90(proj_array, axes=(2, 1))  #
 
                         shape = (proj_array.shape[0], 1,) + proj_array.shape[1:]
                         proj_array = reshape(proj_array, shape=shape)
@@ -52,14 +63,15 @@ def dataset_view(input_dataset: BaseDataset,
                                                           contrast_limits=contrast_limits,
                                                           blending='additive',
                                                           colormap=colormap, )
+                            layers.append(proj_layer)
 
                             if aspect is not None:
                                 if axis == 0:
-                                    proj_layer.scale = (1, 1)
+                                    proj_layer.scale = (time_scale, 1, 1, 1)
                                 elif axis == 1:
-                                    proj_layer.scale = (aspect, 1)
+                                    proj_layer.scale = (time_scale, 1, aspect, 1)
                                 elif axis == 2:
-                                    proj_layer.scale = (aspect, 1)
+                                    proj_layer.scale = (time_scale, 1, 1, aspect)  # reordered due to rotation
 
                                 aprint(f"Setting aspect ratio for projection (layer.scale={proj_layer.scale})")
 
@@ -84,20 +96,17 @@ def dataset_view(input_dataset: BaseDataset,
                                          colormap=colormap,
                                          attenuation=0.04,
                                          rendering='attenuated_mip')
+                layers.append(layer)
 
                 if aspect is not None:
                     if array.ndim == 3:
                         layer.scale = (aspect, 1, 1)
                     elif array.ndim == 4:
-                        layer.scale = (1, aspect, 1, 1)
+                        layer.scale = (time_scale, aspect, 1, 1)
+                        aprint(f'Setting time scale to {time_scale}')
                     aprint(f"Setting aspect ratio to {aspect} (layer.scale={layer.scale})")
 
-                # For some reason some parameters refuse to be set, this solves it:
-                @thread_worker
-                def workaround_for_recalcitrant_parameters():
-                    aprint("Setting 3D rendering parameters")
-                    layer.attenuation = 0.02
-                    layer.rendering = 'attenuated_mip'
-
-                worker = workaround_for_recalcitrant_parameters()
-                worker.start()
+            if layers:
+                attr = _get_common_evented_attributes(layers)
+                attr.remove('visible')
+                link_layers(layers, attr)

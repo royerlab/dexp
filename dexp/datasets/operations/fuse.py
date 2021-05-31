@@ -57,6 +57,7 @@ def dataset_fuse(dataset,
             aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 
     dtype = views[0].dtype
+    in_nb_time_points = views[0].shape[0]
     aprint(f"Slicing with: {slicing}")
     out_shape, volume_slicing, time_points = slice_from_shape(views[0].shape, slicing)
 
@@ -76,6 +77,11 @@ def dataset_fuse(dataset,
         if loadreg:
             aprint(f"Loading registration shifts from existing file! ({model_list_filename})")
             models = model_list_from_file(model_list_filename)
+            if len(models) == 1:
+                models = [models[0] for _ in range(in_nb_time_points)]
+            elif len(models) != in_nb_time_points:
+                raise ValueError(f'Number of registration models provided ({len(models)})'
+                                 f'differs from number of input time points ({in_nb_time_points})')
         else:
             models = [None] * len(time_points)
 

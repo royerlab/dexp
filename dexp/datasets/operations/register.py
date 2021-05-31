@@ -104,7 +104,7 @@ def dataset_register(dataset,
     models = dask.compute(*lazy_computations)
 
     mode_model = compute_median_translation(models)
-    model_list_to_file(model_path, [mode_model] * total_time_points)
+    model_list_to_file(model_path, [mode_model])
 
 
 def compute_median_translation(models: List[TranslationRegistrationModel]) \
