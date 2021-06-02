@@ -1,3 +1,5 @@
+from typing import Optional, List
+
 from arbol.arbol import aprint
 from arbol.arbol import asection
 from joblib import Parallel, delayed
@@ -9,18 +11,18 @@ from dexp.processing.deskew.yang_deskew import yang_deskew
 
 
 def dataset_deskew(dataset,
-                   output_path,
+                   dest_path,
                    channels,
                    slicing,
-                   store,
-                   compression,
-                   compression_level,
-                   flips,
-                   overwrite,
-                   workers,
-                   workersbackend,
-                   devices,
-                   check,
+                   store: str = 'dir',
+                   compression: str = 'zstd',
+                   compression_level: int = 3,
+                   flips: bool = False,
+                   overwrite: bool = False,
+                   workers: int = 1,
+                   workersbackend: str = 'threading',
+                   devices: Optional[List[int]] = None,
+                   check: bool = True,
                    stop_at_exception=True):
 
     arrays = tuple(dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for channel in channels)
@@ -36,7 +38,7 @@ def dataset_deskew(dataset,
     # We allocate last minute once we know the shape...
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
-    dest_dataset = ZDataset(output_path, mode, store)
+    dest_dataset = ZDataset(dest_path, mode, store)
 
     metadata = dataset.get_metadata()
     angle = metadata['angle']
@@ -60,10 +62,10 @@ def dataset_deskew(dataset,
 
                     if 'yang' in mode:
                         deskewed_view_tp, = yang_deskew(image=array_tp,
-                                                       flip=flip,
-                                                       angle=angle,
-                                                       dx=res,
-                                                       dz=dz)
+                                                        flip_depth_axis=flip,
+                                                        angle=angle,
+                                                        dx=res,
+                                                        dz=dz)
                     elif 'classic' in mode:
                         raise NotImplementedError('Classic deskewing not yet implemented')
                     else:

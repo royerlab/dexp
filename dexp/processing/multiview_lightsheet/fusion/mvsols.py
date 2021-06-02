@@ -377,7 +377,7 @@ def resample_C0L0(image,
                   num_split: int = 8):
     if mode == 'yang':
         return yang_deskew(image,
-                           flip=True,
+                           flip_depth_axis=True,
                            dx=dx,
                            dz=dz,
                            angle=angle,
@@ -394,7 +394,7 @@ def resample_C0L1(image,
                   num_split: int = 8):
     if mode == 'yang':
         return yang_deskew(image,
-                           flip=False,
+                           flip_depth_axis=False,
                            dx=dx,
                            dz=dz,
                            angle=angle,
