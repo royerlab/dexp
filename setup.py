@@ -45,7 +45,7 @@ REQUIRED = [
     'joblib',
     'pytest',
     'graphviz',
-    'click',
+    'click==7.1.2',
     'dask',
     'dask-image',
     'dask-cuda',
