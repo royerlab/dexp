@@ -1,16 +1,16 @@
-import numpy
-import numpy as np
-from arbol.arbol import aprint, asection
 from typing import List
 
 import dask
+import numpy
+import numpy as np
+from arbol.arbol import aprint, asection
 from dask.distributed import Client
 from dask_cuda import LocalCUDACluster
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
-from dexp.processing.registration.model.model_io import model_list_to_file
 from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion
+from dexp.processing.registration.model.model_io import model_list_to_file
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.utils.slicing import slice_from_shape
 

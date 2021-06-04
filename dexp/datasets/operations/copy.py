@@ -1,4 +1,4 @@
-from typing import Sequence, Optional, Union
+from typing import Sequence, Optional
 
 import numpy
 from arbol.arbol import aprint, asection
@@ -70,10 +70,18 @@ def dataset_copy(dataset: BaseDataset,
             for i in range(len(time_points)):
                 process(i)
 
+    # Dataset info:
     aprint(dest_dataset.info())
+
+    # Check dataset integrity:
     if check:
         dest_dataset.check_integrity()
 
+    # set CLI history:
     dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
+
+    # Set metadata:
+    dest_dataset.append_metadata(dataset.get_metadata())
+
     # close destination dataset:
     dest_dataset.close()

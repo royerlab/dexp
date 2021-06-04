@@ -66,6 +66,10 @@ class BaseDataset(ABC):
         pass
 
     @abstractmethod
+    def append_metadata(self, metadata: dict):
+        pass
+
+    @abstractmethod
     def add_channel(self, name: str, shape: Tuple[int, ...], dtype, enable_projections: bool = True, **kwargs) -> Any:
         pass
 

@@ -1,14 +1,10 @@
-import os
 import random
 import tempfile
 from os.path import join
 
 from arbol import aprint, asection
-from dask.array.image import imread
 
-from dexp.datasets.operations.copy import dataset_copy
 from dexp.datasets.operations.deconv import dataset_deconv
-from dexp.datasets.operations.projrender import dataset_projection_rendering
 from dexp.datasets.zarr_dataset import ZDataset
 from dexp.optics.psf.standard_psfs import nikon16x08na
 from dexp.processing.backends.backend import Backend

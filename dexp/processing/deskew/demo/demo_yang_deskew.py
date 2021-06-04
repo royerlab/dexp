@@ -73,6 +73,8 @@ def _deskew(shift, length, zoom, display):
 
         # cast to uint16:
         skewed = skewed.astype(dtype=xp.uint16)
+
+
     with timeit("deskew image"):
         # apply deskewing:
         deskewed = yang_deskew(skewed,

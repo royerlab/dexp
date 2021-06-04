@@ -10,9 +10,9 @@ from dexp.datasets.base_dataset import BaseDataset
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.sequence_proj import image_stabilisation_proj_
-from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.registration.model.sequence_registration_model import SequenceRegistrationModel
+from dexp.processing.registration.sequence import image_stabilisation
+from dexp.processing.registration.sequence_proj import image_stabilisation_proj_
 
 
 def _compute_model(
@@ -108,7 +108,7 @@ def _compute_model(
     return model
 
 
-def dataset_stabilize(input_dataset: BaseDataset,
+def dataset_stabilize(dataset: BaseDataset,
                       output_path: str,
                       channels: Sequence[str],
                       reference_channel: Optional[str] = None,
@@ -144,7 +144,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
 
     Parameters
     ----------
-    input_dataset: Input dataset
+    dataset: Input dataset
     output_path: Output path for Zarr storage
     channels: selected channels
     reference_channel: use this channel to compute the stabilization model and apply to every channel.
@@ -178,14 +178,14 @@ def dataset_stabilize(input_dataset: BaseDataset,
 
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
-    output_dataset = ZDataset(output_path, mode, zarr_store)
+    dest_dataset = ZDataset(output_path, mode, zarr_store)
 
     model = None
     if reference_channel is not None:
-        if reference_channel not in input_dataset.channels():
+        if reference_channel not in dataset.channels():
             raise ValueError(f'Reference channel {reference_channel} not found.')
         model = _compute_model(
-            input_dataset=input_dataset,
+            input_dataset=dataset,
             channel=reference_channel,
             slicing=slicing,
             max_range=max_range,
@@ -206,10 +206,10 @@ def dataset_stabilize(input_dataset: BaseDataset,
             debug_output=debug_output,
             )
 
-    for channel in input_dataset._selected_channels(channels):
+    for channel in dataset._selected_channels(channels):
         if reference_channel is None:
             model = _compute_model(
-                input_dataset=input_dataset,
+                input_dataset=dataset,
                 channel=channel,
                 slicing=slicing,
                 max_range=max_range,
@@ -230,7 +230,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
                 debug_output=debug_output,
             )
 
-        array = input_dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True)
+        array = dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True)
         shape = array.shape
         dtype = array.dtype
         chunks = ZDataset._default_chunks
@@ -240,7 +240,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
         padded_shape = (nb_timepoints,) + model.padded_shape(shape[1:])
 
         # Add channel to output datatset:
-        output_dataset.add_channel(name=channel,
+        dest_dataset.add_channel(name=channel,
                                    shape=padded_shape,
                                    dtype=dtype,
                                    chunks=chunks,
@@ -265,7 +265,7 @@ def dataset_stabilize(input_dataset: BaseDataset,
                             # tp_array = Backend.to_numpy(tp_array, dtype=array.dtype, force_copy=False)
 
                     with asection(f"Saving stabilized stack for time point {tp}/{nb_timepoints}, shape:{tp_array.shape}, dtype:{array.dtype}"):
-                        output_dataset.write_stack(channel=channel,
+                        dest_dataset.write_stack(channel=channel,
                                                    time_point=tp,
                                                    stack_array=tp_array)
 
@@ -290,10 +290,24 @@ def dataset_stabilize(input_dataset: BaseDataset,
                 process(tp)
 
     # printout output dataset info:
-    aprint(output_dataset.info())
+    aprint(dest_dataset.info())
     if check:
-        output_dataset.check_integrity()
+        dest_dataset.check_integrity()
 
-    output_dataset.set_cli_history(parent=input_dataset if isinstance(input_dataset, ZDataset) else None)
+    dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
+
+    # Dataset info:
+    aprint(dest_dataset.info())
+
+    # Check dataset integrity:
+    if check:
+        dest_dataset.check_integrity()
+
+    # set CLI history:
+    dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
+
+    # Set metadata:
+    dest_dataset.append_metadata(dataset.get_metadata())
+
     # close destination dataset:
-    output_dataset.close()
+    dest_dataset.close()

@@ -1,6 +1,6 @@
 import os
 from os.path import join
-from typing import Sequence
+from typing import Sequence, Union
 
 from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
@@ -11,15 +11,15 @@ from dexp.io.io import tiff_save
 
 
 def dataset_tiff(dataset: BaseDataset,
-                 output_path: str,
+                 dest_path: str,
                  channels: Sequence[str],
                  slicing,
-                 overwrite: bool,
-                 project: bool,
-                 one_file_per_first_dim: bool,
-                 clevel: int,
-                 workers: int,
-                 workersbackend: str,
+                 overwrite: bool = False,
+                 project: Union[int, bool] = False,
+                 one_file_per_first_dim: bool = False,
+                 clevel: int = 0,
+                 workers: int = 1,
+                 workersbackend: str = '',
                  stop_at_exception: bool = True):
 
 
@@ -33,32 +33,33 @@ def dataset_tiff(dataset: BaseDataset,
         arrays = list([array[slicing] for array in arrays])
         aprint(f"Done slicing.")
 
-    if project:
-        # project is the axis for projection, but here we are not considering the T dimension anymore...
-        aprint(f"Projecting along axis {project}")
-        arrays = list([array.max(axis=project) for array in arrays])
-
     if workers == -1:
         workers = max(1, os.cpu_count() // abs(workers))
     aprint(f"Number of workers: {workers}")
 
     if one_file_per_first_dim:
-        aprint(f"Saving one TIFF file for each tp (or Z if already sliced) to: {output_path}.")
+        aprint(f"Saving one TIFF file for each tp (or Z if already sliced) to: {dest_path}.")
 
-        os.makedirs(output_path, exist_ok=True)
+        os.makedirs(dest_path, exist_ok=True)
 
         def process(tp):
             try:
                 with asection(f'Saving time point {tp}: '):
                     for channel, array in zip(selected_channels, arrays):
-                        tiff_file_path = join(output_path, f"file{tp}_{channel}.tiff")
+                        tiff_file_path = join(dest_path, f"file{tp}_{channel}.tiff")
                         if overwrite or not os.path.exists(tiff_file_path):
                             stack = array[tp].compute()
-                            print(f"Writing time point: {tp} of shape: {stack.shape}, dtype:{stack.dtype} as TIFF file: '{tiff_file_path}', with compression: {clevel}")
+
+                            if project is not False and type(project) == int:
+                                # project is the axis for projection, but here we are not considering the T dimension anymore...
+                                aprint(f"Projecting along axis {project}")
+                                stack = stack.max(axis=project)
+
+                            aprint(f"Writing time point: {tp} of shape: {stack.shape}, dtype:{stack.dtype} as TIFF file: '{tiff_file_path}', with compression: {clevel}")
                             tiff_save(tiff_file_path, stack, compress=clevel)
-                            print(f"Done writing time point: {tp} !")
+                            aprint(f"Done writing time point: {tp} !")
                         else:
-                            print(f"File for time point (or z slice): {tp} already exists.")
+                            aprint(f"File for time point (or z slice): {tp} already exists.")
             except Exception as error:
                 aprint(error)
                 aprint(f"Error occurred while processing time point {tp} !")
@@ -78,20 +79,34 @@ def dataset_tiff(dataset: BaseDataset,
 
         for channel, array in zip(selected_channels, arrays):
             if len(selected_channels) > 1:
-                tiff_file_path = f"{output_path}_{channel}.tiff"
+                tiff_file_path = f"{dest_path}_{channel}.tiff"
             else:
-                tiff_file_path = f"{output_path}.tiff"
+                tiff_file_path = f"{dest_path}.tiff"
 
             if not overwrite and os.path.exists(tiff_file_path):
                 aprint(f"File {tiff_file_path} already exists! Set option -w to overwrite.")
                 return
 
             with asection(f"Saving array ({array.shape}, {array.dtype}) for channel {channel} into TIFF file at: {tiff_file_path}:"):
-                memmap_image = memmap(tiff_file_path, shape=array.shape, dtype=array.dtype, bigtiff=True, imagej=True)
+
+                shape = array.shape
+
+                if project is not False and type(project) == int:
+                    shape = list(shape)
+                    shape.pop(1+project)
+                    shape = tuple(shape)
+
+                memmap_image = memmap(tiff_file_path, shape=shape, dtype=array.dtype, bigtiff=True, imagej=True)
 
                 def process(tp):
                     aprint(f"Processing time point {tp}")
                     stack = array[tp].compute()
+
+                    if project is not False and type(project) == int:
+                        # project is the axis for projection, but here we are not considering the T dimension anymore...
+                        aprint(f"Projecting along axis {project}")
+                        stack = stack.max(axis=project)
+
                     memmap_image[tp] = stack
 
                 if workers > 1:

@@ -181,6 +181,9 @@ class CCDataset(BaseDataset):
         # TODO: implement this!
         return {}
 
+    def append_metadata(self, metadata: dict):
+        raise NotImplementedError("Method append_metadata is not available for a joined dataset!")
+
     def get_array(self, channel: str, per_z_slice: bool = True, wrap_with_dask: bool = False):
 
         # Lazy and memorized version of get_stack:

@@ -87,7 +87,7 @@ class JoinedDataset(BaseDataset):
         return self._dataset_list[0].dtype(channel)
 
     def info(self, channel: str = None) -> str:
-        if channel:
+        if channel is not None:
             info_str = f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}, joined from {len(self._dataset_list)} datasets."
             info_str += "\n"
             return info_str
@@ -110,6 +110,9 @@ class JoinedDataset(BaseDataset):
         for dataset in self._dataset_list:
             attrs.update(dataset.get_metadata())
         return attrs
+
+    def append_metadata(self, metadata: dict):
+        raise NotImplementedError("Method append_metadata is not available for a joined dataset!")
 
     def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False):
         return self._arrays[channel]

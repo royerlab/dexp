@@ -1,15 +1,10 @@
-import os
-import random
+import math
 import tempfile
 from os.path import join
 
 from arbol import aprint, asection
-from dask.array.image import imread
 
-from dexp.datasets.operations.copy import dataset_copy
-from dexp.datasets.operations.deconv import dataset_deconv
 from dexp.datasets.operations.deskew import dataset_deskew
-from dexp.datasets.operations.projrender import dataset_projection_rendering
 from dexp.datasets.zarr_dataset import ZDataset
 from dexp.optics.psf.standard_psfs import nikon16x08na
 from dexp.processing.backends.backend import Backend
@@ -27,47 +22,57 @@ def demo_deskew_numpy():
 def demo_deskew_cupy():
     try:
         with CupyBackend():
-            _demo_deskew(length_xy=128, zoom=4)
+            _demo_deskew(length=128, zoom=4)
             return True
     except ModuleNotFoundError:
         aprint("Cupy module not found! demo ignored")
         return False
 
 
-def _demo_deskew(length_xy=96,
+def _demo_deskew(length=96,
                  zoom=1,
-                 n=8,
+                 shift=1,
                  display=True):
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
-    # generate nuclei image:
-    _, _, image = generate_nuclei_background_data(add_noise=False,
-                                                  length_xy=length_xy,
-                                                  length_z_factor=1,
-                                                  independent_haze=True,
-                                                  sphere=True,
-                                                  zoom=zoom,
-                                                  dtype=xp.float32)
-
     with asection("prepare simulated timelapse:"):
-        # move to backend:
-        image = Backend.to_backend(image)
+        # generate nuclei image:
+        _, _, image = generate_nuclei_background_data(add_noise=False,
+                                                      length_xy=length,
+                                                      length_z_factor=1,
+                                                      independent_haze=True,
+                                                      sphere=True,
+                                                      zoom=zoom,
+                                                      add_offset=False,
+                                                      background_stength=0.07,
+                                                      dtype=xp.float32)
+
+        # Pad:
+        pad_width = ((int(shift * zoom * length // 2), int(shift * zoom * length // 2)), (0, 0), (0, 0),)
+        image = xp.pad(image, pad_width=pad_width)
 
         # Add blur:
         psf = nikon16x08na()
         psf = psf.astype(dtype=image.dtype, copy=False)
         image = fft_convolve(image, psf)
-        image = image.astype(dtype=xp.uint16)
 
-        # generate reference 'ground truth' timelapse
-        alpha = 1
-        matrix = xp.asarray([[1, 0, alpha], [0, 1, 0], [0, 0, 0]])
-        skewed_image = sp.ndimage.affine_transform(image, matrix)
+        # apply skew:
+        angle = 45
+        matrix = xp.asarray([[math.cos(angle * math.pi / 180), math.sin(angle * math.pi / 180), 0], [0, 1, 0], [0, 0, 1]])
+        offset = 0 * xp.asarray([image.shape[0] // 2, 0, 0])
+        # matrix = xp.linalg.inv(matrix)
+        skewed = sp.ndimage.affine_transform(image, matrix, offset=offset)
 
-        # Add noise:
-        skewed_image += random.uniform(0, 20)
-        skewed_image = skewed_image.astype(dtype=xp.uint16)
+        # Add noise and clip
+        # skewed += xp.random.uniform(-1, 1)
+        skewed = xp.clip(skewed, a_min=0, a_max=None)
+
+        # cast to uint16:
+        skewed = skewed.astype(dtype=xp.uint16)
+
+        # Single timepoint:
+        skewed = skewed[xp.newaxis, ...]
 
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -80,12 +85,12 @@ def _demo_deskew(length_xy=96,
                                store='dir')
 
             dataset.add_channel(name='channel',
-                                shape=skewed_image.shape,
+                                shape=skewed.shape,
                                 chunks=(1, 64, 64, 64),
-                                dtype=skewed_image.dtype)
+                                dtype=skewed.dtype)
 
             dataset.write_array(channel='channel',
-                                array=Backend.to_numpy(skewed_image))
+                                array=Backend.to_numpy(skewed))
 
             source_array = dataset.get_array('channel')
 
@@ -95,15 +100,18 @@ def _demo_deskew(length_xy=96,
 
             # deskew:
             dataset_deskew(dataset=dataset,
-                         dest_path=output_path,
-                         channels=('channel',),
-                         slicing=(slice(2, 3), ...))
+                           dest_path=output_path,
+                           channels=('channel',),
+                           slicing=(slice(0, 1),),
+                           dx=1,
+                           dz=1,
+                           angle=angle)
 
-            deconv_dataset = ZDataset(path=output_path, mode='a')
-            deconv_array = deconv_dataset.get_array('channel')
+            deskew_dataset = ZDataset(path=output_path, mode='a')
+            deskew_array = deskew_dataset.get_array('channel')
 
-            assert deconv_array.shape[0] == 1
-            assert deconv_array.shape[1:] == source_array.shape[1:]
+            assert deskew_array.shape[0] == 1
+
 
         if display:
 
@@ -113,7 +121,7 @@ def _demo_deskew(length_xy=96,
             import napari
             viewer = napari.Viewer(ndisplay=3)
             viewer.add_image(_c(source_array), name='source_array')
-            viewer.add_image(_c(deconv_array), name='deconv_array')
+            viewer.add_image(_c(deskew_array), name='deconv_array')
             viewer.grid.enabled = True
             napari.run()
 

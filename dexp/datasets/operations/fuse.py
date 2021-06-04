@@ -1,12 +1,8 @@
+import dask
 import numpy as np
-
 from arbol.arbol import aprint
 from arbol.arbol import asection
-from zarr.errors import ContainsArrayError, ContainsGroupError
-
-import dask
 from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
@@ -181,6 +177,7 @@ def dataset_fuse(dataset,
 
         return new_equalisation_ratios, model
 
+    from dask_cuda import LocalCUDACluster
     cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
     client = Client(cluster)
     aprint('Dask Client', client)

@@ -49,6 +49,9 @@ def yang_deskew(image: xpArray,
                                        flip_depth_axis=flip_depth_axis,
                                        resample_factor=resample_factor,
                                        lateral_scaling=lateral_scaling,
+                                       camera_orientation=camera_orientation,
+                                       num_split=num_split,
+                                       internal_dtype=internal_dtype
                                        )
 
     return image
@@ -126,10 +129,11 @@ def yang_deskew_dimensionless(image: xpArray,
                                        num_split=num_split,
                                        internal_dtype=internal_dtype)
 
-    # # flip along axis x
-    # if flip_depth_axis:
-    #     xp = Backend.get_xp_module(image)
-    #     image = xp.flip(image, axis=2)
+    # flip along axis x
+    if flip_depth_axis:
+        xp = Backend.get_xp_module(image)
+        # _resampling_vertical_split transposes axis 0 with axis 2, so we flip along 2:
+        image = xp.flip(image, axis=2)
 
     # We apply the inverse permutation:
     image = xp.transpose(image, axes=inverse_permutation)

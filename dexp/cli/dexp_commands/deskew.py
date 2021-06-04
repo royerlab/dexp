@@ -17,11 +17,15 @@ from dexp.datasets.operations.deskew import dataset_deskew
 @click.option('--codec', '-z', default=_default_codec, help='compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ')
 @click.option('--clevel', '-l', type=int, default=_default_clevel, help='Compression level', show_default=True)
 @click.option('--overwrite', '-w', is_flag=True, help='to force overwrite of target', show_default=True)  # , help='dataset slice'
-@click.option('--zerolevel', '-zl', type=int, default=110, help="‘zero-level’ i.e. the pixel values in the restoration (to be substracted)", show_default=True)  #
-@click.option('--cliphigh', '-ch', type=int, default=1024, help='Clips voxel values above the given value, if zero no clipping is done', show_default=True)  #
-@click.option('--dehaze_size', '-dhs', type=int, default=65, help='Filter size (scale) for dehazing the final regsitered and fused image to reduce effect of scattered and out-of-focus light. Set to zero to deactivate.',
+@click.option('--mode', '-m', type=str, default='yang', help="Deskew algorithm: 'yang' or 'classic'. ", show_default=True)  #
+@click.option('--deltax', '-xx', type=float, default=None, help='Pixel size of the camera', show_default=True)  #
+@click.option('--deltaz', '-zz', type=float, default=None, help='Scanning step (stage or galvo scanning step, not the same as the distance between the slices)',
               show_default=True)  #
-@click.option('--dark_denoise_threshold', '-ddt', type=int, default=0, help='Threshold for denoises the dark pixels of the image -- helps increase compression ratio. Set to zero to deactivate.', show_default=True)  #
+@click.option('--angle', '-a', type=float, default=None, help='Incident angle of the light sheet, angle between the light sheet and the optical axis in degrees', show_default=True)  #
+@click.option('--flips', '-fl', type=str, default=None, help='Flips image to deskew in the opposite orientation (True for view 0 and False for view 1)', show_default=True)  #
+@click.option('--camorientation', '-co', type=int, default=0, help='Camera orientation correction expressed as a number of 90 deg rotations to be performed per 2D image in stack -- if required.', show_default=True)  #
+@click.option('--depthaxis', '-za', type=int, default=0, help='Depth axis.', show_default=True)  #
+@click.option('--lateralaxis', '-xa', type=int, default=1, help='Lateral axis.', show_default=True)  #
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
@@ -34,10 +38,14 @@ def deskew(input_paths,
            codec,
            clevel,
            overwrite,
-           zerolevel,
-           cliphigh,
-           dehaze_size,
-           dark_denoise_threshold,
+           mode,
+           deltax,
+           deltaz,
+           angle,
+           flips,
+           camorientation,
+           depthaxis,
+           lateralaxis,
            workers,
            workersbackend,
            devices,
@@ -46,11 +54,16 @@ def deskew(input_paths,
     """
 
     input_dataset, input_paths = glob_datasets(input_paths)
-    output_path = _get_output_path(input_paths[0], output_path, "_deconv")
+    output_path = _get_output_path(input_paths[0], output_path, "_deskew")
 
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
     devices = _parse_devices(devices)
+
+    if flips is None:
+        flips = (False, )*len(channels)
+    else:
+        flips = tuple(bool(s) for s in flips.split(','))
 
     with asection(f"Deskewing dataset: {input_paths}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "):
         aprint(f"Devices used: {devices}, workers: {workers} ")
@@ -58,14 +71,18 @@ def deskew(input_paths,
                        output_path,
                        channels=channels,
                        slicing=slicing,
+                       dx=deltax,
+                       dz=deltaz,
+                       angle=angle,
+                       flips=flips,
+                       camera_orientation=camorientation,
+                       depth_axis=depthaxis,
+                       lateral_axis=lateralaxis,
+                       mode=mode,
                        store=store,
                        compression=codec,
                        compression_level=clevel,
                        overwrite=overwrite,
-                       zero_level=zerolevel,
-                       clip_too_high=cliphigh,
-                       dehaze_size=dehaze_size,
-                       dark_denoise_threshold=dark_denoise_threshold,
                        workers=workers,
                        workersbackend=workersbackend,
                        devices=devices,
@@ -73,3 +90,26 @@ def deskew(input_paths,
 
         input_dataset.close()
         aprint("Done!")
+
+
+# def dataset_deskew(dataset: BaseDataset,
+#                    dest_path: str,
+#                    channels: Sequence[str],
+#                    slicing,
+#                    dx: float,
+#                    dz: float,
+#                    angle: float,
+#                    flips: Sequence[bool] = None,
+#                    camera_orientation: int = 0,
+#                    depth_axis: int = 0,
+#                    lateral_axis: int = 1,
+#                    mode: str = 'classic',
+#                    store: str = 'dir',
+#                    compression: str = 'zstd',
+#                    compression_level: int = 3,
+#                    overwrite: bool = False,
+#                    workers: int = 1,
+#                    workersbackend: str = 'threading',
+#                    devices: Optional[List[int]] = None,
+#                    check: bool = True,
+#                    stop_at_exception=True):

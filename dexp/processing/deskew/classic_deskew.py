@@ -1,3 +1,5 @@
+import math
+
 import numpy
 
 from dexp.processing.backends.backend import Backend
@@ -43,12 +45,9 @@ def classic_deskew(image: xpArray,
 
     """
 
-    xp = Backend.get_xp_module(image)
-    sp = Backend.get_sp_module(image)
-
     # computes the dimension-less parameters:
-    shift = dx * xp.sin(angle * xp.pi / 180) / dz
-    lateral_scaling = xp.cos(angle * xp.pi / 180)
+    shift = dx * math.sin(angle * math.pi / 180) / dz
+    lateral_scaling = math.cos(angle * math.pi / 180)
 
     image = classic_deskew_dimensionless(image=image,
                                          shift=shift,
@@ -102,8 +101,8 @@ def classic_deskew_dimensionless(image: xpArray,
 
     """
 
-    xp = Backend.get_xp_module(image)
-    sp = Backend.get_sp_module(image)
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
     if internal_dtype is None:
         internal_dtype = xp.float16
@@ -162,10 +161,14 @@ def classic_deskew_dimensionless(image: xpArray,
         image = sp.ndimage.affine_transform(image, matrix, order=order)
 
     # rescale the data along lateral axis to preserve voxel dimensions:
-    if lateral_scaling!= 1.0:
-        zoom = [1, ] * 3
-        zoom[lateral_axis] = lateral_scaling
-        image = sp.ndimage.zoom(image, zoom=zoom, order=order)
+    # if lateral_scaling != 1.0:
+    #     zoom = [1, ] * 3
+    #     zoom[lateral_axis] = lateral_scaling
+    #     image = sp.ndimage.zoom(image, zoom=zoom, order=order)
+
+    # flip along axis z
+    if flip_depth_axis:
+        image = xp.flip(image, axis=0)
 
     # We apply the inverse permutation:
     image = xp.transpose(image, axes=inverse_permutation)

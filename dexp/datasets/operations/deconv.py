@@ -1,10 +1,9 @@
 from typing import Sequence, Tuple, List, Optional
 
+import dask
 import numpy
 from arbol.arbol import aprint
 from arbol.arbol import asection
-
-import dask
 from dask.distributed import Client
 from dask_cuda import LocalCUDACluster
 
@@ -185,10 +184,18 @@ def dataset_deconv(dataset: BaseDataset,
 
     dask.compute(*lazy_computation)
 
+    # Dataset info:
     aprint(dest_dataset.info())
+
+    # Check dataset integrity:
     if check:
         dest_dataset.check_integrity()
 
+    # set CLI history:
     dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
+
+    # Set metadata:
+    dest_dataset.append_metadata(dataset.get_metadata())
+
     # close destination dataset:
     dest_dataset.close()

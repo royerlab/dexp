@@ -194,35 +194,48 @@ class ZDataset(BaseDataset):
 
     def info(self, channel: str = None, cli_history: bool = True) -> str:
         info_str = ''
-        if channel:
+        if channel is not None:
             info_str += f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}"
-            info_str += "\n"
+            info_str += ".\n"
             info_str += str(self._arrays[channel].info)
             return info_str
         else:
-            info_str += f"Dataset at location: {self._path}"
-            info_str = "Zarr tree: \n"
+            info_str += f"Dataset at location: {self._path} \n"
+            info_str += f"Channels: {self.channels()} \n"
+            info_str += "Zarr tree: \n"
             info_str += str(self._root_group.tree())
-            info_str += "\n\n"
-            info_str += "Channels: \n"
-            for channel in self.channels():
-                info_str += "  └──" + self.info(channel) + "\n\n"
+            info_str += ".\n\n"
+            info_str += "Arrays: \n"
+            for name, array in self._arrays.items():
+                info_str += "  │ \n"
+                info_str += "  └──" + name +":\n" + str(array.info) + "\n\n"
+                info_str += ".\n\n"
 
-        info_str += "\n\n"
-        info_str += "\n\n"
-        for name, array in self._arrays.items():
-            info_str += f"Channel: {name}  \n"
-            info_str += str(array.info)
-            info_str += '\n'
+        # info_str += ".\n\n"
+        # info_str += ".\n\n"
+        # info_str += "All Arrays: \n"
+        # for name, array in self._arrays.items():
+        #     info_str += f"Channel: {name}  \n"
+        #     info_str += str(array.info)
+        #     info_str += '\n'
+
+        info_str += ".\n\n"
+        info_str += f"\nMetadata: \n"
+        for key, value in self.get_metadata().items():
+            if 'cli_history' not in key:
+                info_str += f"\t{key} : {value} \n"
 
         if cli_history:
+            info_str += ".\n\n"
             key = 'cli_history'
             if key in self._root_group.attrs:
-                info_str += "\nCommand line history:\n/\n"
+                info_str += "\nCommand line history:\n"
                 commands_list = self._root_group.attrs[key]
                 for command in commands_list[:-1]:
-                    info_str += " ├──" + command + "\n"
-                info_str += " └──" + commands_list[-1] + "\n"
+                    info_str += " ├──■ '" + command + "' \n"
+                info_str += " └──■ '" + commands_list[-1] + "' \n"
+
+
 
         return info_str
 
@@ -232,6 +245,9 @@ class ZDataset(BaseDataset):
         for name in self._root_group.attrs:
             attrs[name] = self._root_group.attrs[name]
         return attrs
+
+    def append_metadata(self, metadata: dict):
+        self._root_group.attrs.update(metadata)
 
     def set_cli_history(self, parent: Optional['ZDataset']):
         key = 'cli_history'
