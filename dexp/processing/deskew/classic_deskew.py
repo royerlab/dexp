@@ -17,7 +17,7 @@ def classic_deskew(image: xpArray,
                    flip_depth_axis: bool = False,
                    epsilon: float = 1e-2,
                    order: int = 1,
-                   padding: bool = False,
+                   padding: bool = True,
                    copy: bool = True,
                    internal_dtype=None
                    ):

@@ -4,6 +4,7 @@ from arbol.arbol import aprint
 from arbol.arbol import asection
 from dask.distributed import Client
 
+from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -57,17 +58,6 @@ def dataset_fuse(dataset,
     aprint(f"Slicing with: {slicing}")
     out_shape, volume_slicing, time_points = slice_from_shape(views[0].shape, slicing)
 
-    # We allocate last minute once we know the shape...
-    from dexp.datasets.zarr_dataset import ZDataset
-    mode = 'w' + ('' if overwrite else '-')
-    dest_dataset = ZDataset(output_path, mode, store)
-
-    dest_dataset.add_channel('fused',
-                             shape=out_shape,
-                             dtype=dtype,
-                             codec=compression,
-                             clevel=compression_level)
-
     # load registration models:
     with NumpyBackend():
         if loadreg:
@@ -83,7 +73,7 @@ def dataset_fuse(dataset,
 
     @dask.delayed
     def process(i, params):
-        equalisation_ratios_reference, model = params
+        equalisation_ratios_reference, model, dest_dataset = params
         tp = time_points[i]
         try:
             with asection(f"Loading channels {channels} for time point {i}/{len(time_points)}"):
@@ -133,7 +123,7 @@ def dataset_fuse(dataset,
                                                                                registration_max_change=max_change,
                                                                                registration_edge_filter=registration_edge_filter,
                                                                                equalise=equalise,
-                                                                               equalisation_ratios=equalisation_ratios_reference[0],
+                                                                               equalisation_ratios=equalisation_ratios_reference,
                                                                                zero_level=zero_level,
                                                                                clip_too_high=clip_too_high,
                                                                                fusion=fusion,
@@ -160,6 +150,18 @@ def dataset_fuse(dataset,
                 aprint(f"Last equalisation ratios: {new_equalisation_ratios}")
 
             with asection(f"Saving fused stack for time point {i}, shape:{tp_array.shape}, dtype:{tp_array.dtype}"):
+
+                if i == 0:
+                    # We allocate last minute once we know the shape... because we don't always know the shape in advance!!!
+                    from dexp.datasets.zarr_dataset import ZDataset
+                    mode = 'w' + ('' if overwrite else '-')
+                    dest_dataset = ZDataset(output_path, mode, store)
+                    dest_dataset.add_channel('fused',
+                                             shape=(len(time_points),)+tp_array.shape,
+                                             dtype=tp_array.dtype,
+                                             codec=compression,
+                                             clevel=compression_level)
+
                 dest_dataset.write_stack(channel='fused',
                                          time_point=i,
                                          stack_array=tp_array)
@@ -175,7 +177,7 @@ def dataset_fuse(dataset,
             if stop_at_exception:
                 raise error
 
-        return new_equalisation_ratios, model
+        return new_equalisation_ratios, model, dest_dataset
 
     from dask_cuda import LocalCUDACluster
     cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
@@ -183,25 +185,26 @@ def dataset_fuse(dataset,
     aprint('Dask Client', client)
 
     if microscope == 'simview':
-        params = ([None, None, None], None)
+        init_params = ([None, None, None], None, None)
     elif microscope == 'mvsols':
-        params = ([None], None)
+        init_params = ([None], None, None)
     else:
         raise NotImplementedError
 
-    # if equalise mode equals 'first' it creates a dependency to the first computation
-    lazy_computations = []
-    if equalise_mode == 'first':
-        params = process(0, params)
-        lazy_computations.append(params)
+    params = process(0, init_params).compute()
+    if equalise_mode == 'all':
+        params = init_params[:2] + params[2]
 
-    for i in range(1 if equalise_mode == 'first' else 0, len(time_points)):
+    lazy_computations = []
+    for i in range(1, len(time_points)):
         lazy_computations.append(process(i, params))
 
-    models = [model for _, model in dask.compute(*lazy_computations)]
+    models = [model for _, model, _ in dask.compute(*lazy_computations)]
 
     if not loadreg:
         model_list_to_file(model_list_filename, models)
+
+    _, _, dest_dataset = params
 
     aprint(dest_dataset.info())
     if check:

@@ -79,7 +79,8 @@ def _demo_deskew(length=96,
                                channels=('v0c0',),
                                flips=(True,),
                                slicing=(slice(0, 1),),
-                               mode='classic')
+                               mode='classic',
+                               padding=True)
 
                 # read result
                 deskewed_classic_dataset = ZDataset(path=output_path, mode='r')

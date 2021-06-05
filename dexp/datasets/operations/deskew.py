@@ -24,6 +24,7 @@ def dataset_deskew(dataset: BaseDataset,
                    depth_axis: int = 0,
                    lateral_axis: int = 1,
                    mode: str = 'classic',
+                   padding: bool = True,
                    store: str = 'dir',
                    compression: str = 'zstd',
                    compression_level: int = 3,
@@ -104,7 +105,8 @@ def dataset_deskew(dataset: BaseDataset,
                                                            dx=dx,
                                                            dz=dz,
                                                            angle=angle,
-                                                           camera_orientation=camera_orientation)
+                                                           camera_orientation=camera_orientation,
+                                                           padding=padding)
                     else:
                         raise ValueError(f"Deskew mode: {mode} not supported.")
 
