@@ -211,14 +211,6 @@ class ZDataset(BaseDataset):
                 info_str += "  └──" + name +":\n" + str(array.info) + "\n\n"
                 info_str += ".\n\n"
 
-        # info_str += ".\n\n"
-        # info_str += ".\n\n"
-        # info_str += "All Arrays: \n"
-        # for name, array in self._arrays.items():
-        #     info_str += f"Channel: {name}  \n"
-        #     info_str += str(array.info)
-        #     info_str += '\n'
-
         info_str += ".\n\n"
         info_str += f"\nMetadata: \n"
         for key, value in self.get_metadata().items():

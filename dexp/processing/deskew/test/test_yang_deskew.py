@@ -15,7 +15,7 @@ def test_yang_deskew_numpy():
 def test_yang_deskew_cupy():
     try:
         with CupyBackend():
-            _yang_deskew(display=False)
+            _yang_deskew(length=48, display=False)
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! demo ignored")

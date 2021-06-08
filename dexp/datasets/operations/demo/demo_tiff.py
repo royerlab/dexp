@@ -120,18 +120,6 @@ def _demo_tiff(length_xy=96,
             # output_folder:
             output_path = join(tmpdir, 'projection')
 
-            # def dataset_tiff(dataset: BaseDataset,
-            #                  dest_path: str,
-            #                  channels: Sequence[str],
-            #                  slicing,
-            #                  overwrite: bool = False,
-            #                  project: bool = False,
-            #                  one_file_per_first_dim: bool = False,
-            #                  clevel: int = 0,
-            #                  workers: int = 1,
-            #                  workersbackend: str = '',
-            #                  stop_at_exception: bool = True):
-
             # Do actual tiff export:
             dataset_tiff(dataset=dataset,
                          dest_path=output_path,
