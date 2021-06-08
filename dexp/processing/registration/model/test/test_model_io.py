@@ -68,7 +68,8 @@ def _test_model_io_to_file():
         aprint(f"Temp file: {tmp.name}")
 
         model_list_1 = list([TranslationRegistrationModel(shift_vector=[-1, i, 2 * i], confidence=0.6 - 0.01 * i) for i in range(3)])
-        model_list_2 = list([WarpRegistrationModel(vector_field=vector_field * (1 + 0.1 * i), confidence=confidence / i) for i in range(3)])
+        model_list_2 = list([WarpRegistrationModel(vector_field=vector_field * (1 + 0.1 * i),
+                                                   confidence=confidence / (i + 1e-8)) for i in range(3)])
         model_list = model_list_1 + model_list_2
         model_list_to_file(tmp.name, model_list)
 

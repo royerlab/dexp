@@ -43,6 +43,23 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
         else:
             return False
 
+    def __sub__(self, other: 'TranslationRegistrationModel') -> 'TranslationRegistrationModel':
+        if isinstance(other, self.__class__):
+            return TranslationRegistrationModel(shift_vector=self.shift_vector - other.shift_vector,
+                                                confidence=self.confidence)
+        else:
+            raise ValueError('Expected another `TranslationRegistrationModel` at `__sub__`.')
+
+    def __add__(self, other: 'TranslationRegistrationModel') -> 'TranslationRegistrationModel':
+        if isinstance(other, self.__class__):
+            return TranslationRegistrationModel(shift_vector=self.shift_vector + other.shift_vector,
+                                                confidence=(self.confidence + other.confidence) / 2.0)
+        else:
+            raise ValueError('Expected another `TranslationRegistrationModel` at `__add__`.')
+
+    def copy(self) -> 'TranslationRegistrationModel':
+        return TranslationRegistrationModel(self.shift_vector, self.confidence)
+
     def to_json(self) -> str:
         return json.dumps({'type': 'translation', 'translation': self.shift_vector.tolist(), 'confidence': self.confidence.tolist()})
 
