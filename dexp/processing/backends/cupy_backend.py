@@ -9,6 +9,7 @@ from arbol import aprint
 from dask.array import Array
 
 from dexp.processing.backends.backend import Backend
+from dexp.utils import xpArray
 
 
 class CupyBackend(Backend):
@@ -226,7 +227,7 @@ class CupyBackend(Backend):
 
         super().clear_memory_pool()
 
-    def _to_numpy(self, array, dtype=None, force_copy: bool = False) -> numpy.ndarray:
+    def _to_numpy(self, array: xpArray, dtype=None, force_copy: bool = False) -> numpy.ndarray:
         import cupy
 
         if isinstance(array, Array):
@@ -242,7 +243,7 @@ class CupyBackend(Backend):
         else:
             return numpy.asarray(array)
 
-    def _to_backend(self, array, dtype=None, force_copy: bool = False) -> Any:
+    def _to_backend(self, array: xpArray, dtype=None, force_copy: bool = False) -> Any:
 
         import cupy
 
@@ -261,7 +262,7 @@ class CupyBackend(Backend):
             with self.cupy_device:
                 return cupy.asarray(array, dtype=dtype)
 
-    def _get_xp_module(self, array=None) -> Any:
+    def _get_xp_module(self, array: xpArray = None) -> Any:
         if array is None:
             import cupy
             return cupy
@@ -269,7 +270,7 @@ class CupyBackend(Backend):
             import cupy
             return cupy.get_array_module(array)
 
-    def _get_sp_module(self, array=None) -> Any:
+    def _get_sp_module(self, array: xpArray = None) -> Any:
         if array is None:
             import cupyx
             return cupyx.scipy

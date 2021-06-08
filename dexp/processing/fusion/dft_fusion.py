@@ -1,9 +1,10 @@
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.utils import xpArray
 
 
-def fuse_dft_nd(image_a,
-                image_b,
+def fuse_dft_nd(image_a: xpArray,
+                image_b: xpArray,
                 cutoff: float = 0,
                 clip: bool = True,
                 internal_dtype=None):

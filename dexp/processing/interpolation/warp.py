@@ -3,10 +3,11 @@ from scipy.ndimage import zoom
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.utils import xpArray
 
 
-def warp(image,
-         vector_field,
+def warp(image: xpArray,
+         vector_field: xpArray,
          vector_field_upsampling: int = 2,
          vector_field_upsampling_order: int = 1,
          mode: str = 'border',

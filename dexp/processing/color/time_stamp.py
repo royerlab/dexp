@@ -3,9 +3,10 @@ from typing import Union, Tuple, Sequence
 from dexp.processing.backends.backend import Backend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.cairo_utils import get_array_for_cairo_surface
+from dexp.utils import xpArray
 
 
-def insert_time_stamp(image: 'Array',
+def insert_time_stamp(image: xpArray,
                       time_point_index: int,
                       nb_time_points: int,
                       start_time: float = 0,

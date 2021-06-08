@@ -6,10 +6,11 @@ from dexp.processing.filters.sobel_filter import sobel_filter
 from dexp.processing.utils.blend_images import blend_images
 from dexp.processing.utils.element_wise_affine import element_wise_affine
 from dexp.processing.utils.fit_shape import fit_to_shape
+from dexp.utils import xpArray
 
 
-def fuse_tg_nd(image_a,
-               image_b,
+def fuse_tg_nd(image_a: xpArray,
+               image_b: xpArray,
                downscale: Optional[int] = 2,
                sharpness: Optional[float] = 24,
                tenengrad_smoothing: Optional[int] = 4,

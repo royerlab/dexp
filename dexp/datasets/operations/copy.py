@@ -11,15 +11,15 @@ def dataset_copy(dataset: BaseDataset,
                  dest_path: str,
                  channels: Sequence[str],
                  slicing,
-                 store: str,
-                 chunks: Optional[Sequence[int]],
-                 compression: str,
-                 compression_level: int,
-                 overwrite: bool,
-                 zerolevel: int,
-                 workers: int,
-                 workersbackend: str,
-                 check: bool,
+                 store: str = 'dir',
+                 chunks: Optional[Sequence[int]] = None,
+                 compression: str = 'zstd',
+                 compression_level: int = 3,
+                 overwrite: bool = False,
+                 zerolevel: int = 0,
+                 workers: int = 1,
+                 workersbackend: str = '',
+                 check: bool = True,
                  stop_at_exception: bool = True,
                  ):
 
@@ -70,10 +70,18 @@ def dataset_copy(dataset: BaseDataset,
             for i in range(len(time_points)):
                 process(i)
 
+    # Dataset info:
     aprint(dest_dataset.info())
+
+    # Check dataset integrity:
     if check:
         dest_dataset.check_integrity()
 
+    # set CLI history:
     dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
+
+    # Set metadata:
+    dest_dataset.append_metadata(dataset.get_metadata())
+
     # close destination dataset:
     dest_dataset.close()

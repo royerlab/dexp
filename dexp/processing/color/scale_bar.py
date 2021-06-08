@@ -3,9 +3,10 @@ from typing import Union, Tuple, Sequence
 from dexp.processing.backends.backend import Backend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.cairo_utils import get_array_for_cairo_surface
+from dexp.utils import xpArray
 
 
-def insert_scale_bar(image,
+def insert_scale_bar(image: xpArray,
                      length_in_unit: float = 1,
                      pixel_scale: float = 1,
                      bar_height: int = 4,

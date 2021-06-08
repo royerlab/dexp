@@ -19,10 +19,12 @@ from dexp.processing.registration.translation_nd_proj import register_translatio
 from dexp.processing.registration.warp_multiscale_nd import register_warp_multiscale_nd
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
+from dexp.utils import xpArray
 
 
 @section("mvSOLS 1C2L fusion")
-def msols_fuse_1C2L(C0L0, C0L1,
+def msols_fuse_1C2L(C0L0: xpArray,
+                    C0L1: xpArray,
                     dz: float,
                     dx: float,
                     angle: float,
@@ -375,7 +377,9 @@ def resample_C0L0(image,
                   num_split: int = 8):
     if mode == 'yang':
         return yang_deskew(image,
-                           flip=True,
+                           depth_axis=0,
+                           lateral_axis=1,
+                           flip_depth_axis=True,
                            dx=dx,
                            dz=dz,
                            angle=angle,
@@ -392,7 +396,9 @@ def resample_C0L1(image,
                   num_split: int = 8):
     if mode == 'yang':
         return yang_deskew(image,
-                           flip=False,
+                           depth_axis=0,
+                           lateral_axis=1,
+                           flip_depth_axis=False,
                            dx=dx,
                            dz=dz,
                            angle=angle,

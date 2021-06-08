@@ -3,9 +3,11 @@ from typing import Callable
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.registration.translation_2d import register_translation_2d_dexp
+from dexp.utils import xpArray
 
 
-def register_translation_proj_nd(image_a, image_b,
+def register_translation_proj_nd(image_a: xpArray,
+                                 image_b: xpArray,
                                  register_translation_2d: Callable = register_translation_2d_dexp,
                                  drop_worse: bool = True,
                                  force_numpy: bool = False,

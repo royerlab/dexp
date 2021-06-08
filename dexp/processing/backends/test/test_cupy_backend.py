@@ -120,6 +120,9 @@ def test_unified_memory():
 
 def test_paralell():
     try:
+        num_devices = len(CupyBackend.available_devices())
+        if num_devices == 1:
+            return
 
         def f(id):
             with CupyBackend(id):
@@ -139,6 +142,9 @@ def test_paralell():
 def test_paralell_with_exclusive():
     try:
         num_devices = len(CupyBackend.available_devices())
+        if num_devices == 1:
+            return
+
         aprint(f"num_devices = {num_devices}")
 
         job_duration = 2

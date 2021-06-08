@@ -121,7 +121,7 @@ def _demo_stabilize(length_xy=256,
         input_dataset.write_array(channel='channel',
                                   array=Backend.to_numpy(shifted))
 
-        dataset_stabilize(input_dataset=input_dataset,
+        dataset_stabilize(dataset=input_dataset,
                           output_path=output_path,
                           channels=['channel']
                           )

@@ -31,7 +31,7 @@ ten_minutes_since_midnight = int(seconds_since_midnight//600)
 VERSION = datetime.today().strftime('%Y.%m.%d')+f'.{minutes_since_midnight}'
 print(f"Version: {VERSION}")
 
-CUPY_VERSION = '9.0.0b3'
+CUPY_VERSION = '9.1.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [

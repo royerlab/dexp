@@ -18,6 +18,7 @@ def dataset_view(input_dataset: BaseDataset,
                  projections_only: bool,
                  volume_only: bool,
                  rescale_time: bool):
+
     from napari import gui_qt, Viewer
     from napari.layers.utils._link_layers import link_layers, _get_common_evented_attributes
 

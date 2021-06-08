@@ -5,10 +5,11 @@ from arbol import aprint
 from dexp.processing.backends.backend import Backend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.border import add_border
+from dexp.utils import xpArray
 
 
-def insert_color_image(image,
-                       inset_image,
+def insert_color_image(image: xpArray,
+                       inset_image: xpArray,
                        scale: Union[float, Tuple[float, ...]] = 1,
                        translation: Union[str, Sequence[Tuple[Union[int, float], ...]]] = None,
                        border_width: int = 0,

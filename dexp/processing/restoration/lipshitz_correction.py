@@ -4,9 +4,10 @@ import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.utils import xpArray
 
 
-def lipschitz_continuity_correction(image,
+def lipschitz_continuity_correction(image: xpArray,
                                     num_iterations: int = 2,
                                     correction_percentile: float = 0.1,
                                     lipschitz: float = 0.1,

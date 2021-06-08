@@ -2,9 +2,11 @@ import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.utils import xpArray
 
 
-def fft_convolve(image1, image2,
+def fft_convolve(image1: xpArray,
+                 image2: xpArray,
                  mode: str = 'reflect',
                  in_place: bool = True,
                  internal_dtype=None):

@@ -54,7 +54,7 @@ def _demo_lr_deconvolution(length_xy=256):
         def f(_image):
             return lucy_richardson_deconvolution(_image, psf, num_iterations=iterations, normalise_input=False, padding=17, max_correction=max_correction)
 
-        deconvolved_sg = scatter_gather_i2i(f, blurry, chunks=length_xy // 2, margins=17, normalise=True, to_numpy=True)
+        deconvolved_sg = scatter_gather_i2i(f, blurry, tiles=length_xy // 2, margins=17, normalise=True, to_numpy=True)
 
     from napari import Viewer, gui_qt
     with gui_qt():

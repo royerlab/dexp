@@ -1,9 +1,10 @@
 from typing import Tuple
 
 from dexp.processing.backends.backend import Backend
+from dexp.utils import xpArray
 
 
-def add_border(image,
+def add_border(image: xpArray,
                width: int = 2,
                color: Tuple[float, float, float, float] = None,
                over_image: bool = False,

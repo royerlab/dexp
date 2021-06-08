@@ -12,9 +12,10 @@ from dexp.processing.registration.model.translation_registration_model import Tr
 from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
 from dexp.processing.utils.center_of_mass import center_of_mass
 from dexp.processing.utils.linear_solver import linsolve
+from dexp.utils import xpArray
 
 
-def image_stabilisation(image: 'Array',
+def image_stabilisation(image: xpArray,
                         axis: int,
                         preload_images: bool = True,
                         mode: str = 'translation',

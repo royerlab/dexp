@@ -6,11 +6,12 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
 from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
+from dexp.utils import xpArray
 
 
 @section("register_warp_nd")
-def register_warp_nd(image_a,
-                     image_b,
+def register_warp_nd(image_a: xpArray,
+                     image_b: xpArray,
                      chunks: Union[int, Tuple[int, ...]],
                      margins: Union[int, Tuple[int, ...]] = None,
                      registration_method=register_translation_proj_nd,
@@ -49,7 +50,7 @@ def register_warp_nd(image_a,
 
     vector_field, confidence = scatter_gather_i2v(f,
                                                   (image_a, image_b),
-                                                  chunks=chunks,
+                                                  tiles=chunks,
                                                   margins=margins)
 
     model = WarpRegistrationModel(vector_field=vector_field, confidence=confidence, force_numpy=force_numpy)

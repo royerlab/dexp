@@ -1,9 +1,10 @@
 from typing import Tuple, Union
 
 from dexp.processing.backends.backend import Backend
+from dexp.utils import xpArray
 
 
-def crop_resize_pad_color_image(image,
+def crop_resize_pad_color_image(image: xpArray,
                                 crop: Union[int, Tuple[int, ...], Tuple[Tuple[int, int], ...]] = None,
                                 resize: Tuple[int, ...] = None,
                                 resize_order: int = 3,

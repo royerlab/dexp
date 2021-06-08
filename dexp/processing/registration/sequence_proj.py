@@ -8,9 +8,10 @@ from dexp.processing.registration.model.sequence_registration_model import Seque
 from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
 from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.utils.projection_generator import projection_generator
+from dexp.utils import xpArray
 
 
-def image_stabilisation_proj(image: 'Array',
+def image_stabilisation_proj(image: xpArray,
                              axis: int = 0,
                              projection_type: str = 'max-min',
                              **kwargs

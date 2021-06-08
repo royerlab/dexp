@@ -1,10 +1,9 @@
-from typing import Sequence, Tuple, List
+from typing import Sequence, Tuple, List, Optional
 
+import dask
 import numpy
 from arbol.arbol import aprint
 from arbol.arbol import asection
-
-import dask
 from dask.distributed import Client
 from dask_cuda import LocalCUDACluster
 
@@ -18,41 +17,50 @@ from dexp.utils.slicing import slice_from_shape
 
 
 def dataset_deconv(dataset: BaseDataset,
-                   path: str,
+                   dest_path: str,
                    channels: Sequence[str],
                    slicing,
-                   store: str,
-                   compression: str,
-                   compression_level: int,
-                   overwrite: bool,
-                   chunksize: Tuple[int],
-                   method: str,
-                   num_iterations: int,
-                   max_correction: int,
-                   power: float,
-                   blind_spot: int,
-                   back_projection: str,
-                   objective: str,
-                   numerical_aperture: float,
-                   dxy: float,
-                   dz: float,
-                   xy_size: int,
-                   z_size: int,
-                   show_psf: bool,
-                   scaling: Tuple[float],
-                   workers: int,
-                   workersbackend: str,
-                   devices: List[int],
-                   check: bool,
+                   store: str = 'dir',
+                   compression: str = 'zstd',
+                   compression_level: int = 3,
+                   overwrite: bool = False,
+                   tilesize: Optional[Tuple[int]] = None,
+                   method: str = 'lr',
+                   num_iterations: int = 16,
+                   max_correction: int = 16,
+                   power: float = 1,
+                   blind_spot: int = 0,
+                   back_projection: Optional[str] = None,
+                   psf_objective: str = 'nikon16x08na',
+                   psf_na: float = 0.8,
+                   psf_dxy: float = 0.485,
+                   psf_dz: float = 2,
+                   psf_xy_size: int = 17,
+                   psf_z_size: int = 17,
+                   psf_show: bool = False,
+                   scaling: Optional[Tuple[float]] = None,
+                   workers: int = 1,
+                   workersbackend: str = '',
+                   devices: Optional[List[int]] = None,
+                   check: bool = True,
                    stop_at_exception: bool = True,
                    ):
+
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
-    dest_dataset = ZDataset(path, mode, store)
+    dest_dataset = ZDataset(dest_path, mode, store)
 
+    # Default tile size:
+    if tilesize is None:
+        tilesize = 320 # very conservative
+
+    # Scaling default value:
+    if scaling is None:
+        scaling = (1, 1, 1)
     sz, sy, sx = scaling
     aprint(f"Input images will be scaled by: (sz,sy,sx)={scaling}")
 
+    # CUDA DASK cluster
     cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
     client = Client(cluster)
     aprint('Dask Client', client)
@@ -63,6 +71,7 @@ def dataset_deconv(dataset: BaseDataset,
 
         shape = dataset.shape(channel)
         array = dataset.get_array(channel)
+        dtype = dataset.dtype(channel)
 
         aprint(f"Slicing with: {slicing}")
         out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
@@ -70,6 +79,7 @@ def dataset_deconv(dataset: BaseDataset,
         out_shape = tuple(int(round(u*v)) for u, v in zip(out_shape, (1,)+scaling))
         chunks = (1, 250, *shape[2:])  # trying to minimize the number of chunks per stack
 
+        # Adds destination array channel to dataset
         dest_array = dest_dataset.add_channel(name=channel,
                                               shape=out_shape,
                                               dtype=array.dtype,
@@ -80,25 +90,32 @@ def dataset_deconv(dataset: BaseDataset,
         #This is not ideal but difficult to avoid right now:
         sxy = (sx+sy)/2
 
-        psf_kwargs = {'dxy': dxy / sxy,
-                      'dz': dz / sz,
-                      'xy_size': int(round(xy_size * sxy)),
-                      'z_size': int(round(z_size * sz))}
+        # PSF paraneters:
+        psf_kwargs = {'dxy': psf_dxy / sxy,
+                      'dz': psf_dz / sz,
+                      'xy_size': int(round(psf_xy_size * sxy)),
+                      'z_size': int(round(psf_z_size * sz))}
 
         aprint(f"psf_kwargs: {psf_kwargs}")
 
-        if numerical_aperture is not None:
-            aprint(f"Numerical aperture overridden to a value of: {numerical_aperture}")
-            psf_kwargs['NA'] = numerical_aperture
+        # NA override:
+        if psf_na is not None:
+            aprint(f"Numerical aperture overridden to a value of: {psf_na}")
+            psf_kwargs['NA'] = psf_na
 
-        if objective == 'nikon16x08na':
+        # choose psf from detection optics:
+        if psf_objective == 'nikon16x08na':
             psf_kernel = nikon16x08na(**psf_kwargs)
-        elif objective == 'olympus20x10na':
+        elif psf_objective == 'olympus20x10na':
             psf_kernel = olympus20x10na(**psf_kwargs)
         else:
             raise NotImplementedError
 
-        if show_psf:
+        # change dtype of psf to that of the image:
+        psf_kernel = psf_kernel.astype(dtype=dtype, copy=False)
+
+        # usefull for debugging:
+        if psf_show:
             from napari import gui_qt, Viewer
             with gui_qt():
                 viewer = Viewer(title=f"DEXP | viewing PSF with napari", ndisplay=3)
@@ -137,10 +154,10 @@ def dataset_deconv(dataset: BaseDataset,
                                                                  back_projection=back_projection
                                                                  )
 
-                        margins = max(xy_size, z_size)
-                        with asection(f"LR Deconvolution of image of shape: {tp_array.shape}, with chunk size: {chunksize}, margins: {margins} "):
+                        margins = max(psf_xy_size, psf_z_size)
+                        with asection(f"LR Deconvolution of image of shape: {tp_array.shape}, with tile size: {tilesize}, margins: {margins} "):
                             aprint(f"Number of iterations: {num_iterations}, back_projection:{back_projection}, ")
-                            tp_array = scatter_gather_i2i(f, tp_array, chunks=chunksize, margins=margins)
+                            tp_array = scatter_gather_i2i(f, tp_array, tiles=tilesize, margins=margins)
                     else:
                         raise ValueError(f"Unknown deconvolution mode: {method}")
 
@@ -167,10 +184,18 @@ def dataset_deconv(dataset: BaseDataset,
 
     dask.compute(*lazy_computation)
 
+    # Dataset info:
     aprint(dest_dataset.info())
+
+    # Check dataset integrity:
     if check:
         dest_dataset.check_integrity()
 
+    # set CLI history:
     dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
+
+    # Set metadata:
+    dest_dataset.append_metadata(dataset.get_metadata())
+
     # close destination dataset:
     dest_dataset.close()

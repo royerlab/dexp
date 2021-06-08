@@ -1,5 +1,5 @@
 import math
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 import numpy
 
@@ -10,25 +10,26 @@ from dexp.processing.filters.kernels.gaussian import gaussian_kernel_nd
 from dexp.processing.filters.kernels.wiener_butterworth import wiener_butterworth_kernel
 from dexp.processing.utils.nan_to_zero import nan_to_zero
 from dexp.processing.utils.normalise import normalise_functions
+from dexp.utils import xpArray
 
 
-def lucy_richardson_deconvolution(image,
-                                  psf,
-                                  num_iterations: int = None,
-                                  max_correction: float = None,
+def lucy_richardson_deconvolution(image: xpArray,
+                                  psf: xpArray,
+                                  num_iterations: Optional[int] = None,
+                                  max_correction: Optional[float] = None,
                                   power: float = 1.0,
-                                  back_projection='tpsf',
+                                  back_projection: Optional[str] = None,
                                   wb_cutoffs: Union[float, Tuple[float, ...], None] = 0.9,
                                   wb_beta: float = 0.05,
                                   wb_order: int = 2,
                                   padding: int = 0,
                                   padding_mode: str = 'edge',
                                   normalise_input: bool = True,
-                                  normalise_minmax: Tuple[float, float] = None,
+                                  normalise_minmax: Optional[Tuple[float, float]] = None,
                                   clip_output: bool = False,
                                   blind_spot: int = 0,
                                   blind_spot_mode: str = 'median+uniform',
-                                  blind_spot_axis_exclusion: Union[str, Tuple[int, ...]] = None,
+                                  blind_spot_axis_exclusion: Optional[Union[str, Tuple[int, ...]]] = None,
                                   convolve_method=fft_convolve,
                                   internal_dtype=None):
     """
@@ -42,16 +43,19 @@ def lucy_richardson_deconvolution(image,
     max_correction : Lucy-Richardson correction will remain clamped within [1/mc, mc] (before back projection)
     power : power to elevate coorection (before back projection)
     back_projection : back projection operator to use: 'tpsf' or 'wb'.
+    wb_cutoffs : Wiener-Butterworth cutoffs for wb back projection.
+    wb_beta : Wiener-Butterworth backprojection beta parameter.
+    wb_order : Wiener-Butterworth backprojection order parameter.
     padding : padding (see numpy/cupy pad function)
     padding_mode : padding mode (see numpy/cupy pad function)
     normalise_input : This deconvolution code assumes values within [0, 1], by default input images are normalised to that range, but if already normalised, then normalisation can be ommited.
     normalise_minmax : Use the given tuple (min, max) for normalisation
+    clip_output : Clip output to input range, or not
     blind_spot : If zero, blind-spot is disabled. If blind_spot>0 it is active and the integer represents the blind-spot kernel support. A value of 3 or 5 are good and help reduce the impact of noise on deconvolution.
     blind_spot_mode : blind-spot mode, can be 'mean' or 'median'
     blind_spot_axis_exclusion : if None no axis is excluded from the blind-spot support kernel, otherwise if a tuple of ints is provided, these refer to the
     then the support kernel is clipped along these axis. For example for a 3D stack where the sampling along z (first axis) is poor, use: (0,) so that blind-spot kernel does not extend in z.
     convolve_method : convolution method to use
-    clip_output : Clip output to input range, or not
     internal_dtype : dtype to use internally for computation.
 
     Returns
@@ -122,12 +126,10 @@ def lucy_richardson_deconvolution(image,
         #     viewer.add_image(_c(sp.ndimage.convolve(psf, full_kernel)), name='psf_for_backproj')
         #     viewer.add_image(_c(back_projector), name='psf')
 
-    if num_iterations is None:
-        if back_projection == 'tpsf':
-            num_iterations = 20
-        elif back_projection == 'wb':
-            num_iterations = 3
+    # Default back projection:
+    back_projection = 'tpsf' if back_projection is None else back_projection
 
+    # Back projection setting:
     if back_projection == 'tpsf':
         back_projector = xp.flip(psf)
     elif back_projection == 'wb':
@@ -137,6 +139,15 @@ def lucy_richardson_deconvolution(image,
                                                    order=wb_order)
     else:
         raise ValueError(f"back projection mode: {back_projection} not supported.")
+
+    # Default number of iterations:
+    if num_iterations is None:
+        if back_projection == 'tpsf':
+            num_iterations = 20
+        elif back_projection == 'wb':
+            num_iterations = 3
+
+
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -150,6 +161,7 @@ def lucy_richardson_deconvolution(image,
     #     viewer.add_image(_c(psf_f), name='psf_f', colormap='viridis')
     #     viewer.add_image(_c(back_projector_f), name='back_projector_f', colormap='viridis')
 
+    # Normalisation:
     norm_fun, denorm_fun = normalise_functions(image,
                                                minmax=normalise_minmax,
                                                do_normalise=normalise_input,
@@ -158,24 +170,29 @@ def lucy_richardson_deconvolution(image,
 
     image = norm_fun(image)
 
+    # Padding:
     if padding > 0:
         image = numpy.pad(image, pad_width=padding, mode=padding_mode)
 
+    # Result array:
     result = xp.full(
         image.shape,
         float(xp.mean(image)),
         dtype=internal_dtype
     )
 
+    # LR iterations:
     for i in range(num_iterations):
         # print(f"LR iteration: {i}")
 
+        # Convolution with PSF:
         convolved = convolve_method(
             result,
             psf,
             mode='wrap',
         )
 
+        # Computes relative blur:
         relative_blur = image / convolved
 
         # replace Nans with zeros:
@@ -183,6 +200,7 @@ def lucy_richardson_deconvolution(image,
         # relative_blur[zeros] = 0
         relative_blur = nan_to_zero(relative_blur, copy=False)
 
+        # Limits max correction:
         if max_correction is not None:
             relative_blur[
                 relative_blur > max_correction
@@ -191,37 +209,46 @@ def lucy_richardson_deconvolution(image,
                     1 / max_correction
             )
 
+        # Back-projection:
         multiplicative_correction = convolve_method(
             relative_blur,
             back_projector,
             mode='wrap',
         )
 
+        # In the case of WB back-projection we enforce positivity:
         if back_projection == 'wb':
             multiplicative_correction = xp.clip(multiplicative_correction,
                                                 a_min=0, a_max=None,
                                                 out=multiplicative_correction)
 
+        # Multiplicative correction can be optionally elevated to a power:
         if power != 1.0:
             multiplicative_correction = xp.clip(multiplicative_correction, 0, None, out=multiplicative_correction)
             multiplicative_correction **= (1 + (power - 1) / (math.sqrt(1 + i)))
 
+        # Apply multiplicative correction:
         result *= multiplicative_correction
 
+    # Delete intermediates:
     del multiplicative_correction, relative_blur, back_projector, convolved, psf
 
+    # Clips output:
     if clip_output:
         if normalise_input:
             result = xp.clip(result, 0, 1, out=result)
         else:
             result = xp.clip(result, xp.min(image), xp.max(image), out=result)
 
+    # Denormalises result:
     result = denorm_fun(result)
 
+    # Removes padding:
     if padding > 0:
         slicing = (slice(padding, -padding),) * result.ndim
         result = result[slicing]
 
+    # converts to original dtype:
     result = result.astype(original_dtype, copy=False)
 
     # from napari import Viewer
