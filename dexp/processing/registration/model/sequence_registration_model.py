@@ -5,6 +5,8 @@ import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
+from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
+from dexp.utils import xpArray
 
 
 class SequenceRegistrationModel:
@@ -78,7 +80,7 @@ class SequenceRegistrationModel:
     def apply_sequence(self,
                        image, axis: int,
                        pad_width: Optional[Union[float, Tuple[Tuple[float, float], ...]]] = None,
-                       **kwargs) -> 'Array':
+                       **kwargs) -> xpArray:
         """ Applies this sequence registration model to the an image sequence of given sequence axis.
             A new registered image is returned.
 
@@ -172,3 +174,17 @@ class SequenceRegistrationModel:
         ax.legend()  # Add a legend.
 
         plt.savefig(path + '_shifts.pdf')
+
+    def reduce(self, step: int) -> 'SequenceRegistrationModel':
+        if not isinstance(self.model_list[0], TranslationRegistrationModel):
+            raise NotImplementedError
+
+        new_model_list = []
+        for i in range(0, len(self.model_list), step):
+            new_model = self.model_list[i].copy()
+            for j in range(i+1, i+step):
+                centered_model = self.model_list[j] - self.model_list[j-1]
+                new_model += centered_model
+            new_model_list.append(new_model)
+
+        return SequenceRegistrationModel(new_model_list)
