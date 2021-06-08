@@ -1,5 +1,9 @@
 import numpy
-import cupy
 from typing import Union
 
-xpArray = Union[cupy.ndarray, numpy.ndarray]
+try:
+    import cupy
+    xpArray = Union[cupy.ndarray, numpy.ndarray]
+except ImportError:
+    xpArray = numpy.ndarray
+

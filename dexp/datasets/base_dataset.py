@@ -27,7 +27,7 @@ class BaseDataset(ABC):
     def _get_largest_dtype_value(self, dtype):
         if numpy.issubdtype(dtype, numpy.integer):
             return numpy.iinfo(dtype).max
-        elif numpy.issubdtype(dtype, numpy.float):
+        elif numpy.issubdtype(dtype, float):
             return numpy.finfo(dtype).max
 
     @abstractmethod

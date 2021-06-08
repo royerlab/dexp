@@ -208,7 +208,7 @@ def dataset_stabilize(dataset: BaseDataset,
 
     for channel in dataset._selected_channels(channels):
         if reference_channel is None:
-            model = _compute_model(
+            channel_model = _compute_model(
                 input_dataset=dataset,
                 channel=channel,
                 slicing=slicing,
@@ -229,23 +229,36 @@ def dataset_stabilize(dataset: BaseDataset,
                 device=device,
                 debug_output=debug_output,
             )
+        else:
+            channel_model = model
+
+        metadata = input_dataset.get_metadata()
+        if 'dt' in metadata.get(channel, {}):
+            channel_model = channel_model.reduce(int(round(metadata[channel]['dt'])))
 
         array = dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True)
+        if slicing is not None:
+            array = array[slicing]
+
         shape = array.shape
         dtype = array.dtype
-        chunks = ZDataset._default_chunks
         nb_timepoints = shape[0]
 
-        # Shape of the resulting array:
-        padded_shape = (nb_timepoints,) + model.padded_shape(shape[1:])
+        if len(channel_model) != nb_timepoints:
+            aprint(f'WARNING: Number of time points ({nb_timepoints}) and registration models ({len(channel_model)})'
+                   f'does not match. Using the smallest one.')
+            if nb_timepoints > len(channel_model):
+                nb_timepoints = len(channel_model)
+            # else: it is not necessary to change the model sequence length
 
-        # Add channel to output datatset:
+        # Shape of the resulting array:
+        padded_shape = (nb_timepoints,) + channel_model.padded_shape(shape[1:])
+
         dest_dataset.add_channel(name=channel,
-                                   shape=padded_shape,
-                                   dtype=dtype,
-                                   chunks=chunks,
-                                   codec=compression_codec,
-                                   clevel=compression_level)
+                                 shape=padded_shape,
+                                 dtype=dtype,
+                                 codec=compression_codec,
+                                 clevel=compression_level)
 
         # definition of function that processes each time point:
         def process(tp):
@@ -254,15 +267,9 @@ def dataset_stabilize(dataset: BaseDataset,
                     with asection(f"Loading stack"):
                         tp_array = array[tp].compute()
 
-                    # backend = NumpyBackend() if integral else CupyBackend(device, exclusive=True)
-
                     with NumpyBackend():
-                        xp = Backend.get_xp_module()
-
                         with asection(f"Applying model..."):
-                            # tp_array = Backend.to_backend(tp_array, dtype=array.dtype, force_copy=False)
-                            tp_array = model.apply(tp_array, index=tp, pad=pad, integral=integral)
-                            # tp_array = Backend.to_numpy(tp_array, dtype=array.dtype, force_copy=False)
+                            tp_array = channel_model.apply(tp_array, index=tp, pad=pad, integral=integral)
 
                     with asection(f"Saving stabilized stack for time point {tp}/{nb_timepoints}, shape:{tp_array.shape}, dtype:{array.dtype}"):
                         dest_dataset.write_stack(channel=channel,
