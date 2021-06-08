@@ -90,26 +90,3 @@ def deskew(input_paths,
 
         input_dataset.close()
         aprint("Done!")
-
-
-# def dataset_deskew(dataset: BaseDataset,
-#                    dest_path: str,
-#                    channels: Sequence[str],
-#                    slicing,
-#                    dx: float,
-#                    dz: float,
-#                    angle: float,
-#                    flips: Sequence[bool] = None,
-#                    camera_orientation: int = 0,
-#                    depth_axis: int = 0,
-#                    lateral_axis: int = 1,
-#                    mode: str = 'classic',
-#                    store: str = 'dir',
-#                    compression: str = 'zstd',
-#                    compression_level: int = 3,
-#                    overwrite: bool = False,
-#                    workers: int = 1,
-#                    workersbackend: str = 'threading',
-#                    devices: Optional[List[int]] = None,
-#                    check: bool = True,
-#                    stop_at_exception=True):
