@@ -1,8 +1,6 @@
-import multiprocessing
 import os
 import shutil
 import sys
-from multiprocessing.pool import ThreadPool
 from os.path import isfile, isdir, exists, join
 from typing import Tuple, Sequence, Any, Union, Optional
 
@@ -10,22 +8,22 @@ import dask
 import numpy
 import zarr
 from arbol.arbol import aprint
-from numcodecs import blosc
 from zarr import open_group, convenience, CopyError, Blosc, Group
 
 from dexp.datasets.base_dataset import BaseDataset
-# Configure multithreading for Dask:
 from dexp.processing.backends.backend import Backend
-# from dexp.utils.config_dask import config_dask_and_blosc
 
-# config_dask_and_blosc()
+from dexp.utils.config import config_blosc
+
+
+config_blosc()
 
 
 class ZDataset(BaseDataset):
     _default_chunks = (1, 128, 512, 512)
 
     def __init__(self, path: str, mode: str = 'r', store: str = None):
-        """Instanciates a Zarr dataset (and opens it)
+        """Instantiates a Zarr dataset (and opens it)
 
         Parameters
         ----------
