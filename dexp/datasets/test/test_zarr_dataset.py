@@ -221,8 +221,10 @@ def test_zarr_parent_metadata():
             'dz': 4.0,
             'Channel1': {'dt': 10.0}
         })
+        parent_metadata = dataset.get_metadata()
+        parent_metadata.pop('cli_history')
 
         child_dataset = ZDataset(path=join(tmpdir, 'child.zarr'), mode='w', parent=dataset)
         child_metadata = child_dataset.get_metadata()
         child_metadata.pop('cli_history')
-        assert child_metadata == dataset.get_metadata()
+        assert child_metadata == parent_metadata
