@@ -48,7 +48,7 @@ def dataset_deconv(dataset: BaseDataset,
 
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
-    dest_dataset = ZDataset(dest_path, mode, store)
+    dest_dataset = ZDataset(dest_path, mode, store, parent=dataset)
 
     # Default tile size:
     if tilesize is None:
@@ -190,12 +190,6 @@ def dataset_deconv(dataset: BaseDataset,
     # Check dataset integrity:
     if check:
         dest_dataset.check_integrity()
-
-    # set CLI history:
-    dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
-
-    # Set metadata:
-    dest_dataset.append_metadata(dataset.get_metadata())
 
     # close destination dataset:
     dest_dataset.close()

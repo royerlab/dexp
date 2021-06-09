@@ -207,3 +207,22 @@ def test_zarr_cli_history():
         assert first_command in first_ds.get_metadata()['cli_history']
         assert first_command in second_ds.get_metadata()['cli_history']
         assert second_command in second_ds.get_metadata()['cli_history']
+
+
+def test_zarr_parent_metadata():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        print('created temporary directory', tmpdir)
+
+        # self, path:str, mode:str ='r', store:str ='dir'
+        source_path = join(tmpdir, 'test.zarr')
+        dataset = ZDataset(path=source_path, mode='w', store='dir')
+
+        dataset.append_metadata({
+            'dz': 4.0,
+            'Channel1': {'dt': 10.0}
+        })
+
+        child_dataset = ZDataset(path=join(tmpdir, 'child.zarr'), mode='w', parent=dataset)
+        child_metadata = child_dataset.get_metadata()
+        child_metadata.pop('cli_history')
+        assert child_metadata == dataset.get_metadata()

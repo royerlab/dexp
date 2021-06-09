@@ -155,7 +155,7 @@ def dataset_fuse(dataset,
                     # We allocate last minute once we know the shape... because we don't always know the shape in advance!!!
                     from dexp.datasets.zarr_dataset import ZDataset
                     mode = 'w' + ('' if overwrite else '-')
-                    dest_dataset = ZDataset(output_path, mode, store)
+                    dest_dataset = ZDataset(output_path, mode, store, parent=dataset)
                     dest_dataset.add_channel('fused',
                                              shape=(len(time_points),)+tp_array.shape,
                                              dtype=tp_array.dtype,
@@ -210,6 +210,5 @@ def dataset_fuse(dataset,
     if check:
         dest_dataset.check_integrity()
 
-    dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
     # close destination dataset:
     dest_dataset.close()
