@@ -232,7 +232,7 @@ def dataset_stabilize(dataset: BaseDataset,
         else:
             channel_model = model
 
-        metadata = input_dataset.get_metadata()
+        metadata = dataset.get_metadata()
         if 'dt' in metadata.get(channel, {}):
             channel_model = channel_model.reduce(int(round(metadata[channel]['dt'])))
 
