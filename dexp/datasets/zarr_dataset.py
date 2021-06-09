@@ -124,11 +124,12 @@ class ZDataset(BaseDataset):
             raise ValueError(f"Invalid read/write mode or invalid path: {path} (check path!)")
 
         # updating metadata
-        if parent is not None and mode in ('r+', 'a', 'w', 'w-'):
+        if parent is not None:
             metadata = parent.get_metadata()
             metadata.pop('cli_history', None)  # avoiding adding it twice
             self.append_metadata(metadata)
-            # the other datasets don't have an history
+
+        if mode in ('a', 'w', 'w-'):
             self.append_cli_history(parent if isinstance(parent, ZDataset) else None)
 
     def _initialise_existing(self):
