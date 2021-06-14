@@ -26,7 +26,7 @@ def dataset_copy(dataset: BaseDataset,
     # Create destination dataset:
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
-    dest_dataset = ZDataset(dest_path, mode, store)
+    dest_dataset = ZDataset(dest_path, mode, store, parent=dataset)
 
     # Process each channel:
     for channel in dataset._selected_channels(channels):
@@ -37,9 +37,6 @@ def dataset_copy(dataset: BaseDataset,
             out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
 
             dtype = array.dtype
-            if chunks is None:
-                chunks = ZDataset._default_chunks
-
             dest_dataset.add_channel(name=channel,
                                      shape=out_shape,
                                      dtype=dtype,
@@ -76,12 +73,6 @@ def dataset_copy(dataset: BaseDataset,
     # Check dataset integrity:
     if check:
         dest_dataset.check_integrity()
-
-    # set CLI history:
-    dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
-
-    # Set metadata:
-    dest_dataset.append_metadata(dataset.get_metadata())
 
     # close destination dataset:
     dest_dataset.close()

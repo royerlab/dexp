@@ -1,8 +1,6 @@
-import multiprocessing
 import os
 import shutil
 import sys
-from multiprocessing.pool import ThreadPool
 from os.path import isfile, isdir, exists, join
 from typing import Tuple, Sequence, Any, Union, Optional
 
@@ -10,22 +8,20 @@ import dask
 import numpy
 import zarr
 from arbol.arbol import aprint
-from numcodecs import blosc
 from zarr import open_group, convenience, CopyError, Blosc, Group
 
 from dexp.datasets.base_dataset import BaseDataset
-# Configure multithreading for Dask:
 from dexp.processing.backends.backend import Backend
-# from dexp.utils.config_dask import config_dask_and_blosc
 
-# config_dask_and_blosc()
+from dexp.utils.config import config_blosc
+
+
+config_blosc()
 
 
 class ZDataset(BaseDataset):
-    _default_chunks = (1, 128, 512, 512)
-
-    def __init__(self, path: str, mode: str = 'r', store: str = None):
-        """Instanciates a Zarr dataset (and opens it)
+    def __init__(self, path: str, mode: str = 'r', store: str = None, parent: Optional[BaseDataset] = None):
+        """Instantiates a Zarr dataset (and opens it)
 
         Parameters
         ----------
@@ -41,8 +37,6 @@ class ZDataset(BaseDataset):
         Returns
         -------
         Zarr dataset
-
-
         """
 
         super().__init__(dask_backed=False)
@@ -129,6 +123,15 @@ class ZDataset(BaseDataset):
         else:
             raise ValueError(f"Invalid read/write mode or invalid path: {path} (check path!)")
 
+        # updating metadata
+        if parent is not None:
+            metadata = parent.get_metadata()
+            metadata.pop('cli_history', None)  # avoiding adding it twice
+            self.append_metadata(metadata)
+
+        if mode in ('a', 'w', 'w-'):
+            self.append_cli_history(parent if isinstance(parent, ZDataset) else None)
+
     def _initialise_existing(self):
         self._channels = [channel for channel, _ in self._root_group.groups()]
 
@@ -154,6 +157,14 @@ class ZDataset(BaseDataset):
             return None
         else:
             return groups[0]
+
+    @staticmethod
+    def _default_chunks(shape: Tuple[int], max_size: int = 2 ** 31) -> Tuple[int]:
+        width = shape[-1]
+        height = shape[-2]
+        depth = min(max_size // (width * height), shape[-3])
+        chunk = (1, depth, height, width)
+        return chunk[-len(shape):]
 
     def close(self):
         # We close the store if it exists, i.e. if we have been writing to the dataset
@@ -227,8 +238,6 @@ class ZDataset(BaseDataset):
                     info_str += " ├──■ '" + command + "' \n"
                 info_str += " └──■ '" + commands_list[-1] + "' \n"
 
-
-
         return info_str
 
     def get_metadata(self):
@@ -241,7 +250,7 @@ class ZDataset(BaseDataset):
     def append_metadata(self, metadata: dict):
         self._root_group.attrs.update(metadata)
 
-    def set_cli_history(self, parent: Optional['ZDataset']):
+    def append_cli_history(self, parent: Optional[BaseDataset]):
         key = 'cli_history'
         cli_history = []
         if parent is not None:
@@ -326,7 +335,7 @@ class ZDataset(BaseDataset):
             raise ValueError("Channel already exist!")
 
         if chunks is None:
-            chunks = ZDataset._default_chunks[0: len(shape)]
+            chunks = self._default_chunks(shape)
 
         aprint(f"chunks={chunks}")
 

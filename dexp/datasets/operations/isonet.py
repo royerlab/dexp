@@ -63,7 +63,7 @@ def dataset_isonet(dataset: BaseDataset,
     if 'a' in mode:
         from dexp.datasets.zarr_dataset import ZDataset
         mode = 'w' + ('' if overwrite else '-')
-        dest_dataset = ZDataset(path, mode, store)
+        dest_dataset = ZDataset(path, mode, store, parent=dataset)
         zarr_array = None
 
         for tp in range(0, array.shape[0] - 1):
@@ -92,7 +92,6 @@ def dataset_isonet(dataset: BaseDataset,
                     zarr_array = dest_dataset.add_channel(name=channel,
                                                           shape=shape,
                                                           dtype=array.dtype,
-                                                          chunks=ZDataset._default_chunks,
                                                           codec=compression,
                                                           clevel=compression_level)
 
@@ -107,6 +106,5 @@ def dataset_isonet(dataset: BaseDataset,
         if check:
             dest_dataset.check_integrity()
 
-        dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
         # close destination dataset:
         dest_dataset.close()

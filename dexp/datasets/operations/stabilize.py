@@ -178,7 +178,7 @@ def dataset_stabilize(dataset: BaseDataset,
 
     from dexp.datasets.zarr_dataset import ZDataset
     mode = 'w' + ('' if overwrite else '-')
-    dest_dataset = ZDataset(output_path, mode, zarr_store)
+    dest_dataset = ZDataset(output_path, mode, zarr_store, parent=dataset)
 
     model = None
     if reference_channel is not None:
@@ -301,20 +301,12 @@ def dataset_stabilize(dataset: BaseDataset,
     if check:
         dest_dataset.check_integrity()
 
-    dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
-
     # Dataset info:
     aprint(dest_dataset.info())
 
     # Check dataset integrity:
     if check:
         dest_dataset.check_integrity()
-
-    # set CLI history:
-    dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
-
-    # Set metadata:
-    dest_dataset.append_metadata(dataset.get_metadata())
 
     # close destination dataset:
     dest_dataset.close()

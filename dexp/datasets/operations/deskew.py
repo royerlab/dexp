@@ -59,7 +59,7 @@ def dataset_deskew(dataset: BaseDataset,
     # We allocate last minute once we know the shape...
     from dexp.datasets.zarr_dataset import ZDataset
     zarr_mode = 'w' + ('' if overwrite else '-')
-    dest_dataset = ZDataset(dest_path, zarr_mode, store)
+    dest_dataset = ZDataset(dest_path, zarr_mode, store, parent=dataset)
 
     # Metadata for deskewing:
     metadata = dataset.get_metadata()
@@ -155,12 +155,6 @@ def dataset_deskew(dataset: BaseDataset,
     # Check dataset integrity:
     if check:
         dest_dataset.check_integrity()
-
-    # set CLI history:
-    dest_dataset.set_cli_history(parent=dataset if isinstance(dataset, ZDataset) else None)
-
-    # Set metadata:
-    dest_dataset.append_metadata(dataset.get_metadata())
 
     # close destination dataset:
     dest_dataset.close()
