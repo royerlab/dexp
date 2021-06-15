@@ -184,6 +184,7 @@ def dataset_fuse(dataset,
     client = Client(cluster)
     aprint('Dask Client', client)
 
+    # the parameters are (equalisation rations, registration model, dest. dataset)
     if microscope == 'simview':
         init_params = ([None, None, None], None, None)
     elif microscope == 'mvsols':
@@ -191,9 +192,10 @@ def dataset_fuse(dataset,
     else:
         raise NotImplementedError
 
-    params = process(0, init_params).compute()
+    # it creates the output dataset from the first time point output shape
+    params = process(0, init_params)
     if equalise_mode == 'all':
-        params = init_params[:2] + params[2]
+        params = init_params[:2] + (params[2],)
 
     lazy_computations = []
     for i in range(1, len(time_points)):
@@ -204,7 +206,7 @@ def dataset_fuse(dataset,
     if not loadreg:
         model_list_to_file(model_list_filename, models)
 
-    _, _, dest_dataset = params
+    dest_dataset = params[2].compute()
 
     aprint(dest_dataset.info())
     if check:
