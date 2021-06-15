@@ -159,10 +159,12 @@ class ZDataset(BaseDataset):
             return groups[0]
 
     @staticmethod
-    def _default_chunks(shape: Tuple[int], max_size: int = 2 ** 31) -> Tuple[int]:
+    def _default_chunks(shape: Tuple[int], dtype: Union[str, numpy.dtype], max_size: int = 2147483647) -> Tuple[int]:
+        if not isinstance(dtype, numpy.dtype):
+            dtype = numpy.dtype(dtype)
         width = shape[-1]
         height = shape[-2]
-        depth = min(max_size // (width * height), shape[-3])
+        depth = min(max_size // (dtype.itemsize * width * height), shape[-3])
         chunk = (1, depth, height, width)
         return chunk[-len(shape):]
 
@@ -308,7 +310,7 @@ class ZDataset(BaseDataset):
     def add_channel(self,
                     name: str,
                     shape: Tuple[int, ...],
-                    dtype,
+                    dtype: numpy.dtype,
                     chunks: Sequence[int] = None,
                     enable_projections: bool = True,
                     codec: str = 'zstd',
@@ -335,7 +337,7 @@ class ZDataset(BaseDataset):
             raise ValueError("Channel already exist!")
 
         if chunks is None:
-            chunks = self._default_chunks(shape)
+            chunks = self._default_chunks(shape, dtype)
 
         aprint(f"chunks={chunks}")
 
