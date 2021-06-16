@@ -28,7 +28,7 @@ def _test_scatter_gather_i2v(ndim=3, length_xy=128, splits=4, filter_size=7):
     image2 = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
 
     def f(x, y):
-        return (xp.asarray([x.min(), x.max()]), xp.asarray([y.max(), y.mean(), y.min()]))
+        return xp.stack([x.min(), x.max()]), xp.stack([y.max(), y.mean(), y.min()])
 
     try:
         with timeit("f"):
