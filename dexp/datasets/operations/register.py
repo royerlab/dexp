@@ -105,6 +105,7 @@ def dataset_register(dataset,
 
     mode_model = compute_median_translation(models)
     model_list_to_file(model_path, [mode_model])
+    client.close()
 
 
 def compute_median_translation(models: List[TranslationRegistrationModel]) \
