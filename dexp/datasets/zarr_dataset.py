@@ -404,7 +404,7 @@ class ZDataset(BaseDataset):
         """
 
         if type(zdataset) is str:
-            zdataset = ZDataset(zdataset, 'a', store)
+            zdataset = ZDataset(zdataset, 'a', store, parent=self)
 
         root = zdataset._root_group
 

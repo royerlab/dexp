@@ -111,15 +111,12 @@ def dataset_deconv(dataset: BaseDataset,
         else:
             raise NotImplementedError
 
-        # change dtype of psf to that of the image:
-        psf_kernel = psf_kernel.astype(dtype=dtype, copy=False)
-
         # usefull for debugging:
         if psf_show:
-            from napari import gui_qt, Viewer
-            with gui_qt():
-                viewer = Viewer(title=f"DEXP | viewing PSF with napari", ndisplay=3)
-                viewer.add_image(psf_kernel)
+            import napari
+            viewer = napari.Viewer(title=f"DEXP | viewing PSF with napari", ndisplay=3)
+            viewer.add_image(psf_kernel)
+            napari.run()
 
         @dask.delayed
         def process(i):
@@ -193,3 +190,4 @@ def dataset_deconv(dataset: BaseDataset,
 
     # close destination dataset:
     dest_dataset.close()
+    client.close()
