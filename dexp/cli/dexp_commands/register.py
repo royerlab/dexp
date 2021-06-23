@@ -15,7 +15,7 @@ from dexp.datasets.operations.register import dataset_register
 @click.option('--microscope', '-m', type=str, default='simview', help='Microscope objective to use for computing psf, can be: simview or mvsols', show_default=True)
 @click.option('--equalise/--no-equalise', '-eq/-neq', default=True, help='Equalise intensity of views before fusion, or not.', show_default=True)
 @click.option('--zero-level', '-zl', type=int, default=0, help="‘zero-level’ i.e. the pixel values in the restoration (to be substracted)", show_default=True)
-@click.option('--clip-high', '-ch', type=int, default=1024, help='Clips voxel values above the given value, if zero no clipping is done', show_default=True)
+@click.option('--clip-high', '-ch', type=int, default=0, help='Clips voxel values above the given value, if zero no clipping is done', show_default=True)
 @click.option('--fusion', '-f', type=str, default='tg', help="Fusion mode, can be: ‘tg’ or ‘dct’.  ", show_default=True)
 @click.option('--fusion_bias_strength', '-fbs', type=float, default=0.5, help='Fusion bias strength for illumination', show_default=True)
 @click.option('--dehaze_size', '-dhs', type=int, default=65, help='Filter size (scale) for dehazing the final regsitered and fused image to reduce effect of scattered and out-of-focus light. Set to zero to deactivate.', show_default=True)

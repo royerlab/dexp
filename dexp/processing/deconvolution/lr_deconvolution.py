@@ -30,6 +30,7 @@ def lucy_richardson_deconvolution(image: xpArray,
                                   blind_spot: int = 0,
                                   blind_spot_mode: str = 'median+uniform',
                                   blind_spot_axis_exclusion: Optional[Union[str, Tuple[int, ...]]] = None,
+                                  eps: float = 1e-12,
                                   convolve_method=fft_convolve,
                                   internal_dtype=None):
     """
@@ -55,6 +56,7 @@ def lucy_richardson_deconvolution(image: xpArray,
     blind_spot_mode : blind-spot mode, can be 'mean' or 'median'
     blind_spot_axis_exclusion : if None no axis is excluded from the blind-spot support kernel, otherwise if a tuple of ints is provided, these refer to the
     then the support kernel is clipped along these axis. For example for a 3D stack where the sampling along z (first axis) is poor, use: (0,) so that blind-spot kernel does not extend in z.
+    eps: epsilon to avoid dividing by zero
     convolve_method : convolution method to use
     internal_dtype : dtype to use internally for computation.
 
@@ -136,7 +138,9 @@ def lucy_richardson_deconvolution(image: xpArray,
         back_projector = wiener_butterworth_kernel(kernel=xp.flip(psf),
                                                    cutoffs=wb_cutoffs,
                                                    beta=wb_beta,
-                                                   order=wb_order)
+                                                   order=wb_order,
+                                                   dtype=xp.float64)
+        back_projector = back_projector.astype(psf.dtype)
     else:
         raise ValueError(f"back projection mode: {back_projection} not supported.")
 
@@ -146,8 +150,6 @@ def lucy_richardson_deconvolution(image: xpArray,
             num_iterations = 20
         elif back_projection == 'wb':
             num_iterations = 3
-
-
 
     # from napari import Viewer, gui_qt
     # with gui_qt():
@@ -184,22 +186,17 @@ def lucy_richardson_deconvolution(image: xpArray,
     # LR iterations:
     for i in range(num_iterations):
         # print(f"LR iteration: {i}")
-
         # Convolution with PSF:
         convolved = convolve_method(
             result,
             psf,
             mode='wrap',
         )
-
+        convolved = xp.clip(convolved, a_min=0, a_max=None, out=convolved)
         # Computes relative blur:
-        relative_blur = image / convolved
-
-        # replace Nans with zeros:
-        # zeros = convolved == 0
-        # relative_blur[zeros] = 0
+        relative_blur = (image + eps) / (convolved + eps)
+        # replace Nans with zeros, and +inf with very large values:
         relative_blur = nan_to_zero(relative_blur, copy=False)
-
         # Limits max correction:
         if max_correction is not None:
             relative_blur[
@@ -215,12 +212,7 @@ def lucy_richardson_deconvolution(image: xpArray,
             back_projector,
             mode='wrap',
         )
-
-        # In the case of WB back-projection we enforce positivity:
-        if back_projection == 'wb':
-            multiplicative_correction = xp.clip(multiplicative_correction,
-                                                a_min=0, a_max=None,
-                                                out=multiplicative_correction)
+        multiplicative_correction = xp.clip(multiplicative_correction, a_min=0.0, a_max=None, out=multiplicative_correction)
 
         # Multiplicative correction can be optionally elevated to a power:
         if power != 1.0:

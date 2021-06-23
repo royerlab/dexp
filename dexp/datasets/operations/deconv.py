@@ -2,6 +2,7 @@ from typing import Sequence, Tuple, List, Optional
 
 import dask
 import numpy
+import functools
 from arbol.arbol import aprint
 from arbol.arbol import asection
 from dask.distributed import Client
@@ -11,6 +12,7 @@ from dexp.datasets.base_dataset import BaseDataset
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
+from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.slicing import slice_from_shape
@@ -77,13 +79,11 @@ def dataset_deconv(dataset: BaseDataset,
         out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
 
         out_shape = tuple(int(round(u*v)) for u, v in zip(out_shape, (1,)+scaling))
-        chunks = (1, 250, *shape[2:])  # trying to minimize the number of chunks per stack
 
         # Adds destination array channel to dataset
         dest_array = dest_dataset.add_channel(name=channel,
                                               shape=out_shape,
                                               dtype=array.dtype,
-                                              chunks=chunks,
                                               codec=compression,
                                               clevel=compression_level)
 
@@ -122,50 +122,53 @@ def dataset_deconv(dataset: BaseDataset,
         def process(i):
             tp = time_points[i]
             try:
-                with asection(f"Loading channel: {channel} for time point {i}/{len(time_points)}"):
-                    tp_array = numpy.asarray(array[tp][volume_slicing])
+                with asection(f'Deconvolving time point for time point {i}/{len(time_points)}'):
+                    with asection(f"Loading channel: {channel}"):
+                        tp_array = numpy.asarray(array[tp][volume_slicing])
 
-                with BestBackend(exclusive=True, enable_unified_memory=True):
+                    with BestBackend(exclusive=True, enable_unified_memory=True):
 
-                    if sz != 1.0 or sy != 1.0 or sx != 1.0:
-                        with asection(f"Applying scaling {(sz, sy, sx)} to image."):
-                            sp = Backend.get_sp_module()
-                            tp_array = Backend.to_backend(tp_array)
-                            tp_array = sp.ndimage.interpolation.zoom(tp_array, zoom=(sz, sy, sx), order=1)
-                            tp_array = Backend.to_numpy(tp_array)
+                        if sz != 1.0 or sy != 1.0 or sx != 1.0:
+                            with asection(f"Applying scaling {(sz, sy, sx)} to image."):
+                                sp = Backend.get_sp_module()
+                                tp_array = Backend.to_backend(tp_array)
+                                tp_array = sp.ndimage.interpolation.zoom(tp_array, zoom=(sz, sy, sx), order=1)
+                                tp_array = Backend.to_numpy(tp_array)
 
-                    if method == 'lr':
-                        min_value = tp_array.min()
-                        max_value = tp_array.max()
+                        if method == 'lr':
+                            min_value = tp_array.min()
+                            max_value = tp_array.max()
 
-                        def f(image):
-                            return lucy_richardson_deconvolution(image=image,
-                                                                 psf=psf_kernel,
-                                                                 num_iterations=num_iterations,
-                                                                 max_correction=max_correction,
-                                                                 normalise_minmax=(min_value, max_value),
-                                                                 power=power,
-                                                                 blind_spot=blind_spot,
-                                                                 blind_spot_mode='median+uniform',
-                                                                 blind_spot_axis_exclusion=(0,),
-                                                                 back_projection=back_projection
-                                                                 )
+                            def f(image):
+                                convolve = functools.partial(fft_convolve, internal_dtype=numpy.float64)
+                                return lucy_richardson_deconvolution(image=image,
+                                                                     psf=psf_kernel,
+                                                                     num_iterations=num_iterations,
+                                                                     max_correction=max_correction,
+                                                                     normalise_minmax=(min_value, max_value),
+                                                                     power=power,
+                                                                     blind_spot=blind_spot,
+                                                                     blind_spot_mode='median+uniform',
+                                                                     blind_spot_axis_exclusion=(0,),
+                                                                     back_projection=back_projection,
+                                                                     convolve_method=convolve
+                                                                     )
 
-                        margins = max(psf_xy_size, psf_z_size)
-                        with asection(f"LR Deconvolution of image of shape: {tp_array.shape}, with tile size: {tilesize}, margins: {margins} "):
-                            aprint(f"Number of iterations: {num_iterations}, back_projection:{back_projection}, ")
-                            tp_array = scatter_gather_i2i(f, tp_array, tiles=tilesize, margins=margins)
-                    else:
-                        raise ValueError(f"Unknown deconvolution mode: {method}")
+                            margins = max(psf_xy_size, psf_z_size)
+                            with asection(f"LR Deconvolution of image of shape: {tp_array.shape}, with tile size: {tilesize}, margins: {margins} "):
+                                aprint(f"Number of iterations: {num_iterations}, back_projection:{back_projection}, ")
+                                tp_array = scatter_gather_i2i(f, tp_array, tiles=tilesize, margins=margins)
+                        else:
+                            raise ValueError(f"Unknown deconvolution mode: {method}")
 
-                    with asection(f"Moving array from backend to numpy."):
-                        tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
+                        with asection(f"Moving array from backend to numpy."):
+                            tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
 
-                with asection(f"Saving deconvolved stack for time point {i}, shape:{tp_array.shape}, dtype:{array.dtype}"):
-                    dest_dataset.write_stack(channel=channel,
-                                             time_point=i,
-                                             stack_array=tp_array)
-                aprint(f"Done processing time point: {i}/{len(time_points)} .")
+                    with asection(f"Saving deconvolved stack for time point {i}, shape:{tp_array.shape}, dtype:{array.dtype}"):
+                        dest_dataset.write_stack(channel=channel,
+                                                 time_point=i,
+                                                 stack_array=tp_array)
+                    aprint(f"Done processing time point: {i}/{len(time_points)} .")
 
             except Exception as error:
                 aprint(error)

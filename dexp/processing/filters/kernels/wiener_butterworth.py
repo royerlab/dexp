@@ -75,6 +75,7 @@ def wiener_butterworth_kernel(kernel,
     # Weiner-Butterworth back projector
     wbwk_f = wk_f * bwk_f
     wbwk = xp.real(xp.fft.ifftn(wbwk_f))
+    wbwk = xp.clip(wbwk, a_min=0, a_max=None)
     wbwk /= wbwk.sum()
 
     # from napari import Viewer, gui_qt

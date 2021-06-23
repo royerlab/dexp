@@ -76,96 +76,97 @@ def dataset_fuse(dataset,
         equalisation_ratios_reference, model, dest_dataset = params
         tp = time_points[i]
         try:
-            with asection(f"Loading channels {channels} for time point {i}/{len(time_points)}"):
-                views_tp = tuple(np.asarray(view[tp][volume_slicing]) for view in views)
+            with asection(f'Fusing time point for time point {i}/{len(time_points)}'):
+                with asection(f"Loading channels {channels}"):
+                    views_tp = tuple(np.asarray(view[tp][volume_slicing]) for view in views)
 
-            with BestBackend(exclusive=True, enable_unified_memory=True):
-                if models[i] is not None:
-                    model = models[i]
-                # otherwise it could be a None model or from the first iteration if equalisation mode was 'first'
+                with BestBackend(exclusive=True, enable_unified_memory=True):
+                    if models[i] is not None:
+                        model = models[i]
+                    # otherwise it could be a None model or from the first iteration if equalisation mode was 'first'
 
-                if microscope == 'simview':
-                    fuse_obj = SimViewFusion(registration_model=model,
-                                             equalise=equalise,
-                                             equalisation_ratios=equalisation_ratios_reference,
-                                             zero_level=zero_level,
-                                             clip_too_high=clip_too_high,
-                                             fusion=fusion,
-                                             fusion_bias_exponent=2,
-                                             fusion_bias_strength_i=fusion_bias_strength_i,
-                                             fusion_bias_strength_d=fusion_bias_strength_d,
-                                             dehaze_before_fusion=True,
-                                             dehaze_size=dehaze_size,
-                                             dehaze_correct_max_level=True,
-                                             dark_denoise_threshold=dark_denoise_threshold,
-                                             dark_denoise_size=9,
-                                             butterworth_filter_cutoff=1,
-                                             flip_camera1=True)
+                    if microscope == 'simview':
+                        fuse_obj = SimViewFusion(registration_model=model,
+                                                 equalise=equalise,
+                                                 equalisation_ratios=equalisation_ratios_reference,
+                                                 zero_level=zero_level,
+                                                 clip_too_high=clip_too_high,
+                                                 fusion=fusion,
+                                                 fusion_bias_exponent=2,
+                                                 fusion_bias_strength_i=fusion_bias_strength_i,
+                                                 fusion_bias_strength_d=fusion_bias_strength_d,
+                                                 dehaze_before_fusion=True,
+                                                 dehaze_size=dehaze_size,
+                                                 dehaze_correct_max_level=True,
+                                                 dark_denoise_threshold=dark_denoise_threshold,
+                                                 dark_denoise_size=9,
+                                                 butterworth_filter_cutoff=1,
+                                                 flip_camera1=True)
 
-                    tp_array = fuse_obj(*views_tp)
-                    new_equalisation_ratios = fuse_obj._equalisation_ratios
+                        tp_array = fuse_obj(*views_tp)
+                        new_equalisation_ratios = fuse_obj._equalisation_ratios
 
-                elif microscope == 'mvsols':
-                    metadata = dataset.get_metadata()
-                    angle = metadata['angle']
-                    channel = metadata['channel']
-                    dz = metadata['dz']
-                    res = metadata['res']
-                    illumination_correction_sigma = metadata['ic_sigma'] if 'ic_sigma' in metadata else None
+                    elif microscope == 'mvsols':
+                        metadata = dataset.get_metadata()
+                        angle = metadata['angle']
+                        channel = metadata['channel']
+                        dz = metadata['dz']
+                        res = metadata['res']
+                        illumination_correction_sigma = metadata['ic_sigma'] if 'ic_sigma' in metadata else None
 
-                    tp_array, model, new_equalisation_ratios = msols_fuse_1C2L(*views_tp,
-                                                                               z_pad=z_pad_apodise[0],
-                                                                               z_apodise=z_pad_apodise[1],
-                                                                               registration_num_iterations=warpreg_num_iterations,
-                                                                               registration_force_model=loadreg,
-                                                                               registration_model=model,
-                                                                               registration_min_confidence=min_confidence,
-                                                                               registration_max_change=max_change,
-                                                                               registration_edge_filter=registration_edge_filter,
-                                                                               equalise=equalise,
-                                                                               equalisation_ratios=equalisation_ratios_reference,
-                                                                               zero_level=zero_level,
-                                                                               clip_too_high=clip_too_high,
-                                                                               fusion=fusion,
-                                                                               fusion_bias_exponent=2,
-                                                                               fusion_bias_strength_x=fusion_bias_strength_i,
-                                                                               dehaze_size=dehaze_size,
-                                                                               dark_denoise_threshold=dark_denoise_threshold,
-                                                                               angle=angle,
-                                                                               dx=res,
-                                                                               dz=dz,
-                                                                               illumination_correction_sigma=illumination_correction_sigma,
-                                                                               registration_mode='projection' if maxproj else 'full',
-                                                                               huge_dataset_mode=huge_dataset)
-                else:
-                    raise NotImplementedError
+                        tp_array, model, new_equalisation_ratios = msols_fuse_1C2L(*views_tp,
+                                                                                   z_pad=z_pad_apodise[0],
+                                                                                   z_apodise=z_pad_apodise[1],
+                                                                                   registration_num_iterations=warpreg_num_iterations,
+                                                                                   registration_force_model=loadreg,
+                                                                                   registration_model=model,
+                                                                                   registration_min_confidence=min_confidence,
+                                                                                   registration_max_change=max_change,
+                                                                                   registration_edge_filter=registration_edge_filter,
+                                                                                   equalise=equalise,
+                                                                                   equalisation_ratios=equalisation_ratios_reference,
+                                                                                   zero_level=zero_level,
+                                                                                   clip_too_high=clip_too_high,
+                                                                                   fusion=fusion,
+                                                                                   fusion_bias_exponent=2,
+                                                                                   fusion_bias_strength_x=fusion_bias_strength_i,
+                                                                                   dehaze_size=dehaze_size,
+                                                                                   dark_denoise_threshold=dark_denoise_threshold,
+                                                                                   angle=angle,
+                                                                                   dx=res,
+                                                                                   dz=dz,
+                                                                                   illumination_correction_sigma=illumination_correction_sigma,
+                                                                                   registration_mode='projection' if maxproj else 'full',
+                                                                                   huge_dataset_mode=huge_dataset)
+                    else:
+                        raise NotImplementedError
 
-                with asection(f"Moving array from backend to numpy."):
-                    tp_array = Backend.to_numpy(tp_array, dtype=dtype, force_copy=False)
+                    with asection(f"Moving array from backend to numpy."):
+                        tp_array = Backend.to_numpy(tp_array, dtype=dtype, force_copy=False)
 
-                model = model.to_numpy()
-                del views_tp
-                Backend.current().clear_memory_pool()
+                    model = model.to_numpy()
+                    del views_tp
+                    Backend.current().clear_memory_pool()
 
-                aprint(f"Last equalisation ratios: {new_equalisation_ratios}")
+                    aprint(f"Last equalisation ratios: {new_equalisation_ratios}")
 
-            with asection(f"Saving fused stack for time point {i}, shape:{tp_array.shape}, dtype:{tp_array.dtype}"):
+                with asection(f"Saving fused stack for time point {i}, shape:{tp_array.shape}, dtype:{tp_array.dtype}"):
 
-                if i == 0:
-                    # We allocate last minute once we know the shape... because we don't always know the shape in advance!!!
-                    mode = 'w' + ('' if overwrite else '-')
-                    dest_dataset = ZDataset(output_path, mode, store, parent=dataset)
-                    dest_dataset.add_channel('fused',
-                                             shape=(len(time_points),)+tp_array.shape,
-                                             dtype=tp_array.dtype,
-                                             codec=compression,
-                                             clevel=compression_level)
+                    if i == 0:
+                        # We allocate last minute once we know the shape... because we don't always know the shape in advance!!!
+                        mode = 'w' + ('' if overwrite else '-')
+                        dest_dataset = ZDataset(output_path, mode, store, parent=dataset)
+                        dest_dataset.add_channel('fused',
+                                                 shape=(len(time_points),)+tp_array.shape,
+                                                 dtype=tp_array.dtype,
+                                                 codec=compression,
+                                                 clevel=compression_level)
 
-                dest_dataset.write_stack(channel='fused',
-                                         time_point=i,
-                                         stack_array=tp_array)
+                    dest_dataset.write_stack(channel='fused',
+                                             time_point=i,
+                                             stack_array=tp_array)
 
-            aprint(f"Done processing time point: {i}/{len(time_points)} .")
+                aprint(f"Done processing time point: {i}/{len(time_points)} .")
 
         except Exception as error:
             aprint(error)
