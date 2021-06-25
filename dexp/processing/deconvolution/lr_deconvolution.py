@@ -190,7 +190,6 @@ def lucy_richardson_deconvolution(image: xpArray,
         convolved = convolve_method(
             result,
             psf,
-            mode='wrap',
         )
         convolved = xp.clip(convolved, a_min=0, a_max=None, out=convolved)
         # Computes relative blur:
@@ -210,7 +209,6 @@ def lucy_richardson_deconvolution(image: xpArray,
         multiplicative_correction = convolve_method(
             relative_blur,
             back_projector,
-            mode='wrap',
         )
         multiplicative_correction = xp.clip(multiplicative_correction, a_min=0.0, a_max=None, out=multiplicative_correction)
 

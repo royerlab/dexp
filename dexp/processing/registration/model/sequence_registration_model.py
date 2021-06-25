@@ -182,7 +182,7 @@ class SequenceRegistrationModel:
         new_model_list = []
         for i in range(0, len(self.model_list), step):
             new_model = self.model_list[i].copy()
-            for j in range(i+1, i+step):
+            for j in range(i+1, min(len(self.model_list), i+step)):
                 centered_model = self.model_list[j] - self.model_list[j-1]
                 new_model += centered_model
             new_model_list.append(new_model)

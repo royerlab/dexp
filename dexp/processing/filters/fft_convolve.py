@@ -1,4 +1,5 @@
 import numpy
+import scipy.fftpack
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -55,7 +56,7 @@ def fft_convolve(image1: xpArray,
 
     shape = tuple(s1 + s2 - 1)
 
-    fsize = shape  # tuple(int(2 ** math.ceil(math.log2(x))) for x in tuple(shape))
+    fsize = tuple(scipy.fftpack.next_fast_len(x) for x in tuple(shape))
 
     image1_fft = sp.fft.rfftn(image1, fsize, overwrite_x=in_place)
     image2_fft = sp.fft.rfftn(image2, fsize, overwrite_x=in_place)

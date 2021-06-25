@@ -33,6 +33,7 @@ def dataset_deconv(dataset: BaseDataset,
                    power: float = 1,
                    blind_spot: int = 0,
                    back_projection: Optional[str] = None,
+                   wb_order: int = 5,
                    psf_objective: str = 'nikon16x08na',
                    psf_na: float = 0.8,
                    psf_dxy: float = 0.485,
@@ -140,7 +141,10 @@ def dataset_deconv(dataset: BaseDataset,
                             max_value = tp_array.max()
 
                             def f(image):
-                                convolve = functools.partial(fft_convolve, internal_dtype=numpy.float64)
+                                convolve = functools.partial(fft_convolve,
+                                                             in_place=False,
+                                                             mode='reflect',
+                                                             internal_dtype=numpy.float32)
                                 return lucy_richardson_deconvolution(image=image,
                                                                      psf=psf_kernel,
                                                                      num_iterations=num_iterations,
@@ -150,6 +154,7 @@ def dataset_deconv(dataset: BaseDataset,
                                                                      blind_spot=blind_spot,
                                                                      blind_spot_mode='median+uniform',
                                                                      blind_spot_axis_exclusion=(0,),
+                                                                     wb_order=wb_order,
                                                                      back_projection=back_projection,
                                                                      convolve_method=convolve
                                                                      )
