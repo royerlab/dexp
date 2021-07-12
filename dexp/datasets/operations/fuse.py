@@ -3,6 +3,7 @@ import numpy as np
 from arbol.arbol import aprint
 from arbol.arbol import asection
 from dask.distributed import Client
+import warnings
 
 from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.backends.backend import Backend
@@ -57,6 +58,11 @@ def dataset_fuse(dataset,
     in_nb_time_points = views[0].shape[0]
     aprint(f"Slicing with: {slicing}")
     out_shape, volume_slicing, time_points = slice_from_shape(views[0].shape, slicing)
+
+    if microscope == 'simview' and len(views) != 4:
+        assert len(views) == 2
+        warnings.warn('Only two views found. Fusing assuming they are from the same camera.')
+        loadreg = False  # it does not have registration
 
     # load registration models:
     with NumpyBackend():
@@ -138,13 +144,13 @@ def dataset_fuse(dataset,
                                                                                    illumination_correction_sigma=illumination_correction_sigma,
                                                                                    registration_mode='projection' if maxproj else 'full',
                                                                                    huge_dataset_mode=huge_dataset)
+                        model = model.to_numpy()
                     else:
                         raise NotImplementedError
 
                     with asection(f"Moving array from backend to numpy."):
                         tp_array = Backend.to_numpy(tp_array, dtype=dtype, force_copy=False)
 
-                    model = model.to_numpy()
                     del views_tp
                     Backend.current().clear_memory_pool()
 
@@ -203,7 +209,7 @@ def dataset_fuse(dataset,
 
     models = [model for _, model, _ in dask.compute(*lazy_computations)]
 
-    if not loadreg:
+    if not loadreg and models[0] is not None:
         model_list_to_file(model_list_filename, models)
 
     dest_dataset = params.compute()[2]
