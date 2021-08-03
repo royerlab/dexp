@@ -2,7 +2,7 @@ import dask
 import numpy as np
 from arbol.arbol import aprint
 from arbol.arbol import asection
-from dask.distributed import Client
+from toolz import curry
 
 from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.backends.backend import Backend
@@ -71,8 +71,8 @@ def dataset_fuse(dataset,
         else:
             models = [None] * len(time_points)
 
-    @dask.delayed
-    def process(i, params):
+    @curry
+    def process(i, params, device_id=0):
         equalisation_ratios_reference, model, dest_dataset = params
         tp = time_points[i]
         try:
@@ -80,7 +80,7 @@ def dataset_fuse(dataset,
                 with asection(f"Loading channels {channels}"):
                     views_tp = tuple(np.asarray(view[tp][volume_slicing]) for view in views)
 
-                with BestBackend(exclusive=True, enable_unified_memory=True):
+                with BestBackend(exclusive=True, enable_unified_memory=True, device_id=device_id):
                     if models[i] is not None:
                         model = models[i]
                     # otherwise it could be a None model or from the first iteration if equalisation mode was 'first'
@@ -179,10 +179,18 @@ def dataset_fuse(dataset,
 
         return new_equalisation_ratios, model, dest_dataset
 
-    from dask_cuda import LocalCUDACluster
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
-    aprint('Dask Client', client)
+    if len(devices) == 1:
+        process = process(device_id=devices[0])
+    else:
+        from dask.distributed import Client
+        from dask_cuda import LocalCUDACluster
+
+        process = dask.delayed(process)
+
+        cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
+        client = Client(cluster)
+
+        aprint('Dask Client', client)
 
     # the parameters are (equalisation rations, registration model, dest. dataset)
     if microscope == 'simview':
@@ -193,20 +201,26 @@ def dataset_fuse(dataset,
         raise NotImplementedError
 
     # it creates the output dataset from the first time point output shape
-    params = process(0, init_params).persist()
+    params = process(0, init_params)
+    if len(devices) > 1:
+        params = params.persist()
+
     if equalise_mode == 'all':
         params = init_params[:2] + (params[2],)
 
-    lazy_computations = []
+    lazy_computations = []  # it is only lazy if len(devices) > 1
     for i in range(1, len(time_points)):
         lazy_computations.append(process(i, params))
 
-    models = [model for _, model, _ in dask.compute(*lazy_computations)]
+    if len(devices) > 1:
+        models = [model for _, model, _ in dask.compute(*lazy_computations)]
+        dest_dataset = params.compute()[2]
+    else:
+        models = [model for _, model, _ in lazy_computations]
+        dest_dataset = params[2]
 
     if not loadreg:
         model_list_to_file(model_list_filename, models)
-
-    dest_dataset = params.compute()[2]
 
     aprint(dest_dataset.info())
     if check:
@@ -214,4 +228,5 @@ def dataset_fuse(dataset,
 
     # close destination dataset:
     dest_dataset.close()
-    client.close()
+    if len(devices) > 1:
+        client.close()
