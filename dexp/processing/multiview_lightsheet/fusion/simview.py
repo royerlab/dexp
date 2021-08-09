@@ -93,12 +93,17 @@ class SimViewFusion(BaseFusion):
 
         return fused_view
 
-    def preprocess(self, C0L0: xpArray, C0L1: xpArray, C1L0: xpArray, C1L1: xpArray) -> Tuple[xpArray, xpArray]:
+    def preprocess(self, C0L0: xpArray, C0L1: xpArray, C1L0: Optional[xpArray] = None,
+                   C1L1: Optional[xpArray] = None) -> Tuple[xpArray, Optional[xpArray]]:
         self._match_input(C0L0, C0L1)
-        self._match_input(C0L0, C1L0)
-        self._match_input(C0L0, C1L1)
+        if C1L0 is not None:
+            self._match_input(C0L0, C1L0)
+        if C1L1 is not None:
+            self._match_input(C0L0, C1L1)
 
         C0Lx = self._preprocess_and_fuse_illumination_views(C0L0, C0L1, flip=False, camera=0)
+        if C1L0 is None and C1L1 is None:
+            return C0Lx, None
         C1Lx = self._preprocess_and_fuse_illumination_views(C1L0, C1L1, flip=self._flip_camera1, camera=1)
 
         if self._equalise:
@@ -145,13 +150,22 @@ class SimViewFusion(BaseFusion):
 
         return CxLx
 
-    def __call__(self, C0L0: xpArray, C0L1: xpArray, C1L0: xpArray, C1L1: xpArray) -> xpArray:
+    def __call__(self, C0L0: xpArray, C0L1: xpArray, C1L0: Optional[xpArray] = None,
+                 C1L1: Optional[xpArray] = None) -> xpArray:
+
+        if C1L1 is None or C1L0 is None:
+            assert C1L1 == C1L0, 'Both C1L1 and C1L0 or none should be `None`.'
+
         original_dtype = C0L0.dtype
         xp = Backend.current().get_xp_module()
 
         C0Lx, C1Lx = self.preprocess(C0L0, C0L1, C1L0, C1L1)
-        CxLx = self.fuse(C0Lx, C1Lx)
-        CxLx = self.postprocess(CxLx)
+        if C1Lx is None:
+            # fusing only two views from two different light sheets
+            CxLx = C0Lx
+        else:
+            CxLx = self.fuse(C0Lx, C1Lx)
+            CxLx = self.postprocess(CxLx)
 
         with asection(f"Converting back to original dtype..."):
             if original_dtype is numpy.uint16:
