@@ -77,4 +77,4 @@ class NumpyBackend(Backend):
                 import cupyx
                 return cupyx.scipy.get_array_module(array)
             except ModuleNotFoundError:
-                return numpy
+                return scipy

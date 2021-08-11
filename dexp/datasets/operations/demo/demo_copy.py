@@ -85,7 +85,9 @@ def _demo_copy(length_xy=96,
             dataset_copy(dataset=dataset,
                          dest_path=output_path,
                          channels=('channel',),
-                         slicing=(slice(0, 4), ...))
+                         slicing=(slice(0, 4), ...),
+                         workers=4,
+                         workersbackend='threading')
 
             copied_dataset = ZDataset(path=output_path, mode='a')
             copied_array = copied_dataset.get_array('channel')
