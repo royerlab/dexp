@@ -49,7 +49,6 @@ def sobel_filter(image: xpArray,
     """
     if isinstance(Backend.current(), NumpyBackend):
         internal_dtype = numpy.float32
-        exec("import scipy.ndimage")
 
     xp = Backend.get_xp_module(image)
     sp = Backend.get_sp_module(image)
