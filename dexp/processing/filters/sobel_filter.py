@@ -47,15 +47,16 @@ def sobel_filter(image: xpArray,
     Filtered image
 
     """
+    if isinstance(Backend.current(), NumpyBackend):
+        internal_dtype = numpy.float32
+        exec("import scipy.ndimage")
+
     xp = Backend.get_xp_module(image)
     sp = Backend.get_sp_module(image)
     ndim = image.ndim
 
     if internal_dtype is None:
         internal_dtype = image.dtype
-
-    if type(Backend.current()) is NumpyBackend:
-        internal_dtype = numpy.float32
 
     original_dtype = image.dtype
     force_copy = normalise_input and not in_place_normalisation
