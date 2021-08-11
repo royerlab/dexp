@@ -22,8 +22,6 @@ class JoinedDataset(BaseDataset):
         Returns
         -------
         Joined dataset
-
-
         """
 
         super().__init__(dask_backed=False)

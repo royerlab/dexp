@@ -314,7 +314,8 @@ class ZDataset(BaseDataset):
                     chunks: Sequence[int] = None,
                     enable_projections: bool = True,
                     codec: str = 'zstd',
-                    clevel: int = 3) -> Any:
+                    clevel: int = 3,
+                    value: Optional[Any] = None) -> Any:
         """Adds a channel to this dataset
 
         Parameters
@@ -342,7 +343,7 @@ class ZDataset(BaseDataset):
         aprint(f"chunks={chunks}")
 
         # Choosing the fill value to the largest value:
-        fill_value = self._get_largest_dtype_value(dtype)
+        fill_value = self._get_largest_dtype_value(dtype) if value is None else value
 
         aprint(f"Adding channel: '{name}' of shape: {shape}, chunks:{chunks}, dtype: {dtype}, fill_value: {fill_value}, codec: {codec}, clevel: {clevel} ")
         compressor = Blosc(cname=codec, clevel=clevel, shuffle=Blosc.BITSHUFFLE)
