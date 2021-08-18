@@ -16,14 +16,13 @@ from dexp.io.compress_array import decompress_array
 from dexp.utils.config import config_blosc
 
 
-config_blosc()
-
-
 class CCDataset(BaseDataset):
 
     def __init__(self, path, cache_size=8e9):
 
         super().__init__(dask_backed=False)
+
+        config_blosc()
 
         self.folder = path
         self._channels = []

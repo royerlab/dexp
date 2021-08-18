@@ -1,13 +1,14 @@
 import os
 import shutil
 import sys
+from pathlib import Path
 from os.path import isfile, isdir, exists, join
-from typing import Tuple, Sequence, Any, Union, Optional
+from typing import Tuple, Sequence, Any, Union, Optional, List
 
 import dask
 import numpy
 import zarr
-from arbol.arbol import aprint
+from arbol.arbol import aprint, asection
 from zarr import open_group, convenience, CopyError, Blosc, Group
 
 from dexp.datasets.base_dataset import BaseDataset
@@ -16,7 +17,6 @@ from dexp.processing.backends.backend import Backend
 from dexp.utils.config import config_blosc
 
 
-config_blosc()
 
 
 class ZDataset(BaseDataset):
@@ -38,6 +38,7 @@ class ZDataset(BaseDataset):
         -------
         Zarr dataset
         """
+        config_blosc()
 
         super().__init__(dask_backed=False)
 
@@ -266,9 +267,33 @@ class ZDataset(BaseDataset):
         cli_history.append(new_command)
         self._root_group.attrs[key] = cli_history
 
-    def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False):
+    def _load_tensorstore(self, array: zarr.Array):
+        import tensorstore as ts
+
+        metadata = {
+            'dtype': array.dtype.str,
+            'order': array.order,
+            'shape': array.shape,
+        }
+        ts_spec ={
+            'driver': 'zarr',
+            'kvstore': {
+                'driver': 'file',
+                'path': self._path,
+            },
+            'path': array.path,
+            'metadata': metadata,
+        }
+        return ts.open(ts_spec, create=False, open=True).result()
+
+    def get_array(self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False, wrap_with_tensorstore: bool = False):
+        assert (wrap_with_dask != wrap_with_tensorstore) or wrap_with_dask == False
         array = self._arrays[channel]
-        return dask.array.from_array(array, chunks=array.chunks) if wrap_with_dask else array
+        if wrap_with_dask:
+            return dask.array.from_array(array, chunks=array.chunks)
+        elif wrap_with_tensorstore:
+            return self._load_tensorstore(array)
+        return array
 
     def get_stack(self, channel: str, time_point: int, per_z_slice: bool = False, wrap_with_dask: bool = False):
         stack_array = self.get_array(channel, per_z_slice=per_z_slice, wrap_with_dask=wrap_with_dask)[time_point]
@@ -448,3 +473,47 @@ class ZDataset(BaseDataset):
                 aprint(f"Channel already exists, set option '-w' to force overwriting! ")
 
         zdataset.close()
+
+    def get_resolution(self, channel: Optional[str] = None) -> List[float]:
+        """
+        Gets pixel resolution.
+
+        Parameters
+        ----------
+        channel : Channel to obtain the information, if None returns the dataset default.
+        """
+        axes = ('dt', 'dz', 'dy', 'dx')
+        metadata = self.get_metadata()
+        if channel is None:
+            resolution = [metadata.get(axis, 1.0) for axis in axes]
+
+        else:
+            resolution = self.get_resolution()  # gets dataset default
+            channel_metadata = metadata.get(channel, {})
+            resolution = [
+                channel_metadata.get(axis, s)
+                for axis, s in zip(axes, resolution)
+            ]
+
+        return resolution
+
+    def to_bdv_format(self, channel: str, path: Union[str, Path]) -> None:
+        import npy2bdv
+
+        with asection('Writing BigDataViewer file'):
+            if isinstance(path, str):
+                path = Path(path)
+
+            if path.exists():
+                raise ValueError(f'Path: {path} exists!')
+            
+            array = self.get_array(channel)
+            resolution = self.get_resolution(channel)[1:]  # ignoring time
+            writer = npy2bdv.BdvWriter(str(path))
+
+            for t in range(array.shape[0]):
+                writer.append_view(array[t], time=t, calibration=resolution)
+                aprint(f'Saved time point {t}')
+
+            writer.write_xml()
+            writer.close()
