@@ -71,8 +71,9 @@ def dataset_copy(dataset: BaseDataset,
                 for i in range(len(time_points)):
                     process(i)
             else:
-                if workers < 1:
-                    workers = max(1, os.cpu_count())
+                if workers < 0:
+                    workers = os.cpu_count() / -workers
+                workers = max(1, workers)
 
                 aprint(f"Number of workers: {workers}")
                 parallel = Parallel(n_jobs=workers, backend=workersbackend)
