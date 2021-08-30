@@ -1,7 +1,7 @@
 import json
 from typing import List, Sequence, Tuple, Optional, Union
 
-import numpy
+import numpy as np
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
@@ -64,7 +64,7 @@ class SequenceRegistrationModel:
 
     def overall_confidence(self) -> float:
         confidences = list(model.overall_confidence() for model in self.model_list)
-        return float(numpy.median(confidences))
+        return float(np.median(confidences))
 
     def padding(self):
         padding_list = list(model.padding() for model in self.model_list)
@@ -126,7 +126,7 @@ class SequenceRegistrationModel:
               image,
               index: int,
               pad: bool = False,
-              **kwargs) -> 'Array':
+              **kwargs) -> xpArray:
         """ Applies this sequence registration model to the image at a given index.
             A new registered image is returned.
 
@@ -159,8 +159,8 @@ class SequenceRegistrationModel:
 
         length = len(self.model_list)
         ndim = self.model_list[0].shift_vector.shape[0]
-        x = numpy.arange(0, length)
-        y = numpy.zeros((length, ndim))
+        x = np.arange(0, length)
+        y = np.zeros((length, ndim))
         for i, m in enumerate(self.model_list):
             y[i] = m.shift_vector
 
@@ -188,3 +188,15 @@ class SequenceRegistrationModel:
             new_model_list.append(new_model)
 
         return SequenceRegistrationModel(new_model_list)
+    
+    def total_displacement(self) -> List[Tuple[int]]:
+        if not isinstance(self.model_list[0], TranslationRegistrationModel):
+            raise NotImplementedError
+
+        lower_disp = np.zeros_like(self.model_list[0].shift_vector)
+        upper_disp = np.zeros_like(self.model_list[0].shift_vector)
+        for model in self:
+            lower_disp = np.minimum(lower_disp, model.shift_vector)
+            upper_disp = np.maximum(upper_disp, model.shift_vector)
+        
+        return [(l.item(), u.item()) for l, u in zip(lower_disp, upper_disp)]

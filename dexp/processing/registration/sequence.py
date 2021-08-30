@@ -1,9 +1,10 @@
-from typing import List
+from typing import List, Tuple, Optional
 
 import numpy
 from arbol import aprint, asection
 import dask
 from dask.array import Array
+from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -30,6 +31,7 @@ def image_stabilisation(image: xpArray,
                         alpha_reg: float = 0.1,
                         detrend: bool = False,
                         debug_output: str = None,
+                        workers: int = 1,
                         internal_dtype=None,
                         **kwargs
                         ) -> SequenceRegistrationModel:
@@ -94,9 +96,10 @@ def image_stabilisation(image: xpArray,
                         # aprint(f"Pair: ({u}, {v}) added")
                         uv_set.add(atuple)
 
-        pairwise_models = []
         with asection(f"Computing pairwise registrations for {len(uv_set)} (u,v) pairs..."):
-            for u, v in uv_set:
+            
+            def _compute_model(pair: Tuple[int, int]) -> Optional[TranslationRegistrationModel]:
+                u, v = pair
                 if image_sequence:
                     image_u = image_sequence[u]
                     image_v = image_sequence[v]
@@ -115,8 +118,10 @@ def image_stabilisation(image: xpArray,
                                                bounding_box,
                                                internal_dtype,
                                                **kwargs)
-                if model is not None:
-                    pairwise_models.append(model)
+                return model
+            
+            pairwise_models = Parallel(n_jobs=workers)(delayed(_compute_model)(pair) for pair in uv_set)
+            pairwise_models = [model for model in pairwise_models if model is not None]
 
         nb_models = len(pairwise_models)
         aprint(f"Number of models obtained: {nb_models} for a sequence of length:{length}")
