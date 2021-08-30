@@ -496,6 +496,25 @@ class ZDataset(BaseDataset):
             ]
 
         return resolution
+    
+    def get_translation(self, channel: Optional[str] = None) -> List[float]:
+        """
+        Gets channel translation.
+        """
+        axes = ('tz', 'ty', 'tx')
+        metadata = self.get_metadata()
+        if channel is None:
+            translation = [metadata.get(axis, 0) for axis in axes]
+        
+        else:
+            translation = self.get_translation()  # gets default translation
+            channel_metadata = metadata.get(channel, {})
+            translation = [
+                channel_metadata.get(axis, t)
+                for axis, t in zip(axes, translation)
+            ]
+        
+        return translation
 
     def to_bdv_format(self, channel: str, path: Union[str, Path]) -> None:
         import npy2bdv

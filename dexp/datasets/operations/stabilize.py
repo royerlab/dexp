@@ -7,7 +7,6 @@ from arbol.arbol import asection
 from joblib import Parallel, delayed
 
 from dexp.datasets.base_dataset import BaseDataset
-from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.model.sequence_registration_model import SequenceRegistrationModel
@@ -34,7 +33,9 @@ def _compute_model(
         detrend: bool = False,
         maxproj: bool = True,
         device: int = 0,
-        debug_output=None) -> SequenceRegistrationModel:
+        workers: int = 1,
+        debug_output=None,
+    ) -> SequenceRegistrationModel:
 
     # get channel array:
     array = input_dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True)
@@ -66,6 +67,7 @@ def _compute_model(
                 log_compression=log_compression,
                 edge_filter=edge_filter,
                 internal_dtype=numpy.float16,
+                workers=workers,
                 debug_output=debug_output,
             )
             model.to_numpy()
@@ -180,6 +182,11 @@ def dataset_stabilize(dataset: BaseDataset,
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(output_path, mode, zarr_store, parent=dataset)
 
+    # Set number of workers:
+    if workers == -1:
+        workers = max(1, os.cpu_count() // abs(workers))
+    aprint(f"Number of workers: {workers}")
+
     model = None
     if reference_channel is not None:
         if reference_channel not in dataset.channels():
@@ -203,8 +210,9 @@ def dataset_stabilize(dataset: BaseDataset,
             detrend=detrend,
             maxproj=maxproj,
             device=device,
+            workers=workers,
             debug_output=debug_output,
-            )
+        )
 
     for channel in dataset._selected_channels(channels):
         if reference_channel is None:
@@ -227,6 +235,7 @@ def dataset_stabilize(dataset: BaseDataset,
                 detrend=detrend,
                 maxproj=maxproj,
                 device=device,
+                workers=workers,
                 debug_output=debug_output,
             )
         else:
@@ -234,7 +243,19 @@ def dataset_stabilize(dataset: BaseDataset,
 
         metadata = dataset.get_metadata()
         if 'dt' in metadata.get(channel, {}):
+            prev_displacement = channel_model.total_displacement()
             channel_model = channel_model.reduce(int(round(metadata[channel]['dt'])))
+            displacement = channel_model.total_displacement()
+
+            assert len(displacement) == 3
+            axes = ('tz', 'ty', 'tx')
+            asection('Translation displacement after reduction')
+            for name, prev, current in zip(axes, prev_displacement, displacement):
+                # each displacement is a tuple (min, max) of displacement
+                # minimum displacement different results in translations shift from reference channel
+                metadata[channel][name] = current[0] - prev[0]
+                aprint(f'{name.upper()}: {current[0] - prev[0]}')
+            dest_dataset.append_metadata(metadata)
 
         array = dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True)
         if slicing is not None:
@@ -273,8 +294,8 @@ def dataset_stabilize(dataset: BaseDataset,
 
                     with asection(f"Saving stabilized stack for time point {tp}/{nb_timepoints}, shape:{tp_array.shape}, dtype:{array.dtype}"):
                         dest_dataset.write_stack(channel=channel,
-                                                   time_point=tp,
-                                                   stack_array=tp_array)
+                                                 time_point=tp,
+                                                 stack_array=tp_array)
 
             except Exception as error:
                 aprint(error)
@@ -283,11 +304,6 @@ def dataset_stabilize(dataset: BaseDataset,
                 traceback.print_exc()
                 if stop_at_exception:
                     raise error
-
-        # Set number of workers:
-        if workers == -1:
-            workers = max(1, os.cpu_count() // abs(workers))
-        aprint(f"Number of workers: {workers}")
 
         # start jobs:
         if workers > 1:
