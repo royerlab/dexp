@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+import re
 from pathlib import Path
 from os.path import isfile, isdir, exists, join
 from typing import Tuple, Sequence, Any, Union, Optional, List
@@ -15,8 +16,6 @@ from dexp.datasets.base_dataset import BaseDataset
 from dexp.processing.backends.backend import Backend
 
 from dexp.utils.config import config_blosc
-
-
 
 
 class ZDataset(BaseDataset):
@@ -539,13 +538,10 @@ class ZDataset(BaseDataset):
     
     def first_uninitialized_time_point(self, channel: str) -> int:
         """
-        Returns the index of the first uninitialized time point and -1 if it is fully initilized.
+        Returns the index of the first uninitialized time point or the last time point if it is fully initialized
         """
         array = self.get_array(channel)
-        fill_value = self._get_largest_dtype_value(array.dtype)
-        array = array.view(fill_value=fill_value)
-        for t in range(array.shape[0]):
-            if array[t].max() == fill_value:
-                return t
-        return -1
+        prog = re.compile(r'\.'.join([r'\d+'] * min(1, array.ndim)))
+        initialized = set(int(k.split('.', 1)[0]) for k in zarr.storage.listdir(array.chunk_store, array._path) if prog.match(k))
+        return max(initialized)
     
