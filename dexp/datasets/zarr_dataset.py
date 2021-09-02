@@ -536,3 +536,16 @@ class ZDataset(BaseDataset):
 
             writer.write_xml()
             writer.close()
+    
+    def first_uninitialized_time_point(self, channel: str) -> int:
+        """
+        Returns the index of the first uninitialized time point and -1 if it is fully initilized.
+        """
+        array = self.get_array(channel)
+        fill_value = self._get_largest_dtype_value(array.dtype)
+        array = array.view(fill_value=fill_value)
+        for t in range(array.shape[0]):
+            if array[t].max() == fill_value:
+                return t
+        return -1
+    
