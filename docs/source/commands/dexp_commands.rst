@@ -3,72 +3,72 @@ DEXP Commands
 =============
 
 
-.. click:: dexp.cli.commands.add:add
+.. click:: dexp.cli.dexp_commands.add:add
    :prog: add
    :nested: full
 
 
-.. click:: dexp.cli.commands.check:check
+.. click:: dexp.cli.dexp_commands.check:check
    :prog: check
    :nested: full
 
 
-.. click:: dexp.cli.commands.copy:copy
+.. click:: dexp.cli.dexp_commands.copy:copy
    :prog: copy
    :nested: full
 
 
-.. click:: dexp.cli.commands.deconv:deconv
+.. click:: dexp.cli.dexp_commands.deconv:deconv
    :prog: deconv
    :nested: full
 
 
-.. click:: dexp.cli.commands.deskew:deskew
+.. click:: dexp.cli.dexp_commands.deskew:deskew
    :prog: deskew
    :nested: full
 
 
-.. click:: dexp.cli.commands.fuse:fuse
+.. click:: dexp.cli.dexp_commands.fuse:fuse
    :prog: fuse
    :nested: full
 
 
-.. click:: dexp.cli.commands.info:info
+.. click:: dexp.cli.dexp_commands.info:info
    :prog: info
    :nested: full
 
 
-.. click:: dexp.cli.commands.isonet:isonet
+.. click:: dexp.cli.dexp_commands.isonet:isonet
    :prog: isonet
    :nested: full
 
 
-.. click:: dexp.cli.commands.projrender:projrender
+.. click:: dexp.cli.dexp_commands.projrender:projrender
    :prog: projrender
    :nested: full
 
 
-.. click:: dexp.cli.commands.serve:serve
+.. click:: dexp.cli.dexp_commands.serve:serve
    :prog: serve
    :nested: full
 
 
-.. click:: dexp.cli.commands.speedtest:speedtest
+.. click:: dexp.cli.dexp_commands.speedtest:speedtest
    :prog: speedtest
    :nested: full
 
 
-.. click:: dexp.cli.commands.stabilize:stabilize
+.. click:: dexp.cli.dexp_commands.stabilize:stabilize
    :prog: stabilize
    :nested: full
 
 
-.. click:: dexp.cli.commands.tiff:tiff
+.. click:: dexp.cli.dexp_commands.tiff:tiff
    :prog: tiff
    :nested: full
 
 
-.. click:: dexp.cli.commands.view:view
+.. click:: dexp.cli.dexp_commands.view:view
    :prog: view
    :nested: full
 
