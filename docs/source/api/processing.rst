@@ -68,7 +68,6 @@ Registration
 
     .. autosummary::
         sequence.image_stabilisation
-        sequence.image_sequence_stabilisation
         sequence_proj.image_stabilisation_proj
         sequence_proj.image_stabilisation_proj_
         translation_2d.register_translation_2d_skimage
@@ -217,7 +216,6 @@ Registration
 .. currentmodule:: dexp.processing.registration.sequence
 
 .. autofunction:: image_stabilisation
-.. autofunction:: image_sequence_stabilisation
 
 .. currentmodule:: dexp.processing.registration.sequence_proj
 

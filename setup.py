@@ -54,6 +54,7 @@ REQUIRED = [
     'cachey',
     'gputil',
     'gpustat',
+    'gputools',
     'arbol',
     'simple-zarr-server',
     'requests',
