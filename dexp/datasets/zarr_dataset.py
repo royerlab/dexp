@@ -11,8 +11,10 @@ import numpy
 import zarr
 from arbol.arbol import aprint, asection
 from zarr import open_group, convenience, CopyError, Blosc, Group
+from ome_zarr.format import CurrentFormat
 
 from dexp.datasets.base_dataset import BaseDataset
+from dexp.datasets.ome_dataset import default_omero_metadata
 from dexp.processing.backends.backend import Backend
 
 from dexp.utils.config import config_blosc
@@ -544,4 +546,47 @@ class ZDataset(BaseDataset):
         prog = re.compile(r'\.'.join([r'\d+'] * min(1, array.ndim)))
         initialized = set(int(k.split('.', 1)[0]) for k in zarr.storage.listdir(array.chunk_store, array._path) if prog.match(k))
         return max(initialized)
-    
+
+    def to_ome_zarr(self, path: str, chunks: Optional[Sequence[int]] = None,
+                    force_dtype: Optional[int] = None):
+        # TODO add multiscale support
+
+        ch = self.channels()[0]
+        dexp_shape = self.shape(ch)
+
+        dtype = force_dtype if force_dtype is not None else self.dtype(ch)
+
+        for _ch in self.channels():
+            if dexp_shape != self.shape(_ch):
+                raise ValueError(f'Channels {ch} and {_ch} have different '
+                                    f'shapes ({dexp_shape} and {self.shape(_ch)} '
+                                    'could not convert to ome-zarr.')
+            if dtype != self.dtype(_ch) and force_dtype is None:
+                raise ValueError(f'Channels {ch} and {_ch} have different '
+                                    f'dtypes ({dtype} and {self.dtype(_ch)} '
+                                    'could not convert to ome-zarr.')
+                 
+        if chunks is None:
+            chunks = (1,) + self._default_chunks(dexp_shape, dtype=dtype)
+        
+        if len(chunks) != 5:
+            raise ValueError(f'Chunks must be 5-dimensional. Found {chunks}.')
+
+        ome_zarr_shape = (dexp_shape[0], len(self.channels()), *dexp_shape[1:])
+        
+        group = zarr.group(zarr.NestedDirectoryStore(path))
+        ome_array = group.create_dataset('0', shape=ome_zarr_shape, dtype=dtype,
+                                         chunks=chunks)
+
+        for t in range(self.nb_timepoints(ch)):
+            aprint(f'Converting time point {t} ...', end='\r')
+            for c, channel in enumerate(self.channels()):
+                ome_array[t, c] = self.get_stack(channel, t)
+        aprint('')
+
+        group.attrs['multiscales'] = [{
+            'version': CurrentFormat().version,
+            'datasets': [{'path': '0'}]
+        }]
+
+        group.attrs['omero'] = default_omero_metadata(self._path, self.channels(), dtype)
