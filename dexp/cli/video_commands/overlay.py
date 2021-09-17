@@ -1,6 +1,6 @@
 import click
 
-from dexp.cli.dexp_main import _default_workers_backend
+from dexp.cli.defaults import _default_workers_backend
 from dexp.video.overlay import add_overlays_image_sequence
 
 
