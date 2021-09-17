@@ -8,6 +8,7 @@ from skimage.filters import gaussian
 
 from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from ome_zarr.utils import info
 
 
 def test_zarr_dataset_livecycle():
@@ -228,3 +229,25 @@ def test_zarr_parent_metadata():
         child_metadata = child_dataset.get_metadata()
         child_metadata.pop('cli_history')
         assert child_metadata == parent_metadata
+
+
+def test_ome_zarr_convertion():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        print('created temporary directory', tmpdir)
+
+        # self, path:str, mode:str ='r', store:str ='dir'
+        source_path = join(tmpdir, 'test_ome.zarr')
+        zdataset = ZDataset(path=source_path,
+                            mode='w',
+                            store='dir')
+
+        zdataset.add_channel(name='first',
+                             shape=(5, 20, 20, 20),
+                             chunks=(1, 10, 10, 10),
+                             dtype='f4',
+                             codec='zstd',
+                             clevel=3)
+        
+        ome_zarr_path = join(tmpdir, 'test_ome.ome.zarr')
+        zdataset.to_ome_zarr(ome_zarr_path)
+        info(ome_zarr_path)
