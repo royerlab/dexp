@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.dexp_main import _default_workers_backend
+from dexp.cli.defaults import _default_workers_backend
 from dexp.cli.parsing import _parse_channels, _parse_slicing, _parse_devices
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.register import dataset_register

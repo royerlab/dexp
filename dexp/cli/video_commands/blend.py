@@ -2,7 +2,7 @@ import click
 from arbol.arbol import aprint
 
 from dexp.video.blend import blend_color_image_sequences
-from dexp.cli.dexp_main import _default_workers_backend
+from dexp.cli.defaults import _default_workers_backend
 
 
 @click.command()
