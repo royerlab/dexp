@@ -5,8 +5,8 @@ from arbol.arbol import aprint, asection
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.utils.slicing import slice_from_shape
+from dexp.utils.misc import compute_num_workers
 
-import os
 from joblib import Parallel, delayed
 
 
@@ -71,12 +71,9 @@ def dataset_copy(dataset: BaseDataset,
                 for i in range(len(time_points)):
                     process(i)
             else:
-                if workers < 0:
-                    workers = os.cpu_count() / -workers
-                workers = max(1, workers)
+                n_jobs = compute_num_workers(workers, len(time_points))
 
-                aprint(f"Number of workers: {workers}")
-                parallel = Parallel(n_jobs=workers, backend=workersbackend)
+                parallel = Parallel(n_jobs=n_jobs, backend=workersbackend)
                 parallel(delayed(process)(i) for i in range(len(time_points)))
 
     # Dataset info:
