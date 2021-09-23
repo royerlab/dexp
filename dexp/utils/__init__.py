@@ -6,4 +6,3 @@ try:
     xpArray = Union[cupy.ndarray, numpy.ndarray]
 except ImportError:
     xpArray = numpy.ndarray
-

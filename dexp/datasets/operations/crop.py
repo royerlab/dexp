@@ -9,10 +9,10 @@ from dexp.datasets.base_dataset import BaseDataset
 from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.backends.backend import Backend
 from dexp.processing.filters.fft_convolve import fft_convolve
+from dexp.utils.misc import compute_num_workers
 from scipy import ndimage as ndi
 
 
-import os
 from joblib import Parallel, delayed
 
 
@@ -116,12 +116,9 @@ def dataset_crop(dataset: BaseDataset,
                 for i in range(len(array)):
                     process(i)
             else:
-                if workers < 0:
-                    workers = os.cpu_count() / -workers
-                workers = min(max(1, workers), len(array))
+                n_jobs = compute_num_workers(workers, len(array))
 
-                aprint(f"Number of workers: {workers}")
-                parallel = Parallel(n_jobs=workers)
+                parallel = Parallel(n_jobs=n_jobs)
                 parallel(delayed(process)(i) for i in range(len(array)))
 
     # Dataset info:

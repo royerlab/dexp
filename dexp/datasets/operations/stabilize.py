@@ -12,6 +12,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.registration.model.sequence_registration_model import SequenceRegistrationModel
 from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.registration.sequence_proj import image_stabilisation_proj_
+from dexp.utils.misc import compute_num_workers
 
 
 def _compute_model(
@@ -46,6 +47,8 @@ def _compute_model(
 
     # Shape and chunks for array:
     ndim = array.ndim
+
+    workers = compute_num_workers(workers, array.shape[0])
 
     if not maxproj:
         with BestBackend(device, enable_unified_memory=True):
@@ -182,11 +185,6 @@ def dataset_stabilize(dataset: BaseDataset,
     mode = 'w' + ('' if overwrite else '-')
     dest_dataset = ZDataset(output_path, mode, zarr_store, parent=dataset)
 
-    # Set number of workers:
-    if workers == -1:
-        workers = max(1, os.cpu_count() // abs(workers))
-    aprint(f"Number of workers: {workers}")
-
     model = None
     if reference_channel is not None:
         if reference_channel not in dataset.channels():
@@ -306,11 +304,14 @@ def dataset_stabilize(dataset: BaseDataset,
                     raise error
 
         # start jobs:
-        if workers > 1:
-            Parallel(n_jobs=workers, backend=workers_backend)(delayed(process)(tp) for tp in range(0, nb_timepoints))
-        else:
+        if workers == 1:
             for tp in range(0, nb_timepoints):
                 process(tp)
+        else:
+            n_jobs = compute_num_workers(workers, nb_timepoints)
+            Parallel(n_jobs=n_jobs, backend=workers_backend)(
+                delayed(process)(tp) for tp in range(0, nb_timepoints)
+            )
 
     # printout output dataset info:
     aprint(dest_dataset.info())
