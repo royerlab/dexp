@@ -40,6 +40,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option('--workers', '-k', type=int, default=-1, help='Number of worker threads to spawn, if -1 then num workers = num devices', show_default=True)  #
 @click.option('--workersbackend', '-wkb', type=str, default=_default_workers_backend, help='What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ', show_default=True)  #
 @click.option('--devices', '-d', type=str, default='0', help='Sets the CUDA devices id, e.g. 0,1,2 or ‘all’', show_default=True)  #
+@click.option('--pad', '-p', is_flag=True, default=False, help='Use this flag to pad views according to the registration models.')
 @click.option('--check', '-ck', default=True, help='Checking integrity of written file.', show_default=True)  #
 def fuse(input_paths,
          output_path,
@@ -70,6 +71,7 @@ def fuse(input_paths,
          workers,
          workersbackend,
          devices,
+         pad,
          check):
     """ Fuses the views of a multi-view light-sheet microscope dataset (available: simview and mvsols)
     """
@@ -114,6 +116,7 @@ def fuse(input_paths,
                      workers=workers,
                      workersbackend=workersbackend,
                      devices=devices,
+                     pad=pad,
                      check=check)
 
         input_dataset.close()

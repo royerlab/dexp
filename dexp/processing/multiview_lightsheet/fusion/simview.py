@@ -38,6 +38,7 @@ class SimViewFusion(BaseFusion):
                  butterworth_filter_cutoff: float,
                  flip_camera1: bool,
                  internal_dtype: numpy.dtype = numpy.float16,
+                 pad: bool = True,
                  ):
         super().__init__(registration_model, equalise, equalisation_ratios, zero_level, clip_too_high, fusion,
                          dehaze_before_fusion, dehaze_size, dehaze_correct_max_level,
@@ -138,12 +139,12 @@ class SimViewFusion(BaseFusion):
 
         return CxLx
 
-    def fuse(self, C0Lx: xpArray, C1Lx: xpArray) -> xpArray:
+    def fuse(self, C0Lx: xpArray, C1Lx: xpArray, pad: bool) -> xpArray:
         if self._registration_model is None:
             raise RuntimeError('Registration must be computed beforehand.')
 
         with asection(f"Register_stacks C0Lx and C1Lx ..."):
-            C0Lx, C1Lx = self._registration_model.apply_pair(C0Lx, C1Lx)
+            C0Lx, C1Lx = self._registration_model.apply_pair(C0Lx, C1Lx, pad=pad)
 
         with asection(f"Fuse detection views C0lx and C1Lx..."):
             CxLx = self._fuse_detection_views(C0Lx, C1Lx)
@@ -151,7 +152,7 @@ class SimViewFusion(BaseFusion):
         return CxLx
 
     def __call__(self, C0L0: xpArray, C0L1: xpArray, C1L0: Optional[xpArray] = None,
-                 C1L1: Optional[xpArray] = None) -> xpArray:
+                 C1L1: Optional[xpArray] = None, pad: bool = False) -> xpArray:
 
         if C1L1 is None or C1L0 is None:
             assert C1L1 == C1L0, 'Both C1L1 and C1L0 or none should be `None`.'
@@ -164,7 +165,7 @@ class SimViewFusion(BaseFusion):
             # fusing only two views from two different light sheets
             CxLx = C0Lx
         else:
-            CxLx = self.fuse(C0Lx, C1Lx)
+            CxLx = self.fuse(C0Lx, C1Lx, pad=pad)
             CxLx = self.postprocess(CxLx)
 
         with asection(f"Converting back to original dtype..."):

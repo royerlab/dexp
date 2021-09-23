@@ -162,12 +162,13 @@ class ZDataset(BaseDataset):
 
     @staticmethod
     def _default_chunks(shape: Tuple[int], dtype: Union[str, numpy.dtype], max_size: int = 2147483647) -> Tuple[int]:
-        if not isinstance(dtype, numpy.dtype):
-            dtype = numpy.dtype(dtype)
-        width = shape[-1]
-        height = shape[-2]
-        depth = min(max_size // (dtype.itemsize * width * height), shape[-3])
-        chunk = (1, depth, height, width)
+        chunk = (1, 64, 256, 256)  # testing smaller chunks
+        # if not isinstance(dtype, numpy.dtype):
+        #     dtype = numpy.dtype(dtype)
+        # width = shape[-1]
+        # height = shape[-2]
+        # depth = min(max_size // (dtype.itemsize * width * height), shape[-3])
+        # chunk = (1, depth, height, width)
         return chunk[-len(shape):]
 
     def close(self):
