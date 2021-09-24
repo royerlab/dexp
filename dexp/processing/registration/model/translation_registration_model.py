@@ -159,6 +159,9 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
             image_a = Backend.to_backend(image_a)
             image_b = Backend.to_backend(image_b)
 
+            # necessary, otherwise the padding blows up the memory
+            Backend.current().clear_memory_pool()
+
             image_a = xp.pad(image_a, pad_width=padding_a)
             image_b = xp.pad(image_b, pad_width=padding_b)
 
