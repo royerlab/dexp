@@ -59,7 +59,6 @@ REQUIRED = [
 #    'requests',
 #    'aiohttp',
     'colorcet',
-    'python-telegram-bot',
     'PyYAML',
     'cairocffi',
     'blosc',

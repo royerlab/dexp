@@ -32,4 +32,3 @@ pip install cachey --upgrade
 pip install gputil gpustat --upgrade
 pip install arbol --upgrade
 # pip install simple-zarr-server requests aiohttp --upgrade
-# pip install python-telegram-bot --upgrade
