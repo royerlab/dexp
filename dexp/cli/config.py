@@ -25,11 +25,3 @@ def get_config():
 
 
 __config = get_config()
-
-
-def get_telegram_bot_token():
-    return get_config()['dexpbot']['token'].strip()
-
-
-def get_telegram_bot_password():
-    return get_config()['dexpbot']['password'].strip()
