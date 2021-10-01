@@ -308,10 +308,15 @@ class ZDataset(BaseDataset):
     def _projection_name(self, channel: str, axis: int):
         return f'{channel}_projection_{axis}'
 
-    def write_stack(self, channel: str, time_point: int, stack_array: numpy.ndarray):
+    def write_stack(self, channel: str, time_point: int, stack_array: numpy.ndarray, wrap_with_tensorstore: bool = False):
         array_in_zarr = self.get_array(channel=channel,
-                                       wrap_with_dask=False)
-        array_in_zarr[time_point] = stack_array
+                                       wrap_with_dask=False,
+                                       wrap_with_tensorstore=wrap_with_tensorstore)
+
+        if wrap_with_tensorstore:
+            array_in_zarr[time_point].write(stack_array)
+        else:
+            array_in_zarr[time_point] = stack_array
 
         for axis in range(stack_array.ndim):
             xp = Backend.get_xp_module()

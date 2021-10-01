@@ -35,9 +35,16 @@ CUPY_VERSION = '9.1.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'numpy>=1.20',
-    'scipy',
+    'dask',
+    'dask-image',
+    'dask-cuda',
+    'distributed',
+    'tensorstore',
+    'ome-zarr',
     'numba',
+    'zarr',
+    'scipy',
+    'numpy>=1.20',
     'numcodecs',
     'scikit-image',
     'tifffile',
@@ -46,11 +53,6 @@ REQUIRED = [
     'pytest',
     'graphviz',
     'click==7.1.2',
-    'dask',
-    'dask-image',
-    'dask-cuda',
-    'distributed',
-    'zarr',
     'cachey',
     'gputil',
     'gpustat',
@@ -65,7 +67,6 @@ REQUIRED = [
     'cairocffi',
     'blosc',
     'seaborn',
-    'ome-zarr',
 ]
 
 # What packages are optional?

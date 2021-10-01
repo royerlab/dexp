@@ -15,7 +15,7 @@ from dexp.processing.registration.model.model_io import model_list_from_file, mo
 from dexp.utils.slicing import slice_from_shape
 
 
-def dataset_fuse(dataset,
+def dataset_fuse(dataset: ZDataset,
                  output_path,
                  channels,
                  slicing,
@@ -49,7 +49,10 @@ def dataset_fuse(dataset,
                  pad,
                  stop_at_exception=True):
 
-    views = tuple(dataset.get_array(channel, per_z_slice=False) for channel in channels)
+    views = tuple(
+        dataset.get_array(channel, per_z_slice=False, wrap_with_tensorstore=True)
+        for channel in channels
+    )
 
     with asection(f"Views:"):
         for view, channel in zip(views, channels):
@@ -58,7 +61,7 @@ def dataset_fuse(dataset,
     dtype = views[0].dtype
     in_nb_time_points = views[0].shape[0]
     aprint(f"Slicing with: {slicing}")
-    out_shape, volume_slicing, time_points = slice_from_shape(views[0].shape, slicing)
+    _, volume_slicing, time_points = slice_from_shape(views[0].shape, slicing)
 
     if microscope == 'simview' and len(views) != 4:
         assert len(views) == 2
@@ -171,7 +174,8 @@ def dataset_fuse(dataset,
 
                     dest_dataset.write_stack(channel='fused',
                                              time_point=i,
-                                             stack_array=tp_array)
+                                             stack_array=tp_array,
+                                             wrap_with_tensorstore=True)
 
                 aprint(f"Done processing time point: {i}/{len(time_points)} .")
 
