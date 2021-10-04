@@ -5,6 +5,7 @@ from typing import Any
 import numpy
 
 from dexp.utils import xpArray
+from dexp.utils.dtypes import normalize_dtype
 
 
 class Backend(ABC):
@@ -58,10 +59,14 @@ class Backend(ABC):
 
     @staticmethod
     def to_numpy(array: xpArray, dtype=None, force_copy: bool = False) -> numpy.ndarray:
+        if dtype is not None:
+            dtype = normalize_dtype(dtype)
         return Backend.current()._to_numpy(array, dtype=dtype, force_copy=force_copy)
 
     @staticmethod
     def to_backend(array: xpArray, dtype=None, force_copy: bool = False) -> Any:
+        if dtype is not None:
+            dtype = normalize_dtype(dtype)
         return Backend.current()._to_backend(array, dtype=dtype, force_copy=force_copy)
 
     @staticmethod
