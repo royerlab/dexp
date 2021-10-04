@@ -73,7 +73,7 @@ def dataset_deconv(dataset: BaseDataset,
     for channel in dataset._selected_channels(channels):
 
         shape = dataset.shape(channel)
-        array = dataset.get_array(channel)
+        array = dataset.get_array(channel, wrap_with_tensorstore=True)
         dtype = dataset.dtype(channel)
 
         aprint(f"Slicing with: {slicing}")
@@ -172,7 +172,8 @@ def dataset_deconv(dataset: BaseDataset,
                     with asection(f"Saving deconvolved stack for time point {i}, shape:{tp_array.shape}, dtype:{array.dtype}"):
                         dest_dataset.write_stack(channel=channel,
                                                  time_point=i,
-                                                 stack_array=tp_array)
+                                                 stack_array=tp_array,
+                                                 wrap_with_tensorstore=True)
                     aprint(f"Done processing time point: {i}/{len(time_points)} .")
 
             except Exception as error:
