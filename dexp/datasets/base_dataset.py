@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Sequence, Tuple, Any
 
 import numpy
+from dexp.utils.dtypes import normalize_dtype
 
 
 class BaseDataset(ABC):
@@ -25,6 +26,7 @@ class BaseDataset(ABC):
         return selected_channels
 
     def _get_largest_dtype_value(self, dtype):
+        dtype = normalize_dtype(dtype)
         if numpy.issubdtype(dtype, numpy.integer):
             return numpy.iinfo(dtype).max
         elif numpy.issubdtype(dtype, numpy.floating):

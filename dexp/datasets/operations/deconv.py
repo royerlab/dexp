@@ -16,6 +16,7 @@ from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.slicing import slice_from_shape
+from dexp.utils.dtypes import normalize_dtype
 
 
 def dataset_deconv(dataset: BaseDataset,
@@ -74,7 +75,7 @@ def dataset_deconv(dataset: BaseDataset,
 
         shape = dataset.shape(channel)
         array = dataset.get_array(channel, wrap_with_tensorstore=True)
-        dtype = dataset.dtype(channel)
+        dtype = normalize_dtype(dataset.dtype(channel))
 
         aprint(f"Slicing with: {slicing}")
         out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
@@ -84,7 +85,7 @@ def dataset_deconv(dataset: BaseDataset,
         # Adds destination array channel to dataset
         dest_array = dest_dataset.add_channel(name=channel,
                                               shape=out_shape,
-                                              dtype=array.dtype,
+                                              dtype=dtype,
                                               codec=compression,
                                               clevel=compression_level)
 
