@@ -3,6 +3,8 @@ from typing import Sequence, Tuple, List, Optional
 import dask
 import numpy
 import functools
+from pathlib import Path
+
 from arbol.arbol import aprint
 from arbol.arbol import asection
 from dask.distributed import Client
@@ -109,8 +111,10 @@ def dataset_deconv(dataset: BaseDataset,
             psf_kernel = nikon16x08na(**psf_kwargs)
         elif psf_objective == 'olympus20x10na':
             psf_kernel = olympus20x10na(**psf_kwargs)
+        elif Path(psf_objective).exists() :
+            psf_kernel = numpy.load(psf_objective)
         else:
-            raise NotImplementedError
+            raise RuntimeError(f'Object/path {psf_objective} not found.')
 
         # usefull for debugging:
         if psf_show:

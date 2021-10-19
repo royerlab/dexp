@@ -54,6 +54,7 @@ from dexp.cli.dexp_commands.add import add
 from dexp.cli.dexp_commands.tiff import tiff
 from dexp.cli.dexp_commands.view import view
 from dexp.cli.dexp_commands.serve import serve
+from dexp.cli.dexp_commands.extract_psf import extract_psf
 
 from dexp.cli.dexp_commands.deskew import deskew
 from dexp.cli.dexp_commands.fuse import fuse
@@ -76,6 +77,7 @@ cli.add_command(add)
 cli.add_command(tiff)
 cli.add_command(view)
 cli.add_command(serve)
+cli.add_command(extract_psf)
 
 cli.add_command(deskew)
 cli.add_command(fuse)
