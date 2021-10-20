@@ -39,6 +39,7 @@ REQUIRED = [
     'scipy',
     'numba',
     'numcodecs',
+    'cucim',
     'scikit-image',
     'tifffile',
     'numexpr',

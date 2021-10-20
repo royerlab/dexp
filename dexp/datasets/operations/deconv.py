@@ -2,6 +2,7 @@ from typing import Sequence, Tuple, List, Optional
 
 import dask
 import numpy
+import scipy
 import functools
 from pathlib import Path
 
@@ -111,8 +112,10 @@ def dataset_deconv(dataset: BaseDataset,
             psf_kernel = nikon16x08na(**psf_kwargs)
         elif psf_objective == 'olympus20x10na':
             psf_kernel = olympus20x10na(**psf_kwargs)
-        elif Path(psf_objective).exists() :
+        elif Path(psf_objective).exists():
             psf_kernel = numpy.load(psf_objective)
+            if sz != 1.0 or sy != 1.0 or sx != 1.0:
+                psf_kernel = scipy.ndimage.interpolation.zoom(psf_kernel, zoom=(sz, sy, sx), order=1)
         else:
             raise RuntimeError(f'Object/path {psf_objective} not found.')
 

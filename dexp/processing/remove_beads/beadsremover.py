@@ -8,7 +8,6 @@ from dexp.processing.backends.backend import Backend
 from dexp.utils import xpArray
 
 from cucim.skimage.feature import peak_local_max
-from profilehooks import profile
 
 
 class Bead:
@@ -59,7 +58,6 @@ class BeadsRemover:
 
         self.verbose = verbose
     
-    @profile(immediate=True, sort='time')
     def detect_beads(self, array: xpArray, estimated_psf: Optional[ArrayLike] = None) -> ArrayLike:
         backend = Backend.current()
 
