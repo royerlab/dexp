@@ -74,7 +74,7 @@ def lucy_richardson_deconvolution(image: xpArray,
     if internal_dtype is None:
         internal_dtype = numpy.float32
 
-    if type(Backend.current()) is NumpyBackend:
+    if isinstance(Backend.current(), NumpyBackend):
         internal_dtype = numpy.float32
 
     original_dtype = image.dtype
@@ -191,7 +191,7 @@ def lucy_richardson_deconvolution(image: xpArray,
             result,
             psf,
         )
-        convolved = xp.clip(convolved, a_min=0, a_max=None, out=convolved)
+        # convolved = xp.clip(convolved, a_min=0, a_max=None, out=convolved)
         # Computes relative blur:
         relative_blur = (image + eps) / (convolved + eps)
         # replace Nans with zeros, and +inf with very large values:
@@ -210,7 +210,7 @@ def lucy_richardson_deconvolution(image: xpArray,
             relative_blur,
             back_projector,
         )
-        multiplicative_correction = xp.clip(multiplicative_correction, a_min=0.0, a_max=None, out=multiplicative_correction)
+        # multiplicative_correction = xp.clip(multiplicative_correction, a_min=0.0, a_max=None, out=multiplicative_correction)
 
         # Multiplicative correction can be optionally elevated to a power:
         if power != 1.0:

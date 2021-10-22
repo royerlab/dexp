@@ -116,6 +116,8 @@ def dataset_deconv(dataset: BaseDataset,
             psf_kernel = numpy.load(psf_objective)
             if sz != 1.0 or sy != 1.0 or sx != 1.0:
                 psf_kernel = scipy.ndimage.interpolation.zoom(psf_kernel, zoom=(sz, sy, sx), order=1)
+            psf_z_size = psf_kernel.shape[0] + 10
+            psf_xy_size = max(psf_kernel.shape[1:]) + 10
         else:
             raise RuntimeError(f'Object/path {psf_objective} not found.')
 

@@ -40,7 +40,7 @@ def fft_convolve(image1: xpArray,
     if internal_dtype is None:
         internal_dtype = image1.dtype
 
-    if type(Backend.current()) is NumpyBackend:
+    if isinstance(Backend.current(), NumpyBackend):
         internal_dtype = numpy.float32
 
     original_dtype = image1.dtype
