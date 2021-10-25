@@ -7,8 +7,6 @@ from arbol import aprint
 from dexp.processing.backends.backend import Backend
 from dexp.utils import xpArray
 
-from cucim.skimage.feature import peak_local_max
-
 
 class Bead:
     def __init__(self, image: ArrayLike, coord: Optional[Tuple[int]], size: int):
@@ -59,6 +57,8 @@ class BeadsRemover:
         self.verbose = verbose
     
     def detect_beads(self, array: xpArray, estimated_psf: Optional[ArrayLike] = None) -> ArrayLike:
+        from cucim.skimage.feature import peak_local_max
+
         backend = Backend.current()
 
         sp = backend.get_sp_module()
