@@ -28,7 +28,7 @@ from dexp.datasets.operations.deconv import dataset_deconv
 @click.option('--backprojection', '-bp', type=str, default='tpsf', help='Back projection operator, can be: ‘tpsf’ (transposed PSF = classic) or ‘wb’ (Wiener-Butterworth =  accelerated) ', show_default=True)
 @click.option('--wb-order', '-wbo', type=int, default=5, help='Wiener-Butterworth order parameter, a higher `n` makes the filter transition slope closer to a hard cutoff, causing the ringing artifacts in the spatial domain.'
                                                               'In contrast, a lower order `n` makes the transition slope gentler and sacrifice some spectral amplitude at spatial frequencies close to the cutoff.', show_default=True)
-@click.option('--objective', '-obj', type=str, default='nikon16x08na', help='Microscope objective to use for computing psf, can be: nikon16x08na or olympus20x10na', show_default=True)
+@click.option('--objective', '-obj', type=str, default='nikon16x08na', help='Microscope objective to use for computing psf, can be: nikon16x08na, olympus20x10na, or path to file', show_default=True)
 @click.option('--numape', '-na', type=float, default=None, help='Overrides NA value for objective.', show_default=True)
 @click.option('--dxy', '-dxy', type=float, default=0.485, help='Voxel size along x and y in microns', show_default=True)
 @click.option('--dz', '-dz', type=float, default=4 * 0.485, help='Voxel size along z in microns', show_default=True)
