@@ -34,14 +34,12 @@ jobs:
           mkdir _static
           make clean
           make html
-          cp -r build/html/* ../gh-pages/.
-          cd ..
           git fetch origin
           git stash
           git checkout gh-pages --
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          cp -rf gh-pages/* .
+          cp -r docs/build/html/* gh-pages/.
           git add .
           git commit -m "Update documentation" -a || true
           # The above command will fail if no changes were present, so we ignore
