@@ -9,14 +9,14 @@ from dexp.datasets.base_dataset import BaseDataset
 from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.backends.backend import Backend
 from dexp.processing.filters.fft_convolve import fft_convolve
+from dexp.utils.misc import compute_num_workers
 from scipy import ndimage as ndi
 
 
-import os
 from joblib import Parallel, delayed
 
 
-def _estimate_crop(array: ArrayLike) -> Sequence[Tuple[int]]:
+def _estimate_crop(array: ArrayLike, quantile: float = 0.99) -> Sequence[Tuple[int]]:
     window_size = 31
     step = 4
     shape = array.shape
@@ -27,7 +27,7 @@ def _estimate_crop(array: ArrayLike) -> Sequence[Tuple[int]]:
         kernel = xp.ones((window_size, window_size, window_size)) / (window_size ** 3)
         kernel = kernel.astype(xp.float16)
         array = fft_convolve(array, kernel, in_place=True)
-        lower = xp.mean(array)
+        lower = xp.quantile(array, quantile)
         aprint('Estimated lower threshold', lower)
         array = array > lower
         array, _ = ndi.label(Backend.to_numpy(array))
@@ -48,9 +48,9 @@ def _estimate_crop(array: ArrayLike) -> Sequence[Tuple[int]]:
         for s, d in zip(largest_slice, shape))
 
 
-def compute_crop_slicing(array: zarr.Array, time_points: Sequence[int]) -> Sequence[slice]:
+def compute_crop_slicing(array: zarr.Array, time_points: Sequence[int], quantile: float) -> Sequence[slice]:
     # N x D x 2
-    ranges = np.array(tuple(_estimate_crop(array[t]) for t in time_points))
+    ranges = np.array(tuple(_estimate_crop(array[t], quantile) for t in time_points))
     lower = np.min(ranges[..., 0], axis=0)
     upper = np.max(ranges[..., 1], axis=0)
     return tuple(slice(int(l), int(u)) for l, u in zip(lower, upper))
@@ -60,6 +60,7 @@ def dataset_crop(dataset: BaseDataset,
                  dest_path: str,
                  reference_channel: str,
                  channels: Sequence[str],
+                 quantile: float,
                  store: str = 'dir',
                  chunks: Optional[Sequence[int]] = None,
                  compression: str = 'zstd',
@@ -76,7 +77,7 @@ def dataset_crop(dataset: BaseDataset,
     dest_dataset = ZDataset(dest_path, mode, store, parent=dataset)
 
     with asection("Estimating region of interest"):
-        slicing = compute_crop_slicing(dataset.get_array(reference_channel), [0, -1])
+        slicing = compute_crop_slicing(dataset.get_array(reference_channel), [0, -1], quantile)
         aprint('Estimated slicing of', slicing)
         volume_shape = tuple(s.stop - s.start for s in slicing)
         translation = {
@@ -116,12 +117,9 @@ def dataset_crop(dataset: BaseDataset,
                 for i in range(len(array)):
                     process(i)
             else:
-                if workers < 0:
-                    workers = os.cpu_count() / -workers
-                workers = min(max(1, workers), len(array))
+                n_jobs = compute_num_workers(workers, len(array))
 
-                aprint(f"Number of workers: {workers}")
-                parallel = Parallel(n_jobs=workers)
+                parallel = Parallel(n_jobs=n_jobs)
                 parallel(delayed(process)(i) for i in range(len(array)))
 
     # Dataset info:

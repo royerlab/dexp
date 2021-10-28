@@ -46,6 +46,7 @@ def dataset_fuse(dataset,
                  workersbackend,
                  devices,
                  check,
+                 pad,
                  stop_at_exception=True):
 
     views = tuple(dataset.get_array(channel, per_z_slice=False) for channel in channels)
@@ -109,7 +110,7 @@ def dataset_fuse(dataset,
                                                  butterworth_filter_cutoff=1,
                                                  flip_camera1=True)
 
-                        tp_array = fuse_obj(*views_tp)
+                        tp_array = fuse_obj(*views_tp, pad=pad)
                         new_equalisation_ratios = fuse_obj._equalisation_ratios
 
                     elif microscope == 'mvsols':

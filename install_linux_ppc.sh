@@ -11,7 +11,7 @@ conda install -y -c anaconda tifffile
 conda install -y -c anaconda numexpr
 conda install -y -c anaconda joblib
 conda install -y -c anaconda pytest
-conda install -y -c anaconda graphviz
+# conda install -y -c anaconda graphviz
 conda install -y -c anaconda click
 conda install -y -c anaconda dask
 conda install -y -c anaconda dask-image
@@ -31,5 +31,4 @@ pip install napari[all] --upgrade
 pip install cachey --upgrade
 pip install gputil gpustat --upgrade
 pip install arbol --upgrade
-pip install simple-zarr-server requests aiohttp --upgrade
-pip install python-telegram-bot --upgrade
+# pip install simple-zarr-server requests aiohttp --upgrade

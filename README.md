@@ -83,6 +83,12 @@ browsing...
 Note: Our goal is to eventually transition to a ome-zarr and/or ngff storage by defaut for both reading and writting.
 For reading we have also support for specific dataset produced by our light-sheet microscopes, see [here](https://github.com/royerlab/dexp/wiki/dexp-dataset-formats) for supported microscopes and formats. This is currently limited but contributions are very welcome! 
         
+        
+### DaXi
+DEXP supports processing datasets acquired on the [DaXi microscope](https://github.com/royerlab/daxi) ([paper](https://www.biorxiv.org/content/10.1101/2020.09.22.309229v2)).
+Youcan test processing of DaXi data using an [example dataset](https://drive.google.com/drive/folders/1c-xtJd4INtTll1s1HEbs1rIRF2M7Hg1X)
+        
+        
 ### Versions
 
 The list of released versions can be found [here](https://pypi.org/project/dexp/#history). The version format is: YYYY.MM.DD.M where YYYY is the year, MM the month, dd the day, and M is the number of elapsed minutes of the day. Git tags are automatically set to link pipy versions to github tagged versions so that the corresponding code can be inspected on github, probably the most important feature. This is a very simple and semantically clear versionning scheme that accomodates for a rapid rate of updates. 
