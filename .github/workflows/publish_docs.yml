@@ -34,8 +34,8 @@ jobs:
           mkdir _static
           make clean
           make html
+          cd ..
           git fetch origin
-          git stash
           git checkout gh-pages --
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
