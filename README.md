@@ -57,7 +57,7 @@ Change the CUDA version accordingly...
 
 The zarr datasets injested and written by **dexp** are organized as below:
 
-```folder tree
+```bash
 / (root)
  └── channel1 (group)
      ├── channel1 (array)
@@ -86,7 +86,7 @@ For reading we have also support for specific dataset produced by our light-shee
         
 ### DaXi
 DEXP supports processing datasets acquired on the [DaXi microscope](https://github.com/royerlab/daxi) ([paper](https://www.biorxiv.org/content/10.1101/2020.09.22.309229v2)).
-Youcan test processing of DaXi data using an [example dataset](https://drive.google.com/drive/folders/1c-xtJd4INtTll1s1HEbs1rIRF2M7Hg1X)
+You can test processing of DaXi data using an [example dataset](https://drive.google.com/drive/folders/1c-xtJd4INtTll1s1HEbs1rIRF2M7Hg1X)
         
         
 ### Versions
@@ -100,22 +100,3 @@ In depth documentation can be found [here](https://royerlab.github.io/dexp/index
 ### Contributors:
 
 Jordao Bragantini, Ahmet Can Solak, Bin Yang, and Loic A Royer
-
-
-
-
-
-  
- 
-
-
-
-
-  
-  
-
-
-
-
-
-
