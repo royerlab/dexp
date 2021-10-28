@@ -36,7 +36,7 @@ jobs:
           make html
           cd ..
           git fetch origin
-          git checkout gh-pages --
+          git checkout -f gh-pages --
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           cp -r docs/build/html/* gh-pages/.
