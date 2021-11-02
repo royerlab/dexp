@@ -529,7 +529,8 @@ class ZDataset(BaseDataset):
                 raise ValueError(f'Path: {path} exists!')
             
             array = self.get_array(channel)
-            resolution = self.get_resolution(channel)[1:]  # ignoring time
+            # ignoring time and reversing to fiji ordering
+            resolution = self.get_resolution(channel)[1:][::-1]
             writer = npy2bdv.BdvWriter(str(path))
 
             for t in range(array.shape[0]):
