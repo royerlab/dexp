@@ -32,9 +32,9 @@ jobs:
           git checkout master
           git pull origin master
           git checkout -f gh-pages --
+          git rebase master
           cd docs/
           make clean
-          git rebase master
           mkdir _static
           make html
           git config --local user.email "action@github.com"
