@@ -38,8 +38,13 @@ import os
 from scipy.linalg import inv
 from time import time
 import sys
-from gputools import init_device, get_device, OCLProgram, OCLArray, OCLImage
 import numpy as np
+
+try:
+    from gputools import init_device, get_device, OCLProgram, OCLArray, OCLImage
+except ImportError:
+    print('Could not import `gputools`, volumerender disabled.')
+    pass
 
 
 def absPath(myPath):

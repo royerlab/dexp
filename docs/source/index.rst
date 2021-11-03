@@ -1,30 +1,8 @@
-=====
+====
 DEXP
-=====
+====
 
-.. image:: https://user-images.githubusercontent.com/1870994/113943035-b61b0c00-97b6-11eb-8cfd-ac78e2976ebb.png
-    :alt: **dexp** | Light-sheet Dataset EXploration and Processing
-
-
-Welcome to **dexp** (* Light-sheet Dataset Exploration and Processing*) documentation.
-
-How to use **dexp** ?
-**********************
-
-First you need a dataset acquired on a light-sheet microscope, see `here <https://github.com/royerlab/dexp/wiki/dexp_datasets>`_ for supported microscopes and formats.
-
-Second, you can use any of the commands `here <https://github.com/royerlab/dexp/wiki/dexp_commands>`_ to process your data.
-The list of commands can be found by :
-
-.. code-block:: bash
-
-   dexp --help
-
-
-Example usage
-*************
-
-TBD.
+.. mdinclude:: ../../README.md
 
 .. toctree::
    :maxdepth: 2

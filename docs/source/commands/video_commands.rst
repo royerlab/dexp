@@ -1,6 +1,6 @@
-=============
+==============
 Video Commands
-=============
+==============
 
 
 .. click:: dexp.cli.video_commands.blend:blend
