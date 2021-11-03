@@ -32,10 +32,11 @@ jobs:
           git checkout -f gh-pages --
           cd docs/
           make clean
+          mkdir _static
           make html
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add .
+          git add -f build
           git commit -m "Update documentation" -a || true
           # The above command will fail if no changes were present, so we ignore
           # the return code.
