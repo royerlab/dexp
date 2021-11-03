@@ -30,6 +30,7 @@ jobs:
         run: |
           git fetch origin
           git checkout -f gh-pages --
+          git rebase master
           cd docs/
           make clean
           mkdir _static
@@ -45,3 +46,4 @@ jobs:
         with:
           branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
+  
