@@ -12,7 +12,7 @@ from dexp.datasets.operations.crop import dataset_crop
 @click.argument('input_paths', nargs=-1)  # ,  help='input path'
 @click.option('--output_path', '-o')  # , help='output path'
 @click.option('--channels', '-c', default=None, help='List of channels, all channels when ommited.')
-@click.option('--quantile', '-q', default=0.99, type=float, help='Quantile parameter for lower bound of brightness for thresholding.')
+@click.option('--quantile', '-q', default=0.99, type=float, help='Quantile parameter for lower bound of brightness for thresholding.', show_default=True)
 @click.option('--reference-channel', '-rc', default=None, help='Reference channel to estimate cropping. If no provided it picks the first one.')
 @click.option('--store', '-st', default=_default_store, help='Zarr store: ‘dir’, ‘ndir’, or ‘zip’', show_default=True)
 @click.option('--chunks', '-chk', default=None, help='Dataset chunks dimensions, e.g. (1, 126, 512, 512).')
