@@ -28,7 +28,8 @@ jobs:
           pip install -r docs/requirements-docs.txt
       - name: Commit documentation changes
         run: |
-          git checkout gh-pages
+          git fetch origin
+          git checkout -f gh-pages --
           cd docs/
           make clean
           make html
