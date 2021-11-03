@@ -302,7 +302,10 @@ class ZDataset(BaseDataset):
         return stack_array
 
     def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
-        array = self._projections[self._projection_name(channel, axis)]
+        proj_key = self._projection_name(channel, axis)
+        if proj_key not in self._projections:
+            return None
+        array = self._projections[proj_key]
         return dask.array.from_array(array, chunks=array.chunks) if wrap_with_dask else array
 
     def _projection_name(self, channel: str, axis: int):
