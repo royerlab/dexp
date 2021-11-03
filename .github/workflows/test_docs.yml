@@ -29,7 +29,8 @@ jobs:
       - name: Commit documentation changes
         run: |
           git fetch origin
-          git pull --all
+          git checkout master
+          git pull origin master
           git checkout -f gh-pages --
           cd docs/
           make clean
