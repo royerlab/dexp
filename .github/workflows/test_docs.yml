@@ -28,6 +28,8 @@ jobs:
           pip install -r docs/requirements-docs.txt
       - name: Commit documentation changes
         run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git fetch origin
           git checkout master
           git pull origin master
@@ -37,8 +39,6 @@ jobs:
           make clean
           mkdir _static
           make html
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
           git add -f build
           git commit -m "Update documentation" -a || true
           # The above command will fail if no changes were present, so we ignore
