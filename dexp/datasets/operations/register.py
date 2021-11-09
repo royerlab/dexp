@@ -33,21 +33,28 @@ def dataset_register(dataset,
                      devices,
                      stop_at_exception=True):
 
-    views = tuple(dataset.get_array(channel, per_z_slice=False) for channel in channels)
+    views = {
+        channel.split('-')[-1]: dataset.get_array(channel, per_z_slice=False)
+        for channel in channels
+    }
 
     with asection(f"Views:"):
-        for view, channel in zip(views, channels):
+        for channel, view in views.items():
             aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 
-    aprint(f"Slicing with: {slicing}")
-    _, volume_slicing, time_points = slice_from_shape(views[0].shape, slicing)
+    key = list(views.keys())[0]
+    print(f"Slicing with: {slicing}")
+    _, volume_slicing, time_points = slice_from_shape(views[key].shape, slicing)
 
+    if microscope == 'simview':
+        views = SimViewFusion.validate_views(views)
+ 
     @dask.delayed
     def process(i):
         tp = time_points[i]
         try:
             with asection(f"Loading channels {channel} for time point {i}/{len(time_points)}"):
-                views_tp = tuple(np.asarray(view[tp][volume_slicing]) for view in views)
+                views_tp = {k: np.asarray(view[tp][volume_slicing]) for k, view in views.items()}
 
             with BestBackend(exclusive=True, enable_unified_memory=True):
                 if microscope == 'simview':
@@ -68,7 +75,7 @@ def dataset_register(dataset,
                                              butterworth_filter_cutoff=0.0,
                                              flip_camera1=True)
 
-                    C0Lx, C1Lx = fuse_obj.preprocess(*views_tp)
+                    C0Lx, C1Lx = fuse_obj.preprocess(**views_tp)
                     del views_tp
                     Backend.current().clear_memory_pool()
                     fuse_obj.compute_registration(C0Lx, C1Lx, mode='projection' if max_proj else 'full',

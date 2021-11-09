@@ -1,4 +1,5 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
+import warnings
 
 import numpy
 import pandas as pd
@@ -48,26 +49,37 @@ class SimViewFusion(BaseFusion):
         self._fusion_bias_strength_i = fusion_bias_strength_i
         self._fusion_bias_strength_d = fusion_bias_strength_d
         self._flip_camera1 = flip_camera1
+    
+    def _preprocess_single_view(self, view: xpArray, camera: int, lightsheet: int, flip: bool) -> xpArray:
+        xp = Backend.get_xp_module()
+
+        with asection(f"Moving C{camera}L{lightsheet} and to backend storage and converting to {self._internal_dtype} ..."):
+            view = Backend.to_backend(view, dtype=self._internal_dtype, force_copy=False)
+
+        if self._clip_too_high > 0:
+            with asection(f"Clipping intensities above {self._clip_too_high} for C{camera}L0"):
+                xp.clip(view, a_min=0, a_max=self._clip_too_high, out=view)
+
+        if self._dehaze_size > 0 and self._dehaze_before_fusion:
+            with asection(f"Dehaze C{camera}L{lightsheet} ..."):
+                view = dehaze(view,
+                              size=self._dehaze_size,
+                              minimal_zero_level=0,
+                              correct_max_level=True)
+
+        if flip:
+            view = xp.flip(view, -1).copy()
+
+        return view
 
     def _preprocess_and_fuse_illumination_views(self,
                                                 view0: xpArray,
                                                 view1: xpArray,
                                                 flip: bool,
                                                 camera: int) -> xpArray:
-        xp = Backend.get_xp_module()
-
-        with asection(f"Moving C{camera}L0 and C{camera}L1 to backend storage and converting to {self._internal_dtype} ..."):
-            view0 = Backend.to_backend(view0, dtype=self._internal_dtype, force_copy=False)
-            view1 = Backend.to_backend(view1, dtype=self._internal_dtype, force_copy=False)
-
-        if self._clip_too_high > 0:
-            with asection(f"Clipping intensities above {self._clip_too_high} for C{camera}L0 & C{camera}L1"):
-                xp.clip(view0, a_min=0, a_max=self._clip_too_high, out=view0)
-                xp.clip(view1, a_min=0, a_max=self._clip_too_high, out=view1)
-
-        if flip:
-            view0 = xp.flip(view0, -1).copy()
-            view1 = xp.flip(view1, -1).copy()
+        
+        view0 = self._preprocess_single_view(view0, camera, 0, flip)
+        view1 = self._preprocess_single_view(view1, camera, 1, flip)
 
         if self._equalise:
             with asection(f"Equalise intensity of C{camera}L0 relative to C{camera}L1 ..."):
@@ -78,34 +90,37 @@ class SimViewFusion(BaseFusion):
                 aprint(f"Equalisation ratio: {ratio}")
                 self._equalisation_ratios[camera] = ratio
 
-        if self._dehaze_size > 0 and self._dehaze_before_fusion:
-            with asection(f"Dehaze C{camera}L0 and C{camera}L1 ..."):
-                view0 = dehaze(view0,
-                               size=self._dehaze_size,
-                               minimal_zero_level=0,
-                               correct_max_level=True)
-                view1 = dehaze(view1,
-                               size=self._dehaze_size,
-                               minimal_zero_level=0,
-                               correct_max_level=True)
-
         with asection(f"Fuse illumination views C{camera}L0 and C{camera}L1..."):
             fused_view = self._fuse_illumination_views(view0, view1)
 
         return fused_view
 
-    def preprocess(self, C0L0: xpArray, C0L1: xpArray, C1L0: Optional[xpArray] = None,
-                   C1L1: Optional[xpArray] = None) -> Tuple[xpArray, Optional[xpArray]]:
-        self._match_input(C0L0, C0L1)
+    def preprocess(self, C0L0: xpArray, C0L1: Optional[xpArray] = None,
+                   C1L0: Optional[xpArray] = None, C1L1: Optional[xpArray] = None) \
+        -> Tuple[xpArray, Optional[xpArray]]:
+
+        if C0L1 is not None:
+            self._match_input(C0L0, C0L1)
         if C1L0 is not None:
             self._match_input(C0L0, C1L0)
         if C1L1 is not None:
             self._match_input(C0L0, C1L1)
 
-        C0Lx = self._preprocess_and_fuse_illumination_views(C0L0, C0L1, flip=False, camera=0)
+        if C0L1 is None:
+            # processing a single light sheet from a single camera
+            C0Lx = self._preprocess_single_view(C0L0, camera=0, lightsheet=0, flip=False)
+        else:
+            C0Lx = self._preprocess_and_fuse_illumination_views(C0L0, C0L1, flip=False, camera=0)
+
         if C1L0 is None and C1L1 is None:
+            # fusing only images from a single camera
             return C0Lx, None
-        C1Lx = self._preprocess_and_fuse_illumination_views(C1L0, C1L1, flip=self._flip_camera1, camera=1)
+
+        if C1L1 is None:
+            # processing a single light sheet from a single camera
+            C1Lx = self._preprocess_single_view(C1L0, camera=1, lightsheet=0, flip=self._flip_camera1)
+        else:
+            C1Lx = self._preprocess_and_fuse_illumination_views(C1L0, C1L1, flip=self._flip_camera1, camera=1)
 
         if self._equalise:
             with asection(f"Equalise intensity of C0Lx relative to C1Lx ..."):
@@ -151,11 +166,9 @@ class SimViewFusion(BaseFusion):
 
         return CxLx
 
-    def __call__(self, C0L0: xpArray, C0L1: xpArray, C1L0: Optional[xpArray] = None,
-                 C1L1: Optional[xpArray] = None, pad: bool = False) -> xpArray:
-
-        if C1L1 is None or C1L0 is None:
-            assert C1L1 == C1L0, 'Both C1L1 and C1L0 or none should be `None`.'
+    def __call__(self, C0L0: xpArray, C0L1: Optional[xpArray] = None,
+                 C1L0: Optional[xpArray] = None, C1L1: Optional[xpArray] = None,
+                 pad: bool = False) -> xpArray:
 
         original_dtype = C0L0.dtype
         xp = Backend.current().get_xp_module()
@@ -216,7 +229,23 @@ class SimViewFusion(BaseFusion):
 
         aprint(f"Applying registration model: {self._registration_model},"
                f"overall confidence: {self._registration_model.overall_confidence()}")
+    
+    @staticmethod
+    def validate_views(views: Dict[str, xpArray]) -> Dict[str, xpArray]:
+        if len(views) == 4:
+            return views
+        assert len(views) == 2, f'Found only {views.keys()}, expected 2 or 4 views.'
+        warnings.warn(f"Only two views found. Fusing according to channels' suffixes {views.keys()}")
 
+        if all('C1' in k for k in views):
+            warnings.warn("Swapping names from C1 to C0")
+            return {k.replace('C1', 'C0'): v for k, v in views.items()}
+
+        if all('L1' in k for k in views):
+            warnings.warn("Swapping names from L1 to L0")
+            return {k.replace('L1', 'L0'): v for k, v in views.items()}
+        
+        return views
 
 def summary_from_simview_models(models: List[SimViewFusion]) -> pd.DataFrame:
     df = []
