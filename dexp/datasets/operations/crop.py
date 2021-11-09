@@ -77,7 +77,8 @@ def dataset_crop(dataset: BaseDataset,
     dest_dataset = ZDataset(dest_path, mode, store, parent=dataset)
 
     with asection("Estimating region of interest"):
-        slicing = compute_crop_slicing(dataset.get_array(reference_channel), [0, -1], quantile)
+        nb_time_pts = dataset.nb_timepoints(reference_channel)
+        slicing = compute_crop_slicing(dataset.get_array(reference_channel), [0, nb_time_pts // 2, nb_time_pts-1], quantile)
         aprint('Estimated slicing of', slicing)
         volume_shape = tuple(s.stop - s.start for s in slicing)
         translation = {
