@@ -3,7 +3,6 @@ import numpy as np
 from arbol.arbol import aprint
 from arbol.arbol import asection
 from toolz import curry
-import warnings
 
 from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.backends.backend import Backend
@@ -49,22 +48,24 @@ def dataset_fuse(dataset,
                  pad,
                  stop_at_exception=True):
 
-    views = tuple(dataset.get_array(channel, per_z_slice=False) for channel in channels)
+    views = {
+        channel.split('-')[-1]: dataset.get_array(channel, per_z_slice=False)
+        for channel in channels
+    }
 
     with asection(f"Views:"):
-        for view, channel in zip(views, channels):
+        for channel, view in views.items():
             aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 
-    dtype = views[0].dtype
-    in_nb_time_points = views[0].shape[0]
+    key = list(views.keys())[0]
+    dtype = views[key].dtype
+    in_nb_time_points = views[key].shape[0]
     aprint(f"Slicing with: {slicing}")
-    out_shape, volume_slicing, time_points = slice_from_shape(views[0].shape, slicing)
+    _, volume_slicing, time_points = slice_from_shape(views[key].shape, slicing)
 
-    if microscope == 'simview' and len(views) != 4:
-        assert len(views) == 2
-        warnings.warn('Only two views found. Fusing assuming they are from the same camera.')
-        loadreg = False  # it does not have registration
-
+    if microscope == 'simview':
+        views = SimViewFusion.validate_views(views)
+ 
     # load registration models:
     with NumpyBackend():
         if loadreg:
@@ -85,13 +86,12 @@ def dataset_fuse(dataset,
         try:
             with asection(f'Fusing time point for time point {i}/{len(time_points)}'):
                 with asection(f"Loading channels {channels}"):
-                    views_tp = tuple(np.asarray(view[tp][volume_slicing]) for view in views)
+                    views_tp = {k: np.asarray(view[tp][volume_slicing]) for k, view in views.items()}
 
                 with BestBackend(exclusive=True, enable_unified_memory=True, device_id=device_id):
                     if models[i] is not None:
                         model = models[i]
                     # otherwise it could be a None model or from the first iteration if equalisation mode was 'first'
-
                     if microscope == 'simview':
                         fuse_obj = SimViewFusion(registration_model=model,
                                                  equalise=equalise,
@@ -110,7 +110,7 @@ def dataset_fuse(dataset,
                                                  butterworth_filter_cutoff=1,
                                                  flip_camera1=True)
 
-                        tp_array = fuse_obj(*views_tp, pad=pad)
+                        tp_array = fuse_obj(**views_tp, pad=pad)
                         new_equalisation_ratios = fuse_obj._equalisation_ratios
 
                     elif microscope == 'mvsols':
@@ -121,7 +121,7 @@ def dataset_fuse(dataset,
                         res = metadata['res']
                         illumination_correction_sigma = metadata['ic_sigma'] if 'ic_sigma' in metadata else None
 
-                        tp_array, model, new_equalisation_ratios = msols_fuse_1C2L(*views_tp,
+                        tp_array, model, new_equalisation_ratios = msols_fuse_1C2L(*list(views_tp.values()),
                                                                                    z_pad=z_pad_apodise[0],
                                                                                    z_apodise=z_pad_apodise[1],
                                                                                    registration_num_iterations=warpreg_num_iterations,
@@ -145,7 +145,6 @@ def dataset_fuse(dataset,
                                                                                    illumination_correction_sigma=illumination_correction_sigma,
                                                                                    registration_mode='projection' if maxproj else 'full',
                                                                                    huge_dataset_mode=huge_dataset)
-                        model = model.to_numpy()
                     else:
                         raise NotImplementedError
 
@@ -156,6 +155,13 @@ def dataset_fuse(dataset,
                     Backend.current().clear_memory_pool()
 
                     aprint(f"Last equalisation ratios: {new_equalisation_ratios}")
+
+                    # moving to numpy to allow pickling
+                    model = model.to_numpy()
+                    new_equalisation_ratios = [
+                        None if v is None else Backend.to_numpy(v)
+                        for v in new_equalisation_ratios
+                    ]
 
                 with asection(f"Saving fused stack for time point {i}, shape:{tp_array.shape}, dtype:{tp_array.dtype}"):
 
@@ -220,10 +226,10 @@ def dataset_fuse(dataset,
         lazy_computations.append(process(i, params))
 
     if len(devices) > 1:
-        models = [model for _, model, _ in dask.compute(*lazy_computations)]
-        dest_dataset = params.compute()[2]
+        first_model, dest_dataset = params.compute()[1:]
+        models = [first_model] + [output[1]for output in dask.compute(*lazy_computations)]
     else:
-        models = [model for _, model, _ in lazy_computations]
+        models = [params[1]] + [output[1] for output in lazy_computations]
         dest_dataset = params[2]
 
     if not loadreg and models[0] is not None:
