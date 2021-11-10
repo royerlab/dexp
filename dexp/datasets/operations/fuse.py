@@ -157,7 +157,8 @@ def dataset_fuse(dataset,
                     aprint(f"Last equalisation ratios: {new_equalisation_ratios}")
 
                     # moving to numpy to allow pickling
-                    model = model.to_numpy()
+                    if model is not None:
+                        model = model.to_numpy()
                     new_equalisation_ratios = [
                         None if v is None else Backend.to_numpy(v)
                         for v in new_equalisation_ratios
