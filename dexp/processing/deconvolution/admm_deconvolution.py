@@ -1,23 +1,40 @@
 
-from typing import Optional, Tuple
+from typing import Optional, List
 
 import napari
 import numpy
 import scipy
 from functools import reduce, partial
+from itertools import combinations
 
 from dexp.utils import xpArray
 from dexp.processing.backends.backend import Backend
 
 
-def derivative_kernel(axis: int, fshape: Tuple[int, ...], freq: bool = False) -> xpArray:
-    shape = [1] * len(fshape)
+def line_derivative_kernel(axis: int, dim: int) -> xpArray:
+    shape = [1] * dim
     shape[axis] = 3
     K = numpy.zeros(shape, dtype=numpy.float32)
     K.flat = (1, -1, 0)
-    if freq:
-        return scipy.fft.fftn(K, fshape)
     return K
+
+
+def cross_derivative_kernels(dim: int) -> List[xpArray]:
+    xp = Backend.get_xp_module()
+
+    cross = xp.array([[1, 0, 0],
+                      [0, -1, 0],
+                      [0, 0, 0]])
+
+    kernels = []
+    for axes in combinations(range(dim), 2):
+        shape = numpy.ones(dim, dtype=int)
+        shape[list(axes)] = 3
+        D = xp.zeros(shape)
+        D.flat = cross
+        kernels.append(D)
+
+    return kernels
 
 
 def admm_deconvolution(image: xpArray,
@@ -62,16 +79,12 @@ def admm_deconvolution(image: xpArray,
 
     fsize = tuple(scipy.fftpack.next_fast_len(x) for x in image.shape)
 
-    # derivative operator in freq domain
-    fDs = [
-        backend.to_backend(derivative_kernel(a, fsize, freq=True))
-        for a in range(image.ndim)
-    ]
-
     Ds = [
-        backend.to_backend(derivative_kernel(a, fsize))
+        backend.to_backend(line_derivative_kernel(a, image.ndim))
         for a in range(image.ndim)
-    ]
+    ] + cross_derivative_kernels(image.ndim)
+
+    fDs = [sp.fft.fftn(D, fsize) for D in Ds]
 
     # output image
     I = xp.zeros(fsize, dtype=internal_dtype)
