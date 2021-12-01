@@ -42,15 +42,20 @@ def admm_deconvolution(image: xpArray,
                        iterations: int = 10,
                        rho: float = 0.1,
                        gamma: float = 0.01,
-                       internal_dtype: Optional[numpy.dtype] = None) -> xpArray:
+                       internal_dtype: Optional[numpy.dtype] = None,
+                       display: bool = False) -> xpArray:
 
-    viewer = napari.view_image(image)
+    """
+    Reference from: http://jamesgregson.ca/tag/admm.html
+    """
 
-    # from http://jamesgregson.ca/tag/admm.html
+    if display:
+        viewer = napari.view_image(image)
+
     backend = Backend.current()
 
-    def shrink(array: xpArray):
-        return xp.sign(array) * xp.clip(xp.abs(array) - gamma / rho, 0, None)
+    def shrink(array: xpArray) -> xpArray:
+        return xp.sign(array) * xp.clip(xp.abs(array) - gamma / rho, 0.0, None)
 
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
@@ -66,8 +71,7 @@ def admm_deconvolution(image: xpArray,
     psf = Backend.to_backend(psf, dtype=internal_dtype)
 
     # normalizing
-    # image = image - image.min()
-    image = xp.clip(image - xp.quantile(image, 0.1), 0, None)
+    image = image - image.min()
     image = image / xp.quantile(image, 0.995)
 
     backproj = xp.flip(psf)
@@ -89,27 +93,29 @@ def admm_deconvolution(image: xpArray,
     # output image
     I = xp.zeros(fsize, dtype=internal_dtype)
 
-    conv = partial(sp.ndimage.convolve, mode='nearest')
-
     Zs = [I.copy() for _ in range(image.ndim)]
     Us = [xp.zeros(fsize, dtype=internal_dtype) for _ in fDs]
 
-    fbackproj = sp.fft.fftn(backproj, fsize)
+    fbackproj = sp.fft.fftn(backproj, fsize, overwrite_x=True)
     fimage = sp.fft.fftn(image, fsize)
 
     nume_aux = fbackproj * fimage
     denom = fbackproj * fbackproj.conj() +\
         rho * reduce(xp.add, (fD.conj() * fD for fD in fDs))
+    del fDs
+
+    conv = partial(sp.ndimage.convolve, mode='nearest')
 
     for _ in range(iterations):
         V = rho * reduce(xp.add, (
             conv(Z - U, xp.flip(D)) for D, Z, U in zip(Ds, Zs, Us)
         ))
 
-        fV = sp.fft.fftn(V); del V
-        I = sp.fft.ifftn((nume_aux + fV) / denom).real
+        fV = sp.fft.fftn(V, overwrite_x=True); del V
+        I = sp.fft.ifftn((nume_aux + fV) / denom, overwrite_x=True).real
 
-        viewer.add_image(I[original_slice])
+        if display:
+            viewer.add_image(I[original_slice])
 
         tmps = [conv(I, D) for D in Ds]
         Zs = [shrink(tmp + U) for tmp, U in zip(tmps, Us)]
@@ -119,6 +125,7 @@ def admm_deconvolution(image: xpArray,
     I = I[original_slice].astype(original_dtype)
     I = xp.clip(I, 0, None)
 
-    napari.run()
+    if display:
+        napari.run()
     
     return I
