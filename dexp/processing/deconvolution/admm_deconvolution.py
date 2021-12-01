@@ -37,6 +37,31 @@ def cross_derivative_kernels(dim: int) -> List[xpArray]:
     return kernels
 
 
+def derivative_func(array: xpArray, axes: int, transpose: bool) -> xpArray:
+    xp = Backend.get_xp_module()
+
+    left_slice = [slice(None) for _ in range(array.ndim)]
+    right_slice = [slice(None) for _ in range(array.ndim)]
+
+    if isinstance(axes, int):
+        axes = (axes,)
+
+    for axis in axes:
+        left_slice[axis] = slice(None, -1)
+        right_slice[axis] = slice(1, None)
+
+    if transpose:
+        left_slice, right_slice = right_slice, left_slice
+    
+    left_slice = tuple(left_slice)
+    right_slice = tuple(right_slice)
+
+    out = xp.zeros_like(array)
+    out[right_slice] = array[left_slice] - array[right_slice]
+
+    return out
+
+
 def admm_deconvolution(image: xpArray,
                        psf: xpArray,
                        iterations: int = 10,
@@ -79,7 +104,10 @@ def admm_deconvolution(image: xpArray,
     original_shape = image.shape
     pad_width = [(s // 2, s - s // 2) for s in backproj.shape]
     image = xp.pad(image, pad_width, mode='reflect')
-    original_slice = tuple(slice(p, p + s) for s, (p, _) in zip(original_shape, pad_width))
+    # original_slice = tuple(slice(p, p + s) for s, (p, _) in zip(original_shape, pad_width))
+    original_slice = tuple(
+        slice(p - 1, p + s - 1) for s, p in zip(original_shape, backproj.shape)
+    )
 
     fsize = tuple(scipy.fftpack.next_fast_len(x) for x in image.shape)
 
@@ -89,12 +117,7 @@ def admm_deconvolution(image: xpArray,
     ] + cross_derivative_kernels(image.ndim)
 
     fDs = [sp.fft.fftn(D, fsize) for D in Ds]
-
-    # output image
-    I = xp.zeros(fsize, dtype=internal_dtype)
-
-    Zs = [I.copy() for _ in range(image.ndim)]
-    Us = [xp.zeros(fsize, dtype=internal_dtype) for _ in fDs]
+    del Ds
 
     fbackproj = sp.fft.fftn(backproj, fsize, overwrite_x=True)
     fimage = sp.fft.fftn(image, fsize)
@@ -104,11 +127,20 @@ def admm_deconvolution(image: xpArray,
         rho * reduce(xp.add, (fD.conj() * fD for fD in fDs))
     del fDs
 
+    Daxes = list(range(image.ndim)) + list(combinations(range(image.ndim), 2))
+
+    # output image
+    I = xp.zeros(fsize, dtype=internal_dtype)
+
+    Zs = [I.copy() for _ in Daxes]
+    Us = [I.copy() for _ in Daxes]
+
     conv = partial(sp.ndimage.convolve, mode='nearest')
 
     for _ in range(iterations):
         V = rho * reduce(xp.add, (
-            conv(Z - U, xp.flip(D)) for D, Z, U in zip(Ds, Zs, Us)
+            derivative_func(Z - U, axes, True)
+            for axes, Z, U in zip(Daxes, Zs, Us)
         ))
 
         fV = sp.fft.fftn(V, overwrite_x=True); del V
@@ -117,7 +149,7 @@ def admm_deconvolution(image: xpArray,
         if display:
             viewer.add_image(I[original_slice])
 
-        tmps = [conv(I, D) for D in Ds]
+        tmps = [derivative_func(I, axes, False) for axes in Daxes]
         Zs = [shrink(tmp + U) for tmp, U in zip(tmps, Us)]
 
         Us = [U + tmp - Z for tmp, Z, U in zip(tmps, Zs, Us)]
