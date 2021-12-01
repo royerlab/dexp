@@ -45,13 +45,13 @@ def _demo_admm_deconvolution(length_xy=128):
     noisy = blurry
     noisy = noisy + 0.1 * xp.random.uniform(size=blurry.shape)
 
-    iterations = 10
+    iterations = 20
 
     with timeit("sparse deconv"):
         sparse_deconvolved = admm_deconvolution(noisy, psf, iterations=iterations)
 
     with timeit("lr deconv"):
-        lr_deconvolved = lucy_richardson_deconvolution(noisy, psf, num_iterations=50,
+        lr_deconvolved = lucy_richardson_deconvolution(noisy, psf, num_iterations=20,
                                                        padding_mode='wrap', padding=16)
 
 
