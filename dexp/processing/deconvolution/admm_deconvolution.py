@@ -1,31 +1,40 @@
 
-from typing import Callable, Optional, Tuple
+from typing import Optional, Tuple
 
 import napari
 import numpy
 import scipy
+from functools import reduce, partial
 
 from dexp.utils import xpArray
 from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.filters.fft_convolve import fft_convolve
 
 
-def derivative_kernel(axis: int, fshape: Tuple[int, ...]) -> Tuple[xpArray, xpArray]:
-    shape = [1, 1, 1]
-    shape[axis-1] = 3
-    K = numpy.zeros(shape, dtype=numpy.float64)
-    K.flat = (1, 0, -1)
-    return K, scipy.fft.fftn(K, shape=fshape)
+def derivative_kernel(axis: int, fshape: Tuple[int, ...], freq: bool = False) -> xpArray:
+    shape = [1] * len(fshape)
+    shape[axis] = 3
+    K = numpy.zeros(shape, dtype=numpy.float32)
+    K.flat = (1, -1, 0)
+    if freq:
+        return scipy.fft.fftn(K, fshape)
+    return K
 
 
-def ADMM_deconvolution(image: xpArray,
+def admm_deconvolution(image: xpArray,
                        psf: xpArray,
-                       iterations: int = 40,
-                       rho: float = 1.0,
-                       gamma: float = 0.1,
+                       iterations: int = 10,
+                       rho: float = 0.1,
+                       gamma: float = 0.01,
                        internal_dtype: Optional[numpy.dtype] = None) -> xpArray:
+
+    viewer = napari.view_image(image)
+
     # from http://jamesgregson.ca/tag/admm.html
+    backend = Backend.current()
+
+    def shrink(array: xpArray):
+        return xp.sign(array) * xp.clip(xp.abs(array) - gamma / rho, 0, None)
+
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
@@ -35,66 +44,68 @@ def ADMM_deconvolution(image: xpArray,
     if internal_dtype is None:
         internal_dtype = numpy.float32
 
-    if type(Backend.current()) is NumpyBackend:
-        internal_dtype = numpy.float32
-
     original_dtype = image.dtype
     image = Backend.to_backend(image, dtype=internal_dtype)
     psf = Backend.to_backend(psf, dtype=internal_dtype)
 
+    # normalizing
+    # image = image - image.min()
+    image = xp.clip(image - xp.quantile(image, 0.1), 0, None)
+    image = image / xp.quantile(image, 0.995)
+
     backproj = xp.flip(psf)
 
-    shape = backproj.shape + image.shape
-    fsize = tuple(scipy.fftpack.next_fast_len(x) for x in tuple(shape))
+    original_shape = image.shape
+    pad_width = [(s // 2, s - s // 2) for s in backproj.shape]
+    image = xp.pad(image, pad_width, mode='reflect')
+    original_slice = tuple(slice(p, p + s) for s, (p, _) in zip(original_shape, pad_width))
 
-    Dx, fDx = derivative_kernel(0, fsize)
-    Dy, fDy = derivative_kernel(1, fsize)
-    Dz, fDz = derivative_kernel(2, fsize)
+    fsize = tuple(scipy.fftpack.next_fast_len(x) for x in image.shape)
 
-    I = xp.zeros(fsize)
+    # derivative operator in freq domain
+    fDs = [
+        backend.to_backend(derivative_kernel(a, fsize, freq=True))
+        for a in range(image.ndim)
+    ]
 
-    # TODO stopped here
+    Ds = [
+        backend.to_backend(derivative_kernel(a, fsize))
+        for a in range(image.ndim)
+    ]
 
-    return deconv
+    # output image
+    I = xp.zeros(fsize, dtype=internal_dtype)
 
-    if mode != 'wrap':
-        pad_width = tuple((tuple((s // 2, s // 2)) for s in backproj.shape))
-        image = xp.pad(image, pad_width=pad_width, mode=mode)
+    conv = partial(sp.ndimage.convolve, mode='nearest')
 
-    s1 = numpy.array(image.shape)
-    s2 = numpy.array(backproj.shape)
+    Zs = [I.copy() for _ in range(image.ndim)]
+    Us = [xp.zeros(fsize, dtype=internal_dtype) for _ in fDs]
 
-    shape = tuple(s1 + s2 - 1)
-    fsize = tuple(scipy.fftpack.next_fast_len(x) for x in tuple(shape))
+    fbackproj = sp.fft.fftn(backproj, fsize)
+    fimage = sp.fft.fftn(image, fsize)
 
-    image_fft = sp.fft.rfftn(image, fsize)
-    backproj_fft = sp.fft.rfftn(backproj, fsize)
+    nume_aux = fbackproj * fimage
+    denom = fbackproj * fbackproj.conj() +\
+        rho * reduce(xp.add, (fD.conj() * fD for fD in fDs))
 
-    # deconv_fft = (backproj_fft.conjugate() * image_fft + epsilon) / (backproj_fft * backproj_fft + epsilon)
-    deconv_fft = (image_fft + epsilon) / (backproj_fft + epsilon)
+    for _ in range(iterations):
+        V = rho * reduce(xp.add, (
+            conv(Z - U, xp.flip(D)) for D, Z, U in zip(Ds, Zs, Us)
+        ))
 
-    viewer = napari.Viewer()
-    viewer.add_image(xp.fft.fftshift(image_fft).real.get(), name='image')
-    viewer.add_image(xp.fft.fftshift(backproj_fft).real.get(), name='backprojector')
-    viewer.add_image(xp.fft.fftshift(deconv_fft).real.get(), name='deconvolved')
+        fV = sp.fft.fftn(V); del V
+        I = sp.fft.ifftn((nume_aux + fV) / denom).real
+
+        viewer.add_image(I[original_slice])
+
+        tmps = [conv(I, D) for D in Ds]
+        Zs = [shrink(tmp + U) for tmp, U in zip(tmps, Us)]
+
+        Us = [U + tmp - Z for tmp, Z, U in zip(tmps, Zs, Us)]
+
+    I = I[original_slice].astype(original_dtype)
+    I = xp.clip(I, 0, None)
 
     napari.run()
-
-    deconv = sp.fft.irfftn(deconv_fft)
-
-    fslice = tuple([slice(0, int(sz)) for sz in shape])
-    deconv = deconv[fslice]
-
-    newshape = numpy.asarray(image.shape)
-    currshape = numpy.array(deconv.shape)
-    startind = (currshape - newshape) // 2
-    endind = startind + newshape
-    myslice = [slice(startind[k], endind[k]) for k in range(len(endind))]
-
-    deconv = deconv[tuple(myslice)]
-
-    if mode != 'wrap':
-        slicing = tuple(slice(s // 2, -(s // 2)) for s in backproj.shape)
-        deconv = deconv[slicing]
-
-    return deconv.astype(dtype=original_dtype, copy=False)
+    
+    return I
