@@ -17,6 +17,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.best_backend import BestBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
+from dexp.processing.deconvolution.admm_deconvolution import admm_deconvolution
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.slicing import slice_from_shape
 
@@ -74,10 +75,7 @@ def dataset_deconv(dataset: BaseDataset,
     lazy_computation = []
 
     for channel in dataset._selected_channels(channels):
-
-        shape = dataset.shape(channel)
         array = dataset.get_array(channel)
-        dtype = dataset.dtype(channel)
 
         aprint(f"Slicing with: {slicing}")
         out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
@@ -128,6 +126,41 @@ def dataset_deconv(dataset: BaseDataset,
             viewer.add_image(psf_kernel)
             napari.run()
 
+        margins = max(psf_xy_size, psf_z_size)
+
+        if method == 'lr':
+            convolve = functools.partial(fft_convolve,
+                                         in_place=False,
+                                         mode='reflect',
+                                         internal_dtype=numpy.float32)
+
+            def deconv(image):
+                min_value = image.min()
+                max_value = image.max()
+
+                return lucy_richardson_deconvolution(image=image,
+                                                     psf=psf_kernel,
+                                                     num_iterations=num_iterations,
+                                                     max_correction=max_correction,
+                                                     normalise_minmax=(min_value, max_value),
+                                                     power=power,
+                                                     blind_spot=blind_spot,
+                                                     blind_spot_mode='median+uniform',
+                                                     blind_spot_axis_exclusion=(0,),
+                                                     wb_order=wb_order,
+                                                     back_projection=back_projection,
+                                                     convolve_method=convolve
+                                                     )
+        elif method == 'admm':
+            deconv = functools.partial(admm_deconvolution,
+                psf=psf_kernel,
+                iterations=num_iterations,
+            )
+
+        else:
+            raise ValueError(f"Unknown deconvolution mode: {method}")
+
+
         @dask.delayed
         def process(i):
             tp = time_points[i]
@@ -145,35 +178,9 @@ def dataset_deconv(dataset: BaseDataset,
                                 tp_array = sp.ndimage.interpolation.zoom(tp_array, zoom=(sz, sy, sx), order=1)
                                 tp_array = Backend.to_numpy(tp_array)
 
-                        if method == 'lr':
-                            min_value = tp_array.min()
-                            max_value = tp_array.max()
-
-                            def f(image):
-                                convolve = functools.partial(fft_convolve,
-                                                             in_place=False,
-                                                             mode='reflect',
-                                                             internal_dtype=numpy.float32)
-                                return lucy_richardson_deconvolution(image=image,
-                                                                     psf=psf_kernel,
-                                                                     num_iterations=num_iterations,
-                                                                     max_correction=max_correction,
-                                                                     normalise_minmax=(min_value, max_value),
-                                                                     power=power,
-                                                                     blind_spot=blind_spot,
-                                                                     blind_spot_mode='median+uniform',
-                                                                     blind_spot_axis_exclusion=(0,),
-                                                                     wb_order=wb_order,
-                                                                     back_projection=back_projection,
-                                                                     convolve_method=convolve
-                                                                     )
-
-                            margins = max(psf_xy_size, psf_z_size)
-                            with asection(f"LR Deconvolution of image of shape: {tp_array.shape}, with tile size: {tilesize}, margins: {margins} "):
-                                aprint(f"Number of iterations: {num_iterations}, back_projection:{back_projection}, ")
-                                tp_array = scatter_gather_i2i(f, tp_array, tiles=tilesize, margins=margins)
-                        else:
-                            raise ValueError(f"Unknown deconvolution mode: {method}")
+                        with asection(f"Deconvolving image of shape: {tp_array.shape}, with tile size: {tilesize}, margins: {margins} "):
+                            aprint(f"Number of iterations: {num_iterations}, back_projection:{back_projection}, ")
+                            tp_array = scatter_gather_i2i(deconv, tp_array, tiles=tilesize, margins=margins)
 
                         with asection(f"Moving array from backend to numpy."):
                             tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
@@ -182,6 +189,7 @@ def dataset_deconv(dataset: BaseDataset,
                         dest_dataset.write_stack(channel=channel,
                                                  time_point=i,
                                                  stack_array=tp_array)
+
                     aprint(f"Done processing time point: {i}/{len(time_points)} .")
 
             except Exception as error:
