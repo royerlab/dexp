@@ -4,7 +4,7 @@ from typing import Optional, List
 import napari
 import numpy
 import scipy
-from functools import reduce, partial
+from functools import reduce
 from itertools import combinations
 
 from dexp.utils import xpArray
@@ -15,7 +15,8 @@ def line_derivative_kernel(axis: int, dim: int) -> xpArray:
     shape = [1] * dim
     shape[axis] = 3
     K = numpy.zeros(shape, dtype=numpy.float32)
-    K.flat = (1, -1, 0)
+    slicing = tuple(slice(None) if i == axis else 0 for i in range(dim))
+    K[slicing] = (1, -1, 0)
     return K
 
 
@@ -31,7 +32,8 @@ def cross_derivative_kernels(dim: int) -> List[xpArray]:
         shape = numpy.ones(dim, dtype=int)
         shape[list(axes)] = 3
         D = xp.zeros(shape)
-        D.flat = cross
+        slicing = tuple(slice(None) if i in axes else 0 for i in range(dim))
+        D[slicing] = cross
         kernels.append(D)
 
     return kernels
@@ -64,9 +66,9 @@ def derivative_func(array: xpArray, axes: int, transpose: bool) -> xpArray:
 
 def admm_deconvolution(image: xpArray,
                        psf: xpArray,
-                       iterations: int = 10,
                        rho: float = 0.1,
                        gamma: float = 0.01,
+                       iterations: int = 10,
                        internal_dtype: Optional[numpy.dtype] = None,
                        display: bool = False) -> xpArray:
 
@@ -74,10 +76,10 @@ def admm_deconvolution(image: xpArray,
     Reference from: http://jamesgregson.ca/tag/admm.html
     """
 
-    if display:
-        viewer = napari.view_image(image)
-
     backend = Backend.current()
+
+    if display:
+        viewer = napari.view_image(backend.to_numpy(image), name='original')
 
     def shrink(array: xpArray) -> xpArray:
         return xp.sign(array) * xp.clip(xp.abs(array) - gamma / rho, 0.0, None)
@@ -95,49 +97,55 @@ def admm_deconvolution(image: xpArray,
     image = Backend.to_backend(image, dtype=internal_dtype)
     psf = Backend.to_backend(psf, dtype=internal_dtype)
 
-    # normalizing
-    image = image - image.min()
-    image = image / xp.quantile(image, 0.995)
-
+    # inverting psf
     backproj = xp.flip(psf)
 
+    # padding with reflection for a better deconvolution 
     original_shape = image.shape
     pad_width = [(s // 2, s - s // 2) for s in backproj.shape]
     image = xp.pad(image, pad_width, mode='reflect')
     # original_slice = tuple(slice(p, p + s) for s, (p, _) in zip(original_shape, pad_width))
     original_slice = tuple(
         slice(p - 1, p + s - 1) for s, p in zip(original_shape, backproj.shape)
-    )
+    )  # I didn't understand why the other slicing is wrong \O/
 
+    # compute data shape for faster fft
     fsize = tuple(scipy.fftpack.next_fast_len(x) for x in image.shape)
 
+    # create derivative kernels
     Ds = [
         backend.to_backend(line_derivative_kernel(a, image.ndim))
         for a in range(image.ndim)
     ] + cross_derivative_kernels(image.ndim)
 
+    # convert derivative kernels to freq space
     fDs = [sp.fft.fftn(D, fsize) for D in Ds]
     del Ds
 
+    # convert input to freq space
     fbackproj = sp.fft.fftn(backproj, fsize, overwrite_x=True)
     fimage = sp.fft.fftn(image, fsize)
 
+    # pre-compute auxiliary values following reference
     nume_aux = fbackproj * fimage
     denom = fbackproj * fbackproj.conj() +\
         rho * reduce(xp.add, (fD.conj() * fD for fD in fDs))
     del fDs
 
+    # compute parameters used for finite difference differenciation (fast diff operator)
     Daxes = list(range(image.ndim)) + list(combinations(range(image.ndim), 2))
 
-    # output image
-    I = xp.zeros(fsize, dtype=internal_dtype)
+    zeros = lambda : xp.zeros(fsize, dtype=internal_dtype)
 
-    Zs = [I.copy() for _ in Daxes]
-    Us = [I.copy() for _ in Daxes]
+    # allocate buffers
+    I = zeros()  # output image
 
-    conv = partial(sp.ndimage.convolve, mode='nearest')
+    Zs = [zeros() for _ in Daxes]
+    Us = [zeros() for _ in Daxes]
 
     for _ in range(iterations):
+        # iterations according to reference
+        # loop operations are done using generators to reduce memory allocation
         V = rho * reduce(xp.add, (
             derivative_func(Z - U, axes, True)
             for axes, Z, U in zip(Daxes, Zs, Us)
@@ -147,17 +155,20 @@ def admm_deconvolution(image: xpArray,
         I = sp.fft.ifftn((nume_aux + fV) / denom, overwrite_x=True).real
 
         if display:
-            viewer.add_image(I[original_slice])
+            viewer.add_image(backend.to_numpy(I[original_slice]))
 
         tmps = [derivative_func(I, axes, False) for axes in Daxes]
         Zs = [shrink(tmp + U) for tmp, U in zip(tmps, Us)]
 
-        Us = [U + tmp - Z for tmp, Z, U in zip(tmps, Zs, Us)]
+        for tmp, Z, U in zip(tmps, Zs, Us):
+            U += tmp - Z
 
+    # normalization
     I = I[original_slice].astype(original_dtype)
-    I = xp.clip(I, 0, None)
+    I -= I.min()
+    I /= I.max()
 
     if display:
         napari.run()
-    
+
     return I

@@ -55,12 +55,16 @@ def scatter_gather_i2i(function,
         margins = (margins,) * image.ndim
 
     if to_numpy:
-        result = numpy.empty(shape=image.shape, dtype=image.dtype)
+        result = numpy.empty(shape=image.shape, dtype=internal_dtype)
     else:
-        result = Backend.get_xp_module(image).empty_like(image)
+        result = Backend.get_xp_module(image).empty_like(image, dtype=internal_dtype)
 
     # Normalise:
-    norm_fun, denorm_fun = normalise_functions(image, do_normalise=normalise, clip=clip)
+    norm_fun, denorm_fun = normalise_functions(
+        Backend.to_backend(image),
+        do_normalise=normalise, clip=clip,
+        quantile=0.005
+    )
 
     # image shape:
     shape = image.shape
@@ -79,9 +83,9 @@ def scatter_gather_i2i(function,
         # If there is only one tile, let's not be complicated about it:
         result = denorm_fun(function(norm_fun(image)))
         if to_numpy:
-            result = Backend.to_numpy(result, dtype=image.dtype)
+            result = Backend.to_numpy(result, dtype=internal_dtype)
         else:
-            result = Backend.to_backend(result, dtype=image.dtype)
+            result = Backend.to_backend(result, dtype=internal_dtype)
     else:
         _scatter_gather_loop(denorm_fun, function, image, internal_dtype, norm_fun, result, shape, slices, to_numpy)
 
@@ -94,9 +98,9 @@ def _scatter_gather_loop(denorm_fun, function, image, internal_dtype, norm_fun, 
         image_tile = Backend.to_backend(image_tile, dtype=internal_dtype)
         image_tile = denorm_fun(function(norm_fun(image_tile)))
         if to_numpy:
-            image_tile = Backend.to_numpy(image_tile, dtype=image.dtype)
+            image_tile = Backend.to_numpy(image_tile, dtype=internal_dtype)
         else:
-            image_tile = Backend.to_backend(image_tile, dtype=image.dtype)
+            image_tile = Backend.to_backend(image_tile, dtype=internal_dtype)
 
         remove_margin_slice_tuple = remove_margin_slice(
             shape, tile_slice, tile_slice_no_margins

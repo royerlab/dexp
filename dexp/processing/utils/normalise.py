@@ -63,8 +63,8 @@ def normalise_functions(image,
 
         min_value, max_value = 0, 0
         if quantile > 0:
-            min_value = xp.percentile(image, q=100 * quantile, interpolation='lower')
-            max_value = xp.percentile(image, q=100 * (1 - quantile), interpolation='higher')
+            min_value = xp.quantile(image, q=quantile)
+            max_value = xp.quantile(image, q=1 - quantile)
 
         # if we did not use quantiles or we get some weird result, let's fallback to standard min max:
         if min_value >= max_value:
