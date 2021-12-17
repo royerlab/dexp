@@ -4,11 +4,13 @@ from dexp.optics.psf.standard_psfs import nikon16x08na
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.deconvolution.admm_deconvolution import admm_deconvolution
-from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
+from dexp.processing.optimization.grid_search import j_invariant_grid_search
 from dexp.processing.filters.fft_convolve import fft_convolve
+from dexp.processing.deconvolution.admm_deconvolution import admm_deconvolution
 from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 from dexp.utils.timeit import timeit
+
+from functools import partial
 
 
 def demo_admm_deconvolution_numpy():
@@ -51,13 +53,20 @@ def _demo_admm_deconvolution(length_xy=128):
     noisy = noisy - noisy.min()
     noisy = noisy / noisy.max()
 
+    deconv = partial(admm_deconvolution, psf=psf, iterations=iterations)
+    grid = {
+        'rho': numpy.power(10.0, numpy.arange(-2, 4)),
+        'gamma': numpy.power(10.0, numpy.arange(-2, 4)),
+    }
+
+    def mse(x, y):
+        return ((x - y) ** 2).sum().item()
+
+    with timeit("Estimating optimal parameters"):
+        params = j_invariant_grid_search(noisy, deconv, mse, grid, display=True)
+
     with timeit("sparse deconv"):
-        sparse_deconvolved = admm_deconvolution(noisy, psf, iterations=iterations)
-
-    with timeit("lr deconv"):
-        lr_deconvolved = lucy_richardson_deconvolution(noisy, psf, num_iterations=iterations,
-                                                       padding_mode='wrap', padding=16)
-
+        deconvolved = deconv(noisy, **params)
 
     def _c(array):
         return Backend.to_numpy(array)
@@ -68,8 +77,7 @@ def _demo_admm_deconvolution(length_xy=128):
     viewer.add_image(_c(blurry), name='blurry')
     viewer.add_image(_c(psf), name='psf')
     viewer.add_image(_c(noisy), name='noisy')
-    viewer.add_image(_c(sparse_deconvolved), name='sparse deconv')
-    viewer.add_image(_c(lr_deconvolved), name='lr deconv')
+    viewer.add_image(_c(deconvolved), name='sparse deconv')
 
     napari.run()
 
