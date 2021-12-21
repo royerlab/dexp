@@ -1,14 +1,12 @@
 
-from typing import Callable, Optional
+from typing import Optional
 
-import napari
 import numpy
 import scipy
 
 from dexp.utils import xpArray
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.filters.fft_convolve import fft_convolve
 
 
 
@@ -51,6 +49,7 @@ def inversion_deconvolution(image: xpArray,
     # deconv_fft = (backproj_fft.conjugate() * image_fft + epsilon) / (backproj_fft * backproj_fft + epsilon)
     deconv_fft = (image_fft + epsilon) / (backproj_fft + epsilon)
 
+    import napari
     viewer = napari.Viewer()
     viewer.add_image(xp.fft.fftshift(image_fft).real.get(), name='image')
     viewer.add_image(xp.fft.fftshift(backproj_fft).real.get(), name='backprojector')
