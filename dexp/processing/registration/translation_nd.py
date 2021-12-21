@@ -98,7 +98,7 @@ def register_translation_nd(image_a: xpArray,
     # We estimate the noise floor of the correlation:
     center = tuple(s // 2 for s in correlation.shape)
     empty_region = correlation[tuple(slice(0, c - r) for c, r in zip(center, max_ranges))]
-    noise_floor_level = xp.percentile(empty_region.ravel()[::decimate].astype(numpy.float32), q=100 * quantile)
+    noise_floor_level = xp.quantile(empty_region.ravel()[::decimate].astype(numpy.float32), q=quantile)
     if xp.isnan(noise_floor_level):
         noise_floor_level = xp.mean(empty_region.ravel()[::decimate])
     # print(f"noise_floor_level={noise_floor_level}")

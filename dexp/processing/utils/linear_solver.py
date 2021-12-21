@@ -57,8 +57,11 @@ def linsolve(a, y, x0=None,
                       options={'disp': verbose,
                                'maxiter': maxiter,
                                'maxfun': maxfun,
-                               'gtol': tolerance},
+                               'gtol': tolerance,
+                               'eps': 1e-5,  # the minimization would not converge sometimes without this param.
+                               },
                       )
+
     if result.nit == 0:
         aprint(f"Warning: optimisation finished after {result.nit} iterations!")
 

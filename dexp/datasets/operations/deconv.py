@@ -2,7 +2,6 @@ from typing import Sequence, Tuple, List, Optional
 
 import dask
 import numpy
-from numpy.linalg import norm
 import scipy
 import functools
 from pathlib import Path
@@ -161,6 +160,7 @@ def dataset_deconv(dataset: BaseDataset,
                     image,
                     psf=psf_kernel,
                     iterations=num_iterations,
+                    derivative=2,
                 )
                 return out
 
