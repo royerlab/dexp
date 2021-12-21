@@ -2,6 +2,7 @@ from typing import Sequence, Tuple, List, Optional
 
 import dask
 import numpy
+from numpy.linalg import norm
 import scipy
 import functools
 from pathlib import Path
@@ -81,11 +82,12 @@ def dataset_deconv(dataset: BaseDataset,
         out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
 
         out_shape = tuple(int(round(u*v)) for u, v in zip(out_shape, (1,)+scaling))
+        dtype = numpy.float16 if method == 'admm' else array.dtype 
 
         # Adds destination array channel to dataset
         dest_array = dest_dataset.add_channel(name=channel,
                                               shape=out_shape,
-                                              dtype=array.dtype,
+                                              dtype=dtype,
                                               codec=compression,
                                               clevel=compression_level)
 
@@ -129,6 +131,7 @@ def dataset_deconv(dataset: BaseDataset,
         margins = max(psf_xy_size, psf_z_size)
 
         if method == 'lr':
+            normalize = False
             convolve = functools.partial(fft_convolve,
                                          in_place=False,
                                          mode='reflect',
@@ -152,10 +155,14 @@ def dataset_deconv(dataset: BaseDataset,
                                                      convolve_method=convolve
                                                      )
         elif method == 'admm':
-            deconv = functools.partial(admm_deconvolution,
-                psf=psf_kernel,
-                iterations=num_iterations,
-            )
+            normalize = True
+            def deconv(image):
+                out = admm_deconvolution(
+                    image,
+                    psf=psf_kernel,
+                    iterations=num_iterations,
+                )
+                return out
 
         else:
             raise ValueError(f"Unknown deconvolution mode: {method}")
@@ -180,7 +187,8 @@ def dataset_deconv(dataset: BaseDataset,
 
                         with asection(f"Deconvolving image of shape: {tp_array.shape}, with tile size: {tilesize}, margins: {margins} "):
                             aprint(f"Number of iterations: {num_iterations}, back_projection:{back_projection}, ")
-                            tp_array = scatter_gather_i2i(deconv, tp_array, tiles=tilesize, margins=margins)
+                            tp_array = scatter_gather_i2i(deconv, tp_array, tiles=tilesize, margins=margins,
+                                                          normalise=normalize, internal_dtype=dtype)
 
                         with asection(f"Moving array from backend to numpy."):
                             tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
