@@ -1,7 +1,6 @@
 
 from typing import Optional
 
-import napari
 import numpy
 import scipy
 from functools import reduce
@@ -36,6 +35,7 @@ def admm_deconvolution(image: xpArray,
     backend = Backend.current()
 
     if display:
+        import napari
         viewer = napari.view_image(backend.to_numpy(image), name='original')
 
     def shrink(array: xpArray) -> xpArray:
