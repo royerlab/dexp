@@ -1,67 +1,14 @@
 
-from typing import Optional, List
+from typing import Optional
 
 import napari
 import numpy
 import scipy
 from functools import reduce
-from itertools import combinations
 
 from dexp.utils import xpArray
 from dexp.processing.backends.backend import Backend
-
-
-def line_derivative_kernel(axis: int, dim: int) -> xpArray:
-    shape = [1] * dim
-    shape[axis] = 3
-    K = numpy.zeros(shape, dtype=numpy.float32)
-    slicing = tuple(slice(None) if i == axis else 0 for i in range(dim))
-    K[slicing] = (1, -1, 0)
-    return K
-
-
-def cross_derivative_kernels(dim: int) -> List[xpArray]:
-    xp = Backend.get_xp_module()
-
-    cross = xp.array([[1, 0, 0],
-                      [0, -1, 0],
-                      [0, 0, 0]])
-
-    kernels = []
-    for axes in combinations(range(dim), 2):
-        shape = numpy.ones(dim, dtype=int)
-        shape[list(axes)] = 3
-        D = xp.zeros(shape)
-        slicing = tuple(slice(None) if i in axes else 0 for i in range(dim))
-        D[slicing] = cross
-        kernels.append(D)
-
-    return kernels
-
-
-def derivative_func(array: xpArray, axes: int, transpose: bool) -> xpArray:
-    xp = Backend.get_xp_module()
-
-    left_slice = [slice(None) for _ in range(array.ndim)]
-    right_slice = [slice(None) for _ in range(array.ndim)]
-
-    if isinstance(axes, int):
-        axes = (axes,)
-
-    for axis in axes:
-        left_slice[axis] = slice(None, -1)
-        right_slice[axis] = slice(1, None)
-
-    if transpose:
-        left_slice, right_slice = right_slice, left_slice
-    
-    left_slice = tuple(left_slice)
-    right_slice = tuple(right_slice)
-
-    out = xp.zeros_like(array)
-    out[right_slice] = array[left_slice] - array[right_slice]
-
-    return out
+from dexp.processing.deconvolution.admm_utils import derivative_axes, first_derivative_kernels, first_derivative_func, second_derivative_func, second_derivative_kernels
 
 
 def admm_deconvolution(image: xpArray,
@@ -69,12 +16,22 @@ def admm_deconvolution(image: xpArray,
                        rho: float = 0.1,
                        gamma: float = 0.01,
                        iterations: int = 10,
+                       derivative: int = 1,
                        internal_dtype: Optional[numpy.dtype] = None,
-                       display: bool = False) -> xpArray:
+                       display: bool = False,
+                       ) -> xpArray:
 
     """
     Reference from: http://jamesgregson.ca/tag/admm.html
     """
+    if derivative == 1:
+        derivative_func = first_derivative_func
+        derivative_kernels = first_derivative_kernels
+    elif derivative == 2:
+        derivative_func = second_derivative_func
+        derivative_kernels = second_derivative_kernels
+    else:
+        raise RuntimeError(f'Derivative must be 1 or 2. Found {derivative}.')
 
     backend = Backend.current()
 
@@ -102,21 +59,21 @@ def admm_deconvolution(image: xpArray,
 
     # padding with reflection for a better deconvolution 
     original_shape = image.shape
-    pad_width = [(s // 2, s - s // 2) for s in backproj.shape]
+    pad_width = [(s // 2, s // 2) for s in backproj.shape]
     image = xp.pad(image, pad_width, mode='reflect')
     # original_slice = tuple(slice(p, p + s) for s, (p, _) in zip(original_shape, pad_width))
     original_slice = tuple(
         slice(p - 1, p + s - 1) for s, p in zip(original_shape, backproj.shape)
-    )  # I didn't understand why the other slicing is wrong \O/
+    )  # I don't understand why the other slicing is wrong \O/
 
     # compute data shape for faster fft
     fsize = tuple(scipy.fftpack.next_fast_len(x) for x in image.shape)
 
     # create derivative kernels
     Ds = [
-        backend.to_backend(line_derivative_kernel(a, image.ndim))
-        for a in range(image.ndim)
-    ] + cross_derivative_kernels(image.ndim)
+        backend.to_backend(D)
+        for D in derivative_kernels(image.ndim)
+    ]
 
     # convert derivative kernels to freq space
     fDs = [sp.fft.fftn(D, fsize) for D in Ds]
@@ -133,7 +90,7 @@ def admm_deconvolution(image: xpArray,
     del fDs
 
     # compute parameters used for finite difference differenciation (fast diff operator)
-    Daxes = list(range(image.ndim)) + list(combinations(range(image.ndim), 2))
+    Daxes = derivative_axes(image.ndim)
 
     zeros = lambda : xp.zeros(fsize, dtype=internal_dtype)
 

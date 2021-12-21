@@ -1,6 +1,7 @@
 
 from typing import Callable, Dict
 
+import numpy
 from numpy.typing import ArrayLike
 from dexp.utils import xpArray
 from dexp.processing.backends.backend import Backend
@@ -45,6 +46,8 @@ def j_invariant_grid_search(image: xpArray,
         estimation = function(masked, **params)
         # compute loss function
         loss = loss_fun(estimation[mask], image[mask])
+        loss = numpy.nan_to_num(loss, nan=1e12)
+
         name = f'{params}: loss={loss:0.3f}'
         if display:
             viewer.add_image(backend.to_numpy(estimation), name=name)

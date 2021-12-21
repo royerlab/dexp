@@ -62,6 +62,7 @@ REQUIRED = [
     'blosc',
     'seaborn',
     'ome-zarr',
+    'pyotf',
 ]
 
 # What packages are optional?
