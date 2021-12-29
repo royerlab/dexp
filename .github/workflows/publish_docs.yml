@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Clone repo
       - uses: actions/checkout@main
+        with:
+          path: "dexp"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
