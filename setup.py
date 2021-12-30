@@ -29,7 +29,6 @@ CUPY_VERSION = "9.1.0"
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "wheel",
     "numpy>=1.20",
     "scipy",
     "numba",
@@ -89,6 +88,10 @@ EXTRAS = {
     ],
     "napari": [
         "napari[all]",
+    ],
+    "dev": [
+        "flake8",
+        "pytest",
     ],
 }
 
