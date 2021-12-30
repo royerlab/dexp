@@ -4,7 +4,7 @@ from os.path import join
 from skimage.data import binary_blobs
 from skimage.filters import gaussian
 
-from dexp.datasets.zarr_dataset import ZDataset
+from dexp.datasets import ZDataset
 
 
 def demo():

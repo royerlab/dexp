@@ -4,7 +4,7 @@ from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 from zarr.errors import ContainsArrayError, ContainsGroupError
 
-from dexp.datasets.base_dataset import BaseDataset
+from dexp.datasets import BaseDataset
 from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.deskew.classic_deskew import classic_deskew
 from dexp.processing.deskew.yang_deskew import yang_deskew
@@ -57,7 +57,7 @@ def dataset_deskew(
         devices = [0]
 
     # We allocate last minute once we know the shape...
-    from dexp.datasets.zarr_dataset import ZDataset
+    from dexp.datasets import ZDataset
 
     zarr_mode = "w" + ("" if overwrite else "-")
     dest_dataset = ZDataset(dest_path, zarr_mode, store, parent=dataset)

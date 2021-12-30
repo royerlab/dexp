@@ -3,7 +3,7 @@
 from arbol import aprint, asection
 from napari import Viewer
 
-from dexp.datasets.zarr_dataset import ZDataset
+from dexp.datasets import ZDataset
 from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
 

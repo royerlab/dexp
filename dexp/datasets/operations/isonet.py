@@ -4,7 +4,7 @@ import numpy
 from arbol.arbol import aprint
 from skimage.transform import downscale_local_mean
 
-from dexp.datasets.base_dataset import BaseDataset
+from dexp.datasets import BaseDataset
 from dexp.utils.timeit import timeit
 
 
@@ -64,7 +64,7 @@ def dataset_isonet(
         isonet.train(max_epochs=max_epochs)
 
     if "a" in mode:
-        from dexp.datasets.zarr_dataset import ZDataset
+        from dexp.datasets import ZDataset
 
         mode = "w" + ("" if overwrite else "-")
         dest_dataset = ZDataset(path, mode, store, parent=dataset)

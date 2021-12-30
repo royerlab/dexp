@@ -9,7 +9,7 @@ from arbol.arbol import aprint, asection
 from dask.distributed import Client
 from dask_cuda import LocalCUDACluster
 
-from dexp.datasets.base_dataset import BaseDataset
+from dexp.datasets import BaseDataset
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
 from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.deconvolution.admm_deconvolution import admm_deconvolution
@@ -51,7 +51,7 @@ def dataset_deconv(
     stop_at_exception: bool = True,
 ):
 
-    from dexp.datasets.zarr_dataset import ZDataset
+    from dexp.datasets import ZDataset
 
     mode = "w" + ("" if overwrite else "-")
     dest_dataset = ZDataset(dest_path, mode, store, parent=dataset)

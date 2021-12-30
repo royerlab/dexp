@@ -6,7 +6,7 @@ import imageio
 from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
-from dexp.datasets.base_dataset import BaseDataset
+from dexp.datasets import BaseDataset
 from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.color.projection import project_image
 

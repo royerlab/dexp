@@ -4,8 +4,8 @@ from os.path import join
 
 from arbol import aprint, asection
 
+from dexp.datasets import ZDataset
 from dexp.datasets.operations.deconv import dataset_deconv
-from dexp.datasets.zarr_dataset import ZDataset
 from dexp.optics.psf.standard_psfs import nikon16x08na
 from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve

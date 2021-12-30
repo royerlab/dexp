@@ -4,7 +4,7 @@ import numpy
 from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
-from dexp.datasets.base_dataset import BaseDataset
+from dexp.datasets import BaseDataset
 from dexp.utils.misc import compute_num_workers
 from dexp.utils.slicing import slice_from_shape
 
@@ -27,7 +27,7 @@ def dataset_copy(
 ):
 
     # Create destination dataset:
-    from dexp.datasets.zarr_dataset import ZDataset
+    from dexp.datasets import ZDataset
 
     mode = "w" + ("" if overwrite else "-")
     dest_dataset = ZDataset(dest_path, mode, store, parent=dataset)

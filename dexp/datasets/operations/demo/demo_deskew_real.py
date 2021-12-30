@@ -3,8 +3,8 @@ from os.path import join
 
 from arbol import aprint, asection
 
+from dexp.datasets import ZDataset
 from dexp.datasets.operations.deskew import dataset_deskew
-from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 
 # Input dataset

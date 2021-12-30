@@ -6,7 +6,7 @@ from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 from tifffile import memmap
 
-from dexp.datasets.base_dataset import BaseDataset
+from dexp.datasets import BaseDataset
 from dexp.io.io import tiff_save
 
 

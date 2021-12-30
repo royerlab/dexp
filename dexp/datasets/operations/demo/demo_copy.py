@@ -4,8 +4,8 @@ from os.path import join
 
 from arbol import aprint, asection
 
+from dexp.datasets import ZDataset
 from dexp.datasets.operations.copy import dataset_copy
-from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.synthetic_datasets.nuclei_background_data import (
     generate_nuclei_background_data,

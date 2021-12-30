@@ -3,7 +3,7 @@ import numpy as np
 from arbol.arbol import aprint, asection
 from toolz import curry
 
-from dexp.datasets.zarr_dataset import ZDataset
+from dexp.datasets import ZDataset
 from dexp.processing.backends import Backend, BestBackend, NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
 from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion

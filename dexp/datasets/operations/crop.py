@@ -7,7 +7,7 @@ from joblib import Parallel, delayed
 from numpy.typing import ArrayLike
 from scipy import ndimage as ndi
 
-from dexp.datasets.base_dataset import BaseDataset
+from dexp.datasets import BaseDataset
 from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.utils.misc import compute_num_workers
@@ -72,7 +72,7 @@ def dataset_crop(
 ):
 
     # Create destination dataset:
-    from dexp.datasets.zarr_dataset import ZDataset
+    from dexp.datasets import ZDataset
 
     mode = "w" + ("" if overwrite else "-")
     dest_dataset = ZDataset(dest_path, mode, store, parent=dataset)

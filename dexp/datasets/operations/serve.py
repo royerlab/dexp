@@ -1,6 +1,6 @@
 from arbol.arbol import aprint
 
-from dexp.datasets.zarr_dataset import ZDataset
+from dexp.datasets import ZDataset
 
 
 def dataset_serve(dataset: ZDataset, host: str = "0.0.0.0", port: int = 8000):
