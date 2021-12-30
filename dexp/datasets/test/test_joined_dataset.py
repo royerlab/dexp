@@ -35,9 +35,7 @@ def test_joined_dataset():
                 name="second", shape=(17 + i // 2, size, size, size), chunks=None, dtype="f4", codec="zstd", clevel=3
             )
 
-            with NumpyBackend() as backend:
-                xp = backend.get_xp_module()
-
+            with NumpyBackend():
                 blobs = binary_blobs(length=size, n_dim=3, blob_size_fraction=0.1).astype("f4")
 
                 for i in range(0, zdataset.nb_timepoints("first")):

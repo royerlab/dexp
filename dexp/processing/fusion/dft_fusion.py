@@ -46,11 +46,14 @@ def fuse_dft_nd(image_a: xpArray, image_b: xpArray, cutoff: float = 0, clip: boo
     min_value = min(min_a, min_b)
     max_value = min(max_a, max_b)
 
-    tranform = lambda x: sp.fft.fftshift(sp.fft.fftn(x, norm="ortho"))
-    itranform = lambda x: sp.fft.ifftn(sp.fft.ifftshift(x), norm="ortho")
+    def transform(x):
+        return sp.fft.fftshift(sp.fft.fftn(x, norm="ortho"))
 
-    image_a_dft = tranform(image_a)
-    image_b_dft = tranform(image_b)
+    def itransform(x):
+        return sp.fft.ifftn(sp.fft.ifftshift(x), norm="ortho")
+
+    image_a_dft = transform(image_a)
+    image_b_dft = transform(image_b)
 
     image_a_dft_abs = xp.absolute(image_a_dft)
     image_b_dft_abs = xp.absolute(image_b_dft)
@@ -64,12 +67,14 @@ def fuse_dft_nd(image_a: xpArray, image_b: xpArray, cutoff: float = 0, clip: boo
         c = cutoff
         cutoffs = tuple(int(s * c) for s in image_a.shape)
         cutoffs_slice = tuple(slice(s // 2 - c // 2, s // 2 + c // 2) for s, c in zip(image_a.shape, cutoffs))
+        # fmt: off
         image_fused_dft[cutoffs_slice] = (
-            ~image_a_is_max[cutoffs_slice] * image_a_dft[cutoffs_slice]
+            (~image_a_is_max[cutoffs_slice]) * image_a_dft[cutoffs_slice]
             + image_a_is_max[cutoffs_slice] * image_b_dft[cutoffs_slice]
         )
+        # fmt: on
 
-    image_fused = itranform(image_fused_dft)
+    image_fused = itransform(image_fused_dft)
 
     image_fused = xp.real(image_fused)
 

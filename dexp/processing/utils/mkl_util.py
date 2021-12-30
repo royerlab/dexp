@@ -14,7 +14,7 @@ def set_mkl_threads(num_threads=None):
 
             mkl.set_num_threads(num_threads)
             return 0
-        except Exception as e:
+        except Exception:
             pass
             # import traceback
             # traceback.print_exc()
@@ -25,7 +25,7 @@ def set_mkl_threads(num_threads=None):
                 mkl_rt = ctypes.CDLL(name)
                 mkl_rt.mkl_set_num_threads(ctypes.byref(ctypes.c_int(num_threads)))
                 return 0
-            except Exception as e:
+            except Exception:
                 pass
                 # import traceback
                 # traceback.print_exc()
@@ -36,7 +36,7 @@ def set_mkl_threads(num_threads=None):
         os.environ["MKL_NUM_THREADS"] = f"{num_threads}"  # export MKL_NUM_THREADS=6
         os.environ["VECLIB_MAXIMUM_THREADS"] = f"{num_threads}"  # export VECLIB_MAXIMUM_THREADS=4
         os.environ["NUMEXPR_NUM_THREADS"] = f"{num_threads}"  # export NUMEXPR_NUM_THREADS=6
-    except Exception as e:
+    except Exception:
         pass
         # import traceback
         # traceback.print_exc()

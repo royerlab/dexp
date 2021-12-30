@@ -5,6 +5,7 @@
 
 import os
 import sys
+from datetime import datetime
 from shutil import rmtree
 
 from setuptools import Command, find_packages, setup
@@ -16,8 +17,6 @@ URL = "https://github.com/royerlab/dexp"
 EMAIL = "jordao.bragantini@czbiohub.org, ahmetcan.solak@czbiohub.org, bin.yang@czbiohub.org, loic.royer@czbiohub.org"
 AUTHOR = "Jordao Bragantini, Ahmet Can Solak, Bin Yang, Loic A Royer"
 REQUIRES_PYTHON = ">=3.7.0"
-
-from datetime import datetime
 
 now = datetime.now()
 seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()

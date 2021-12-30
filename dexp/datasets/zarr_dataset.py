@@ -82,7 +82,8 @@ class ZDataset(BaseDataset):
                     shutil.rmtree(path, ignore_errors=True)
                 else:
                     raise ValueError(
-                        "Specified path does not seem to be a zarr dataset, deletion for overwrite not performed out of abundance of caution, check path!"
+                        "Specified path does not seem to be a zarr dataset, deletion for overwrite"
+                        "not performed out of abundance of caution, check path!"
                     )
 
             elif isfile(path):
@@ -91,13 +92,13 @@ class ZDataset(BaseDataset):
         if exists(path):
             aprint(f"Opening existing Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
             if isfile(path) and (path.endswith(".zarr.zip") or store == "zip"):
-                aprint(f"Opening as ZIP store")
+                aprint("Opening as ZIP store")
                 self._store = zarr.storage.ZipStore(path)
             elif isdir(path) and (path.endswith(".nested.zarr") or path.endswith(".nested.zarr/") or store == "ndir"):
-                aprint(f"Opening as Nested Directory store")
+                aprint("Opening as Nested Directory store")
                 self._store = zarr.storage.NestedDirectoryStore(path)
             elif isdir(path) and (path.endswith(".zarr") or path.endswith(".zarr/") or store == "dir"):
-                aprint(f"Opening as Directory store")
+                aprint("Opening as Directory store")
                 self._store = zarr.storage.DirectoryStore(path)
 
             aprint(f"Opening with mode: {mode}")
@@ -109,24 +110,26 @@ class ZDataset(BaseDataset):
                 store = "dir"
             try:
                 if path.endswith(".zarr.zip") or store == "zip":
-                    aprint(f"Opening as ZIP store")
+                    aprint("Opening as ZIP store")
                     self._store = zarr.storage.ZipStore(path)
                 elif path.endswith(".nested.zarr") or path.endswith(".nested.zarr/") or store == "ndir":
-                    aprint(f"Opening as Nested Directory store")
+                    aprint("Opening as Nested Directory store")
                     self._store = zarr.storage.NestedDirectoryStore(path)
                 elif path.endswith(".zarr") or path.endswith(".zarr/") or store == "dir":
-                    aprint(f"Opening as Directory store")
+                    aprint("Opening as Directory store")
                     self._store = zarr.storage.DirectoryStore(path)
                 else:
                     aprint(
-                        f"Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr` or `.nested.zarr` for nested folders), or a zipped zarr file (file that ends with `.zarr.zip`)"
+                        f"Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr` or "
+                        + "`.nested.zarr` for nested folders), or a zipped zarr file (file that ends with `.zarr.zip`)"
                     )
 
                 self._root_group = zarr.convenience.open(self._store, mode=mode)
 
-            except Exception as e:
+            except Exception:
                 raise ValueError(
-                    f"Problem: can't create target file/directory, most likely the target dataset already exists or path incorrect: {path}"
+                    "Problem: can't create target file/directory, most likely the target dataset "
+                    + f"already exists or path incorrect: {path}"
                 )
         else:
             raise ValueError(f"Invalid read/write mode or invalid path: {path} (check path!)")
@@ -143,7 +146,7 @@ class ZDataset(BaseDataset):
     def _initialise_existing(self):
         self._channels = [channel for channel, _ in self._root_group.groups()]
 
-        aprint(f"Exploring Zarr hierarchy...")
+        aprint("Exploring Zarr hierarchy...")
         for channel, channel_group in self._root_group.groups():
             aprint(f"Found channel: {channel}")
 
@@ -186,7 +189,7 @@ class ZDataset(BaseDataset):
                 pass
 
     def check_integrity(self, channels: Sequence[str] = None) -> bool:
-        aprint(f"Checking integrity of zarr storage, might take some time.")
+        aprint("Checking integrity of zarr storage, might take some time.")
         if channels is None:
             channels = self.channels()
         for channel in channels:
@@ -236,7 +239,7 @@ class ZDataset(BaseDataset):
                 info_str += ".\n\n"
 
         info_str += ".\n\n"
-        info_str += f"\nMetadata: \n"
+        info_str += "\nMetadata: \n"
         for key, value in self.get_metadata().items():
             if "cli_history" not in key:
                 info_str += f"\t{key} : {value} \n"
@@ -299,7 +302,7 @@ class ZDataset(BaseDataset):
     def get_array(
         self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False, wrap_with_tensorstore: bool = False
     ):
-        assert (wrap_with_dask != wrap_with_tensorstore) or wrap_with_dask == False
+        assert (wrap_with_dask != wrap_with_tensorstore) or not wrap_with_dask
         array = self._arrays[channel]
         if wrap_with_dask:
             return dask.array.from_array(array, chunks=array.chunks)
@@ -381,7 +384,8 @@ class ZDataset(BaseDataset):
         fill_value = self._get_largest_dtype_value(dtype) if value is None else value
 
         aprint(
-            f"Adding channel: '{name}' of shape: {shape}, chunks:{chunks}, dtype: {dtype}, fill_value: {fill_value}, codec: {codec}, clevel: {clevel} "
+            f"Adding channel: '{name}' of shape: {shape}, chunks:{chunks}, dtype: {dtype}, "
+            + f"fill_value: {fill_value}, codec: {codec}, clevel: {clevel}"
         )
         compressor = Blosc(cname=codec, clevel=clevel, shuffle=Blosc.BITSHUFFLE)
         filters = []
@@ -466,7 +470,8 @@ class ZDataset(BaseDataset):
                     dest_group = root[new_name]
 
                 aprint(
-                    f"Fast copying channel {channel} renamed to {new_name} of shape {array.shape} and dtype {array.dtype} "
+                    f"Fast copying channel {channel} renamed to {new_name} of shape {array.shape} and"
+                    + f"dtype {array.dtype}"
                 )
 
                 for name, array in source_arrays:
@@ -488,7 +493,7 @@ class ZDataset(BaseDataset):
                                 )
 
             except (CopyError, NotImplementedError):
-                aprint(f"Channel already exists, set option '-w' to force overwriting! ")
+                aprint("Channel already exists, set option '-w' to force overwriting! ")
 
         zdataset.close()
 

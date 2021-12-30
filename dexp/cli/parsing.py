@@ -29,7 +29,7 @@ def _parse_slicing(slicing: str):
     aprint(f"Requested slicing    : '{slicing if slicing else '--All--'}' ")
     if slicing is not None:
         aprint(f"Slicing: {slicing}")
-        dummy = s_[1, 2]
+        _ = s_[1, 2]  # ??
         slicing = eval(f"s_{slicing}")
     return slicing
 

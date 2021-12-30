@@ -102,10 +102,10 @@ def stack(input_paths, output_path, orientation, overwrite, workers, workersback
             images = list(imageio.imread(image_path) for image_path in image_paths)
 
             if "horiz" in orientation:
-                aprint(f"Stacks frames horizontally.")
+                aprint("Stacks frames horizontally.")
                 stacked_image_array = numpy.hstack(images)
             elif "vert" in orientation:
-                aprint(f"Stacks frames vertically.")
+                aprint("Stacks frames vertically.")
                 stacked_image_array = numpy.vstack(images)
 
             aprint(f"Writing file: {filename} in folder: {output_path}")

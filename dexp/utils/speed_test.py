@@ -53,5 +53,5 @@ def perform_speed_test():
 
         try:
             os.remove(filepath)
-        except:
+        except:  # noqa
             aprint(f"Could not delete file: {filepath}")

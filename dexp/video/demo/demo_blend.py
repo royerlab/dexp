@@ -6,6 +6,7 @@ from os.path import join
 import numpy
 from arbol import aprint, asection
 from dask.array.image import imread
+from PIL import Image
 from skimage.color import gray2rgba
 from skimage.data import astronaut, camera, logo
 
@@ -39,7 +40,6 @@ def demo_blend_cupy():
 
 
 def demo_blend(n=8, alphas=(1, 1, 0.9), scales=None, translations=None, display=True):
-    xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
     with asection("Prepare dataset..."):
@@ -77,24 +77,22 @@ def demo_blend(n=8, alphas=(1, 1, 0.9), scales=None, translations=None, display=
             os.makedirs(folder_v)
 
             # Save images from first sequence:
+
             for i, image_u in enumerate(images_u):
-                from PIL import Image
 
                 im = Image.fromarray(Backend.to_numpy(image_u))
                 im.save(join(folder_u, f"frame_{i:05}.png"))
 
             # Save images from second sequence:
             for i, image_v in enumerate(images_v):
-                from PIL import Image
 
                 im = Image.fromarray(Backend.to_numpy(image_v))
                 im.save(join(folder_v, f"frame_{i:05}.png"))
 
             # Create png files for image w image_w
-            from PIL import Image
 
             im = Image.fromarray(Backend.to_numpy(image_w))
-            path_w = join(tmpdir, f"someimage.png")
+            path_w = join(tmpdir, "someimage.png")
             im.save(path_w)
 
         with asection("Blend sequences..."):

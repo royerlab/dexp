@@ -145,7 +145,8 @@ def dataset_stabilize(
     debug_output=None,
 ):
     """
-    Takes an input dataset and performs image stabilisation and outputs a stabilised dataset with given selected slice & channels in Zarr format with given store type, compression, etc...
+    Takes an input dataset and performs image stabilisation and outputs a stabilised dataset
+    with given selected slice & channels in Zarr format with given store type, compression, etc...
 
     Parameters
     ----------
@@ -168,10 +169,12 @@ def dataset_stabilize(
     alpha_reg: multiplicative coefficient for regularisation term.
     phase_correlogram_sigma: sigma for Gaussian smoothing of phase correlogram, zero to disable.
     denoise_input_sigma : Uses a Gaussian filter to denoise input images, zero to disable.
-    log_compression : Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)
+    log_compression : Applies the function log1p to the images to compress high-intensities
+        (usefull when very (too) bright structures are present in the images, such as beads).
     edge_filter : apply sobel edge filter to input images.
     pad: pad input dataset.
-    integral: Set to True to only allow integral translations, False to allow subpixel accurate translations (induces blur!).
+    integral: Set to True to only allow integral translations, False to allow subpixel accurate
+        translations (induces blur!).
     detrend: removes linear detrend from stabilized image.
     maxproj: uses maximum intensity projection to compute the volume stabilization.
     workers: number of workers, if -1 then the number of workers == number of cores or devices
@@ -284,15 +287,16 @@ def dataset_stabilize(
         def process(tp):
             try:
                 with asection(f"Processing time point: {tp}/{nb_timepoints} ."):
-                    with asection(f"Loading stack"):
+                    with asection("Loading stack"):
                         tp_array = array[tp].compute()
 
                     with NumpyBackend():
-                        with asection(f"Applying model..."):
+                        with asection("Applying model..."):
                             tp_array = channel_model.apply(tp_array, index=tp, pad=pad, integral=integral)
 
                     with asection(
-                        f"Saving stabilized stack for time point {tp}/{nb_timepoints}, shape:{tp_array.shape}, dtype:{array.dtype}"
+                        f"Saving stabilized stack for time point {tp}/{nb_timepoints}, shape:{tp_array.shape}, "
+                        + "dtype:{array.dtype}"
                     ):
                         dest_dataset.write_stack(channel=channel, time_point=tp, stack_array=tp_array)
 

@@ -75,7 +75,6 @@ def simview_fusion():
         viewer.add_image(
             _c(CxLx), name="CxLx", contrast_limits=(0, 1200), scale=(4, 1, 1), blending="additive", colormap="viridis"
         )
-        # viewer.add_image(_c(CxLx_deconvolved), name='CxLx_deconvolved', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', colormap='viridis')
 
 
 if __name__ == "__main__":

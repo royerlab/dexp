@@ -124,7 +124,7 @@ def dataset_deconv(
         if psf_show:
             import napari
 
-            viewer = napari.Viewer(title=f"DEXP | viewing PSF with napari", ndisplay=3)
+            viewer = napari.Viewer(title="DEXP | viewing PSF with napari", ndisplay=3)
             viewer.add_image(psf_kernel)
             napari.run()
 
@@ -186,7 +186,8 @@ def dataset_deconv(
                                 tp_array = Backend.to_numpy(tp_array)
 
                         with asection(
-                            f"Deconvolving image of shape: {tp_array.shape}, with tile size: {tilesize}, margins: {margins} "
+                            f"Deconvolving image of shape: {tp_array.shape}, with tile size: {tilesize}, "
+                            + "margins: {margins} "
                         ):
                             aprint(f"Number of iterations: {num_iterations}, back_projection:{back_projection}, ")
                             tp_array = scatter_gather_i2i(
@@ -198,7 +199,7 @@ def dataset_deconv(
                                 internal_dtype=dtype,
                             )
 
-                        with asection(f"Moving array from backend to numpy."):
+                        with asection("Moving array from backend to numpy."):
                             tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
 
                     with asection(

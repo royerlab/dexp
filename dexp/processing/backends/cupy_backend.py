@@ -80,8 +80,10 @@ class CupyBackend(Backend):
         Parameters
         ----------
         device_id : CUDA device id to use for allocation and compute
-        exclusive : If True the access to this device is exclusive, no other backend context can access it (when using the context manager idiom)
-        enable_memory_pool : Enables cupy memory pool. By default disabled, when enabled cupy tends to return out-of-memory exceptions when handling large arrays.
+        exclusive : If True the access to this device is exclusive, no other backend context can access it
+            (when using the context manager idiom)
+        enable_memory_pool : Enables cupy memory pool. By default disabled,
+            when enabled cupy tends to return out-of-memory exceptions when handling large arrays.
         enable_memory_pool_clearing : Enables the clearing of the memory pool upon calling 'clear_memory_pool'
         enable_cub : enables CUB accelerator
         enable_cutensor : enables cuTensor accelerator
@@ -120,7 +122,7 @@ class CupyBackend(Backend):
             import cupy.cudnn
 
             aprint("CUDNN available!")
-        except Exception as e:
+        except Exception:
             pass
 
         if not enable_fft_planning:
@@ -135,7 +137,7 @@ class CupyBackend(Backend):
             CupyBackend._dexp_cuda_cluster = LocalCUDACluster(enable_nvlink=enable_dask_cuda_nvlink)
             CupyBackend._dexp_dask_client = Client(CupyBackend._dexp_cuda_cluster)
 
-        ## Important: Leave this, this is to make sure that some package works properly!
+        # Important: Leave this, this is to make sure that some package works properly!
         exec("import cupyx.scipy.ndimage")
         exec("import cupyx.scipy.special")
         exec("import scipy.special")
@@ -240,7 +242,8 @@ class CupyBackend(Backend):
                 total_after = self.mempool.total_bytes() // 1e9
 
                 aprint(
-                    f"Number of free blocks before and after release: {n_free_blocks_before}->{n_free_blocks_after}, used:{used_before}GB->{used_after}GB, total:{total_after}GB "
+                    f"Number of free blocks before and after release: {n_free_blocks_before}->{n_free_blocks_after}, "
+                    + f"used:{used_before}GB->{used_after}GB, total:{total_after}GB"
                 )
             else:
                 aprint("Warning: default cupy memory pool is 'None'")

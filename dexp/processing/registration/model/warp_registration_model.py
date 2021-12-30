@@ -8,19 +8,23 @@ from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.model.pairwise_registration_model import (
     PairwiseRegistrationModel,
 )
+from dexp.utils import xpArray
 
 
 class WarpRegistrationModel(PairwiseRegistrationModel):
     def __init__(self, vector_field, confidence=None, force_numpy: bool = False):
         """Warp registration model.
-        A warp registration model consists in a vector field of shape (w,1), (h,w,2), or (d,h,w,3) and a confidence matrix of shape (w), (h,w), or (d,h,w),
-        The vector field represents a warp transform, and the confidence matrix the confidence score -- within [0, 1] -- of each vector in the vector field.
+        A warp registration model consists in a vector field of shape (w,1), (h,w,2),
+            or (d,h,w,3) and a confidence matrix of shape (w), (h,w), or (d,h,w),
+        The vector field represents a warp transform, and the confidence matrix the confidence score
+            -- within [0, 1] -- of each vector in the vector field.
 
         Parameters
         ----------
         vector_field : vector field for the warp transform
         confidence : confidence matrix
-        force_numpy : when creating this object, you have the option of forcing the use of numpy array instead of the current backend arrays.
+        force_numpy : when creating this object, you have the option of forcing
+            the use of numpy array instead of the current backend arrays.
         This is usefull to avoid memory fragmentation (e.g. on GPU).
         """
         super().__init__()
@@ -35,7 +39,10 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
             self.confidence = xp.asarray(0 if confidence is None else confidence)
 
     def __str__(self):
-        return f"WarpRegistrationModel(vector_field_shape={self.vector_field.shape}, confidence_shape={self.confidence.shape})"
+        return (
+            f"WarpRegistrationModel(vector_field_shape={self.vector_field.shape}, "
+            + f"confidence_shape={self.confidence.shape})"
+        )
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -68,7 +75,9 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
 
     def clean(self, max_shift: float = None, confidence_threshold: float = 0.1, mode: str = "mean"):
         """
-        Cleans the vector field by in-filling vectors of low confidence with the median of neighbooring higher-confidence vectors.
+        Cleans the vector field by in-filling vectors of low confidence with the median of
+        neighbooring higher-confidence vectors.
+
         Parameters
         ----------
         confidence_threshold : confidence threshold below which a vector is deamed unreliable.
@@ -116,7 +125,7 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         vector_field_upsampling_order: int = 1,
         mode: str = "border",
         internal_dtype=None,
-    ) -> "Array":
+    ) -> xpArray:
 
         image_warped = warp(
             image=image,
@@ -129,7 +138,7 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
 
         return image_warped
 
-    def apply_pair(self, image_a, image_b, **kwargs) -> Tuple["Array", "Array"]:
+    def apply_pair(self, image_a, image_b, **kwargs) -> Tuple[xpArray, xpArray]:
 
         return image_a, self.apply(image_b, **kwargs)
 

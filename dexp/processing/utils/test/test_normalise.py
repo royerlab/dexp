@@ -23,8 +23,6 @@ def test_normalise_cupy():
 
 
 def _test_normalise(length_xy=128):
-    xp = Backend.get_xp_module()
-
     _, _, image = generate_nuclei_background_data(
         add_noise=True, length_xy=length_xy, length_z_factor=4, dtype=numpy.float32
     )

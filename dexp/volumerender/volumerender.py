@@ -26,15 +26,6 @@ email: mweigert@mpi-cbg.de
 """
 
 import logging
-
-from dexp.volumerender.transform_matrices import (
-    mat4_identity,
-    mat4_perspective,
-    mat4_scale,
-)
-
-logger = logging.getLogger(__name__)
-
 import os
 import sys
 from time import time
@@ -44,10 +35,18 @@ import numpy as np
 # this is due to some pyinstaller bug!
 from scipy.linalg import inv
 
+from dexp.volumerender.transform_matrices import (
+    mat4_identity,
+    mat4_perspective,
+    mat4_scale,
+)
+
 try:
     from gputools import OCLArray, OCLImage, OCLProgram, get_device, init_device
 except ImportError:
     print("Could not import `gputools`, volumerender disabled.")
+
+logger = logging.getLogger(__name__)
 
 
 def absPath(myPath):
@@ -243,7 +242,7 @@ class VolumeRenderer:
     def set_data(self, data, autoConvert=True, copyData=False):
         logger.debug("set_data")
 
-        if not autoConvert and not data.dtype in self.dtypes:
+        if not autoConvert and data.dtype not in self.dtypes:
             raise NotImplementedError(f"data type should be either {self.dtypes} not {data.dtype}")
 
         if data.dtype.type in self.dtypes:

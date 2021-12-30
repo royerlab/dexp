@@ -23,8 +23,6 @@ def demo_insert_cupy():
 
 
 def demo_insert(display=True):
-    xp = Backend.get_xp_module()
-
     image_u = Backend.to_backend(astronaut())
     image_v = Backend.to_backend(logo()[::4, ::4, 0:3])
 

@@ -15,7 +15,7 @@ class NumpyBackend(Backend):
 
     def __init__(self, *args, **kwargs):
         """Instanciates a Numpy-based Image Processing backend"""
-        ## Important: Leave this, this is to make sure that the ndimage package works properly!
+        # Important: Leave this, this is to make sure that the ndimage package works properly!
         exec("import scipy.ndimage")
 
     def copy(self, *args, **kwargs):

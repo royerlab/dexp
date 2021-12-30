@@ -20,7 +20,8 @@ def butterworth_kernel(
     ----------
     shape : filter shape
     cutoffs : Butterworth cutoffs.
-    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]
+    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units.
+        If False, the units are in normalised within [0,1]
     epsilon : maximum cutoff gain
     order : Butterworth filter order
     frequency_domain : True to return the kernel in the frequency domain

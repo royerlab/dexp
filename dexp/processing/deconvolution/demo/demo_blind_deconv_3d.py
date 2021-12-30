@@ -46,7 +46,7 @@ def _demo_blind_deconvolution(length_xy=128):
     noisy = blurry
     noisy = noisy + 0.05 * xp.random.uniform(size=blurry.shape)
 
-    iterations = 10
+    # iterations = 10
     # normalizing (required by admm)
     noisy = noisy - noisy.min()
     noisy = noisy / noisy.max()

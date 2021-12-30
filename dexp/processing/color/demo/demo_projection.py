@@ -28,9 +28,6 @@ def demo_projection_cupy():
 
 
 def demo_projection(length_xy=120, display=True):
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
-
     with asection("generate data"):
         _, _, image = generate_nuclei_background_data(
             add_noise=False,

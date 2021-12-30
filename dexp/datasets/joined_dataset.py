@@ -37,7 +37,8 @@ class JoinedDataset(BaseDataset):
         for i, dataset in enumerate(self._dataset_list):
             if set(dataset.channels()) != set(_dataset_zero.channels()):
                 aprint(
-                    f"dataset #{i} has channels '{dataset.channels()}' but datatset #0 has channels: '{_dataset_zero.channels()}'"
+                    f"dataset #{i} has channels '{dataset.channels()}' but datatset #0"
+                    + "has channels: '{_dataset_zero.channels()}'"
                 )
                 raise ValueError("All datasets must have the same exact channels!")
 
@@ -45,14 +46,17 @@ class JoinedDataset(BaseDataset):
             for channel in _dataset_zero.channels():
                 if _dataset_zero.shape(channel)[1:] != dataset.shape(channel)[1:]:
                     aprint(
-                        f"dataset #{i} channel {channel} has shape '{dataset.shape(channel)[1:]}' but datatset #0 channel {channel} has shape: '{_dataset_zero.shape(channel)[1:]}'"
+                        f"dataset #{i} channel {channel} has shape '{dataset.shape(channel)[1:]}' "
+                        + f"but datatset #0 channel {channel} has shape: '{_dataset_zero.shape(channel)[1:]}'"
                     )
                     raise ValueError(
-                        "All datasets must have the same exact shape for the same channels! (except for time dimension!)"
+                        "All datasets must have the same exact shape for the same channels!"
+                        + " (except for time dimension!)"
                     )
                 if _dataset_zero.dtype(channel) != dataset.dtype(channel):
                     aprint(
-                        f"dataset #{i} channel {channel} has dtype '{dataset.dtype(channel)}' but datatset #0 channel {channel} has dtype: '{_dataset_zero.dtype(channel)}'"
+                        f"dataset #{i} channel {channel} has dtype '{dataset.dtype(channel)}' but datatset "
+                        + f"#0 channel {channel} has dtype: '{_dataset_zero.dtype(channel)}'"
                     )
                     raise ValueError("All datasets must have the same exact dtype for the same channels!")
 
@@ -97,7 +101,10 @@ class JoinedDataset(BaseDataset):
 
     def info(self, channel: str = None) -> str:
         if channel is not None:
-            info_str = f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}, joined from {len(self._dataset_list)} datasets."
+            info_str = (
+                f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, "
+                + f"shape: {self.shape(channel)[1:]}, joined from {len(self._dataset_list)} datasets."
+            )
             info_str += "\n"
             return info_str
         else:

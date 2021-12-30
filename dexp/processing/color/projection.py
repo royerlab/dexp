@@ -35,35 +35,45 @@ def project_image(
     internal_dtype=None,
 ):
     """
-    Projects an image along a given axis given a specified method (max projection, max projection color-coded depth, ...)
-    and produces a rendered RGB image. This function offers features similar to volume rendering:
-    attenuation, projection direction direction, ...
+    Projects an image along a given axis given a specified method (max projection,
+    max projection color-coded depth, ...) and produces a rendered RGB image.
+    This function offers features similar to volume rendering: attenuation, projection direction direction, ...
 
 
     Parameters
     ----------
     image : Image to project
     axis : axis along which to project
-    dir : projection direction, can be either '-1' for looking from top, or '1' for looking from bottom -- convention is that top corresponds to the positive direction of the projection axis.
-    mode : projection mode, can be: 'max' for max projection, 'colormax' and 'maxcolor' for max color projections. Explanation: colormax applies first max and then colorises,
-     maxcolor, first colorises each voxel then computes the max. This means that maxcolor is 3x more memory intensive (with current implementation).
+    dir : projection direction, can be either '-1' for looking from top, or '1' for looking from bottom
+        -- convention is that top corresponds to the positive direction of the projection axis.
+    mode : projection mode, can be: 'max' for max projection, 'colormax' and 'maxcolor' for max color projections.
+        Explanation: colormax applies first max and then colorises, maxcolor, first colorises each voxel then
+        computes the max. This means that maxcolor is 3x more memory intensive (with current implementation).
     attenuation : How much to attenuate when projecting.
-    attenuation_min_density : Minimal density for attenuation. The higher the darker structures at the back will be, independently of whether there is something in front.
-    attenuation_filtering: standard deviation of the gaussian filter used to preprocess the image for the purpose of computing the attenuation map.
+    attenuation_min_density : Minimal density for attenuation. The higher the darker structures at the back will be,
+        independently of whether there is something in front.
+    attenuation_filtering: standard deviation of the gaussian filter used to preprocess the image for the purpose
+        of computing the attenuation map.
     gamma: Gamma correction to apply.
     clim : color limits for applying the colormap.
-    normalisation_quantile : Quantile value for image normalisation (robust min and max for normalising the image between 0 and 1).
-    cmap: Color map to use, can be a string or a cmap object
-    Important: this does not affect sharpness of the final image, it only affects the sharpness of the attenuation itself.
-    dlim: Depth limits. For example, a value of (0.1, 0.7) means that the colormap start at a normalised depth of 0.1, and ends at a normalised depth of 0.7, other values are clipped.
-    depth_stabilisation: Uses the center of mass calculation to shift the center of the depth color map to teh center of mass of the image content.
+    normalisation_quantile : Quantile value for image normalisation (robust min and max for normalising the
+        image between 0 and 1). cmap: Color map to use, can be a string or a cmap object
+    Important: this does not affect sharpness of the final image,
+        it only affects the sharpness of the attenuation itself.
+    dlim: Depth limits. For example, a value of (0.1, 0.7) means that the colormap start at a normalised depth of 0.1,
+        and ends at a normalised depth of 0.7, other values are clipped.
+    depth_stabilisation: Uses the center of mass calculation to shift the center of the depth color map to teh center of
+        mass of the image content.
     rgb_gamma: Gamma correction applied to the resulting RGB image.
-    transparency: If True, the best attempt is made to use alpha transparency in the resulting image. Not available in all modes. RGB output is not 'alpha pre-multiplied'.
+    transparency: If True, the best attempt is made to use alpha transparency in the resulting image. Not available in
+        all modes. RGB output is not 'alpha pre-multiplied'.
     legend_size: Multiplicative factor to control size of legend. If 0, no legend is generated.
-    legend_scale: Float that gives the scale in some unit of each voxel (along the projection direction). Only in color projection modes.
+    legend_scale: Float that gives the scale in some unit of each voxel (along the projection direction).
+        Only in color projection modes.
     legend_title: title for the color-coded depth legend.
     legend_title_color: Legend title color as a tuple of normalised floats: (R, G, B, A)  (values between 0 and 1).
-    legend_position: Position of the legend in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
+    legend_position: Position of the legend in pixels in natural order: (x, y). Can also be a string: 'bottom_left',
+        'bottom_right', 'top_left', 'top_right'.
     legend_alpha: Transparency for legend (1 means opaque, 0 means completely transparent)
     internal_dtype : dtype for internal computation
 

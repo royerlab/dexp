@@ -79,7 +79,8 @@ def msols_fuse_1C2L(
 
     equalise : Equalise intensity of views before fusion, or not.
 
-    equalisation_ratios: If provided, these ratios are used instead of calculating equalisation values based on the images.
+    equalisation_ratios: If provided, these ratios are used instead of calculating
+        equalisation values based on the images.
     There is only one equalisation ratio, therefore this is a singleton tuple: (ratio,)
 
     zero_level : Zero level: that's the minimal detector pixel value floor to substract,
@@ -87,24 +88,30 @@ def msols_fuse_1C2L(
     due to electronic noise!). Substracting a bit more than that is a good idea to clear out noise
     in the background --  hence the default of 120.
 
-    clip_too_high : clips very high intensities, to avoid loss of precision when converting an internal format such as float16
+    clip_too_high : clips very high intensities, to avoid loss of precision when
+        converting an internal format such as float16
 
     fusion : Fusion mode, can be 'tg', 'dct', 'dft'
 
     fusion_bias_exponent : Exponent for fusion bias
 
-    fusion_bias_strength_x : Strength of fusion bias for fusing views along x axis (after resampling/deskewing) . Set to zero to deactivate
+    fusion_bias_strength_x : Strength of fusion bias for fusing views along x axis
+        (after resampling/deskewing) . Set to zero to deactivate
 
     z_pad : Padding length along Z (scanning direction) for input stacks, usefull in conjunction with z_apodise
 
-    z_apodise : apodises along Z (direction) to suppress discontinuities (views cropping the sample) that disrupt fusion.
+    z_apodise : apodises along Z (direction) to suppress discontinuities
+        (views cropping the sample) that disrupt fusion.
 
-    registration_confidence_threshold : Confidence threshold used for each chunk during warp registration, value within [0, 1]: zero means low confidence, 1 max confidence.
+    registration_confidence_threshold : Confidence threshold used for each chunk during warp registration,
+        value within [0, 1]: zero means low confidence, 1 max confidence.
 
-    registration_max_residual_shift : After the first registration round of warp registration, shift vector with norms larger than this value are deemed low confidence.
+    registration_max_residual_shift : After the first registration round of warp registration,
+        shift vector with norms larger than this value are deemed low confidence.
 
     registration_mode : Registration mode, can be: 'projection' or 'full'.
-    Projection mode is faster but might have occasionally  issues for certain samples. Full mode is slower and is only recomended as a last resort.
+        Projection mode is faster but might have occasionally  issues for certain samples.
+        Full mode is slower and is only recomended as a last resort.
 
     registration_edge_filter : apply edge filter to help registration
 
@@ -113,17 +120,21 @@ def msols_fuse_1C2L(
     registration_model : registration model to use the two camera views (C0Lx and C1Lx),
     if None, the two camera views are registered, and the registration model is returned.
 
-    registration_min_confidence : Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.
+    registration_min_confidence : Minimal confidence for registration parameters,
+        if below that level the registration parameters for previous time points is used.
 
-    registration_max_change : Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.
+    registration_max_change : Maximal change in registration parameters, if above that level the
+        registration parameters for previous time points is used.
 
-    dehaze_before_fusion : Whether to dehaze the views before fusion or to dehaze the fully fused and registered final image.
+    dehaze_before_fusion : Whether to dehaze the views before fusion or to dehaze the fully fused and
+        registered final image.
 
     dehaze_size : After all fusion and registration, the final image is dehazed to remove
     large-scale background light caused by scattered illumination and out-of-focus light.
     This parameter controls the scale of the low-pass filter used.
 
-    dehaze_correct_max_level : Should the dehazing correct the reduced local max intensity induced by removing the background?
+    dehaze_correct_max_level : Should the dehazing correct the reduced local max intensity
+        induced by removing the background?
 
     dark_denoise_threshold : After all fusion and registration, the final image is processed
     to remove any remaining noise in the dark background region (= hurts compression!).
@@ -175,7 +186,7 @@ def msols_fuse_1C2L(
             Backend.current().clear_memory_pool()
 
     if z_pad > 0:
-        with asection(f"Pad C0L0 and C0L1 along scanning direction:"):
+        with asection("Pad C0L0 and C0L1 along scanning direction:"):
             C0L0[0] = sp.ndimage.gaussian_filter(C0L0[0], sigma=4)
             C0L0[-1] = sp.ndimage.gaussian_filter(C0L0[-1], sigma=4)
             C0L0 = xp.pad(C0L0, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode="edge")
@@ -187,7 +198,7 @@ def msols_fuse_1C2L(
             Backend.current().clear_memory_pool()
 
     if z_apodise > 0:
-        with asection(f"apodise C0L0 and C0L1 along scanning direction:"):
+        with asection("apodise C0L0 and C0L1 along scanning direction:"):
             depth = C0L0.shape[0]
             apodise_left = xp.linspace(0, 1, num=z_apodise, dtype=internal_dtype)
             apodise_left **= 3
@@ -213,7 +224,7 @@ def msols_fuse_1C2L(
     #     viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000))
     #     viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000))
 
-    with asection(f"Resample C0L0 and C0L1"):
+    with asection("Resample C0L0 and C0L1"):
         C0L0 = resample_C0L0(C0L0, angle=angle, dx=dx, dz=dz, mode=resampling_mode)
         aprint(f"Shape and dtype of C0L0 after resampling: {C0L0.shape}, {C0L0.dtype}")
         Backend.current().clear_memory_pool()
@@ -222,7 +233,7 @@ def msols_fuse_1C2L(
         Backend.current().clear_memory_pool()
 
     if dehaze_size > 0 and dehaze_before_fusion:
-        with asection(f"Dehaze C0L0 & C0L1 ..."):
+        with asection("Dehaze C0L0 & C0L1 ..."):
             C0L0 = dehaze(
                 C0L0, size=dehaze_size, minimal_zero_level=zero_level, correct_max_level=dehaze_correct_max_level
             )
@@ -240,14 +251,12 @@ def msols_fuse_1C2L(
     #     viewer.add_image(_c(C0L0), name='C0L0', colormap='bop blue', blending='additive')
     #     viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
 
-    with asection(f"Register C0L0 and C0L1"):
-
-        aprint(
-            f"Provided registration model: {registration_model}, overall confidence: {0 if registration_model is None else registration_model.overall_confidence()}"
-        )
+    with asection("Register C0L0 and C0L1"):
+        confidence = 0 if registration_model is None else registration_model.overall_confidence()
+        aprint(f"Provided registration model: {registration_model}, overall confidence: {confidence}")
 
         if huge_dataset_mode:
-            aprint(f"Huge dataset mode is on: moving data to CPU RAM.")
+            aprint("Huge dataset mode is on: moving data to CPU RAM.")
             C0L0 = Backend.to_numpy(C0L0)
             C0L1 = Backend.to_numpy(C0L1)
 
@@ -294,7 +303,7 @@ def msols_fuse_1C2L(
     #     viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
 
     if equalise:
-        with asection(f"Equalise intensity of C0L0 relative to C0L1 ..."):
+        with asection("Equalise intensity of C0L0 relative to C0L1 ..."):
             C0L0, C0L1, ratio = equalise_intensity(
                 C0L0,
                 C0L1,
@@ -315,7 +324,7 @@ def msols_fuse_1C2L(
     #     viewer.add_image(_c(C0L0), name='C0L0', colormap='bop blue', blending='additive')
     #     viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
 
-    with asection(f"Fuse detection views C0lx and C1Lx..."):
+    with asection("Fuse detection views C0lx and C1Lx..."):
         C1Lx = SimViewFusion._fuse_views_generic(
             C0L0,
             C0L1,
@@ -328,17 +337,17 @@ def msols_fuse_1C2L(
         Backend.current().clear_memory_pool()
 
     if dehaze_size > 0 and not dehaze_before_fusion:
-        with asection(f"Dehaze CxLx ..."):
+        with asection("Dehaze CxLx ..."):
             C1Lx = dehaze(C1Lx, size=dehaze_size, minimal_zero_level=0, correct_max_level=dehaze_correct_max_level)
             Backend.current().clear_memory_pool()
 
     if dark_denoise_threshold > 0:
-        with asection(f"Denoise dark regions of CxLx..."):
+        with asection("Denoise dark regions of CxLx..."):
             C1Lx = clean_dark_regions(C1Lx, size=dark_denoise_size, threshold=dark_denoise_threshold)
             Backend.current().clear_memory_pool()
 
     if 0 < butterworth_filter_cutoff < 1:
-        with asection(f"Filter output using a Butterworth filter"):
+        with asection("Filter output using a Butterworth filter"):
             cutoffs = (butterworth_filter_cutoff,) * C1Lx.ndim
             C1Lx = butterworth_filter(C1Lx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
             Backend.current().clear_memory_pool()
@@ -352,7 +361,7 @@ def msols_fuse_1C2L(
         correction = correction.astype(dtype=internal_dtype)
         C1Lx *= correction[xp.newaxis, :, xp.newaxis]
 
-    with asection(f"Convert back to original dtype..."):
+    with asection("Convert back to original dtype..."):
         if original_dtype is numpy.uint16:
             C1Lx = xp.clip(C1Lx, 0, None, out=C1Lx)
         C1Lx = C1Lx.astype(dtype=original_dtype, copy=False)

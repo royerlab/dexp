@@ -19,7 +19,6 @@ def test_projection_generator_cupy():
 
 def _test_projection_generator():
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     image = xp.random.rand(12, 14, 17, 19)
 

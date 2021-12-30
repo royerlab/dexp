@@ -56,7 +56,8 @@ def create_cuda_texture(
 
     if array.size != numpy.prod(texture_shape) * num_channels:
         raise ValueError(
-            f"Texture shape {texture_shape}, num of channels ({num_channels}), and array size ({array.size}) are mismatched!"
+            f"Texture shape {texture_shape}, num of channels ({num_channels}), "
+            + f"and array size ({array.size}) are mismatched!"
         )
 
     dtype = numpy.dtype(dtype)
@@ -119,7 +120,8 @@ def create_cuda_texture(
 
     texture_object = cupy.cuda.texture.TextureObject(ressource_descriptor, texture_descriptor)
 
-    # 'copy_from' from CUDAArray requires that the num of channels be multiplied to the last axis of the array (see cupy docs!)
+    # 'copy_from' from CUDAArray requires that the num of channels be multiplied
+    # to the last axis of the array (see cupy docs!)
     if num_channels > 1:
         array_shape_for_copy = texture_shape[:-1] + (texture_shape[-1] * num_channels,)
     else:

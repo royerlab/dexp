@@ -31,7 +31,6 @@ def demo_deskew_cupy():
 
 def _demo_deskew(length=96, zoom=1, shift=1, display=True):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     with asection("Deskew..."):
         with tempfile.TemporaryDirectory() as tmpdir:

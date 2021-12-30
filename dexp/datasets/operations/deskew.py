@@ -40,7 +40,7 @@ def dataset_deskew(
     arrays = tuple(dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for channel in channels)
 
     # Notify of selected channels and corresponding properties:
-    with asection(f"Channels:"):
+    with asection("Channels:"):
         for view, channel in zip(arrays, channels):
             aprint(f"Channel: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 
@@ -116,7 +116,7 @@ def dataset_deskew(
                     else:
                         raise ValueError(f"Deskew mode: {mode} not supported.")
 
-                    with asection(f"Moving array from backend to numpy."):
+                    with asection("Moving array from backend to numpy."):
                         deskewed_view_tp = Backend.to_numpy(deskewed_view_tp, dtype=array.dtype, force_copy=False)
 
                 if channel not in dest_dataset.channels():
@@ -129,10 +129,11 @@ def dataset_deskew(
                             clevel=compression_level,
                         )
                     except (ContainsArrayError, ContainsGroupError):
-                        aprint(f"Other thread/process created channel before... ")
+                        aprint("Other thread/process created channel before... ")
 
                 with asection(
-                    f"Saving fused stack for time point {tp}, shape:{deskewed_view_tp.shape}, dtype:{deskewed_view_tp.dtype}"
+                    f"Saving fused stack for time point {tp}, shape:{deskewed_view_tp.shape}, "
+                    + f"dtype:{deskewed_view_tp.dtype}"
                 ):
                     dest_dataset.write_stack(channel=channel, time_point=tp, stack_array=deskewed_view_tp)
 

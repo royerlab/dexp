@@ -9,7 +9,6 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
 
-# dataset_path = '/mnt/raid0/pisces_datasets/data2_fish_TL100_range1300um_step0.31_6um_20ms_dualv_300tp_2_first10tp.zarr'
 dataset_path = "/mnt/raid0/dexp_datasets/tail/raw.zarr"
 
 
@@ -27,9 +26,7 @@ def demo_mvsols_resample_cupy():
 
 
 def _mvsols_resample():
-    xp = Backend.get_xp_module()
-
-    with asection(f"Load"):
+    with asection("Load"):
         zdataset = ZDataset(path=dataset_path, mode="r")
 
         aprint(zdataset.channels())
@@ -43,9 +40,8 @@ def _mvsols_resample():
         metadata = zdataset.get_metadata()
         aprint(metadata)
 
-    with asection(f"Fuse"):
+    with asection("Fuse"):
         angle = metadata["angle"]
-        channel = metadata["channel"]
         dz = metadata["dz"]
         res = metadata["res"]
 

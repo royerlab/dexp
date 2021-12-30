@@ -18,9 +18,8 @@ def test_register_warp_2d_blobs_cupy():
 
 def register_warp_2d_blobs(length_xy=256, warp_grid_size=3, reg_grid_size=6):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
-    image, warped, unwarped, model = _register_warp_2d_blobs(
+    image, warped, unwarped, _ = _register_warp_2d_blobs(
         length_xy=length_xy, warp_grid_size=warp_grid_size, reg_grid_size=reg_grid_size, display=False
     )
 

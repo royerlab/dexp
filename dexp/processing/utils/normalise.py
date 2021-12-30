@@ -18,8 +18,10 @@ def normalise_functions(
     in_place: bool = True,
     dtype=None,
 ):
-    """Returns a pair of functions: the first normalises the given image to the range [low, high], the second denormalises back to the original range (and dtype).
-    Usefull when determining the normalisation parameters and doing the actual normalisation must be decoupled, for example when splitting an image into chunks and sensing computation to the GPU.
+    """Returns a pair of functions: the first normalises the given image to the range [low, high],
+    the second denormalises back to the original range (and dtype).
+    Usefull when determining the normalisation parameters and doing the actual normalisation must be decoupled,
+    for example when splitting an image into chunks and sensing computation to the GPU.
 
 
     Parameters
@@ -27,9 +29,11 @@ def normalise_functions(
     image : image to normalise
     low, high : normalisation range
     minmax : min and max values of the image if already known.
-    quantile : if quantile>0 then quantile normalisation is used to find the min and max values. Value must be within [0,1]
+    quantile : if quantile>0 then quantile normalisation is used to find the min and max values.
+        Value must be within [0,1]
     clip : clip after normalisation/denormalisation
-    do_normalise : If False, the returned functions are pass-through identity functions -- usefull to turn on and off normalisation while still using the functions themselves.
+    do_normalise : If False, the returned functions are pass-through identity functions
+        -- usefull to turn on and off normalisation while still using the functions themselves.
     in_place : In-place computation is allowed and inputs may be modified
     dtype : dtype to normalise to.
 
@@ -41,6 +45,7 @@ def normalise_functions(
     xp = Backend.get_xp_module()
 
     if dtype is None:
+        # FIXME: this is ugly, it shouldn't be done like this :()
         if (
             image.dtype.name == "uint8"
             or image.dtype.name == "uint16"

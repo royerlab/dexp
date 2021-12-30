@@ -82,7 +82,8 @@ def dehaze(
 
     if correct_max_level:
         # get image max level before:
-        # twice filtering is to match the extent reached for the zero_level image (see above combination of min then max filters)
+        # twice filtering is to match the extent reached for the zero_level image
+        # (see above combination of min then max filters)
         downscaled_image = sp.ndimage.filters.maximum_filter(downscaled_image, size=max(1, size // downscale))
         image_max_level_before = sp.ndimage.filters.gaussian_filter(downscaled_image, sigma=max(1, size // downscale))
 

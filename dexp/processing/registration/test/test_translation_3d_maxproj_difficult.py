@@ -30,10 +30,7 @@ def test_register_translation_3d_maxproj_diff_cupy():
 
 
 def register_translation_3d_maxproj_diff(reg_trans_2d, length_xy=128):
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
-
-    image, shifted, unshifted, model = _register_translation_3d_proj_diff(length_xy=length_xy, display=False)
+    _, _, _, model = _register_translation_3d_proj_diff(length_xy=length_xy, display=False)
     shifts = Backend.to_numpy(model.shift_vector)
     assert shifts[0] == approx(-1, abs=0.2)
     assert shifts[1] == approx(-5, abs=0.2)

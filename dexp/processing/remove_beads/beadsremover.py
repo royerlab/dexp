@@ -44,7 +44,8 @@ class BeadsRemover:
         Args:
             peak_threshold (int): Peak maxima threshold for object (beads) detection.
                 Lower values detect more objects, but it might get more false positives.
-            similarity_threshold (float): Threshold for beads selection given their cosine similarity with the estimated (median) PSF.
+            similarity_threshold (float): Threshold for beads selection given their cosine
+                similarity with the estimated (median) PSF.
             psf_size (int, optional): PSF size (shape). Defaults to 31.
             verbose (bool, optional): Flag to display intermediate results. Defaults to False.
         """

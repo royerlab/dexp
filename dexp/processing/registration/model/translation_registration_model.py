@@ -7,6 +7,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.registration.model.pairwise_registration_model import (
     PairwiseRegistrationModel,
 )
+from dexp.utils import xpArray
 
 
 class TranslationRegistrationModel(PairwiseRegistrationModel):
@@ -24,7 +25,8 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
         shift_vector : Relative shift between two images
         confidence : registration confidence: a float within [0, 1] which conveys how confident is the registration.
         A value of 0 means no confidence, a value of 1 means perfectly confident.
-        force_numpy : when creating this object, you have the option of forcing the use of numpy array instead of the current backend arrays.
+        force_numpy : when creating this object, you have the option of forcing the use of numpy array
+            instead of the current backend arrays.
 
         """
         super().__init__()
@@ -93,7 +95,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
     def get_shift_and_confidence(self):
         return self.shift_vector, self.confidence
 
-    def apply(self, image, integral: bool = True, pad: bool = False) -> "Array":
+    def apply(self, image, integral: bool = True, pad: bool = False) -> xpArray:
         """
         Applies the translation model to the given image, possibly by padding the image.
 
@@ -128,7 +130,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
                 image = sp.ndimage.shift(image, shift=self.shift_vector, order=1)
                 return image
 
-    def apply_pair(self, image_a, image_b, integral: bool = True, pad: bool = False) -> Tuple["Array", "Array"]:
+    def apply_pair(self, image_a, image_b, integral: bool = True, pad: bool = False) -> Tuple[xpArray, xpArray]:
         """
         Applies the translation model to an image pair, possibly by padding the image.
 

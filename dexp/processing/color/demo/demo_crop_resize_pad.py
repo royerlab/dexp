@@ -24,20 +24,8 @@ def demo_crop_resize_pad_cupy():
 
 
 def demo_crop_resize_pad(display=True):
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
-
     with asection("generate data"):
         image = Backend.to_backend(gray2rgba(camera()))
-
-    # def crop_resize_pad_color_image(image,
-    #                                 crop: Tuple[Tuple[int, int], ...] = None,
-    #                                 resize: Tuple[int, ...] = None,
-    #                                 resize_order: int = 3,
-    #                                 resize_mode: str = 'constant',
-    #                                 pad: Tuple[Tuple[int, int], ...] = None,
-    #                                 pad_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
-    #                                 rgba_value_max: float = 255
 
     with asection("crop_resize_pad ..."):
         crop_resize_pad_image = crop_resize_pad_color_image(image, crop=3, resize=(500, 400), pad_width=(3, 7))

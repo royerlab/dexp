@@ -27,7 +27,6 @@ def demo_register_warp_3d_cupy():
 
 def _register_warp_3d(length_xy=256, warp_grid_size=3, reg_grid_size=6, display=True):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     _, _, image = generate_nuclei_background_data(
         add_noise=False,
@@ -51,7 +50,7 @@ def _register_warp_3d(length_xy=256, warp_grid_size=3, reg_grid_size=6, display=
         image += xp.random.uniform(0, 40, size=image.shape)
         warped += xp.random.uniform(0, 40, size=warped.shape)
 
-    with asection(f"register_warp_nd"):
+    with asection("register_warp_nd"):
         chunks = tuple(s // reg_grid_size for s in image.shape)
         margins = tuple(max(4, c // 3) for c in chunks)
         aprint(f"chunks={chunks}, margins={margins}")

@@ -31,7 +31,6 @@ def demo_crop_resize_pad_cupy():
 
 
 def demo_crop_resize_pad(n=64, display=True):
-    xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
     with asection("Prepare dataset..."):

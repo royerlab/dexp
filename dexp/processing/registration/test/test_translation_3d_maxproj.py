@@ -28,10 +28,7 @@ def test_register_translation_3d_maxproj_cupy():
 
 
 def register_translation_3d_maxproj(method, length_xy=128):
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
-
-    image, shifted, unshifted, model = _register_translation_3d_proj(length_xy=length_xy, method=method, display=False)
+    _, _, _, model = _register_translation_3d_proj(length_xy=length_xy, method=method, display=False)
     shifts = Backend.to_numpy(model.shift_vector)
     assert shifts[0] == approx(-1, abs=0.5)
     assert shifts[1] == approx(-5, abs=0.5)

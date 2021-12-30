@@ -39,7 +39,8 @@ def sobel_filter(
     image : image to apply filter on
     exponent : Exponent to use for the magnitude (norm) of the gradient, 2 for L2, and 1 for L1...
     gamma : After normalisation, applies thte given gamma value.
-    log_compression : Before normalisation, applies log compression -- usefull to reduce the impact of high intensity values versus contrast.
+    log_compression : Before normalisation, applies log compression -- usefull to reduce the impact
+        of high intensity values versus contrast.
     normalise_input : True to normalise input image between 0 and 1 before applying filter
     in_place_normalisation : If True then input image can be modified during normalisation.
     internal_dtype : dtype for internal computation.

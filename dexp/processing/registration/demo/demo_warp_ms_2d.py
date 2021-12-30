@@ -24,7 +24,6 @@ def demo_register_warp_2d_ms_cupy():
 
 def _register_warp_2d_ms(warp_grid_size=4, reg_grid_size=8, display=True):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     with asection("generate dataset"):
         image = camera().astype(numpy.float32)

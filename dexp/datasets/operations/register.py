@@ -39,7 +39,7 @@ def dataset_register(
 
     views = {channel.split("-")[-1]: dataset.get_array(channel, per_z_slice=False) for channel in channels}
 
-    with asection(f"Views:"):
+    with asection("Views:"):
         for channel, view in views.items():
             aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 

@@ -19,9 +19,10 @@ def scatter_gather_i2i(
 ):
     """
     Image-2-image scatter-gather.
-    'Scatters' computation of a given unary function by splitting the input array into tiles, computing using a given backend,
-    and reassembling the tiles into a single array of same shape as the inpout that is either backed by the same backend than
-    that of the input image, or that is backed by numpy -- usefull when the compute backend cannot hold the whole input and output
+    'Scatters' computation of a given unary function by splitting the input array into tiles,
+    computing using a given backend, and reassembling the tiles into a single array of same
+    shape as the inpout that is either backed by the same backend than that of the input image,
+    or that is backed by numpy -- usefull when the compute backend cannot hold the whole input and output
     images in memory.
 
     Parameters
@@ -29,10 +30,12 @@ def scatter_gather_i2i(
     function : unary function
     image : input image (can be any backend, numpy )
     tiles : tile sizes to cut input image into, can be a single integer or a tuple of integers.
-    margins : margins to add to each tile, can be a single integer or a tuple of integers. if None, no margins are added.
+    margins : margins to add to each tile, can be a single integer or a tuple of integers.
+        if None, no margins are added.
     normalise : normalises  the input image.
     clip : clip after normalisation/denormalisation
-    to_numpy : should the result be a numpy array? Very usefull when the compute backend cannot hold the whole input and output images in memory.
+    to_numpy : should the result be a numpy array? Very usefull when the compute backend
+        cannot hold the whole input and output images in memory.
     internal_dtype : internal dtype for computation
 
     Returns

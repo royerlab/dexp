@@ -36,11 +36,16 @@ def crop_resize_pad_image_sequence(
     ----------
     input_path : Path to folder containing images in some (lexicographic) order.
     output_path : Path to save the blended images.
-    crop: Crop image by removing a given number of pixels/voxels per axis. For example: ((10,20),(10,20)) crops 10 pixels on the left for axis 0, 20 pixels from the right of axis 0, and the same for axis 2.
-    resize: After cropping, the image is resized to the given shape. If any entry in the tuple is -1 then that position in the shape is automatically determined based on the existing shape to preserve aspect ratio.
+    crop: Crop image by removing a given number of pixels/voxels per axis.
+        For example: ((10,20),(10,20)) crops 10 pixels on the left for axis 0,
+        20 pixels from the right of axis 0, and the same for axis 2.
+    resize: After cropping, the image is resized to the given shape. If any entry in the tuple is -1 then
+        that position in the shape is automatically determined based on the existing shape to preserve aspect ratio.
     resize_order: The order of the spline interpolation, default is 3. The order has to be in the range 0-5.
-    resize_mode: optional The mode parameter determines how the input array is extended beyond its boundaries. Can be: ‘reflect’, ‘constant’, ‘nearest’, ‘mirror’, ‘wrap’.
-    pad_width: After cropping and resizing, padding is performed. The provided tuple is interpreted similarly to cropping.
+    resize_mode: optional The mode parameter determines how the input array is extended beyond its boundaries.
+        Can be: ‘reflect’, ‘constant’, ‘nearest’, ‘mirror’, ‘wrap’.
+    pad_width: After cropping and resizing, padding is performed.
+        The provided tuple is interpreted similarly to cropping.
     pad_mode: Padding mode, see numpy.pad for the available modes.
     pad_color: Padding color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.
     rgba_value_max: max value for rgba values.
@@ -108,7 +113,8 @@ def crop_resize_pad_image_sequence(
                     aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
 
     with asection(
-        f"Cropping ({crop}), resizing ({resize}), padding ({pad_width}), images at: {input_path}, and saving to {output_path}, for a total of {nb_timepoints} time points"
+        f"Cropping ({crop}), resizing ({resize}), padding ({pad_width}), images at: {input_path}, "
+        + f"and saving to {output_path}, for a total of {nb_timepoints} time points"
     ):
         Parallel(n_jobs=workers, backend=workersbackend)(delayed(_process)(tp) for tp in range(nb_timepoints))
-        aprint(f"Done!")
+        aprint("Done!")

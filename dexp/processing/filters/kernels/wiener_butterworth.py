@@ -25,7 +25,8 @@ def wiener_butterworth_kernel(
     alpha : alpha
     beta : beta
     cutoffs : Butterworth cutoffs.
-    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]
+    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units.
+        If False, the units are in normalised within [0,1]
     order : Butterworth order
     dtype : dtype for kernel
 
@@ -36,14 +37,13 @@ def wiener_butterworth_kernel(
     """
     backend = Backend.current()
     xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
 
     if dtype is None:
         dtype = kernel.dtype
 
     wk_f = wiener_kernel(kernel, alpha=alpha, frequency_domain=True, dtype=dtype)
 
-    ##TODO: figure out cutoff from PSF ?
+    # TODO: figure out cutoff from PSF ?
 
     if cutoffs is None:
         cutoffs_in_freq_units = False

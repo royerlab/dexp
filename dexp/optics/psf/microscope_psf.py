@@ -133,7 +133,8 @@ class MicroscopePSF:
 
         dxy - Step size in the XY plane.
         xy_size - Number of pixels in X/Y.
-        zv - A numpy array containing the (relative) z offset values of the coverslip (negative is closer to the objective).
+        zv - A numpy array containing the (relative) z offset values of the coverslip
+            (negative is closer to the objective).
 
         normalize - Normalize the PSF to unit height.
         pz - Particle z position above the coverslip (positive values only).
@@ -187,7 +188,8 @@ class MicroscopePSF:
         pz - A numpy array containing the particle z position above the coverslip (positive values only).
         rv - A numpy array containing the radius values.
         zd - A numpy array containing the actual camera position in microns.
-        zv - A numpy array containing the relative z offset value of the coverslip (negative is closer to the objective).
+        zv - A numpy array containing the relative z offset value of the coverslip
+            (negative is closer to the objective).
 
         normalize - Normalize the PSF to unit height.
         wvl - Light wavelength in microns.
@@ -426,7 +428,8 @@ class MicroscopePSF:
 
         mp - The microscope parameters dictionary.
         rv - A numpy array containing the radius values.
-        zv - A numpy array containing the (relative) z offset values of the coverslip (negative is closer to the objective).
+        zv - A numpy array containing the (relative) z offset values of the coverslip
+            (negative is closer to the objective).
 
         normalize - Normalize the PSF to unit height.
         pz - Particle z position above the coverslip (positive values only).

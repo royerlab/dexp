@@ -26,7 +26,8 @@ def robocopy(
     """
 
     with asection(
-        f"Starting a Windows Robocopy job: copying all files and folders from {source_folder} to {dest_folder} with {nb_threads} threads."
+        f"Starting a Windows Robocopy job: copying all files and folders from {source_folder} "
+        + f"to {dest_folder} with {nb_threads} threads."
     ):
         # checks for network file paths in source and destination paths
         if "\\" in source_folder[:1]:
@@ -54,7 +55,7 @@ def robocopy(
             "/W:5",
             "/TBD",
             "/NP",
-            #'/V',
+            # '/V',
             "/eta",
             "/tee",
             f"/MT:{nb_threads}",

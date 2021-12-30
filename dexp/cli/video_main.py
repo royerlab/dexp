@@ -1,6 +1,12 @@
 import click
 from arbol.arbol import aprint
 
+from dexp.cli.video_commands.blend import blend
+from dexp.cli.video_commands.mp4 import mp4
+from dexp.cli.video_commands.overlay import overlay
+from dexp.cli.video_commands.resize import resize
+from dexp.cli.video_commands.stack import stack
+
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
@@ -17,12 +23,6 @@ def cli():
     )
     # input("Press Enter to continue...")
 
-
-from dexp.cli.video_commands.blend import blend
-from dexp.cli.video_commands.mp4 import mp4
-from dexp.cli.video_commands.overlay import overlay
-from dexp.cli.video_commands.resize import resize
-from dexp.cli.video_commands.stack import stack
 
 cli.add_command(overlay)
 cli.add_command(blend)

@@ -24,8 +24,6 @@ def demo_border_cupy():
 
 
 def demo_border(display=True):
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     with asection("generate data"):
         image = Backend.to_backend(gray2rgba(camera()))

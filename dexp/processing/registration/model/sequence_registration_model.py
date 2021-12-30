@@ -16,14 +16,17 @@ from dexp.utils import xpArray
 class SequenceRegistrationModel:
     def __init__(self, model_list: List[PairwiseRegistrationModel] = [], force_numpy: bool = True):
 
-        """Instantiates a sequence-registration-model. A sequence registration model describes how to register jointly each n-1 D slice of a nD image.
-        In effect, this object contains a sequence of registration models that describe how to transform each image in the sequence to the registered image
-        that maximises registration coherence across the whole sequence.
+        """Instantiates a sequence-registration-model.
+        A sequence registration model describes how to register jointly each n-1 D slice of a nD image.
+        In effect, this object contains a sequence of registration models that describe how to
+        transform each image in the sequence to the registered image that maximises registration
+        coherence across the whole sequence.
 
         Parameters
         ----------
         model_list : list of registration models that
-        force_numpy : when creating this object, you have the option of forcing the use of numpy array instead of the current backend arrays.
+        force_numpy : when creating this object, you have the option of forcing the use of
+            numpy array instead of the current backend arrays.
         integral : True if shifts are snapped to integer values, False otherwise
 
         """
@@ -87,7 +90,8 @@ class SequenceRegistrationModel:
         ----------
         image: image sequence to register must be n+1 dimensional (1 dimension is the sequence axis)
         axis: sequence axis
-        pad_width: Can be: (i) list of pad widths for all image edges : ((pad_left, pad_right),(...,...),..) (see numpy.pad pad_widths parameter), (ii) '0' (zero) for no padding, or (iii) None for automatic padding.
+        pad_width: Can be: (i) list of pad widths for all image edges : ((pad_left, pad_right),(...,...),..)
+            (see numpy.pad pad_widths parameter), (ii) '0' (zero) for no padding, or (iii) None for automatic padding.
         **kwargs: parameters passthrough to the apply method of the pairwise registration model
 
         Returns

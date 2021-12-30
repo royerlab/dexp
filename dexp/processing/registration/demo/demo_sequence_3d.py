@@ -158,9 +158,6 @@ def _register_sequence_3d(
         # apply stabilisation:
         stabilised_seq = model.apply_sequence(shifted, axis=0, pad_width=None)
 
-        # another way to apply stabilisation:
-        stabilised_sps = xp.stack(model.apply(image, index=i, pad=True) for i, image in enumerate(shifted))
-
     if display:
         from napari import Viewer, gui_qt
 
@@ -171,12 +168,10 @@ def _register_sequence_3d(
 
             viewer = Viewer(ndisplay=3)
             viewer.grid.enabled = True
-            # viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', visible=True)
             viewer.add_image(_c(shifted), name="shifted", colormap="bop purple", blending="additive", visible=True)
             viewer.add_image(
                 _c(stabilised_seq), name="stabilised_seq", colormap="bop blue", blending="additive", visible=True
             )
-            # viewer.add_image(_c(stabilised_sps), name='stabilised_sps', colormap='bop blue', blending='additive', visible=True)
 
     return image, shifted, stabilised_seq, model
 

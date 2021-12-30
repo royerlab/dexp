@@ -7,7 +7,8 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 
 def element_wise_affine(array, alpha, beta, sum_first=False, out=None):
     """
-    Applies the affine function: alpha*x + beta to every value x of a given array. If sum_first is True, then alpha*(x + beta) is computed instead.
+    Applies the affine function: alpha*x + beta to every value x of a given array.
+    If sum_first is True, then alpha*(x + beta) is computed instead.
 
     Parameters
     ----------
@@ -16,7 +17,8 @@ def element_wise_affine(array, alpha, beta, sum_first=False, out=None):
     beta : 'offset'
     sum_first : If True then alpha*(x + beta) is computed instead.
     out : if specified, element_wise_affine _might_ use the specified array as output for in-place operation.
-          this is not garanteed, so you should always use the pattern: result = element_wise_affine(backend, a, array, alpha, beta, out=result).
+        this is not garanteed, so you should always use the pattern:
+        result = element_wise_affine(backend, a, array, alpha, beta, out=result).
 
 
     Returns

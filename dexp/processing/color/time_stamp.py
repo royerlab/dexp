@@ -1,6 +1,5 @@
 from typing import Tuple, Union
 
-from dexp.processing.backends.backend import Backend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.cairo_utils import get_array_for_cairo_surface
 from dexp.utils import xpArray
@@ -33,7 +32,8 @@ def insert_time_stamp(
     start_time: Start time for time stamp
     time_interval: Time interval inn units of time between consecutive images.
     margin: margin around bar expressed in units relative to the text height
-    translation: Positions of the time stamp in pixels in numpy order: (y, x). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
+    translation: Positions of the time stamp in pixels in numpy order: (y, x).
+        Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
     color: Color of the bar and text as tuple of 4 values: (R, G, B, A)
     number_format: Format string to represent the start and end values.
     font_name: Font name.
@@ -47,9 +47,6 @@ def insert_time_stamp(
     Image with inserted time stamp.
 
     """
-
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     if color is None:
         color = (1, 1, 1, 1)

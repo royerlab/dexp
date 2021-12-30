@@ -23,7 +23,6 @@ def test_register_translation_2d_cupy():
 
 def register_translation_2d():
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     image, shifted, unshifted, model = _register_translation_2d(display=False)
 

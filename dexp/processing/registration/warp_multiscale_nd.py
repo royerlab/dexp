@@ -38,7 +38,8 @@ def register_warp_multiscale_nd(
     margin_ratios : ratio that determines the margin size relative to the chunk size.
     min_chunk : minimal chunk size
     min_margin : minimum margin size
-    save_memory : Moves data out of device memory as soon as possible during iterations to avoid memory overflows for very large images, incurs a largely negligible performance cost.
+    save_memory : Moves data out of device memory as soon as possible during iterations
+        to avoid memory overflows for very large images, incurs a largely negligible performance cost.
     force_numpy: Forces output model to be allocated with numpy arrays.
     all additional kwargs are passed to register_warp_nd
 
@@ -95,33 +96,15 @@ def register_warp_multiscale_nd(
                 model_vector_field = Backend.to_backend(model.vector_field)
                 model_confidence = Backend.to_backend(model.confidence)
 
-            # if True:
-            #     scale_factors = tuple(ims / mcs for ims, mcs in zip(image.shape, model_confidence.shape))
-            #     aprint(f"scale_factors: {scale_factors}")
-            #     model_confidence_n = Backend.to_numpy(model_confidence)
-            #     import scipy
-            #     _scaled_model_confidence_n = scipy.ndimage.zoom(model_confidence_n, zoom=scale_factors, order=0)
-            #
-            #     from napari import Viewer, gui_qt
-            #     with gui_qt():
-            #         def _c(array):
-            #             return Backend.to_numpy(array)
-            #
-            #         viewer = Viewer()
-            #         viewer.add_image(_c(image_a), name='image_a', colormap='bop orange', blending='additive')
-            #         viewer.add_image(_c(image_b), name='image_b', colormap='bop blue', blending='additive', visible=False)
-            #         viewer.add_image(_c(image), name='image', colormap='bop blue', blending='additive')
-            #         viewer.add_image(_c(_scaled_model_confidence_n), name='_scaled_model_confidence_n', colormap='viridis', blending='additive', opacity=0.3)
-
             if vector_field is None:
-                with asection(f"Initialise vector field and confidence arrays."):
+                with asection("Initialise vector field and confidence arrays."):
                     splits = tuple(s // max(min_chunk, -(-s // (2 ** (num_iterations - 1)))) for s in image_a.shape)
                     aprint(f"final resolution = {splits}")
                     vector_field = xp.zeros(shape=splits + (ndim,), dtype=model_vector_field.dtype)
                     confidence = xp.zeros(shape=splits, dtype=model_confidence.dtype)
 
             if model.mean_confidence() > confidence_threshold // 2:
-                with asection(f"Updating vector field and confidence array"):
+                with asection("Updating vector field and confidence array"):
                     scale_factors = tuple(s / ms for ms, s in zip(model_confidence.shape, confidence.shape))
                     aprint(f"Scaling obtained vector field and confidence arrays by a factor {scale_factors}")
 
@@ -131,7 +114,7 @@ def register_warp_multiscale_nd(
                     scaled_confidence = sp.ndimage.zoom(model_confidence, zoom=scale_factors, order=1)
                     confidence = xp.maximum(confidence, scaled_confidence)
             else:
-                aprint(f"Scale ignored!")
+                aprint("Scale ignored!")
                 break
 
     model = WarpRegistrationModel(vector_field=vector_field, confidence=confidence, force_numpy=force_numpy)

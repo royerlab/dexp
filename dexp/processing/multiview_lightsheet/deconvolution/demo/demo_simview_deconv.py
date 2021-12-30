@@ -31,9 +31,9 @@ def demo_simview_deconv_cupy():
 def simview_deconv():
     xp = Backend.get_xp_module()
 
-    print(f"Loading data...")
+    print("Loading data...")
     array = imread(filepath)
-    print(f"Done loading.")
+    print("Done loading.")
 
     # array = array[150 - 64:150 + 64,
     #         1533 - 256:1533 + 256,
@@ -44,7 +44,7 @@ def simview_deconv():
     # with timeit(f"Clip view ..."):
     #     view = xp.clip(view, a_min=0, a_max=3048, out=view)
 
-    with timeit(f"Dehaze view ..."):
+    with timeit("Dehaze view ..."):
         view_dehazed = dehaze(view, size=65, minimal_zero_level=0)
 
     min_value = view_dehazed.min()

@@ -52,9 +52,10 @@ def _warp_2d_cupy(image, vector_field, mode, block_size: int = 16):
                         // Store interpolated value:
                         warped_image[y * width + x] = value;
 
-                        //TODO: supersampling would help in regions for which warping misses voxels in the source image,
-                        //better: adaptive supersampling would automatically use the vector field divergence to determine where
-                        //to super sample and by how much.
+                        // TODO: supersampling would help in regions for which warping misses voxels in
+                        // the source image.
+                        // improve: adaptive supersampling would automatically use the vector field divergence to
+                        // determine where to super sample and by how much.
                     }
                 }
                 }

@@ -46,7 +46,6 @@ def register_warp_nd(
     image_b = Backend.to_backend(image_b)
 
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     def f(x, y):
         model = registration_method(x, y, force_numpy=force_numpy, **kwargs)

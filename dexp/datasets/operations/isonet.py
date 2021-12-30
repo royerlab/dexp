@@ -35,7 +35,7 @@ def dataset_isonet(
 
     aprint(f"Selected channel {channel}")
 
-    aprint(f"getting Dask arrays to apply isonet on...")
+    aprint("getting Dask arrays to apply isonet on...")
     array = dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True)
 
     if slicing is not None:
@@ -98,7 +98,7 @@ def dataset_isonet(
                         name=channel, shape=shape, dtype=array.dtype, codec=compression, clevel=compression_level
                     )
 
-                aprint(f"Writing image to Zarr file...")
+                aprint("Writing image to Zarr file...")
                 dest_dataset.write_stack(channel=channel, time_point=tp, stack_array=tp_array)
 
                 aprint(f"Done processing time point: {tp}")

@@ -51,13 +51,17 @@ def lucy_richardson_deconvolution(
     wb_order : Wiener-Butterworth backprojection order parameter.
     padding : padding (see numpy/cupy pad function)
     padding_mode : padding mode (see numpy/cupy pad function)
-    normalise_input : This deconvolution code assumes values within [0, 1], by default input images are normalised to that range, but if already normalised, then normalisation can be ommited.
+    normalise_input : This deconvolution code assumes values within [0, 1], by default input images
+        are normalised to that range, but if already normalised, then normalisation can be ommited.
     normalise_minmax : Use the given tuple (min, max) for normalisation
     clip_output : Clip output to input range, or not
-    blind_spot : If zero, blind-spot is disabled. If blind_spot>0 it is active and the integer represents the blind-spot kernel support. A value of 3 or 5 are good and help reduce the impact of noise on deconvolution.
+    blind_spot : If zero, blind-spot is disabled. If blind_spot>0 it is active and the integer represents
+        the blind-spot kernel support. A value of 3 or 5 are good and help reduce the impact of noise on deconvolution.
     blind_spot_mode : blind-spot mode, can be 'mean' or 'median'
-    blind_spot_axis_exclusion : if None no axis is excluded from the blind-spot support kernel, otherwise if a tuple of ints is provided, these refer to the
-    then the support kernel is clipped along these axis. For example for a 3D stack where the sampling along z (first axis) is poor, use: (0,) so that blind-spot kernel does not extend in z.
+    blind_spot_axis_exclusion : if None no axis is excluded from the blind-spot support kernel, otherwise
+        if a tuple of ints is provided, these refer to the then the support kernel is clipped along these axis.
+        For example for a 3D stack where the sampling along z (first axis) is poor,
+        use: (0,) so that blind-spot kernel does not extend in z.
     eps: epsilon to avoid dividing by zero
     convolve_method : convolution method to use
     internal_dtype : dtype to use internally for computation.
@@ -204,7 +208,6 @@ def lucy_richardson_deconvolution(
             relative_blur,
             back_projector,
         )
-        # multiplicative_correction = xp.clip(multiplicative_correction, a_min=0.0, a_max=None, out=multiplicative_correction)
 
         # Multiplicative correction can be optionally elevated to a power:
         if power != 1.0:

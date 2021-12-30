@@ -30,7 +30,8 @@ def insert_scale_bar(
     pixel_scale: conversion factor from pixels to units -- what is the side length of a pixel/voxel in units.
     bar_height: Height of th scale bar in pixels
     margin: margin around bar expressed in units relative to the text height
-    translation: Positions of the scale bar in pixels in numpy order: (y, x). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
+    translation: Positions of the scale bar in pixels in numpy order: (y, x).
+        Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
     color: Color of the bar and text as tuple of 4 values: (R, G, B, A)
     number_format: Format string to represent the start and end values.
     font_name: Font name.
@@ -43,9 +44,6 @@ def insert_scale_bar(
     Image with inserted scale bar.
 
     """
-
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     # Move to backend:
     image = Backend.to_backend(image)

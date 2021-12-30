@@ -25,7 +25,7 @@ def cudalibs(cuda: str):
 
     CUDA is the cuda version: 11.2, 11.1, 11.0, ...
     """
-    with asection(f"Install additional CUDA libraries"):
+    with asection("Install additional CUDA libraries"):
 
         from os.path import expanduser
 
@@ -36,7 +36,7 @@ def cudalibs(cuda: str):
             aprint(f"Installing CUTENSOR for CUDA {cuda}")
             system(f"python -m cupyx.tools.install_library --library cutensor --cuda {cuda}")
         else:
-            aprint(f"Libraries already installed")
+            aprint("Libraries already installed")
 
 
 cli.add_command(cudalibs)

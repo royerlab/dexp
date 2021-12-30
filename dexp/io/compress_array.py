@@ -85,7 +85,6 @@ def decompress_array(compressed_bytes, out_array: ndarray = None) -> ndarray:
 
     # get the array pointer and length in bytes:
     array_address = out_array.__array_interface__["data"][0]
-    array_length = out_array.nbytes
 
     # prepare the basics:
     num_of_compressed_bytes = len(compressed_bytes)
@@ -98,7 +97,7 @@ def decompress_array(compressed_bytes, out_array: ndarray = None) -> ndarray:
         blosc_header = bytes(compressed_bytes[offset_compressed : offset_compressed + 32])
 
         # we check how large is the first chunk available:
-        num_decompressed_bytes, num_compressed_bytes, blocksize = get_cbuffer_sizes(blosc_header)
+        num_decompressed_bytes, num_compressed_bytes, _ = get_cbuffer_sizes(blosc_header)
 
         # we prepare the corresponding region of the array:
         compressed_chunk = compressed_bytes[offset_compressed : offset_compressed + num_compressed_bytes]

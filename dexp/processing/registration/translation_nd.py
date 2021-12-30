@@ -31,7 +31,8 @@ def register_translation_nd(
     Registers two nD images using just a translation-only model.
     This uses a full nD robust phase correlation based approach.
 
-    Note: it is recommended to normalise the images to [0, 1] range before registering them, otherwise there might be precision and overflow issues.
+    Note: it is recommended to normalise the images to [0, 1]
+        range before registering them, otherwise there might be precision and overflow issues.
 
     Parameters
     ----------
@@ -39,7 +40,8 @@ def register_translation_nd(
     image_b : Second image to register
     denoise_input_sigma : Uses a Gaussian filter to denoise input images.
     gamma : gamma correction on max projections as a preprocessing before phase correlation.
-    log_compression : Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)
+    log_compression : Applies the function log1p to the images to compress high-intensities
+        (usefull when very (too) bright structures are present in the images, such as beads).
     edge_filter : apply sobel edge filter to input images.
     max_range_ratio : maximal range for correlation.
     decimate : How much to decimate when computing floor level

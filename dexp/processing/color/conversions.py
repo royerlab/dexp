@@ -22,7 +22,6 @@ def gray2rgba(image: xpArray, alpha=None, rgba_value_max: float = 255):
     """
 
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     arr = xp.asarray(image)
 

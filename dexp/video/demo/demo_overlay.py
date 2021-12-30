@@ -66,31 +66,6 @@ def demo_overlay(n=16, display=True):
             output_folder = join(tmpdir, "overlay")
             os.makedirs(output_folder)
 
-            # Perform overlay:
-
-            # def add_overlays_image_sequence(input_path: str,
-            #                                 output_path: str = None,
-            #                                 scale_bar: bool = True,
-            #                                 scale_bar_length_in_unit: float = 1,
-            #                                 scale_bar_pixel_scale: float = 1,
-            #                                 scale_bar_bar_height: int = 4,
-            #                                 scale_bar_translation: Union[str, Sequence[Tuple[Union[int, float], ...]]] = None,
-            #                                 scale_bar_unit: str = 'μm',
-            #                                 time_stamp: bool = True,
-            #                                 time_stamp_start_time: float = 0,
-            #                                 time_stamp_time_interval: float = 1,
-            #                                 time_stamp_translation: Union[str, Sequence[Tuple[Union[int, float], ...]]] = None,
-            #                                 time_stamp_unit: str = 's',
-            #                                 margin: float = 1,
-            #                                 color: Tuple[float, float, float, float] = None,
-            #                                 number_format: str = '{:.1f}',
-            #                                 font_name: str = "Helvetica",
-            #                                 font_size: float = 32,
-            #                                 mode: str = 'max',
-            #                                 overwrite: bool = False,
-            #                                 workers: int = -1,
-            #                                 workersbackend: str = 'threading'):
-
             add_overlays_image_sequence(
                 input_path=input_folder,
                 output_path=output_folder,

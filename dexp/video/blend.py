@@ -34,7 +34,8 @@ def blend_color_image_sequences(
 
     Parameters
     ----------
-    input_paths : Paths to folders containing images in some (lexicographic) order, or to single images (that will be broadcasted). If of different lengths the result's length is the shortest of the input sequences.
+    input_paths : Paths to folders containing images in some (lexicographic) order, or to single images
+        (that will be broadcasted). If of different lengths the result's length is the shortest of the input sequences.
     output_path : Path to save the blended images.
     modes : Blending modes for each input sequence.
     alphas : Alpha transparency applied to each input sequence.
@@ -121,7 +122,6 @@ def blend_color_image_sequences(
                         )
                     else:
                         xp = Backend.get_xp_module()
-                        sp = Backend.get_sp_module()
 
                         # Prepare background image:
                         blended = xp.zeros(shape=images[0].shape, dtype=images[0].dtype)
@@ -164,4 +164,4 @@ def blend_color_image_sequences(
                 for tp in range(nb_timepoints):
                     _process(None, tp)
 
-    aprint(f"Done!")
+    aprint("Done!")

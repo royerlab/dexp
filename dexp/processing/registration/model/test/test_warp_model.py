@@ -50,16 +50,5 @@ def _test_warp_model(length_xy=128, warp_grid_size=3):
     print(f"warped_error = {warped_error}")
     print(f"dewarped_error = {dewarped_error}")
 
-    # from napari import Viewer, gui_qt
-    # with gui_qt():
-    #     def _c(array):
-    #         return backend.to_numpy(array)
-    #
-    #     viewer = Viewer()
-    #     viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', rendering='attenuated mip')
-    #     viewer.add_image(_c(image_warped), name='image_warped', colormap='bop purple', blending='additive', visible=False, rendering='attenuated mip')
-    #     viewer.add_image(_c(image_reg), name='image_reg', colormap='bop blue', blending='additive', rendering='attenuated mip')
-    #     #viewer.camera.ndisplay=3
-
     assert dewarped_error < warped_error
     assert dewarped_error < 55

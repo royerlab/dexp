@@ -19,8 +19,8 @@ def check(input_paths, channels):
         input_dataset.close()
 
         if not result:
-            aprint(f"!!! PROBLEM DETECTED, CORRUPTION LIKELY !!!")
+            aprint("!!! PROBLEM DETECTED, CORRUPTION LIKELY !!!")
             return
 
-    aprint(f"No problem detected.")
+    aprint("No problem detected.")
     aprint("Done!")

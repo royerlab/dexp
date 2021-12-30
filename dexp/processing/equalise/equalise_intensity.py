@@ -29,8 +29,9 @@ def equalise_intensity(
     quantile_low, quantile_high : quantile for computing the robust min and max values in image
     project_axis : Axis over which to project image to speed up computation
     max_voxels : maximal number of voxels to use to compute min and max values.
-    correction_ratio : If provided, this value is used instead of calculating the equalisation value based on the two images.
-    This is the value that should be multiplied to the second image (image2) so as to equalise it to teh first image (image1).
+    correction_ratio : If provided, this value is used instead of calculating the equalisation value based
+        on the two images. This is the value that should be multiplied to the second image (image2)
+        so as to equalise it to teh first image (image1).
     copy : Set to True to force copy of images.
     internal_dtype : dtype to use internally for computation.
 
@@ -110,7 +111,8 @@ def equalise_intensity(
             )
         elif nb_values < 128:
             aprint(
-                f"Warning: too few ratio values ({nb_values}<128) to compute correction ratio! Relax percentile or reduction!"
+                f"Warning: too few ratio values ({nb_values}<128)"
+                + "to compute correction ratio! Relax percentile or reduction!"
             )
 
         correction_ratio = xp.percentile(ratios.astype(internal_dtype, copy=False), q=50)

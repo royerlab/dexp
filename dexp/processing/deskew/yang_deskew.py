@@ -30,7 +30,8 @@ def yang_deskew(
     dz     : float, scanning step (stage or galvo scanning step, not the same as the distance between the slices)
     dx     : float, pixel size of the camera
     angle  : float, incident angle of the light sheet, angle between the light sheet and the optical axis in degrees
-    camera_orientation : Camera orientation correction expressed as a number of 90 deg rotations to be performed per 2D image in stack.
+    camera_orientation : Camera orientation correction expressed
+        as a number of 90 deg rotations to be performed per 2D image in stack.
     num_split : number of splits to break down the data into pieces (along y, axis=2) to fit into the memory of GPU
     internal_dtype : internal dtype to perform computation
 
@@ -81,7 +82,8 @@ def yang_deskew_dimensionless(
     flip_depth_axis   : Flips image to deskew in the opposite orientation (True for view 0 and False for view 1)
     resample_factor : Resampling factor
     lateral_scaling : Lateral scaling
-    camera_orientation : Camera orientation correction expressed as a number of 90 deg rotations to be performed per 2D image in stack.
+    camera_orientation : Camera orientation correction expressed as a
+        number of 90 deg rotations to be performed per 2D image in stack.
     num_split : number of splits to break down the data into pieces (along y, axis=2) to fit into the memory of GPU
     internal_dtype : internal dtype to perform computation
 
@@ -94,7 +96,6 @@ def yang_deskew_dimensionless(
     # as it might be a very large image and we can actually defer moving it to the backend as
     # after splitting...
     xp = Backend.get_xp_module(image)
-    sp = Backend.get_sp_module(image)
 
     # We save the original dtype:
     original_dtype = image.dtype
@@ -107,7 +108,8 @@ def yang_deskew_dimensionless(
     if type(Backend.current()) is NumpyBackend and internal_dtype == xp.float16:
         internal_dtype = xp.float32
 
-    # First we compute the permutation that will reorder the axis so that the depth and lateral axis are the first axis in the image:
+    # First we compute the permutation that will reorder the axis so that the depth and
+    # lateral axis are the first axis in the image:
     permutation = (depth_axis, lateral_axis) + tuple(
         axis for axis in range(image.ndim) if axis not in [depth_axis, lateral_axis]
     )
@@ -121,7 +123,8 @@ def yang_deskew_dimensionless(
         image = xp.flip(image, axis=0)
 
     # rotate the data
-    # Note: the weird 1+co mod 4 is due to the fact that Bin's original code was implemented for a different orientation...
+    # Note: the weird 1+co mod 4 is due to the fact that Bin's original
+    # code was implemented for a different orientation...
     image = xp.rot90(image, k=(1 + camera_orientation) % 4, axes=(1, 2))
 
     # deskew and rotate

@@ -142,7 +142,7 @@ class SimViewFusion(BaseFusion):
             C1Lx = self._preprocess_and_fuse_illumination_views(C1L0, C1L1, flip=self._flip_camera1, camera=1)
 
         if self._equalise:
-            with asection(f"Equalise intensity of C0Lx relative to C1Lx ..."):
+            with asection("Equalise intensity of C0Lx relative to C1Lx ..."):
                 C0Lx, C1Lx, ratio = equalise_intensity(
                     C0Lx, C1Lx, zero_level=0, correction_ratio=self._equalisation_ratios[2], copy=False
                 )
@@ -153,17 +153,17 @@ class SimViewFusion(BaseFusion):
 
     def postprocess(self, CxLx: xpArray) -> xpArray:
         if self._dehaze_size > 0 and not self._dehaze_before_fusion:
-            with asection(f"Dehaze CxLx ..."):
+            with asection("Dehaze CxLx ..."):
                 CxLx = dehaze(
                     CxLx, size=self._dehaze_size, minimal_zero_level=0, correct_max_level=self._dehaze_correct_max_level
                 )
 
         if self._dark_denoise_threshold > 0:
-            with asection(f"Denoise dark regions of CxLx..."):
+            with asection("Denoise dark regions of CxLx..."):
                 CxLx = clean_dark_regions(CxLx, size=self._dark_denoise_size, threshold=self._dark_denoise_threshold)
 
         if 0 < self._butterworth_filter_cutoff < 1:
-            with asection(f"Filter output using a Butterworth filter"):
+            with asection("Filter output using a Butterworth filter"):
                 cutoffs = (self._butterworth_filter_cutoff,) * CxLx.ndim
                 CxLx = butterworth_filter(CxLx, shape=(31, 31, 31), cutoffs=cutoffs, cutoffs_in_freq_units=False)
 
@@ -173,10 +173,10 @@ class SimViewFusion(BaseFusion):
         if self._registration_model is None:
             raise RuntimeError("Registration must be computed beforehand.")
 
-        with asection(f"Register_stacks C0Lx and C1Lx ..."):
+        with asection("Register_stacks C0Lx and C1Lx ..."):
             C0Lx, C1Lx = self._registration_model.apply_pair(C0Lx, C1Lx, pad=pad)
 
-        with asection(f"Fuse detection views C0lx and C1Lx..."):
+        with asection("Fuse detection views C0lx and C1Lx..."):
             CxLx = self._fuse_detection_views(C0Lx, C1Lx)
 
         return CxLx
@@ -201,7 +201,7 @@ class SimViewFusion(BaseFusion):
             CxLx = self.fuse(C0Lx, C1Lx, pad=pad)
             CxLx = self.postprocess(CxLx)
 
-        with asection(f"Converting back to original dtype..."):
+        with asection("Converting back to original dtype..."):
             if original_dtype is numpy.uint16:
                 CxLx = xp.clip(CxLx, 0, None, out=CxLx)
             CxLx = CxLx.astype(dtype=original_dtype, copy=False)
@@ -299,6 +299,6 @@ def summary_from_simview_models(models: List[SimViewFusion]) -> pd.DataFrame:
         if m.registration_model is not None:
             for i, v in enumerate(m.registration_model.shift_vector):
                 current[f"shift_{i}"] = v
-            current[f"confidence"] = m.registration_model.overall_confidence()
+            current["confidence"] = m.registration_model.overall_confidence()
 
     return pd.DataFrame(df)

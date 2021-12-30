@@ -68,7 +68,8 @@ def linsolve(
 
     if not result.success:
         raise RuntimeError(
-            f"Convergence failed: '{result.message}' after {result.nit} iterations and {result.nfev} function evaluations."
+            f"Convergence failed: '{result.message}' after {result.nit} "
+            + "iterations and {result.nfev} function evaluations."
         )
 
     return result.x

@@ -33,7 +33,6 @@ def demo_deconv_cupy():
 
 def _demo_deconv(length_xy=96, zoom=1, n=8, display=True):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     # generate nuclei image:
     _, _, image = generate_nuclei_background_data(

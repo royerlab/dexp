@@ -29,7 +29,6 @@ def add_border(
     """
 
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     # If border is 0 then rwe return the image unchanged:
     if width == 0:

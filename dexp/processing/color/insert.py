@@ -30,7 +30,8 @@ def insert_color_image(
     image: Base image.
     inset_image: Inset image to place in base image.
     scale: scale factor for inset image -- scaling happens before translation.
-    translation: positions of the insets in pixels in natural order: (x, y). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
+    translation: positions of the insets in pixels in natural order: (x, y). Can also be a string:
+        'bottom_left', 'bottom_right', 'top_left', 'top_right'.
     width: Width of border added to insets.
     color: Border color.
     over_image: If True the border is not added but overlayed over the image, the image does not change size.
@@ -83,7 +84,8 @@ def insert_color_image(
     # Check that both images have the same number of dimensions:
     if inset_image.ndim != image.ndim:
         raise ValueError(
-            f"Inset image number of dimensions: {inset_image.ndim} does not match base image number of dimensions: {image.ndim}."
+            f"Inset image number of dimensions: {inset_image.ndim} does not"
+            + f"match base image number of dimensions: {image.ndim}."
         )
 
     # Pad inset image:

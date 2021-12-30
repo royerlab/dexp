@@ -32,13 +32,15 @@ def _equalise_intensity(length=128):
     image_1 = 95 + random_noise(image_1, mode="gaussian", var=0.5, clip=False)
     image_2 = 95 + random_noise(image_2, mode="gaussian", var=0.5, clip=False)
 
+    # FIXME: look at this mess, it was just copied from demo :(
+
     # from napari import Viewer
     # with napari.gui_qt():
     #     viewer = Viewer()
     #     viewer.add_image(image_1, name='image_1')
     #     viewer.add_image(image_2, name='image_2')
 
-    org_image_1, org_image_2 = image_1.copy(), image_2.copy()
+    # org_image_1, org_image_2 = image_1.copy(), image_2.copy()
     equ_image_1, equ_image_2, corr_ratio = equalise_intensity(image_1, image_2)
 
     corr_ratio = Backend.to_numpy(corr_ratio)

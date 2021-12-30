@@ -28,7 +28,6 @@ def clean_dark_regions(
     Cleaned image
 
     """
-    xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
     if internal_dtype is None:

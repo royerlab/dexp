@@ -37,7 +37,6 @@ def image_stabilisation_proj(
 
     """
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     ndim = image.ndim
     image = xp.moveaxis(image, axis, 0)
@@ -50,11 +49,13 @@ def image_stabilisation_proj_(
     projections: Sequence[Tuple], ndim: int, keep_best: bool = True, debug_output: str = None, **kwargs
 ) -> SequenceRegistrationModel:
     """
-    Same as 'sequence_stabilisation_proj' but takes projections instead, usefull if the projections are already available.
+    Same as 'sequence_stabilisation_proj' but takes projections instead,
+    usefull if the projections are already available.
 
     Parameters
     ----------
-    projections: List of projections as a list of tuples: (u, v, projection) where u and v are the axis indices and projection is an array where the first axis is the stabilisation axis.
+    projections: List of projections as a list of tuples: (u, v, projection) where u and v are the axis indices
+        and projection is an array where the first axis is the stabilisation axis.
     ndim: number of dimensions of original array
     keep_best: keep only the best n stabilised projections
     kwargs: argument passthrough to the 'sequence_stabilisation' method.
@@ -64,9 +65,6 @@ def image_stabilisation_proj_(
     Sequence registration model
 
     """
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
-
     # we stabilise along each projection:
     seq_reg_models = list(
         (

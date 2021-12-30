@@ -28,7 +28,6 @@ def rgb_colormap(image: xpArray, cmap: Union[str, Callable] = None, bytes: bool 
     """
 
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     if internal_dtype is None:
         internal_dtype = image.dtype

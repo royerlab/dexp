@@ -1,19 +1,29 @@
 import click
 from arbol.arbol import aprint, asection
 
+from dexp.cli.dexp_commands.add import add
+from dexp.cli.dexp_commands.check import check
+from dexp.cli.dexp_commands.copy import copy
+from dexp.cli.dexp_commands.crop import crop
+from dexp.cli.dexp_commands.deconv import deconv
+from dexp.cli.dexp_commands.deskew import deskew
+from dexp.cli.dexp_commands.extract_psf import extract_psf
+from dexp.cli.dexp_commands.fastcopy import fastcopy
+from dexp.cli.dexp_commands.fuse import fuse
+from dexp.cli.dexp_commands.info import info
+from dexp.cli.dexp_commands.isonet import isonet
+from dexp.cli.dexp_commands.projrender import projrender
+from dexp.cli.dexp_commands.register import register
+from dexp.cli.dexp_commands.serve import serve
+from dexp.cli.dexp_commands.speedtest import speedtest
+from dexp.cli.dexp_commands.stabilize import stabilize
+from dexp.cli.dexp_commands.tiff import tiff
+from dexp.cli.dexp_commands.view import view
+from dexp.cli.video_commands.volrender import volrender
 from dexp.processing.utils.mkl_util import set_mkl_threads
 
 set_mkl_threads()
 
-# def log_uncaught_exceptions(exception_type, exception, tb):
-#     import traceback
-#     print(''.join(traceback.format_tb(tb)))
-#     print('{0}: {1}'.format(exception_type, exception))
-
-
-# import sys
-
-# sys.excepthook = log_uncaught_exceptions
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -44,26 +54,6 @@ def cli():
     except (ModuleNotFoundError, NotImplementedError):
         aprint("'cupy' module not found! ignored!")
 
-
-from dexp.cli.dexp_commands.add import add
-from dexp.cli.dexp_commands.check import check
-from dexp.cli.dexp_commands.copy import copy
-from dexp.cli.dexp_commands.crop import crop
-from dexp.cli.dexp_commands.deconv import deconv
-from dexp.cli.dexp_commands.deskew import deskew
-from dexp.cli.dexp_commands.extract_psf import extract_psf
-from dexp.cli.dexp_commands.fastcopy import fastcopy
-from dexp.cli.dexp_commands.fuse import fuse
-from dexp.cli.dexp_commands.info import info
-from dexp.cli.dexp_commands.isonet import isonet
-from dexp.cli.dexp_commands.projrender import projrender
-from dexp.cli.dexp_commands.register import register
-from dexp.cli.dexp_commands.serve import serve
-from dexp.cli.dexp_commands.speedtest import speedtest
-from dexp.cli.dexp_commands.stabilize import stabilize
-from dexp.cli.dexp_commands.tiff import tiff
-from dexp.cli.dexp_commands.view import view
-from dexp.cli.video_commands.volrender import volrender
 
 cli.add_command(info)
 cli.add_command(check)

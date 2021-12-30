@@ -32,7 +32,8 @@ def butterworth_filter(
     image : image to apply filter to
     shape : filter shape
     cutoffs : Butterworth cutoffs.
-    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]
+    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units.
+        If False, the units are in normalised within [0,1]
     order : Butterworth filter order
     mode : mode for convolution
     use_fft : True to use FFT

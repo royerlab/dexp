@@ -76,7 +76,7 @@ def image_stabilisation(
 
     image_sequence = None
     if preload_images:
-        with asection(f"Preloading images to backend..."):
+        with asection("Preloading images to backend..."):
             image_sequence = list(
                 Backend.to_backend(Backend.get_xp_module(image).take(image, i, axis=axis)) for i in range(length)
             )
@@ -89,7 +89,7 @@ def image_stabilisation(
         ndim = image.ndim - 1
 
         uv_set = set()
-        with asection(f"Enumerating pairwise registrations needed..."):
+        with asection("Enumerating pairwise registrations needed..."):
 
             for scale_index, scale in enumerate(scales):
                 for offset in range(0, scale):
@@ -157,7 +157,7 @@ def image_stabilisation(
 
                 plt.savefig(debug_output + "_prcm.pdf")
 
-        with asection(f"Solving for optimal sequence registration"):
+        with asection("Solving for optimal sequence registration"):
             with NumpyBackend():
                 xp = Backend.get_xp_module()
                 sp = Backend.get_sp_module()
@@ -230,7 +230,7 @@ def image_stabilisation(
                     raise ValueError(f"Unsupported sequence stabilisation mode: {mode}")
 
             if debug_output is not None:
-                with asection(f"Generating shift vector plots"):
+                with asection("Generating shift vector plots"):
                     model.plot(debug_output)
 
             return model
@@ -262,7 +262,6 @@ def _pairwise_registration(
 
         if confidence < min_confidence:
             if enable_com:
-                # aprint(f"Warning: low confidence ({confidence}) for pair: ({u}, {v}) falling back to center-of-mass calculation")
                 offset_mode = f"p={quantile * 100}"
                 com_u = center_of_mass(
                     image_u, mode="full", projection_type="max-min", offset_mode=offset_mode, bounding_box=bounding_box

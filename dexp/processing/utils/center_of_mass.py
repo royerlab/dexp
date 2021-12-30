@@ -17,9 +17,11 @@ def center_of_mass(
     Parameters
     ----------
     image: image to compute center of mass of.
-    mode: Can be either 'full' or 'projection'. Full mode might lead to high memory consumption depending on the backend, projection mode gives some extra flexibility and is overall safer.
+    mode: Can be either 'full' or 'projection'. Full mode might lead to high memory consumption
+        depending on the backend, projection mode gives some extra flexibility and is overall safer.
     projection_type: Projection type to use when in 'projection' type: 'mean', 'min', 'max', 'max-min'
-    offset_mode: Choice of offset to remove, can be either: 'min', 'median', 'mean', 'middle', and for example: 'p=10' for removing and clipping the lower 10% percentile. Set to N one for no offset removal.
+    offset_mode: Choice of offset to remove, can be either: 'min', 'median', 'mean', 'middle',
+        and for example: 'p=10' for removing and clipping the lower 10% percentile. Set to N one for no offset removal.
     remove_offset: removes offset to help remove the influence of the background on the center of mass
     bounding_box: if True, the center of mass of the bouning box of non-zero pixels is returned.
 
@@ -30,19 +32,10 @@ def center_of_mass(
 
     """
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     if mode == "full":
         if offset_mode is not None:
             image = _remove_offset(image, offset_mode, xp)
-
-        # from napari import Viewer, gui_qt
-        # with gui_qt():
-        #     def _c(array):
-        #         return Backend.to_numpy(array)
-        #
-        #     viewer = Viewer()
-        #     viewer.add_image(_c(image), name='image', colormap='viridis', blending='additive', visible=True)
 
         com = _center_of_mass(image, bounding_box)
 
@@ -55,14 +48,6 @@ def center_of_mass(
         for u, v, projected_image in projection_generator(image, projection_type=projection_type, nb_axis=2):
             if offset_mode is not None:
                 projected_image = _remove_offset(projected_image, offset_mode, xp)
-
-            # from napari import Viewer, gui_qt
-            # with gui_qt():
-            #     def _c(array):
-            #         return Backend.to_numpy(array)
-            #
-            #     viewer = Viewer()
-            #     viewer.add_image(_c(projected_image), name='projected_image', colormap='viridis', blending='additive', visible=True)
 
             du, dv = _center_of_mass(projected_image, bounding_box)
             com[u] += du
@@ -77,7 +62,6 @@ def center_of_mass(
 
 
 def _center_of_mass(image, bounding_box):
-    xp = Backend.get_xp_module()
     if bounding_box:
         bbox = _bounding_box(image)
         com = tuple(0.5 * bbox[2 * a] + 0.5 * bbox[2 * a + 1] for a in range(len(bbox) // 2))

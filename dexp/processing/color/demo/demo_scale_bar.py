@@ -24,8 +24,6 @@ def demo_scale_bar_cupy():
 
 
 def demo_scale_bar(display=True):
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     with asection("generate data"):
         image = Backend.to_backend(gray2rgba(camera()))

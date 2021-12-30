@@ -21,8 +21,9 @@ def lipschitz_continuity_correction(
     'Lipshitz continuity correction'
 
     'Broken' pixels on detectors typically blink or are very dim or very bright, in any case they are 'out of context'.
-    In many cases they will locally break Lipshitz continuity implied by diffraction limited imaging. Here is a simple
-    greedy scheme that starts with the  ost infringing voxels and incrementally filters them using local median filtering.
+    In many cases they will locally break Lipshitz continuity implied by diffraction limited imaging.
+    Here is a simple greedy scheme that starts with the ost infringing voxels
+    and incrementally filters them using local median filtering.
 
 
     Parameters
@@ -74,7 +75,8 @@ def lipschitz_continuity_correction(
 
         proportion = (num_corrections + total_number_of_corrections) / image.size
         print(
-            f"Proportion of corrected pixels: {int(proportion * 100)}% (up to now), versus maximum: {int(max_proportion_corrected * 100)}%) "
+            f"Proportion of corrected pixels: {int(proportion * 100)}% (up to now), "
+            + f"versus maximum: {int(max_proportion_corrected * 100)}%)"
         )
 
         if proportion > max_proportion_corrected:

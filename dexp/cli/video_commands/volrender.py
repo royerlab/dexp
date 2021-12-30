@@ -90,7 +90,7 @@ def volrender(
         aprint(f"Rendering array of shape={array.shape} and dtype={array.dtype} for channel '{channel}'.")
 
         if clim is None:
-            aprint(f"Computing min and max from first stack...")
+            aprint("Computing min and max from first stack...")
             first_stack = numpy.array(input_dataset.get_stack(channel, 0, per_z_slice=False))
             min_value = max(0, first_stack.min() - 100)
             max_value = first_stack.max() + 100
@@ -172,7 +172,7 @@ def volrender(
 
         while section("Rendering:"):
             for i in range(0, nbframes, skip):
-                aprint(f"______________________________________________________________________________")
+                aprint("______________________________________________________________________________")
                 aprint(f"Frame     : {i}")
 
                 tp = tstart + int(tspeed * i)

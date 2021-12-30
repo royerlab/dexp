@@ -3,7 +3,13 @@ import pytest
 import scipy.ndimage as ndi
 from numpy.testing import assert_allclose
 
-from dexp.processing.deconvolution.admm_utils import *
+from dexp.processing.deconvolution.admm_utils import (
+    derivative_axes,
+    first_derivative_func,
+    first_derivative_kernels,
+    second_derivative_func,
+    second_derivative_kernels,
+)
 
 
 @pytest.mark.parametrize(

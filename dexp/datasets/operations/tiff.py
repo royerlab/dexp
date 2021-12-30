@@ -32,7 +32,7 @@ def dataset_tiff(
     if slicing is not None:
         aprint(f"Slicing with: {slicing}")
         arrays = list(array[slicing] for array in arrays)
-        aprint(f"Done slicing.")
+        aprint("Done slicing.")
 
     if workers == -1:
         workers = max(1, os.cpu_count() // abs(workers))
@@ -52,12 +52,14 @@ def dataset_tiff(
                             stack = array[tp].compute()
 
                             if project is not False and type(project) == int:
-                                # project is the axis for projection, but here we are not considering the T dimension anymore...
+                                # project is the axis for projection, but here we are not considering
+                                # the T dimension anymore...
                                 aprint(f"Projecting along axis {project}")
                                 stack = stack.max(axis=project)
 
                             aprint(
-                                f"Writing time point: {tp} of shape: {stack.shape}, dtype:{stack.dtype} as TIFF file: '{tiff_file_path}', with compression: {clevel}"
+                                f"Writing time point: {tp} of shape: {stack.shape}, dtype:{stack.dtype} "
+                                + f"as TIFF file: '{tiff_file_path}', with compression: {clevel}"
                             )
                             tiff_save(tiff_file_path, stack, compress=clevel)
                             aprint(f"Done writing time point: {tp} !")
@@ -94,7 +96,8 @@ def dataset_tiff(
                 return
 
             with asection(
-                f"Saving array ({array.shape}, {array.dtype}) for channel {channel} into TIFF file at: {tiff_file_path}:"
+                f"Saving array ({array.shape}, {array.dtype}) for channel {channel} into "
+                + f"TIFF file at: {tiff_file_path}:"
             ):
 
                 shape = array.shape
@@ -127,12 +130,3 @@ def dataset_tiff(
 
                 memmap_image.flush()
                 del memmap_image
-
-
-## NOTES: color coded max projection:
-# > data = numpy.random.randint(0, 255, (256, 256, 3), 'uint8')
-# >>> imwrite('temp.tif', data, photometric='color')
-#
-# https://colorcet.holoviz.org/user_guide/index.html
-# https://github.com/MMesch/cmap_builder
-#

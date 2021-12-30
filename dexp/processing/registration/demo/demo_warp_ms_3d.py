@@ -26,7 +26,6 @@ def demo_register_warp_3d_ms_cupy():
 
 def _register_warp_3d_ms(length_xy=256, warp_grid_size=3, display=True):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     with asection("generate dataset"):
         _, _, image = generate_nuclei_background_data(

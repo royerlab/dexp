@@ -1,11 +1,17 @@
-from functools import reduce
+from functools import partial, reduce
 from typing import Optional
 
 import numpy
 import scipy
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.deconvolution.admm_utils import *
+from dexp.processing.deconvolution.admm_utils import (
+    derivative_axes,
+    first_derivative_func,
+    first_derivative_kernels,
+    second_derivative_func,
+    second_derivative_kernels,
+)
 from dexp.utils import xpArray
 
 
@@ -89,7 +95,7 @@ def admm_deconvolution(
     # compute parameters used for finite difference differenciation (fast diff operator)
     Daxes = derivative_axes(image.ndim)
 
-    zeros = lambda: xp.zeros(fsize, dtype=internal_dtype)
+    zeros = partial(xp.zeros, shape=fsize, dtype=internal_dtype)
 
     # allocate buffers
     I = zeros()  # output image

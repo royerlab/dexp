@@ -22,21 +22,12 @@ def test_scatter_gather_i2v_cupy():
 
 def _test_scatter_gather_i2v(ndim=3, length_xy=128, splits=4, filter_size=7):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     image1 = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
     image2 = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
 
     def f(x, y):
         return xp.stack([x.min(), x.max()]), xp.stack([y.max(), y.mean(), y.min()])
-
-    try:
-        with timeit("f"):
-            result_ref_1, result_ref_2 = Backend.to_numpy(f(Backend.to_backend(image1), Backend.to_backend(image2)))
-    except:
-        print("Can't run this, not enough GPU memory!")
-        result_ref_1 = 0
-        result_ref_2 = 0
 
     with timeit("scatter_gather(f)"):
         chunks = (length_xy // splits,) * ndim

@@ -19,19 +19,21 @@ repos:
       - id: pyupgrade
         args: ["--py37-plus", "--keep-runtime-typing"]
 # syntax linting and formatting
-#   - repo: https://github.com/PyCQA/flake8  # TODO: will be fixed in another commit
-#     rev: 4.0.1
-#     hooks:
-#       - id: flake8
-#         additional_dependencies: [flake8-typing-imports==1.7.0]
-#         args: [--max-line-length, '120',
-#                --per-file-ignores, '__init__.py:F401 dexp/cli/*.py:E501']
+  - repo: https://github.com/PyCQA/flake8
+    rev: 4.0.1
+    hooks:
+      - id: flake8
+        additional_dependencies: [flake8-typing-imports==1.7.0]
+        args: [--max-line-length, '120',
+               --ignore, 'E741,W503,E203',
+               --per-file-ignores, '__init__.py:F401 dexp/cli/*.py:E501']
 
   - repo: https://github.com/myint/autoflake
     rev: v1.4
     hooks:
       - id: autoflake
-        args: [--in-place, --remove-all-unused-imports,  --ignore-init-module-imports]
+        args: [--in-place, --remove-all-unused-imports,
+               --ignore-init-module-imports]
 
   - repo: https://github.com/psf/black
     rev: 21.12b0
@@ -43,3 +45,15 @@ repos:
     rev: v0.3.0
     hooks:
       - id: absolufy-imports
+
+  # execute pytest
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [push]
+        verbose: true

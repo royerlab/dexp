@@ -15,17 +15,19 @@ def scatter_gather_i2v(
 ):
     """
     Image-2-vector scatter-gather.
-    Given a n-ary function that takes n images and returns a tuple of vectors per image, we split the input arrays into tiles,
-    apply the function to each tile computing using a given backend, and reassembling the vectors into a tuple of arrays of vectors,
-    with one vector per tile.
+    Given a n-ary function that takes n images and returns a tuple of vectors per image,
+    we split the input arrays into tiles, apply the function to each tile computing using a given backend, and
+    reassembling the vectors into a tuple of arrays of vectors, with one vector per tile.
 
     Parameters
     ----------
-    function : n-ary function. Must accept one or more arrays -- of same shape -- and return a _tuple_ of arrays as result.
-    images : sequence of images (can be any backend, numpy )
+    function : n-ary function. Must accept one or more arrays -- of same shape
+        --- and return a _tuple_ of arrays as result.
+    images : sequence of images (can be any backend, numpy)
     tiles : tiles to cut input image into, can be a single integer or a tuple of integers.
     margins : margins to add to each tile, can be a single integer or a tuple of integers.
-    to_numpy : should the result be a numpy array? Very usefull when the compute backend cannot hold the whole input and output images in memory.
+    to_numpy : should the result be a numpy array? Very usefull when the compute backend
+        cannot hold the whole input and output images in memory.
     internal_dtype : internal dtype for computation
 
     Returns

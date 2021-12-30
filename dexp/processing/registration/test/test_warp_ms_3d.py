@@ -18,7 +18,6 @@ def test_register_warp_ms_3d_cupy():
 
 def register_warp_ms_3d(length_xy=128, warp_grid_size=3):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     image, warped, unwarped, model = _register_warp_3d_ms(
         length_xy=length_xy, warp_grid_size=warp_grid_size, display=False

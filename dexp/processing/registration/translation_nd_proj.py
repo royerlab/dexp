@@ -26,7 +26,8 @@ def register_translation_proj_nd(
     image_a : First image to register
     image_b : Second image to register
     register_translation_2d : 2d registration method to use
-    drop_worse: drops the worst 2D registrations before combining the projection registration vectors to a full nD registration vector.
+    drop_worse: drops the worst 2D registrations before combining the projection
+        registration vectors to a full nD registration vector.
     force_numpy : Forces output model to be allocated with numpy arrays.
     internal_dtype : Internal dtype for computation
 
@@ -132,7 +133,6 @@ def _project_preprocess_image(
 
 def _project_image(image, axis: int):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
     image = Backend.to_backend(image)
     projection = xp.max(image, axis=axis) - xp.min(image, axis=axis)
     return projection
@@ -140,7 +140,6 @@ def _project_image(image, axis: int):
 
 def _preprocess_image(image, quantile: float = 0.01, in_place: bool = True, dtype=None):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     processed_image = Backend.to_backend(image, dtype=dtype, force_copy=not in_place)
 

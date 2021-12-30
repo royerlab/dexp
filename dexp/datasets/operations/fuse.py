@@ -54,7 +54,7 @@ def dataset_fuse(
 
     views = {channel.split("-")[-1]: dataset.get_array(channel, per_z_slice=False) for channel in channels}
 
-    with asection(f"Views:"):
+    with asection("Views:"):
         for channel, view in views.items():
             aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 
@@ -121,7 +121,6 @@ def dataset_fuse(
                     elif microscope == "mvsols":
                         metadata = dataset.get_metadata()
                         angle = metadata["angle"]
-                        channel = metadata["channel"]
                         dz = metadata["dz"]
                         res = metadata["res"]
                         illumination_correction_sigma = metadata["ic_sigma"] if "ic_sigma" in metadata else None
@@ -155,7 +154,7 @@ def dataset_fuse(
                     else:
                         raise NotImplementedError
 
-                    with asection(f"Moving array from backend to numpy."):
+                    with asection("Moving array from backend to numpy."):
                         tp_array = Backend.to_numpy(tp_array, dtype=dtype, force_copy=False)
 
                     del views_tp
@@ -173,7 +172,8 @@ def dataset_fuse(
                 with asection(f"Saving fused stack for time point {i}, shape:{tp_array.shape}, dtype:{tp_array.dtype}"):
 
                     if i == 0:
-                        # We allocate last minute once we know the shape... because we don't always know the shape in advance!!!
+                        # We allocate last minute once we know the shape... because we don't always know
+                        # the shape in advance!!!
                         mode = "w" + ("" if overwrite else "-")
                         dest_dataset = ZDataset(output_path, mode, store, parent=dataset)
                         dest_dataset.add_channel(

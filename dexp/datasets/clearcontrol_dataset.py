@@ -78,7 +78,8 @@ class CCDataset(BaseDataset):
                 existing_shape = self._channel_shape[channel]
                 if shape != existing_shape:
                     aprint(
-                        f"Warning: Channel {channel} has varying stack shape! Shape changes from {existing_shape} to {shape} at time point {time_point}"
+                        f"Warning: Channel {channel} has varying stack shape! Shape changes from "
+                        + f"{existing_shape} to {shape} at time point {time_point}"
                     )
             self._channel_shape[channel] = shape
 
@@ -121,7 +122,7 @@ class CCDataset(BaseDataset):
                     decompress_array(data, array)
 
             # Reshape array:
-            if not shape is None:
+            if shape is not None:
                 array = array.reshape(shape)
 
             return array

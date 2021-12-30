@@ -32,9 +32,11 @@ def classic_deskew(
     dz     : float, scanning step (stage or galvo scanning step, not the same as the distance between the slices)
     dx     : float, pixel size of the camera
     angle  : float, incident angle of the light sheet, angle between the light sheet and the optical axis in degrees
-    camera_orientation : Camera orientation correction expressed as a number of 90 deg rotations to be performed per 2D image in stack -- if required.
+    camera_orientation : Camera orientation correction expressed as a number of 90 deg rotations to be performed
+        per 2D image in stack -- if required.
     flip_depth_axis : Flips depth axis to deskew in the opposite orientation (True for view 0 and False for view 1)
-    epsilon : relative tolerance to non-integral shifts: if the shift is not _exactly_ integer, to which extent do we actually tolerate that when switching between the 'roll' method and full interpolation approach.
+    epsilon : relative tolerance to non-integral shifts: if the shift is not _exactly_ integer, to which extent
+        do we actually tolerate that when switching between the 'roll' method and full interpolation approach.
     order : interpolation order (when necessary only!)
     padding : Apply padding, or not.
     copy : Set to True to force copy of images.
@@ -91,9 +93,12 @@ def classic_deskew_dimensionless(
     lateral_axis  : Lateral axis.
     shift  : Shift to apply along lateral axis per plane stacked along the depth axis.
     lateral_scaling : Scaling necessary along the lateral axis to preserve voxel dimensions.
-    flip_depth_axis : Flips depth axis to deskew in the opposite orientation (True for view 0 and False for view 1)
-    camera_orientation : Camera orientation correction expressed as a number of 90 deg rotations to be performed per 2D image in stack -- if required.
-    epsilon : relative tolerance to non-integral shifts: if the shift is not _exactly_ integer, to which extent do we actually tolerate that when switching between the 'roll' method and full interpolation approach.
+    flip_depth_axis : Flips depth axis to deskew in the opposite orientation
+        (True for view 0 and False for view 1)
+    camera_orientation : Camera orientation correction expressed as a number of 90 deg rotations
+        to be performed per 2D image in stack -- if required.
+    epsilon : relative tolerance to non-integral shifts: if the shift is not _exactly_ integer, to which
+        extent do we actually tolerate that when switching between the 'roll' method and full interpolation approach.
     order : interpolation order (when necessary only!)
     padding : Apply padding, or not.
     copy : Set to True to force copy of images.
@@ -120,7 +125,8 @@ def classic_deskew_dimensionless(
     # Move images to backend.
     image = Backend.to_backend(image, dtype=internal_dtype, force_copy=copy)
 
-    # First we compute the permutation that will reorder the axis so that the depth and lateral axis are the first axis in the image:
+    # First we compute the permutation that will reorder the axis so that the depth
+    # and lateral axis are the first axis in the image:
     permutation = (depth_axis, lateral_axis) + tuple(
         axis for axis in range(image.ndim) if axis not in [depth_axis, lateral_axis]
     )
@@ -137,7 +143,6 @@ def classic_deskew_dimensionless(
         image = xp.flip(image, axis=0)
 
     # Image height and depth:
-    depth = image.shape[0]
     height = image.shape[1]
 
     # Padding:
@@ -160,7 +165,6 @@ def classic_deskew_dimensionless(
     else:
         # Shift is not integral, we go full interpolation
         # Deskew matrix:
-        alpha = 1
         matrix = xp.asarray([[1, -shift, 0], [0, 1, 0], [0, 0, 1]])
 
         # deskew:

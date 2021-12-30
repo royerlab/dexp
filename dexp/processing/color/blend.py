@@ -19,8 +19,10 @@ def blend_color_images(
     Parameters
     ----------
     images: Sequence of images to blend.
-    modes: Blending modes. Either one for all images, or one per image in the form of a sequence. Blending modes are: 'mean', 'add', 'satadd', 'max', 'alpha'
-    alphas: Optional sequence of alpha values to use for blending, must be of same length as the sequence of images, optional.
+    modes: Blending modes. Either one for all images, or one per image in the form of a sequence.
+        Blending modes are: 'mean', 'add', 'satadd', 'max', 'alpha'
+    alphas: Optional sequence of alpha values to use for blending, must be of same length as
+        the sequence of images, optional.
     background_color: Background color as tuple of normalised floats:  (R,G,B,A). Default is transparent black.
     rgba_value_max: Max value for the pixel/voxel values.
     internal_dtype: dtype for internal computation
@@ -32,14 +34,13 @@ def blend_color_images(
     """
 
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     # convert to list of images, and move to backend:
     images = list(Backend.to_backend(image) for image in images)
 
     # Check that there is at least one image in the image list:
     if len(images) == 0:
-        raise ValueError(f"Blending requires at least one image!")
+        raise ValueError("Blending requires at least one image!")
 
     # original dtype:
     original_dtype = images[0].dtype
@@ -127,15 +128,18 @@ def _blend_function(image_u, image_v, mode):
         dst_alpha = image_v[..., 3][..., xp.newaxis]
 
         if mode == "clear":
-            # Where the second object is drawn, the first is completely removed. Anywhere else it is left intact. The second object itself is not drawn.
+            # Where the second object is drawn, the first is completely removed. Anywhere else it is left intact.
+            # The second object itself is not drawn.
             out_alpha = 0
             out_rgb = 0
         elif mode == "source":
-            # The second object is drawn as if nothing else were below. Only outside of the blue rectangle the red one is left intact.
+            # The second object is drawn as if nothing else were below. Only outside of the blue rectangle
+            # the red one is left intact.
             out_alpha = src_alpha
             out_rgb = src_rgb
         elif mode == "over" or mode == "alpha":
-            # The image shows what you would expect if you held two semi-transparent slides on top of each other. This operator is cairo's default operator.
+            # The image shows what you would expect if you held two semi-transparent slides on top of each other.
+            # This operator is cairo's default operator.
             out_alpha = src_alpha + dst_alpha * (1 - src_alpha)
             out_rgb = (src_rgb * src_alpha + dst_rgb * dst_alpha * (1 - src_alpha)) / out_alpha
         elif mode == "in":
@@ -143,12 +147,16 @@ def _blend_function(image_u, image_v, mode):
             out_alpha = src_alpha * dst_alpha
             out_rgb = src_rgb
         elif mode == "out":
-            # The blue rectangle is drawn only where the red one wasn't. Since the red one was partially transparent, you can see a blue shadow in the overlapping area. Otherwise, the red object is completely removed.
+            # The blue rectangle is drawn only where the red one wasn't. Since the red one was partially
+            # transparent, you can see a blue shadow in the overlapping area. Otherwise,
+            # the red object is completely removed.
             out_alpha = src_alpha * (1 - dst_alpha)
             out_rgb = src_rgb
         elif mode == "atop":
-            # This leaves the first object mostly intact, but mixes both objects in the overlapping area. The second object object is not drawn except there.
-            # If you look closely, you will notice that the resulting color in the overlapping area is different from what the OVER operator produces. Any two operators produce different output in the overlapping area!
+            # This leaves the first object mostly intact, but mixes both objects in the overlapping area.
+            # The second object object is not drawn except there.
+            # If you look closely, you will notice that the resulting color in the overlapping area is different from
+            # what the OVER operator produces. Any two operators produce different output in the overlapping area!
             out_alpha = dst_alpha
             out_rgb = src_alpha * src_rgb + dst_rgb * (1 - src_alpha)
         elif mode == "dest":
@@ -156,16 +164,19 @@ def _blend_function(image_u, image_v, mode):
             out_alpha = dst_alpha
             out_rgb = dst_rgb
         elif mode == "dest_over":
-            # The result is similar to the OVER operator. Except that the "order" of the objects is reversed, so the second is drawn below the first.
+            # The result is similar to the OVER operator. Except that the "order" of the objects is reversed,
+            # so the second is drawn below the first.
             out_alpha = (1 - dst_alpha) * src_alpha + dst_alpha
             out_rgb = (src_alpha * src_rgb * (1 - dst_alpha) + dst_alpha * dst_rgb) / out_alpha
         elif mode == "dest_in":
-            # The blue rectangle is used to determine which part of the red one is left intact. Anything outside the overlapping area is removed.
+            # The blue rectangle is used to determine which part of the red one is left intact.
+            # Anything outside the overlapping area is removed.
             # This works like the IN operator, but again with the second object "below" the first.
             out_alpha = src_alpha * dst_alpha
             out_rgb = dst_rgb
         elif mode == "dest_atop":
-            # Same as the ATOP operator, but again as if the order of the drawing operations had been reversed.
+            # Same as the ATOP operator, but again as if the order of the drawing operations
+            # had been reversed.
             out_alpha = src_alpha
             out_rgb = src_rgb * (1 - dst_alpha) + dst_alpha * dst_rgb
         elif mode == "xor":

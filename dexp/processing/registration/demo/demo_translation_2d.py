@@ -22,7 +22,6 @@ def demo_register_translation_2d_cupy():
 
 
 def _register_translation_2d(shift=(13, -5), display=True):
-    xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
     with asection("generate dataset"):
