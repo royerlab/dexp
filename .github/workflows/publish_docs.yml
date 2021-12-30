@@ -42,7 +42,6 @@ jobs:
       - name: Add & Commit changes
         uses: EndBug/add-and-commit@v7
         with:
-          ref: master
           branch: gh-pages
           message: |
             update docs
