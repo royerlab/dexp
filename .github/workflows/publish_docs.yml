@@ -40,7 +40,7 @@ jobs:
           make html -C docs
       
       - name: Add & Commit changes
-        uses: EndBug/add-and-commit@v7
+        uses: EndBug/add-and-commit@main
         with:
           branch: gh-pages
           message: |
