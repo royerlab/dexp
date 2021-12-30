@@ -8,10 +8,10 @@ Backends
     .. currentmodule:: dexp.processing.backends
 
     .. autosummary::
-        backend.Backend
-        best_backend.BestBackend
-        cupy_backend.CupyBackend
-        numpy_backend.NumpyBackend
+        Backend
+        BestBackend
+        CupyBackend
+        NumpyBackend
 
 Color
     .. currentmodule:: dexp.processing.color
@@ -33,7 +33,8 @@ Deconvolution
     .. currentmodule:: dexp.processing.deconvolution
 
     .. autosummary::
-        lr_deconvolution.lucy_richardson_deconvolution
+        admm_deconvolution
+        lucy_richardson_deconvolution
 
 Deskew
     .. currentmodule:: dexp.processing.deskew
@@ -161,8 +162,9 @@ Color
 Deconvolution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. currentmodule:: dexp.processing.deconvolution.lr_deconvolution
+.. currentmodule:: dexp.processing.deconvolution
 
+.. autofunction:: admm_deconvolution
 .. autofunction:: lucy_richardson_deconvolution
 
 Deskew
