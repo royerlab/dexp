@@ -3,8 +3,7 @@ from functools import reduce
 import numpy
 from arbol import aprint
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.filters.sobel_filter import sobel_filter
 from dexp.processing.registration.model.translation_registration_model import (
     TranslationRegistrationModel,

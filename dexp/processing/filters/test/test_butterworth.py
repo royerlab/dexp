@@ -2,8 +2,7 @@ import numpy
 from skimage.data import camera
 from skimage.util import random_noise
 
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.filters.butterworth_filter import butterworth_filter
 
 

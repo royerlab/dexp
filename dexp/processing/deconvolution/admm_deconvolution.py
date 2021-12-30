@@ -4,7 +4,7 @@ from typing import Optional
 import numpy
 import scipy
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.deconvolution.admm_utils import (
     derivative_axes,
     first_derivative_func,

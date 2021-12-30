@@ -1,9 +1,7 @@
 import numpy
 from skimage.data import camera
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels.gaussian import gaussian_kernel_nd

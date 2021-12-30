@@ -3,9 +3,7 @@ from skimage.data import binary_blobs
 from skimage.filters import gaussian
 from skimage.util import random_noise
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.equalise.equalise_intensity import equalise_intensity
 from dexp.utils.timeit import timeit
 

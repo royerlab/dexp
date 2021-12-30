@@ -4,7 +4,7 @@ import numpy
 from arbol import aprint
 from scipy.optimize import minimize
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 
 
 def linsolve(

@@ -6,8 +6,7 @@ from arbol import aprint, asection
 from dask.array import Array
 from joblib import Parallel, delayed
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.registration.model.sequence_registration_model import (
     SequenceRegistrationModel,
 )

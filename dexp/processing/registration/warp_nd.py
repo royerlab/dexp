@@ -2,7 +2,7 @@ from typing import Tuple, Union
 
 from arbol import aprint, section
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.registration.model.warp_registration_model import (
     WarpRegistrationModel,
 )

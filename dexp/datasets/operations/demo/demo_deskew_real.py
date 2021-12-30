@@ -5,9 +5,7 @@ from arbol import aprint, asection
 
 from dexp.datasets.operations.deskew import dataset_deskew
 from dexp.datasets.zarr_dataset import ZDataset
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 
 # Input dataset
 # Please provide path to dataset fro demoing here:

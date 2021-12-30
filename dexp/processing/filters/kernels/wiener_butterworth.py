@@ -1,7 +1,7 @@
 import math
 from typing import Tuple, Union
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.filters.butterworth_filter import butterworth_kernel
 from dexp.processing.filters.kernels.wiener import wiener_kernel
 

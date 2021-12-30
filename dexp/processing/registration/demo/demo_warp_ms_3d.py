@@ -1,9 +1,7 @@
 import numpy
 from arbol import aprint, asection
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.warp_multiscale_nd import register_warp_multiscale_nd
 from dexp.processing.synthetic_datasets.nuclei_background_data import (

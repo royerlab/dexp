@@ -1,7 +1,7 @@
 from arbol import aprint
 
 from dexp.datasets.operations.demo.demo_stabilize import _demo_stabilize
-from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends import CupyBackend
 
 # def test_stabilize_numpy():
 #     with NumpyBackend():

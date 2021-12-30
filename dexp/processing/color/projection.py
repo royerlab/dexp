@@ -1,7 +1,6 @@
 from typing import Callable, Tuple, Union
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.color.colormap import _normalise_colormap, rgb_colormap
 from dexp.processing.color.insert import insert_color_image
 from dexp.processing.color.projection_legend import depth_color_scale_legend

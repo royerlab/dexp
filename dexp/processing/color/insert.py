@@ -2,7 +2,7 @@ from typing import Sequence, Tuple, Union
 
 from arbol import aprint
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.border import add_border
 from dexp.utils import xpArray

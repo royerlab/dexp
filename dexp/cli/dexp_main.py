@@ -38,7 +38,7 @@ def cli():
     aprint("")
 
     try:
-        from dexp.processing.backends.cupy_backend import CupyBackend
+        from dexp.processing.backends import CupyBackend
 
         available = CupyBackend.available_devices()
         with asection(f"Available GPU devices: {available}"):

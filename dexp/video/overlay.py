@@ -7,8 +7,7 @@ import imageio
 from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.best_backend import BestBackend
+from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.scale_bar import insert_scale_bar
 from dexp.processing.color.time_stamp import insert_time_stamp

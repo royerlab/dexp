@@ -4,7 +4,7 @@ import numpy as np
 from arbol import aprint
 from numpy.typing import ArrayLike
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.utils import xpArray
 
 

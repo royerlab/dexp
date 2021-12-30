@@ -11,8 +11,7 @@ from dask_cuda import LocalCUDACluster
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.best_backend import BestBackend
+from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.deconvolution.admm_deconvolution import admm_deconvolution
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.filters.fft_convolve import fft_convolve

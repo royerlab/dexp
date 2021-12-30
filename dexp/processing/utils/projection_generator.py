@@ -1,6 +1,6 @@
 from typing import Optional, Tuple
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 
 
 def projection_generator(

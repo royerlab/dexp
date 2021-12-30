@@ -1,6 +1,6 @@
 from skimage.registration import phase_cross_correlation
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.registration.model.translation_registration_model import (
     TranslationRegistrationModel,
 )

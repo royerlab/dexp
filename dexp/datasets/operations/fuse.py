@@ -4,9 +4,7 @@ from arbol.arbol import aprint, asection
 from toolz import curry
 
 from dexp.datasets.zarr_dataset import ZDataset
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.best_backend import BestBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, BestBackend, NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
 from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion
 from dexp.processing.registration.model.model_io import (

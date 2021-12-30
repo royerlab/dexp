@@ -3,8 +3,7 @@ from typing import Optional, Tuple, Union
 
 import numpy
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels.gaussian import gaussian_kernel_nd
 from dexp.processing.filters.kernels.wiener_butterworth import wiener_butterworth_kernel

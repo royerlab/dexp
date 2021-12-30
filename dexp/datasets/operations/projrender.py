@@ -7,8 +7,7 @@ from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
 from dexp.datasets.base_dataset import BaseDataset
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.best_backend import BestBackend
+from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.color.projection import project_image
 
 

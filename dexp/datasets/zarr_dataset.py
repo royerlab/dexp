@@ -15,7 +15,7 @@ from zarr import Blosc, CopyError, Group, convenience, open_group
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.datasets.ome_dataset import default_omero_metadata
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.utils.config import config_blosc
 
 

@@ -1,6 +1,6 @@
 from typing import Callable
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.registration.model.translation_registration_model import (
     TranslationRegistrationModel,
 )

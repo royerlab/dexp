@@ -1,8 +1,7 @@
 import numpy
 from scipy.ndimage import zoom
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, NumpyBackend
 from dexp.utils import xpArray
 
 
@@ -73,7 +72,7 @@ def warp(
     image = image.astype(dtype=internal_dtype, copy=False)
     vector_field = Backend.to_backend(vector_field, dtype=internal_dtype)
 
-    from dexp.processing.backends.cupy_backend import CupyBackend
+    from dexp.processing.backends import CupyBackend
 
     if type(Backend.current()) is NumpyBackend:
         raise NotImplementedError("Warping not yet implemented for the Numpy backend.")

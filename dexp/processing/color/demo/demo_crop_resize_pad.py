@@ -2,9 +2,7 @@ from arbol import asection
 from skimage.color import gray2rgba
 from skimage.data import camera
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.color.crop_resize_pad import crop_resize_pad_color_image
 
 

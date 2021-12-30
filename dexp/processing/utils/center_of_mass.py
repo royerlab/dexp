@@ -1,6 +1,6 @@
 import itertools
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.utils.projection_generator import projection_generator
 
 

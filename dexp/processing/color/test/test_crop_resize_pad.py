@@ -1,5 +1,4 @@
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.color.demo.demo_crop_resize_pad import demo_crop_resize_pad
 
 

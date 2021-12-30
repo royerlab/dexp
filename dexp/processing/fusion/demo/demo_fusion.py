@@ -1,9 +1,7 @@
 import numpy
 from arbol import asection
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.fusion.dct_fusion import fuse_dct_nd
 from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd

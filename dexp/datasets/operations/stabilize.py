@@ -5,8 +5,7 @@ from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
 from dexp.datasets.base_dataset import BaseDataset
-from dexp.processing.backends.best_backend import BestBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import BestBackend, NumpyBackend
 from dexp.processing.registration.model.sequence_registration_model import (
     SequenceRegistrationModel,
 )

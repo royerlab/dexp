@@ -1,9 +1,7 @@
 import math
 
 from dexp.optics.psf.standard_psfs import nikon16x08na
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.deskew.yang_deskew import yang_deskew
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.synthetic_datasets.nuclei_background_data import (

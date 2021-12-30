@@ -5,7 +5,7 @@ import numpy
 import pandas as pd
 from arbol import aprint, asection
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.equalise.equalise_intensity import equalise_intensity
 from dexp.processing.filters.butterworth_filter import butterworth_filter
 from dexp.processing.fusion.dct_fusion import fuse_dct_nd

@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 from numpy.typing import ArrayLike
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.utils import xpArray
 
 __all__ = [
