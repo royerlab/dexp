@@ -31,7 +31,6 @@ CUPY_VERSION = "9.1.0"
 REQUIRED = [
     "numpy>=1.20",
     "scipy",
-    "numba",
     "numcodecs",
     #    'cucim',  # optional
     "scikit-image",
