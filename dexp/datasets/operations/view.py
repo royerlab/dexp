@@ -4,7 +4,7 @@ import dask
 from arbol import aprint
 from dask.array import reshape
 
-from dexp.datasets.base_dataset import BaseDataset
+from dexp.datasets import BaseDataset
 
 
 def dataset_view(

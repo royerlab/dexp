@@ -1,6 +1,6 @@
 import numpy
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 
 
 def get_array_for_cairo_surface(surface: "ImageSurface"):  # noqa: F821

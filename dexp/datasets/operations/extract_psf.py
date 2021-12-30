@@ -3,8 +3,8 @@ from typing import Sequence, Union
 import numpy as np
 from arbol import aprint, asection
 
-from dexp.datasets.base_dataset import BaseDataset
-from dexp.processing.backends.best_backend import BestBackend
+from dexp.datasets import BaseDataset
+from dexp.processing.backends import BestBackend
 from dexp.processing.remove_beads import BeadsRemover
 from dexp.utils.slicing import slice_from_shape
 

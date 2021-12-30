@@ -4,7 +4,6 @@
 conda config --add channels anaconda
 conda install -y -c conda-forge numpy
 conda install -y -c anaconda scipy
-conda install -y -c anaconda numba
 conda install -y -c anaconda numcodecs
 conda install -y -c anaconda scikit-image
 conda install -y -c anaconda tifffile

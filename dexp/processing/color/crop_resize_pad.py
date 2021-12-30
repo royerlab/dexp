@@ -1,6 +1,6 @@
 from typing import Tuple, Union
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.utils import xpArray
 
 

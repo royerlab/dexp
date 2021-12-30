@@ -6,8 +6,7 @@ import numpy
 from arbol import aprint, asection
 from joblib import Parallel, delayed
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends import Backend, CupyBackend
 from dexp.processing.interpolation.warp import warp
 
 

@@ -4,8 +4,7 @@ from typing import Sequence, Tuple
 import numpy
 from arbol.arbol import aprint, asection, section
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.deskew.yang_deskew import yang_deskew
 from dexp.processing.equalise.equalise_intensity import equalise_intensity
 from dexp.processing.filters.butterworth_filter import butterworth_filter

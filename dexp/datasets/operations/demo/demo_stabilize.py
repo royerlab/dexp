@@ -6,11 +6,9 @@ import numpy
 from arbol import aprint, asection
 from pytest import approx
 
+from dexp.datasets import ZDataset
 from dexp.datasets.operations.stabilize import dataset_stabilize
-from dexp.datasets.zarr_dataset import ZDataset
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.sequence_proj import image_stabilisation_proj
 from dexp.processing.synthetic_datasets.nuclei_background_data import (

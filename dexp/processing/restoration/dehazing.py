@@ -1,7 +1,6 @@
 import numpy
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.utils.fit_shape import fit_to_shape
 from dexp.processing.utils.nan_to_zero import nan_to_zero
 from dexp.utils import xpArray

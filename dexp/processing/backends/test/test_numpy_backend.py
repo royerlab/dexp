@@ -2,8 +2,7 @@ import numpy
 import pytest
 from skimage.data import binary_blobs
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, NumpyBackend
 
 
 def test_numpy_backend():

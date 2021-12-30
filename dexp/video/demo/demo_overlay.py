@@ -8,9 +8,7 @@ from dask.array.image import imread
 from skimage.color import gray2rgba
 from skimage.data import camera
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.video.overlay import add_overlays_image_sequence
 
 

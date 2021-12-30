@@ -3,9 +3,7 @@ from scipy.ndimage import median_filter
 from skimage.data import camera
 from skimage.util import random_noise
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.restoration.lipshitz_correction import (
     lipschitz_continuity_correction,
 )

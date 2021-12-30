@@ -4,9 +4,8 @@ import numpy
 from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
-from dexp.datasets.base_dataset import BaseDataset
-from dexp.processing.backends.best_backend import BestBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.datasets import BaseDataset
+from dexp.processing.backends import BestBackend, NumpyBackend
 from dexp.processing.registration.model.sequence_registration_model import (
     SequenceRegistrationModel,
 )
@@ -184,7 +183,7 @@ def dataset_stabilize(
     stop_at_exception: True to stop as soon as there is an exception during processing.
     """
 
-    from dexp.datasets.zarr_dataset import ZDataset
+    from dexp.datasets import ZDataset
 
     mode = "w" + ("" if overwrite else "-")
     dest_dataset = ZDataset(output_path, mode, zarr_store, parent=dataset)

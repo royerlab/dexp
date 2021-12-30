@@ -2,7 +2,7 @@ from typing import Any, Generator, Sequence, Tuple, Union
 
 import numpy
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 
 
 def blend_color_images(

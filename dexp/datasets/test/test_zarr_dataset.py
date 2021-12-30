@@ -7,8 +7,8 @@ from ome_zarr.utils import info
 from skimage.data import binary_blobs
 from skimage.filters import gaussian
 
-from dexp.datasets.zarr_dataset import ZDataset
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.datasets import ZDataset
+from dexp.processing.backends import NumpyBackend
 
 
 def test_zarr_dataset_livecycle():

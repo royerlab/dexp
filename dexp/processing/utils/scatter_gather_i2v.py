@@ -1,7 +1,7 @@
 import math
 from typing import Any, Tuple, Union
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.utils.nd_slice import nd_split_slices
 
 

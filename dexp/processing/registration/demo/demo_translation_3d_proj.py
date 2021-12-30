@@ -1,8 +1,6 @@
 from arbol import aprint, asection
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.registration.translation_2d import register_translation_2d_dexp
 from dexp.processing.registration.translation_nd_proj import (
     register_translation_proj_nd,

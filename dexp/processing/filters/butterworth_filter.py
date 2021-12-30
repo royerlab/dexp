@@ -2,8 +2,7 @@ from typing import Tuple, Union
 
 import numpy
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels.butterworth import butterworth_kernel
 from dexp.utils import xpArray

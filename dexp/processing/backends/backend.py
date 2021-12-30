@@ -45,7 +45,7 @@ class Backend(ABC):
                 raise RuntimeError("No backend available in current thread context")
             else:
                 # aprint("Warning: no backend available in current thread context! falling back to a numpy backend! ")
-                from dexp.processing.backends.numpy_backend import NumpyBackend
+                from dexp.processing.backends import NumpyBackend
 
                 return NumpyBackend()
 

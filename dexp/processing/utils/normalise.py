@@ -2,8 +2,7 @@ from typing import Tuple
 
 import numpy
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.utils.element_wise_affine import element_wise_affine
 
 

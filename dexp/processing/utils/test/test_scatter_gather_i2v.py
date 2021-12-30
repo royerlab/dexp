@@ -1,8 +1,6 @@
 import numpy
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
 from dexp.utils.timeit import timeit
 

@@ -1,9 +1,7 @@
 import numpy
 from arbol import asection
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.color.projection import project_image
 from dexp.processing.color.projection_legend import depth_color_scale_legend
 from dexp.processing.synthetic_datasets.nuclei_background_data import (

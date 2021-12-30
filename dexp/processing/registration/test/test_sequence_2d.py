@@ -1,4 +1,4 @@
-from dexp.processing.backends.cupy_backend import CupyBackend
+from dexp.processing.backends import CupyBackend
 from dexp.processing.registration.demo.demo_sequence_2d import _register_sequence_2d
 
 

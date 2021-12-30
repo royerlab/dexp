@@ -1,5 +1,4 @@
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.filters.sobel_filter import sobel_filter
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 

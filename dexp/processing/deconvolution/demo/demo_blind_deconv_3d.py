@@ -3,9 +3,7 @@ from functools import partial
 import numpy
 
 from dexp.optics.psf.standard_psfs import nikon16x08na
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.deconvolution.blind_deconvolution import blind_deconvolution
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.filters.fft_convolve import fft_convolve

@@ -4,9 +4,8 @@ from os.path import join
 from skimage.data import binary_blobs
 from skimage.filters import gaussian
 
-from dexp.datasets.joined_dataset import JoinedDataset
-from dexp.datasets.zarr_dataset import ZDataset
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.datasets import JoinedDataset, ZDataset
+from dexp.processing.backends import NumpyBackend
 
 
 def test_joined_dataset():

@@ -8,9 +8,7 @@ from arbol import aprint, asection
 from dask.array.image import imread
 from skimage.data import astronaut
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.video.crop_resize_pad import crop_resize_pad_image_sequence
 
 

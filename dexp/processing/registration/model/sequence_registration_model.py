@@ -3,7 +3,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.registration.model.pairwise_registration_model import (
     PairwiseRegistrationModel,
 )

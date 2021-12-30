@@ -1,8 +1,6 @@
 from arbol import aprint
 
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.registration.model.model_io import (
     from_json,
     model_list_from_file,

@@ -2,7 +2,7 @@ from typing import Optional, Tuple, Union
 
 import numpy
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.utils.nd_slice import nd_split_slices, remove_margin_slice
 from dexp.processing.utils.normalise import normalise_functions
 

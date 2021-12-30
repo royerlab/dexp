@@ -1,6 +1,6 @@
 from typing import Tuple, Union
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.cairo_utils import get_array_for_cairo_surface
 from dexp.utils import xpArray

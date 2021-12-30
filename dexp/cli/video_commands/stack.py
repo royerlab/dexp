@@ -9,7 +9,7 @@ from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
 from dexp.cli.defaults import _default_workers_backend
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 
 
 @click.command()

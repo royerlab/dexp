@@ -2,7 +2,7 @@ from typing import Sequence, Tuple
 
 import numpy
 
-from dexp.processing.backends.backend import Backend
+from dexp.processing.backends import Backend
 from dexp.processing.registration.model.sequence_registration_model import (
     SequenceRegistrationModel,
 )
