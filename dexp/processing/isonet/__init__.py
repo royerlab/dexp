@@ -1,1 +1,1 @@
-from .isonet import IsoNet
+from dexp.processing.isonet.isonet import IsoNet

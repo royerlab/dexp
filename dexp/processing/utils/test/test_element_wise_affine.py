@@ -21,11 +21,7 @@ def test_element_wise_affine_cupy():
 
 
 def _test_element_wise_affine(length_xy=128):
-    xp = Backend.get_xp_module()
-
-    _, _, _, _, image, _ = generate_fusion_test_data(add_noise=False,
-                                                     length_xy=length_xy,
-                                                     length_z_factor=4)
+    _, _, _, _, image, _ = generate_fusion_test_data(add_noise=False, length_xy=length_xy, length_z_factor=4)
 
     transformed = element_wise_affine(image, 2, 0.3)
 

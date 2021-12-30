@@ -24,7 +24,6 @@ def demo_register_warp_2d_cupy():
 
 def _register_warp_2d(warp_grid_size=4, reg_grid_size=8, display=True):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     with asection("generate dataset"):
         image = camera().astype(numpy.float32)
@@ -53,14 +52,16 @@ def _register_warp_2d(warp_grid_size=4, reg_grid_size=8, display=True):
 
     if display:
         from napari import Viewer, gui_qt
+
         with gui_qt():
+
             def _c(array):
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive')
-            viewer.add_image(_c(warped), name='warped', colormap='bop blue', blending='additive', visible=False)
-            viewer.add_image(_c(unwarped), name='unwarped', colormap='bop purple', blending='additive')
+            viewer.add_image(_c(image), name="image", colormap="bop orange", blending="additive")
+            viewer.add_image(_c(warped), name="warped", colormap="bop blue", blending="additive", visible=False)
+            viewer.add_image(_c(unwarped), name="unwarped", colormap="bop purple", blending="additive")
 
     return image, warped, unwarped, model
 

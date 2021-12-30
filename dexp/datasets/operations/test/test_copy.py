@@ -9,6 +9,7 @@ def test_copy_numpy():
     with NumpyBackend():
         _demo_copy(display=False)
 
+
 def test_copy_cupy():
     try:
         with CupyBackend():
@@ -16,5 +17,3 @@ def test_copy_cupy():
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! demo ignored")
-
-

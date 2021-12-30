@@ -19,7 +19,6 @@ def test_register_translation_nd_cupy():
 
 def _register_translation_nd():
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     image1 = xp.random.uniform(0, 1, size=(257, 237))
     image2 = xp.random.uniform(0, 1, size=(257, 237))

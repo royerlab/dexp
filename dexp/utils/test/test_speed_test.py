@@ -1,5 +1,3 @@
-from dexp.processing.backends.backend import Backend
-from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.utils.speed_test import perform_speed_test
 
 

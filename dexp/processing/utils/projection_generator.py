@@ -1,20 +1,20 @@
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 from dexp.processing.backends.backend import Backend
 
 
-def projection_generator(image,
-                         axis_range: Optional[Tuple[int, ...]] = None,
-                         projection_type: str = 'mean',
-                         nb_axis: int = 2):
+def projection_generator(
+    image, axis_range: Optional[Tuple[int, ...]] = None, projection_type: str = "mean", nb_axis: int = 2
+):
     """
     Generates all nD projection of an image. Currently only supports 2D projections.
 
     Parameters
     ----------
     image: image to compute center of mass of.
-    axis_range: Axis range to compute projections, can be: (n) for [0, n[, (m,n) for [m,n[, and (m,n,step) for {i*step | m<=i*step<n & i integer}
-    projection_type: Projection type to use when in 'projection' mode: 'mean', 'min', 'max', 'max-min'
+    axis_range: Axis range to compute projections, can be: (n) for [0, n[, (m,n) for [m,n[, and (m,n,step)
+        for {i*step | m<=i*step<n & i integer} projection_type: Projection type to use when in
+        'projection' mode: 'mean', 'min', 'max', 'max-min'
     nb_axis: number of axis to project to, currently only supports 2D projections.
 
     Returns
@@ -25,7 +25,7 @@ def projection_generator(image,
     xp = Backend.get_xp_module()
 
     if nb_axis != 2:
-        raise NotImplementedError(f"Not implemented for nb_axis!=2")
+        raise NotImplementedError("Not implemented for nb_axis!=2")
 
     ndim = image.ndim
 
@@ -36,15 +36,15 @@ def projection_generator(image,
         for v in range(*axis_range):
             if u < v:
                 proj_axis = tuple(set(range(*axis_range)).difference({u, v}))
-                if projection_type == 'mean':
+                if projection_type == "mean":
                     projected_image = xp.mean(image, axis=proj_axis)
-                elif projection_type == 'median':
+                elif projection_type == "median":
                     projected_image = xp.median(image, axis=proj_axis)
-                elif projection_type == 'max':
+                elif projection_type == "max":
                     projected_image = xp.max(image, axis=proj_axis)
-                elif projection_type == 'min':
+                elif projection_type == "min":
                     projected_image = xp.min(image, axis=proj_axis)
-                elif projection_type == 'max-min':
+                elif projection_type == "max-min":
                     projected_image = xp.max(image, axis=proj_axis)
                     projected_image -= xp.min(image, axis=proj_axis)
                 else:

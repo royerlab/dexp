@@ -1,4 +1,4 @@
-from typing import Tuple, Sequence, Any, List
+from typing import Any, List, Sequence, Tuple
 
 import numpy
 from arbol.arbol import aprint
@@ -6,12 +6,10 @@ from dask.array import concatenate
 
 from dexp.datasets.base_dataset import BaseDataset
 
-
 # Configure multithreading for Dask:
 
 
 class JoinedDataset(BaseDataset):
-
     def __init__(self, datasets: Sequence[BaseDataset]):
         """Instanciates a joined dataset.
 
@@ -38,29 +36,46 @@ class JoinedDataset(BaseDataset):
         _dataset_zero = self._dataset_list[0]
         for i, dataset in enumerate(self._dataset_list):
             if set(dataset.channels()) != set(_dataset_zero.channels()):
-                aprint(f"dataset #{i} has channels '{dataset.channels()}' but datatset #0 has channels: '{_dataset_zero.channels()}'")
+                aprint(
+                    f"dataset #{i} has channels '{dataset.channels()}' but datatset #0"
+                    + "has channels: '{_dataset_zero.channels()}'"
+                )
                 raise ValueError("All datasets must have the same exact channels!")
 
             # Third, we also check per channel if the shape and dtypes are the same
             for channel in _dataset_zero.channels():
                 if _dataset_zero.shape(channel)[1:] != dataset.shape(channel)[1:]:
-                    aprint(f"dataset #{i} channel {channel} has shape '{dataset.shape(channel)[1:]}' but datatset #0 channel {channel} has shape: '{_dataset_zero.shape(channel)[1:]}'")
-                    raise ValueError("All datasets must have the same exact shape for the same channels! (except for time dimension!)")
+                    aprint(
+                        f"dataset #{i} channel {channel} has shape '{dataset.shape(channel)[1:]}' "
+                        + f"but datatset #0 channel {channel} has shape: '{_dataset_zero.shape(channel)[1:]}'"
+                    )
+                    raise ValueError(
+                        "All datasets must have the same exact shape for the same channels!"
+                        + " (except for time dimension!)"
+                    )
                 if _dataset_zero.dtype(channel) != dataset.dtype(channel):
-                    aprint(f"dataset #{i} channel {channel} has dtype '{dataset.dtype(channel)}' but datatset #0 channel {channel} has dtype: '{_dataset_zero.dtype(channel)}'")
+                    aprint(
+                        f"dataset #{i} channel {channel} has dtype '{dataset.dtype(channel)}' but datatset "
+                        + f"#0 channel {channel} has dtype: '{_dataset_zero.dtype(channel)}'"
+                    )
                     raise ValueError("All datasets must have the same exact dtype for the same channels!")
 
         # Build concatenated dask arrays:
         self._arrays = {}
         self._projection_arrays = {}
         for channel in self.channels():
-            self._arrays[channel] = concatenate(dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for dataset in self._dataset_list)
+            self._arrays[channel] = concatenate(
+                dataset.get_array(channel, per_z_slice=False, wrap_with_dask=True) for dataset in self._dataset_list
+            )
 
             for axis in range(len(self.shape(channel)) - 1):
                 try:
-                    self._projection_arrays[f'{channel}/{axis}'] = concatenate(dataset.get_projection_array(channel, axis=axis, wrap_with_dask=True) for dataset in self._dataset_list)
+                    self._projection_arrays[f"{channel}/{axis}"] = concatenate(
+                        dataset.get_projection_array(channel, axis=axis, wrap_with_dask=True)
+                        for dataset in self._dataset_list
+                    )
                 except KeyError:
-                    self._projection_arrays[f'{channel}/{axis}'] = None
+                    self._projection_arrays[f"{channel}/{axis}"] = None
 
     def close(self):
         for dataset in self._dataset_list:
@@ -86,7 +101,10 @@ class JoinedDataset(BaseDataset):
 
     def info(self, channel: str = None) -> str:
         if channel is not None:
-            info_str = f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}, joined from {len(self._dataset_list)} datasets."
+            info_str = (
+                f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, "
+                + f"shape: {self.shape(channel)[1:]}, joined from {len(self._dataset_list)} datasets."
+            )
             info_str += "\n"
             return info_str
         else:
@@ -119,7 +137,7 @@ class JoinedDataset(BaseDataset):
         return self._arrays[channel][time_point]
 
     def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
-        return self._projection_arrays[f'{channel}/{axis}']
+        return self._projection_arrays[f"{channel}/{axis}"]
 
     def add_channel(self, name: str, shape: Tuple[int, ...], dtype, enable_projections: bool = True, **kwargs) -> Any:
         raise NotImplementedError("Cannot write to a joined dataset!")

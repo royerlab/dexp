@@ -7,14 +7,15 @@ from dexp.processing.utils.nan_to_zero import nan_to_zero
 from dexp.utils import xpArray
 
 
-def dehaze(image: xpArray,
-           size: int = 21,
-           downscale: int = 4,
-           minimal_zero_level: float = 0,
-           correct_max_level: bool = True,
-           in_place: bool = True,
-           internal_dtype=None
-           ):
+def dehaze(
+    image: xpArray,
+    size: int = 21,
+    downscale: int = 4,
+    minimal_zero_level: float = 0,
+    correct_max_level: bool = True,
+    in_place: bool = True,
+    internal_dtype=None,
+):
     """
     Dehazes an image by means of a non-linear low-pass rejection filter.
 
@@ -81,20 +82,25 @@ def dehaze(image: xpArray,
 
     if correct_max_level:
         # get image max level before:
-        # twice filtering is to match the extent reached for the zero_level image (see above combination of min then max filters)
+        # twice filtering is to match the extent reached for the zero_level image
+        # (see above combination of min then max filters)
         downscaled_image = sp.ndimage.filters.maximum_filter(downscaled_image, size=max(1, size // downscale))
         image_max_level_before = sp.ndimage.filters.gaussian_filter(downscaled_image, sigma=max(1, size // downscale))
 
         # get image max level after:
         downscaled_image_after = sp.ndimage.filters.maximum_filter(image, size=3)
         downscaled_image_after = sp.ndimage.interpolation.zoom(downscaled_image_after, zoom=1 / downscale, order=0)
-        image_max_level_after = sp.ndimage.filters.maximum_filter(downscaled_image_after, size=max(1, size // downscale))
-        image_max_level_after = sp.ndimage.filters.gaussian_filter(image_max_level_after, sigma=max(1, size // downscale))
+        image_max_level_after = sp.ndimage.filters.maximum_filter(
+            downscaled_image_after, size=max(1, size // downscale)
+        )
+        image_max_level_after = sp.ndimage.filters.gaussian_filter(
+            image_max_level_after, sigma=max(1, size // downscale)
+        )
 
         # Correction ratio:
         epsilon = xp.asarray(1e-6, dtype=internal_dtype)
         correction_ratio = image_max_level_before
-        correction_ratio /= (image_max_level_after + epsilon)
+        correction_ratio /= image_max_level_after + epsilon
         correction_ratio = nan_to_zero(correction_ratio, copy=False)
         del image_max_level_after
         correction_ratio = sp.ndimage.zoom(correction_ratio, zoom=downscale, order=1)

@@ -33,27 +33,29 @@ def _demo_lr_deconvolution():
 
     iterations = 200
 
-    deconvolved_no_noise = lucy_richardson_deconvolution(blurry, psf,
-                                                         num_iterations=iterations,
-                                                         padding=16)
+    deconvolved_no_noise = lucy_richardson_deconvolution(blurry, psf, num_iterations=iterations, padding=16)
 
-    deconvolved_no_noise_power = lucy_richardson_deconvolution(blurry, psf,
-                                                               num_iterations=iterations,
-                                                               padding=16,
-                                                               power=1.5,
-                                                               )
+    deconvolved_no_noise_power = lucy_richardson_deconvolution(
+        blurry,
+        psf,
+        num_iterations=iterations,
+        padding=16,
+        power=1.5,
+    )
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(blurry), name='blurry')
-        viewer.add_image(_c(psf), name='psf')
-        viewer.add_image(_c(deconvolved_no_noise), name='deconvolved_no_noise')
-        viewer.add_image(_c(deconvolved_no_noise_power), name='deconvolved_no_noise_power')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(blurry), name="blurry")
+        viewer.add_image(_c(psf), name="psf")
+        viewer.add_image(_c(deconvolved_no_noise), name="deconvolved_no_noise")
+        viewer.add_image(_c(deconvolved_no_noise_power), name="deconvolved_no_noise_power")
 
 
 if __name__ == "__main__":

@@ -6,29 +6,33 @@ from arbol import aprint
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.filters.sobel_filter import sobel_filter
-from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
+from dexp.processing.registration.model.translation_registration_model import (
+    TranslationRegistrationModel,
+)
 from dexp.utils import xpArray
 
 
-def register_translation_nd(image_a: xpArray,
-                            image_b: xpArray,
-                            denoise_input_sigma: float = 1.5,
-                            gamma: float = 1,
-                            log_compression: bool = True,
-                            edge_filter: bool = True,
-                            max_range_ratio: float = 0.9,
-                            decimate: int = 16,
-                            quantile: float = 0.999,
-                            sigma: float = 1.5,
-                            force_numpy: bool = False,
-                            internal_dtype=None,
-                            _display_phase_correlation: bool = False,
-                            ) -> TranslationRegistrationModel:
+def register_translation_nd(
+    image_a: xpArray,
+    image_b: xpArray,
+    denoise_input_sigma: float = 1.5,
+    gamma: float = 1,
+    log_compression: bool = True,
+    edge_filter: bool = True,
+    max_range_ratio: float = 0.9,
+    decimate: int = 16,
+    quantile: float = 0.999,
+    sigma: float = 1.5,
+    force_numpy: bool = False,
+    internal_dtype=None,
+    _display_phase_correlation: bool = False,
+) -> TranslationRegistrationModel:
     """
     Registers two nD images using just a translation-only model.
     This uses a full nD robust phase correlation based approach.
 
-    Note: it is recommended to normalise the images to [0, 1] range before registering them, otherwise there might be precision and overflow issues.
+    Note: it is recommended to normalise the images to [0, 1]
+        range before registering them, otherwise there might be precision and overflow issues.
 
     Parameters
     ----------
@@ -36,7 +40,8 @@ def register_translation_nd(image_a: xpArray,
     image_b : Second image to register
     denoise_input_sigma : Uses a Gaussian filter to denoise input images.
     gamma : gamma correction on max projections as a preprocessing before phase correlation.
-    log_compression : Applies the function log1p to the images to compress high-intensities (usefull when very (too) bright structures are present in the images, such as beads)
+    log_compression : Applies the function log1p to the images to compress high-intensities
+        (usefull when very (too) bright structures are present in the images, such as beads).
     edge_filter : apply sobel edge filter to input images.
     max_range_ratio : maximal range for correlation.
     decimate : How much to decimate when computing floor level
@@ -80,12 +85,8 @@ def register_translation_nd(image_a: xpArray,
         image_b **= gamma
 
     if edge_filter is not None and edge_filter:
-        image_a = sobel_filter(image_a,
-                               exponent=1,
-                               normalise_input=False)
-        image_b = sobel_filter(image_b,
-                               exponent=1,
-                               normalise_input=False)
+        image_a = sobel_filter(image_a, exponent=1, normalise_input=False)
+        image_b = sobel_filter(image_b, exponent=1, normalise_input=False)
 
     # Compute the phase correlation:
     raw_correlation = _phase_correlation(image_a, image_b, internal_dtype)
@@ -104,7 +105,9 @@ def register_translation_nd(image_a: xpArray,
     # print(f"noise_floor_level={noise_floor_level}")
 
     # Roll the array and crop it to restrict ourself to the search region:
-    correlation = correlation[tuple(slice(max(c - r, 0), min(c + r, s)) for c, r, s in zip(center, max_ranges, correlation.shape))]
+    correlation = correlation[
+        tuple(slice(max(c - r, 0), min(c + r, s)) for c, r, s in zip(center, max_ranges, correlation.shape))
+    ]
 
     # Use that floor to clip anything below:
     correlation = xp.maximum(correlation, noise_floor_level, out=correlation)
@@ -112,7 +115,7 @@ def register_translation_nd(image_a: xpArray,
 
     # Denoise cropped correlation image:
     if sigma > 0:
-        correlation = sp.ndimage.filters.gaussian_filter(correlation, sigma=sigma, mode='wrap')
+        correlation = sp.ndimage.filters.gaussian_filter(correlation, sigma=sigma, mode="wrap")
 
     # Use the max as quickly computed proxy for the real center:
     max_correlation_flat_index = xp.argmax(correlation, axis=None)
@@ -132,7 +135,8 @@ def register_translation_nd(image_a: xpArray,
 
     if _display_phase_correlation:
         # DO NOT DELETE, INSTRUMENTATION CODE FOR DEBUGGING
-        from napari import gui_qt, Viewer
+        from napari import Viewer, gui_qt
+
         with gui_qt():
             aprint(f"shift = {shift_vector}, confidence = {confidence} ")
 
@@ -140,11 +144,13 @@ def register_translation_nd(image_a: xpArray,
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(image_a), name='image_a')
-            viewer.add_image(_c(image_b), name='image_b')
-            viewer.add_image(_c(raw_correlation), name='raw_correlation', colormap='viridis')
-            viewer.add_image(_c(correlation), name='correlation', colormap='viridis')
-            viewer.add_image(_c(masked_correlation), name='masked_correlation', colormap='bop orange', blending='additive')
+            viewer.add_image(_c(image_a), name="image_a")
+            viewer.add_image(_c(image_b), name="image_b")
+            viewer.add_image(_c(raw_correlation), name="raw_correlation", colormap="viridis")
+            viewer.add_image(_c(correlation), name="correlation", colormap="viridis")
+            viewer.add_image(
+                _c(masked_correlation), name="masked_correlation", colormap="bop orange", blending="additive"
+            )
             viewer.grid.enabled = True
             viewer.grid.shape = (2, 3)
 
@@ -167,20 +173,16 @@ def _center_of_mass(image):
 
         if abs(normalizer) > 0:
             grids = numpy.ogrid[[slice(0, i) for i in image.shape]]
-            grids = list([Backend.to_backend(grid) for grid in grids])
+            grids = list(Backend.to_backend(grid) for grid in grids)
 
-            results = list([xp.sum(image * grids[dir].astype(float)) / normalizer
-                            for dir in range(image.ndim)])
+            results = list(xp.sum(image * grids[dir].astype(float)) / normalizer for dir in range(image.ndim))
 
             return tuple(float(f) for f in results)
         else:
             return tuple(s / 2 for s in image.shape)
 
 
-def _phase_correlation(image_a, image_b,
-                       internal_dtype=numpy.float32,
-                       epsilon: float = 1e-6,
-                       window: float = 0.5):
+def _phase_correlation(image_a, image_b, internal_dtype=numpy.float32, epsilon: float = 1e-6, window: float = 0.5):
     xp = Backend.get_xp_module(image_a)
 
     if window > 0:
@@ -193,7 +195,7 @@ def _phase_correlation(image_a, image_b,
     G_b = xp.fft.fftn(image_b).astype(numpy.complex64, copy=False)
     conj_b = xp.conj(G_b)
     R = G_a * conj_b
-    R /= (xp.absolute(R) + epsilon)
+    R /= xp.absolute(R) + epsilon
     r = xp.fft.ifftn(R).real.astype(internal_dtype, copy=False)
     r = xp.fft.fftshift(r)
     return r

@@ -14,10 +14,8 @@ class NumpyBackend(Backend):
     """
 
     def __init__(self, *args, **kwargs):
-        """ Instanciates a Numpy-based Image Processing backend
-
-        """
-        ## Important: Leave this, this is to make sure that the ndimage package works properly!
+        """Instanciates a Numpy-based Image Processing backend"""
+        # Important: Leave this, this is to make sure that the ndimage package works properly!
         exec("import scipy.ndimage")
 
     def copy(self, *args, **kwargs):
@@ -59,22 +57,24 @@ class NumpyBackend(Backend):
         else:
             return array
 
-    def _get_xp_module(self, array: xpArray=None) -> Any:
+    def _get_xp_module(self, array: xpArray = None) -> Any:
         if array is None:
             return numpy
         else:
             try:
                 import cupy
+
                 return cupy.get_array_module(array)
             except ModuleNotFoundError:
                 return numpy
 
-    def _get_sp_module(self, array: xpArray=None) -> Any:
+    def _get_sp_module(self, array: xpArray = None) -> Any:
         if array is None:
             return scipy
         else:
             try:
                 import cupyx
+
                 return cupyx.scipy.get_array_module(array)
             except ModuleNotFoundError:
                 return scipy

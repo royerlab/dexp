@@ -1,7 +1,9 @@
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
+from dexp.processing.registration.model.translation_registration_model import (
+    TranslationRegistrationModel,
+)
 from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
 
 
@@ -21,13 +23,15 @@ def test_translation_model_cupy():
 def _test_translation_model(length_xy=128):
     xp = Backend.get_xp_module()
 
-    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=False,
-                                                                                       shift=(1, 5, -13),
-                                                                                       volume_fraction=0.5,
-                                                                                       length_xy=length_xy,
-                                                                                       length_z_factor=2,
-                                                                                       amount_low=0,
-                                                                                       zero_level=0)
+    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(
+        add_noise=False,
+        shift=(1, 5, -13),
+        volume_fraction=0.5,
+        length_xy=length_xy,
+        length_z_factor=2,
+        amount_low=0,
+        zero_level=0,
+    )
 
     model = TranslationRegistrationModel(shift_vector=(-1, -5, 13))
 
@@ -37,11 +41,11 @@ def _test_translation_model(length_xy=128):
     print(f"average_error = {average_error}")
 
     image1_reg_pad, image2_reg_pad = model.apply_pair(image1, image2, pad=True)
-    image1_reg_pad = image1_reg_pad[0:length_xy // 2, 0:length_xy, 0:length_xy]
-    image2_reg_pad = image2_reg_pad[0:length_xy // 2, 0:length_xy, 0:length_xy]
+    image1_reg_pad = image1_reg_pad[0 : length_xy // 2, 0:length_xy, 0:length_xy]
+    image2_reg_pad = image2_reg_pad[0 : length_xy // 2, 0:length_xy, 0:length_xy]
     dumb_fusion_pad = xp.maximum(image1_reg_pad, image2_reg_pad)
     image_gt_shifted = xp.roll(image_gt, shift=(1, 5, 0), axis=(0, 1, 2))
-    image_gt_shifted = image_gt_shifted[0:length_xy // 2, 0:length_xy, 0:length_xy]
+    image_gt_shifted = image_gt_shifted[0 : length_xy // 2, 0:length_xy, 0:length_xy]
     average_error_pad = xp.mean(xp.absolute(dumb_fusion_pad - image_gt_shifted))
     print(f"average_error_pad = {average_error_pad}")
 

@@ -1,20 +1,18 @@
+from itertools import combinations
 from typing import List
 
 import numpy as np
 from numpy.typing import ArrayLike
 
-from itertools import combinations
-
-from dexp.utils import xpArray
 from dexp.processing.backends.backend import Backend
-
+from dexp.utils import xpArray
 
 __all__ = [
-    'first_derivative_func',
-    'first_derivative_kernels',
-    'second_derivative_func',
-    'second_derivative_kernels',
-    'derivative_axes',
+    "first_derivative_func",
+    "first_derivative_kernels",
+    "second_derivative_func",
+    "second_derivative_kernels",
+    "derivative_axes",
 ]
 
 
@@ -47,9 +45,7 @@ def first_derivative_kernels(dim: int) -> List[xpArray]:
     kernels = []
     line = np.array([1, -1, 0])
     kernels += line_derivative_kernels(dim, line)
-    diagonal = np.array([[1,  0, 0],
-                         [0, -1, 0],
-                         [0,  0, 0]])
+    diagonal = np.array([[1, 0, 0], [0, -1, 0], [0, 0, 0]])
     kernels += diagonal_derivative_kernels(dim, diagonal)
     return kernels
 
@@ -58,9 +54,7 @@ def second_derivative_kernels(dim: int) -> List[xpArray]:
     kernels = []
     line = np.array([1, -2, 1])
     kernels += line_derivative_kernels(dim, line)
-    diagonal = np.array([[1,  0, 0],
-                         [0, -2, 0],
-                         [0,  0, 1]])
+    diagonal = np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]])
     kernels += diagonal_derivative_kernels(dim, diagonal)
     return kernels
 
@@ -85,7 +79,7 @@ def first_derivative_func(array: xpArray, axes: int, transpose: bool) -> xpArray
 
     if transpose:
         left_slice, right_slice = right_slice, left_slice
-    
+
     left_slice = tuple(left_slice)
     right_slice = tuple(right_slice)
 
@@ -96,6 +90,4 @@ def first_derivative_func(array: xpArray, axes: int, transpose: bool) -> xpArray
 
 
 def second_derivative_func(array: xpArray, axes: int, transpose: bool) -> xpArray:
-    return -1 * first_derivative_func(
-        first_derivative_func(array, axes, transpose), axes, not transpose
-    )
+    return -1 * first_derivative_func(first_derivative_func(array, axes, transpose), axes, not transpose)

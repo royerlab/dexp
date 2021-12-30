@@ -1,6 +1,6 @@
 import gc
 from functools import reduce
-from time import time, sleep
+from time import sleep, time
 
 import numpy
 from arbol import aprint, asection
@@ -14,6 +14,7 @@ from dexp.processing.interpolation.warp import warp
 def test_cupy_basics():
     try:
         import cupy
+
         with cupy.cuda.Device(0):
             array = cupy.array([1, 2, 3])
             assert cupy.median(array) == 2
@@ -28,11 +29,10 @@ def test_list_devices():
         # Test list devices:
 
         # this will fail if cupy is not available:
-        import cupy
-
-        available = CupyBackend.available_devices()
-        aprint(f"Available devices: {available}")
-        assert len(available) > 0
+        with CupyBackend() as backend:
+            available = backend.available_devices()
+            aprint(f"Available devices: {available}")
+            assert len(available) > 0
 
         for device_id in available:
             with CupyBackend(device_id) as backend:
@@ -60,13 +60,11 @@ def test_allocation_pool():
 
                 xp = backend.get_xp_module()
 
-                import cupy
-
                 in_pool_before = backend.mempool.total_bytes() - backend.mempool.used_bytes()
                 aprint(f"in_pool_before={in_pool_before}")
 
-                for i in range(10):
-                    array = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
+                for _ in range(10):
+                    _ = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
 
                 sleep(2)
                 backend.synchronise()
@@ -83,8 +81,8 @@ def test_allocation_pool():
 
                 assert in_pool_after_clear <= in_pool_before
 
-                for i in range(10):
-                    array = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
+                for _ in range(10):
+                    _ = xp.random.uniform(0, 1, size=(128,) * 3).astype(numpy.float32)
 
                 in_pool_after_reallocation = backend.mempool.total_bytes() - backend.mempool.used_bytes()
                 aprint(f"in_pool_after_reallocation={in_pool_after_reallocation}")
@@ -95,7 +93,6 @@ def test_allocation_pool():
             aprint(f"in_pool_after_context={in_pool_after_clear}")
 
             assert in_pool_after_context == in_pool_after_clear
-
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! Test passes nevertheless!")
@@ -133,7 +130,7 @@ def test_paralell():
                 aprint(f"End: Job on device #{id}")
 
         n_jobs = 2
-        Parallel(n_jobs=n_jobs, backend='threading')(delayed(f)(id) for id in range(n_jobs))
+        Parallel(n_jobs=n_jobs, backend="threading")(delayed(f)(id) for id in range(n_jobs))
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! Test passes nevertheless!")
@@ -163,13 +160,13 @@ def test_paralell_with_exclusive():
         aprint(f"n_jobs = {n_jobs}")
 
         start = time()
-        with asection(f"Start jobs"):
-            Parallel(n_jobs=n_jobs, backend='threading')(delayed(f)(id, id % num_devices) for id in range(n_jobs))
+        with asection("Start jobs"):
+            Parallel(n_jobs=n_jobs, backend="threading")(delayed(f)(id, id % num_devices) for id in range(n_jobs))
         elapsed_time = time() - start
         aprint(f"elapsed_time={elapsed_time}")
 
-        # the fact that we have only 'num_devices' available, enforce exclusive access to devices, and spawning more jobs than devices, makes the
-        # total elapsed time predictable and testable:
+        # the fact that we have only 'num_devices' available, enforce exclusive access to devices,
+        # and spawning more jobs than devices, makes the total elapsed time predictable and testable:
         assert num_devices * job_duration < elapsed_time < (num_devices + 0.5) * job_duration
 
     except ModuleNotFoundError:
@@ -208,9 +205,8 @@ def test_stress():
         n_jobs = 10 * num_devices
         aprint(f"n_jobs = {n_jobs}")
 
-        with asection(f"Start jobs"):
-            Parallel(n_jobs=n_jobs, backend='threading')(delayed(f)(id, id % num_devices) for id in range(n_jobs))
-
+        with asection("Start jobs"):
+            Parallel(n_jobs=n_jobs, backend="threading")(delayed(f)(id, id % num_devices) for id in range(n_jobs))
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! Test passes nevertheless!")

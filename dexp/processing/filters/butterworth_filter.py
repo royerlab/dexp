@@ -9,15 +9,17 @@ from dexp.processing.filters.kernels.butterworth import butterworth_kernel
 from dexp.utils import xpArray
 
 
-def butterworth_filter(image: xpArray,
-                       shape=None,
-                       cutoffs: Union[float, Tuple[float, ...]] = None,
-                       cutoffs_in_freq_units=False,
-                       epsilon: float = 1,
-                       order: int = 3,
-                       mode: str = 'reflect',
-                       use_fft: bool = False,
-                       internal_dtype=None):
+def butterworth_filter(
+    image: xpArray,
+    shape=None,
+    cutoffs: Union[float, Tuple[float, ...]] = None,
+    cutoffs_in_freq_units=False,
+    epsilon: float = 1,
+    order: int = 3,
+    mode: str = "reflect",
+    use_fft: bool = False,
+    internal_dtype=None,
+):
     """
     Applies a Butterworth filter to an image.
     The Butterworth filter is a type of signal processing filter designed to have a frequency response
@@ -30,7 +32,8 @@ def butterworth_filter(image: xpArray,
     image : image to apply filter to
     shape : filter shape
     cutoffs : Butterworth cutoffs.
-    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]
+    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units.
+        If False, the units are in normalised within [0,1]
     order : Butterworth filter order
     mode : mode for convolution
     use_fft : True to use FFT
@@ -62,11 +65,9 @@ def butterworth_filter(image: xpArray,
     elif type(cutoffs) is float and image.ndim > 1:
         cutoffs = (cutoffs,) * image.ndim
 
-    butterworth_filter = butterworth_kernel(shape=shape,
-                                            cutoffs=cutoffs,
-                                            cutoffs_in_freq_units=cutoffs_in_freq_units,
-                                            epsilon=epsilon,
-                                            order=order)
+    butterworth_filter = butterworth_kernel(
+        shape=shape, cutoffs=cutoffs, cutoffs_in_freq_units=cutoffs_in_freq_units, epsilon=epsilon, order=order
+    )
 
     image = Backend.to_backend(image)
 

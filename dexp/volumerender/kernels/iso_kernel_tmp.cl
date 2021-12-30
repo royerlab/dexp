@@ -1,6 +1,6 @@
 /*
 
-  Iso surface rendering kernels 
+  Iso surface rendering kernels
 
   mweigert@mpi-cbg.de
  */
@@ -36,7 +36,7 @@ __kernel void iso_surface(
 	CLK_ADDRESS_CLAMP_TO_EDGE |
 	// CLK_FILTER_NEAREST ;
 	CLK_FILTER_LINEAR ;
-  
+
   uint x = get_global_id(0);
   uint y = get_global_id(1);
 
@@ -56,29 +56,29 @@ __kernel void iso_surface(
 
   front = (float4)(u,v,-1,1);
   back = (float4)(u,v,1,1);
-  
 
-  orig0 = mult(invP,front);  
+
+  orig0 = mult(invP,front);
   orig0 *= 1.f/orig0.w;
 
 
   orig = mult(invM,orig0);
   orig *= 1.f/orig.w;
-  
+
   temp = mult(invP,back);
 
   temp *= 1.f/temp.w;
 
   direc = mult(invM,normalize(temp-orig0));
   direc.w = 0.0f;
-  
+
 
   // find intersection with box
   float tnear, tfar;
   int hit = intersectBox(orig,direc, boxMin, boxMax, &tnear, &tfar);
 
 
-  
+
   if (!hit) {
   	if ((x < Nx) && (y < Ny)) {
   	  d_output[x+Nx*y] = 0.f;
@@ -93,15 +93,15 @@ __kernel void iso_surface(
 
 
 
-  
+
   if (tnear < 0.0f) tnear = 0.0f;     // clamp to near plane
 
   float colVal = 0;
   float alphaVal = 0;
 
-  
+
   float dt = (tfar-tnear)/maxSteps;
-  
+
 
   // uint entropy = (uint)( 6779514*length(orig) + 6257327*length(direc) );
   // orig += dt*random(entropy+x,entropy+y)*direc;
@@ -151,7 +151,7 @@ __kernel void iso_surface(
   // lam = 1 if we already are ot the point, lam = 0 if we should be at the prelast
   if (newVal!=oldVal)
 	lam = (newVal - isoVal)/(newVal-oldVal);
-  
+
   pos -= (1.f-lam)*delta_pos;
   //t_hit -= lam*dt;
 
@@ -172,21 +172,21 @@ __kernel void iso_surface(
   // c_ambient = 0.;
   // c_diffuse = 1.;
   // c_specular = .0;
-  
+
 
   light = mult(invM,light);
   light = normalize(light);
 
   // the normal
 
-  
+
   float4 normal;
   float4 reflect;
   float h = dt;
 
   h*= pow(gamma,2);
 
-  
+
   // normal.x = read_image(volume,volumeSampler,pos+(float4)(h,0,0,0), isShortType)-
   // 	read_image(volume,volumeSampler,pos+(float4)(-h,0,0,0), isShortType);
   // normal.y = read_image(volume,volumeSampler,pos+(float4)(0,h,0,0), isShortType)-
@@ -212,27 +212,27 @@ __kernel void iso_surface(
 
   normal.w = 0;
 
-  //flip normal if we are comming from values greater than isoVal... 
+  //flip normal if we are comming from values greater than isoVal...
   normal = (1.f-2*isGreater)*normalize(normal);
 
   reflect = 2*dot(light,normal)*normal-light;
 
   float diffuse = fmax(0.f,dot(light,normal));
   float specular = pow(fmax(0.f,dot(normalize(reflect),normalize(direc))),10);
-  
+
   // phong shading
   if (hitIso){
 	colVal = c_ambient
 	  + c_diffuse*diffuse
 	  + (diffuse>0)*c_specular*specular;
-	
+
   }
 
- 
+
   // for depth test...
   alphaVal = tnear;
 
-  
+
   if ((x < Nx) && (y < Ny)){
 	d_output[x+Nx*y] = colVal;
 	d_alpha_output[x+Nx*y] = alphaVal;

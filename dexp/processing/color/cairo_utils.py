@@ -1,10 +1,9 @@
 import numpy
 
-
 from dexp.processing.backends.backend import Backend
 
 
-def get_array_for_cairo_surface(surface: 'ImageSurface'):
+def get_array_for_cairo_surface(surface: "ImageSurface"):  # noqa: F821
     """
     Returns an array given a ImageSurface from PyCairo.
 
@@ -19,11 +18,10 @@ def get_array_for_cairo_surface(surface: 'ImageSurface'):
     """
 
     from cairocffi import ImageSurface
+
     surface: ImageSurface
 
-
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     width = surface.get_width()
     height = surface.get_height()

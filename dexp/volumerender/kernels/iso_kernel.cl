@@ -123,10 +123,10 @@ __kernel void iso_surface(
 
     if ((newVal>isoVal) != isGreater){
 	  hitIso = 1;
-	  
+
 	  break;
 	}
-	
+
   }
 
   if (!hitIso){
@@ -217,7 +217,7 @@ __kernel void iso_surface(
   d_depth_output[x+Nx*y] = t_hit;
 
 
-  
+
   d_normals_output[3*x+3*Nx*y] = normal.x;
   d_normals_output[1+3*x+3*Nx*y] = normal.y;
   d_normals_output[2+3*x+3*Nx*y] = normal.z;
@@ -577,8 +577,8 @@ __kernel void shading(
 
   colVal = (1.f-occ_strength)*colVal+1.0*occ_strength*colVal;
 
-  
-  
+
+
   colVal *= ((depth<INFINITY)?1.f:0.f);
 
   if ((x < Nx) && (y < Ny)){

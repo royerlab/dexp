@@ -2,9 +2,7 @@ from dexp.processing.backends.backend import Backend
 from dexp.utils import xpArray
 
 
-def gray2rgba(image: xpArray,
-              alpha=None,
-              rgba_value_max: float = 255):
+def gray2rgba(image: xpArray, alpha=None, rgba_value_max: float = 255):
     """Create a RGBA representation of a gray-level image.
 
     Parameters
@@ -24,7 +22,6 @@ def gray2rgba(image: xpArray,
     """
 
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     arr = xp.asarray(image)
 

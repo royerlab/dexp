@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import numpy
 from arbol import asection
@@ -8,16 +8,18 @@ from skimage.util import random_noise
 from dexp.processing.backends.backend import Backend
 
 
-def generate_fusion_test_data(length_xy: Optional[int] = 320,
-                              length_z_factor: Optional[int] = 4,
-                              add_noise: Optional[bool] = True,
-                              shift: Optional[Tuple[int, ...]] = None,
-                              volume_fraction: Optional[float] = 0.8,
-                              amount_low: Optional[float] = 1,
-                              zero_level: Optional[float] = 95,
-                              odd_dimension: Optional[float] = True,
-                              z_overlap: Optional[float] = None,
-                              dtype=numpy.float32):
+def generate_fusion_test_data(
+    length_xy: Optional[int] = 320,
+    length_z_factor: Optional[int] = 4,
+    add_noise: Optional[bool] = True,
+    shift: Optional[Tuple[int, ...]] = None,
+    volume_fraction: Optional[float] = 0.8,
+    amount_low: Optional[float] = 1,
+    zero_level: Optional[float] = 95,
+    odd_dimension: Optional[float] = True,
+    z_overlap: Optional[float] = None,
+    dtype=numpy.float32,
+):
     """
 
     Parameters
@@ -42,8 +44,12 @@ def generate_fusion_test_data(length_xy: Optional[int] = 320,
 
     with asection("generate blob images"):
         image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype(dtype)
-        blend_a = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype(dtype)
-        blend_b = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction).astype(dtype)
+        blend_a = binary_blobs(
+            length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction
+        ).astype(dtype)
+        blend_b = binary_blobs(
+            length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction
+        ).astype(dtype)
 
     with asection("convert blob images to backend"):
         image_gt = Backend.to_backend(image_gt)
@@ -86,19 +92,19 @@ def generate_fusion_test_data(length_xy: Optional[int] = 320,
             image2 = sp.ndimage.zoom(image2, zoom=(1 / length_z_factor, 1, 1), order=0)
 
     if odd_dimension:
-        image_gt = xp.pad(image_gt, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
-        image_lowq = xp.pad(image_lowq, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
-        blend_a = xp.pad(blend_a, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
-        blend_b = xp.pad(blend_b, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
-        image1 = xp.pad(image1, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
-        image2 = xp.pad(image2, pad_width=((0, 1), (0, 0), (1, 0)), mode='edge')
+        image_gt = xp.pad(image_gt, pad_width=((0, 1), (0, 0), (1, 0)), mode="edge")
+        image_lowq = xp.pad(image_lowq, pad_width=((0, 1), (0, 0), (1, 0)), mode="edge")
+        blend_a = xp.pad(blend_a, pad_width=((0, 1), (0, 0), (1, 0)), mode="edge")
+        blend_b = xp.pad(blend_b, pad_width=((0, 1), (0, 0), (1, 0)), mode="edge")
+        image1 = xp.pad(image1, pad_width=((0, 1), (0, 0), (1, 0)), mode="edge")
+        image2 = xp.pad(image2, pad_width=((0, 1), (0, 0), (1, 0)), mode="edge")
 
     if add_noise:
         with asection("add noise"):
             image1 = Backend.to_numpy(image1)
             image2 = Backend.to_numpy(image2)
-            image1 = random_noise(image1, mode='speckle', var=0.5)
-            image2 = random_noise(image2, mode='speckle', var=0.5)
+            image1 = random_noise(image1, mode="speckle", var=0.5)
+            image2 = random_noise(image2, mode="speckle", var=0.5)
             image1 = Backend.to_backend(image1)
             image2 = Backend.to_backend(image2)
 
@@ -112,9 +118,11 @@ def generate_fusion_test_data(length_xy: Optional[int] = 320,
         image_gt = zero_level + 300 * image_gt
         image_lowq = zero_level + 300 * image_lowq
 
-    return image_gt.astype(dtype, copy=False), \
-           image_lowq.astype(dtype, copy=False), \
-           blend_a.astype(dtype, copy=False), \
-           blend_b.astype(dtype, copy=False), \
-           image1.astype(dtype, copy=False), \
-           image2.astype(dtype, copy=False)
+    return (
+        image_gt.astype(dtype, copy=False),
+        image_lowq.astype(dtype, copy=False),
+        blend_a.astype(dtype, copy=False),
+        blend_b.astype(dtype, copy=False),
+        image1.astype(dtype, copy=False),
+        image2.astype(dtype, copy=False),
+    )

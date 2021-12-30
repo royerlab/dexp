@@ -1,18 +1,22 @@
 from typing import Callable
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
+from dexp.processing.registration.model.translation_registration_model import (
+    TranslationRegistrationModel,
+)
 from dexp.processing.registration.translation_2d import register_translation_2d_dexp
 from dexp.utils import xpArray
 
 
-def register_translation_proj_nd(image_a: xpArray,
-                                 image_b: xpArray,
-                                 register_translation_2d: Callable = register_translation_2d_dexp,
-                                 drop_worse: bool = True,
-                                 force_numpy: bool = False,
-                                 internal_dtype=None,
-                                 **kwargs):
+def register_translation_proj_nd(
+    image_a: xpArray,
+    image_b: xpArray,
+    register_translation_2d: Callable = register_translation_2d_dexp,
+    drop_worse: bool = True,
+    force_numpy: bool = False,
+    internal_dtype=None,
+    **kwargs,
+):
     """
     Registers two nD (n=2 or 3) images using just a translation-only model.
     This method uses projections along 2 or 3 axis and then performs phase correlation.
@@ -22,7 +26,8 @@ def register_translation_proj_nd(image_a: xpArray,
     image_a : First image to register
     image_b : Second image to register
     register_translation_2d : 2d registration method to use
-    drop_worse: drops the worst 2D registrations before combining the projection registration vectors to a full nD registration vector.
+    drop_worse: drops the worst 2D registrations before combining the projection
+        registration vectors to a full nD registration vector.
     force_numpy : Forces output model to be allocated with numpy arrays.
     internal_dtype : Internal dtype for computation
 
@@ -42,17 +47,12 @@ def register_translation_proj_nd(image_a: xpArray,
     image_b = Backend.to_backend(image_b)
 
     if image_a.ndim == 2:
-        image_a = _preprocess_image(image_a,
-                                    in_place=False,
-                                    dtype=internal_dtype)
-        image_b = _preprocess_image(image_b,
-                                    in_place=False,
-                                    dtype=internal_dtype)
+        image_a = _preprocess_image(image_a, in_place=False, dtype=internal_dtype)
+        image_b = _preprocess_image(image_b, in_place=False, dtype=internal_dtype)
 
-        shifts, confidence = register_translation_2d(image_a, image_b,
-                                                     force_numpy=force_numpy,
-                                                     internal_dtype=internal_dtype,
-                                                     **kwargs).get_shift_and_confidence()
+        shifts, confidence = register_translation_2d(
+            image_a, image_b, force_numpy=force_numpy, internal_dtype=internal_dtype, **kwargs
+        ).get_shift_and_confidence()
 
     elif image_a.ndim == 3:
         iap0 = _project_preprocess_image(image_a, axis=0, dtype=xp.float32)
@@ -63,20 +63,17 @@ def register_translation_proj_nd(image_a: xpArray,
         ibp1 = _project_preprocess_image(image_b, axis=1, dtype=xp.float32)
         ibp2 = _project_preprocess_image(image_b, axis=2, dtype=xp.float32)
 
-        shifts_p0, confidence_p0 = register_translation_2d(iap0, ibp0,
-                                                           force_numpy=force_numpy,
-                                                           internal_dtype=internal_dtype,
-                                                           **kwargs).get_shift_and_confidence()
+        shifts_p0, confidence_p0 = register_translation_2d(
+            iap0, ibp0, force_numpy=force_numpy, internal_dtype=internal_dtype, **kwargs
+        ).get_shift_and_confidence()
 
-        shifts_p1, confidence_p1 = register_translation_2d(iap1, ibp1,
-                                                           force_numpy=force_numpy,
-                                                           internal_dtype=internal_dtype,
-                                                           **kwargs).get_shift_and_confidence()
+        shifts_p1, confidence_p1 = register_translation_2d(
+            iap1, ibp1, force_numpy=force_numpy, internal_dtype=internal_dtype, **kwargs
+        ).get_shift_and_confidence()
 
-        shifts_p2, confidence_p2 = register_translation_2d(iap2, ibp2,
-                                                           force_numpy=force_numpy,
-                                                           internal_dtype=internal_dtype,
-                                                           **kwargs).get_shift_and_confidence()
+        shifts_p2, confidence_p2 = register_translation_2d(
+            iap2, ibp2, force_numpy=force_numpy, internal_dtype=internal_dtype, **kwargs
+        ).get_shift_and_confidence()
 
         # print(shifts_p0)
         # print(shifts_p1)
@@ -118,41 +115,31 @@ def register_translation_proj_nd(image_a: xpArray,
         #     viewer.add_image(_c(iap2), name='iap2')
         #     viewer.add_image(_c(ibp2), name='ibp2')
     else:
-        raise ValueError(f'Unsupported number of dimensions ({image_a.ndim}) for registration.')
+        raise ValueError(f"Unsupported number of dimensions ({image_a.ndim}) for registration.")
 
     model = TranslationRegistrationModel(shift_vector=shifts, confidence=confidence, force_numpy=force_numpy)
 
     return model
 
 
-def _project_preprocess_image(image,
-                              axis: int,
-                              smoothing: float = 0,
-                              quantile: int = None,
-                              gamma: float = 1,
-                              dtype=None):
+def _project_preprocess_image(
+    image, axis: int, smoothing: float = 0, quantile: int = None, gamma: float = 1, dtype=None
+):
     image_projected = _project_image(image, axis=axis)
-    image_projected_processed = _preprocess_image(image_projected,
-                                                  quantile=quantile,
-                                                  dtype=dtype)
+    image_projected_processed = _preprocess_image(image_projected, quantile=quantile, dtype=dtype)
 
     return image_projected_processed
 
 
 def _project_image(image, axis: int):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
     image = Backend.to_backend(image)
     projection = xp.max(image, axis=axis) - xp.min(image, axis=axis)
     return projection
 
 
-def _preprocess_image(image,
-                      quantile: float = 0.01,
-                      in_place: bool = True,
-                      dtype=None):
+def _preprocess_image(image, quantile: float = 0.01, in_place: bool = True, dtype=None):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     processed_image = Backend.to_backend(image, dtype=dtype, force_copy=not in_place)
 

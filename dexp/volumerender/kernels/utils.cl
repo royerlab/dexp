@@ -8,7 +8,7 @@
 // returns random value between [0,1]
 
 inline float random(uint x, uint y)
-{   
+{
     uint a = 4421 +(1+x)*(1+y) +x +y;
 
     for(int i=0; i < 10; i++)

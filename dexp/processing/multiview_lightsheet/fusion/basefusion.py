@@ -1,27 +1,28 @@
-import numpy as np
-from typing import List, Any, Optional
-from arbol.arbol import asection
+from typing import Any, List, Optional
 
-from dexp.utils import xpArray
+import numpy as np
+
 from dexp.processing.registration.model import RegistrationModel
+from dexp.utils import xpArray
 
 
 class BaseFusion:
-    def __init__(self,
-                 registration_model: Optional[RegistrationModel],
-                 equalise: bool,
-                 equalisation_ratios: List[Optional[float]],
-                 zero_level: float,
-                 clip_too_high: int,
-                 fusion: str,
-                 dehaze_before_fusion: bool,
-                 dehaze_size: int,
-                 dehaze_correct_max_level: bool,
-                 dark_denoise_threshold: int,
-                 dark_denoise_size: int,
-                 butterworth_filter_cutoff: float,
-                 internal_dtype: np.dtype,
-                 ):
+    def __init__(
+        self,
+        registration_model: Optional[RegistrationModel],
+        equalise: bool,
+        equalisation_ratios: List[Optional[float]],
+        zero_level: float,
+        clip_too_high: int,
+        fusion: str,
+        dehaze_before_fusion: bool,
+        dehaze_size: int,
+        dehaze_correct_max_level: bool,
+        dark_denoise_threshold: int,
+        dark_denoise_size: int,
+        butterworth_filter_cutoff: float,
+        internal_dtype: np.dtype,
+    ):
 
         self._registration_model = registration_model
         self._equalise = equalise
@@ -40,9 +41,9 @@ class BaseFusion:
     @staticmethod
     def _match_input(a: xpArray, b: xpArray) -> None:
         if a.shape != b.shape:
-            raise ValueError('The views must have the same shape')
+            raise ValueError("The views must have the same shape")
         if a.dtype != b.dtype:
-            raise ValueError('The views must have the same dtype')
+            raise ValueError("The views must have the same dtype")
 
     def preprocess(self, *args, **kwargs) -> Any:
         raise NotImplementedError

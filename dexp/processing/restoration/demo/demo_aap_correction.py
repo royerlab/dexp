@@ -23,25 +23,24 @@ def demo_aap_correction_cupy():
 
 def demo_aap_correction(length_xy=128, level=0.3):
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     image = binary_blobs(length=length_xy, seed=1, n_dim=3, volume_fraction=0.01)
     image = image.astype(xp.float32)
     image = gaussian_filter(image, sigma=4)
     image = add_patterned_noise(image, length_xy)
 
-    corrected = axis_aligned_pattern_correction(image,
-                                                in_place=False)
+    corrected = axis_aligned_pattern_correction(image, in_place=False)
 
     import napari
 
     with napari.gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = napari.Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(corrected), name='corrected')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(corrected), name="corrected")
         viewer.grid.enabled = True
 
 

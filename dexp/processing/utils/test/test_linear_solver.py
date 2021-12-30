@@ -38,21 +38,6 @@ def _test_linear_solver_small():
     with asection("Running l2 solver on small matrix: "):
         aprint(f"error = {numpy.mean(numpy.absolute(linsolve(a, y_obs, order_error=2, alpha_reg=0) - x_gt))}")
 
-    # with asection("Running l1 solver on small matrix: "):
-    #     aprint(f"error = {numpy.mean(numpy.absolute(linsolve(a, y_obs, order_error=1, alpha_reg=0) - x_gt))}")
-    #
-    # with asection("Running l0.5 solver on small matrix: "):
-    #     aprint(f"error = {numpy.mean(numpy.absolute(linsolve(a, y_obs, order_error=0.5, alpha_reg=0) - x_gt))}")
-    #
-    # with asection("Running l2l1 solver on small matrix: "):
-    #     aprint(f"error = {numpy.mean(numpy.absolute(linsolve(a, y_obs, order_error=2, order_reg=1, alpha_reg=0.1) - x_gt))}")
-    #
-    # with asection("Running l1l1 solver on small matrix: "):
-    #     aprint(f"error = {numpy.mean(numpy.absolute(linsolve(a, y_obs, order_error=1, order_reg=1, alpha_reg=0.1) - x_gt))}")
-    #
-    # with asection("Running l0.5l1 solver on small matrix: "):
-    #     aprint(f"error = {numpy.mean(numpy.absolute(linsolve(a, y_obs, order_error=0.5, order_reg=1, alpha_reg=0.1) - x_gt))}")
-
 
 def _run_solver(w=37, h=41, noise=1e-2, display=False, **kwargs):
     a = random.rand(w, h)
@@ -74,6 +59,7 @@ def _run_solver(w=37, h=41, noise=1e-2, display=False, **kwargs):
 def _test_linear_solver_large():
     with asection("Running solver on large matrix: "):
         aprint(_run_solver(w=1280, h=1370, order_error=1, order_reg=1, alpha_reg=0.1, display=True, limited=True))
+
 
 # def test_linear_solver_compare():
 #     n = 16

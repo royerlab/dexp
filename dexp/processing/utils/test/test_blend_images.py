@@ -21,12 +21,9 @@ def test_blend_cupy():
 
 
 def _test_blend(length_xy=128):
-    xp = Backend.get_xp_module()
-
-    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=False,
-                                                                                       length_xy=length_xy,
-                                                                                       length_z_factor=4,
-                                                                                       dtype=numpy.float32)
+    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(
+        add_noise=False, length_xy=length_xy, length_z_factor=4, dtype=numpy.float32
+    )
 
     blended = blend_images(image1, image2, blend_a)
 

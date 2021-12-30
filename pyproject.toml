@@ -4,3 +4,14 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 120
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::UserWarning:tifffile",
+]

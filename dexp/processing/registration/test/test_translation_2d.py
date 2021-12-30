@@ -3,11 +3,13 @@ from pytest import approx
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.demo.demo_translation_2d import _register_translation_2d
+from dexp.processing.registration.demo.demo_translation_2d import (
+    _register_translation_2d,
+)
 
 
 def test_register_translation_2d_numpy():
-    with  NumpyBackend():
+    with NumpyBackend():
         register_translation_2d()
 
 
@@ -21,7 +23,6 @@ def test_register_translation_2d_cupy():
 
 def register_translation_2d():
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     image, shifted, unshifted, model = _register_translation_2d(display=False)
 

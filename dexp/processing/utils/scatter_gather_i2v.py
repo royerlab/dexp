@@ -1,29 +1,33 @@
 import math
-from typing import Tuple, Union, Any
+from typing import Any, Tuple, Union
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.utils.nd_slice import nd_split_slices
 
 
-def scatter_gather_i2v(function,
-                       images: Union[Any, Tuple[Any]],
-                       tiles: Union[int, Tuple[int, ...]],
-                       margins: Union[int, Tuple[int, ...]] = None,
-                       to_numpy: bool = True,
-                       internal_dtype=None):
+def scatter_gather_i2v(
+    function,
+    images: Union[Any, Tuple[Any]],
+    tiles: Union[int, Tuple[int, ...]],
+    margins: Union[int, Tuple[int, ...]] = None,
+    to_numpy: bool = True,
+    internal_dtype=None,
+):
     """
     Image-2-vector scatter-gather.
-    Given a n-ary function that takes n images and returns a tuple of vectors per image, we split the input arrays into tiles,
-    apply the function to each tile computing using a given backend, and reassembling the vectors into a tuple of arrays of vectors,
-    with one vector per tile.
+    Given a n-ary function that takes n images and returns a tuple of vectors per image,
+    we split the input arrays into tiles, apply the function to each tile computing using a given backend, and
+    reassembling the vectors into a tuple of arrays of vectors, with one vector per tile.
 
     Parameters
     ----------
-    function : n-ary function. Must accept one or more arrays -- of same shape -- and return a _tuple_ of arrays as result.
-    images : sequence of images (can be any backend, numpy )
+    function : n-ary function. Must accept one or more arrays -- of same shape
+        --- and return a _tuple_ of arrays as result.
+    images : sequence of images (can be any backend, numpy)
     tiles : tiles to cut input image into, can be a single integer or a tuple of integers.
     margins : margins to add to each tile, can be a single integer or a tuple of integers.
-    to_numpy : should the result be a numpy array? Very usefull when the compute backend cannot hold the whole input and output images in memory.
+    to_numpy : should the result be a numpy array? Very usefull when the compute backend
+        cannot hold the whole input and output images in memory.
     internal_dtype : internal dtype for computation
 
     Returns
@@ -99,6 +103,9 @@ def scatter_gather_i2v(function,
 
         rxps = tuple(Backend.get_xp_module(results_list[0]) for results_list in results_lists)
         results_stacked = tuple(rxp.stack(results_list) for rxp, results_list in zip(rxps, results_lists))
-        results_stacked_reshaped = tuple(rxp.reshape(stack, newshape=tile_shape + results[0].shape) for rxp, stack, results in zip(rxps, results_stacked, results_lists))
+        results_stacked_reshaped = tuple(
+            rxp.reshape(stack, newshape=tile_shape + results[0].shape)
+            for rxp, stack, results in zip(rxps, results_stacked, results_lists)
+        )
 
     return results_stacked_reshaped

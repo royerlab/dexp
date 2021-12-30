@@ -1,27 +1,32 @@
 import json
-from typing import Tuple, Union, Sequence
+from typing import Sequence, Tuple, Union
 
 import numpy
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
+from dexp.processing.registration.model.pairwise_registration_model import (
+    PairwiseRegistrationModel,
+)
+from dexp.utils import xpArray
 
 
 class TranslationRegistrationModel(PairwiseRegistrationModel):
+    def __init__(
+        self,
+        shift_vector: Union[Sequence[float], numpy.ndarray],
+        confidence: Union[numpy.ndarray, float] = 1.0,
+        force_numpy: bool = True,
+    ):
 
-    def __init__(self,
-                 shift_vector: Union[Sequence[float], numpy.ndarray],
-                 confidence: Union[numpy.ndarray, float] = 1.0,
-                 force_numpy: bool = True):
-
-        """ Instantiates a translation registration model
+        """Instantiates a translation registration model
 
         Parameters
         ----------
         shift_vector : Relative shift between two images
         confidence : registration confidence: a float within [0, 1] which conveys how confident is the registration.
         A value of 0 means no confidence, a value of 1 means perfectly confident.
-        force_numpy : when creating this object, you have the option of forcing the use of numpy array instead of the current backend arrays.
+        force_numpy : when creating this object, you have the option of forcing the use of numpy array
+            instead of the current backend arrays.
 
         """
         super().__init__()
@@ -43,27 +48,32 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
         else:
             return False
 
-    def __sub__(self, other: 'TranslationRegistrationModel') -> 'TranslationRegistrationModel':
+    def __sub__(self, other: "TranslationRegistrationModel") -> "TranslationRegistrationModel":
         if isinstance(other, self.__class__):
-            return TranslationRegistrationModel(shift_vector=self.shift_vector - other.shift_vector,
-                                                confidence=self.confidence)
+            return TranslationRegistrationModel(
+                shift_vector=self.shift_vector - other.shift_vector, confidence=self.confidence
+            )
         else:
-            raise ValueError('Expected another `TranslationRegistrationModel` at `__sub__`.')
+            raise ValueError("Expected another `TranslationRegistrationModel` at `__sub__`.")
 
-    def __add__(self, other: 'TranslationRegistrationModel') -> 'TranslationRegistrationModel':
+    def __add__(self, other: "TranslationRegistrationModel") -> "TranslationRegistrationModel":
         if isinstance(other, self.__class__):
-            return TranslationRegistrationModel(shift_vector=self.shift_vector + other.shift_vector,
-                                                confidence=(self.confidence + other.confidence) / 2.0)
+            return TranslationRegistrationModel(
+                shift_vector=self.shift_vector + other.shift_vector,
+                confidence=(self.confidence + other.confidence) / 2.0,
+            )
         else:
-            raise ValueError('Expected another `TranslationRegistrationModel` at `__add__`.')
+            raise ValueError("Expected another `TranslationRegistrationModel` at `__add__`.")
 
-    def copy(self) -> 'TranslationRegistrationModel':
+    def copy(self) -> "TranslationRegistrationModel":
         return TranslationRegistrationModel(self.shift_vector, self.confidence)
 
     def to_json(self) -> str:
-        return json.dumps({'type': 'translation', 'translation': self.shift_vector.tolist(), 'confidence': self.confidence.tolist()})
+        return json.dumps(
+            {"type": "translation", "translation": self.shift_vector.tolist(), "confidence": self.confidence.tolist()}
+        )
 
-    def to_numpy(self) -> 'TranslationRegistrationModel':
+    def to_numpy(self) -> "TranslationRegistrationModel":
         self.shift_vector = Backend.to_numpy(self.shift_vector)
         self.confidence = Backend.to_numpy(self.confidence)
         return self
@@ -85,10 +95,7 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
     def get_shift_and_confidence(self):
         return self.shift_vector, self.confidence
 
-    def apply(self,
-              image,
-              integral: bool = True,
-              pad: bool = False) -> 'Array':
+    def apply(self, image, integral: bool = True, pad: bool = False) -> xpArray:
         """
         Applies the translation model to the given image, possibly by padding the image.
 
@@ -115,23 +122,15 @@ class TranslationRegistrationModel(PairwiseRegistrationModel):
 
         else:
             if integral:
-                image = numpy.roll(image,
-                                   shift=integral_shift_vector,
-                                   axis=range(len(integral_shift_vector)))
+                image = numpy.roll(image, shift=integral_shift_vector, axis=range(len(integral_shift_vector)))
 
                 return image
             else:
                 sp = Backend.get_sp_module()
-                image = sp.ndimage.shift(image,
-                                         shift=self.shift_vector,
-                                         order=1)
+                image = sp.ndimage.shift(image, shift=self.shift_vector, order=1)
                 return image
 
-    def apply_pair(self,
-                   image_a,
-                   image_b,
-                   integral: bool = True,
-                   pad: bool = False) -> Tuple['Array', 'Array']:
+    def apply_pair(self, image_a, image_b, integral: bool = True, pad: bool = False) -> Tuple[xpArray, xpArray]:
         """
         Applies the translation model to an image pair, possibly by padding the image.
 

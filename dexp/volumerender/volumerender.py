@@ -26,29 +26,31 @@ email: mweigert@mpi-cbg.de
 """
 
 import logging
+import os
+import sys
+from time import time
 
-from six.moves import zip
+import numpy as np
 
-from dexp.volumerender.transform_matrices import mat4_perspective, mat4_identity, mat4_scale
+# this is due to some pyinstaller bug!
+from scipy.linalg import inv
+
+from dexp.volumerender.transform_matrices import (
+    mat4_identity,
+    mat4_perspective,
+    mat4_scale,
+)
+
+try:
+    from gputools import OCLArray, OCLImage, OCLProgram, get_device, init_device
+except ImportError:
+    print("Could not import `gputools`, volumerender disabled.")
 
 logger = logging.getLogger(__name__)
 
-import os
-# this is due to some pyinstaller bug!
-from scipy.linalg import inv
-from time import time
-import sys
-import numpy as np
-
-try:
-    from gputools import init_device, get_device, OCLProgram, OCLArray, OCLImage
-except ImportError:
-    print('Could not import `gputools`, volumerender disabled.')
-    pass
-
 
 def absPath(myPath):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
+    """Get absolute path to resource, works for dev and for PyInstaller"""
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
@@ -59,7 +61,7 @@ def absPath(myPath):
 
 
 class VolumeRenderer:
-    """ renders a data volume by ray casting/max projection
+    """renders a data volume by ray casting/max projection
 
     usage:
                rend = VolumeRenderer((400,400))
@@ -67,12 +69,15 @@ class VolumeRenderer:
                rend.set_units(1.,1.,2.)
                rend.set_modelView(rotMatX(.7))
     """
-    dtypes = [np.float32, np.uint16, np.uint8]
-    interpolation_defines = {"linear": ["-D", "SAMPLER_FILTER=CLK_FILTER_LINEAR"],
-                             "nearest": ["-D", "SAMPLER_FILTER=CLK_FILTER_NEAREST"]}
 
-    def __init__(self, size=None, interpolation='linear'):
-        """ e.g. size = (300,300)"""
+    dtypes = [np.float32, np.uint16, np.uint8]
+    interpolation_defines = {
+        "linear": ["-D", "SAMPLER_FILTER=CLK_FILTER_LINEAR"],
+        "nearest": ["-D", "SAMPLER_FILTER=CLK_FILTER_NEAREST"],
+    }
+
+    def __init__(self, size=None, interpolation="linear"):
+        """e.g. size = (300,300)"""
 
         self.__DEFAULTMAXSTEPS__ = 200
         self.__QUALIFIER_CONSTANT_TO_GLOBAL__ = 0
@@ -90,7 +95,6 @@ class VolumeRenderer:
             #             useDevice = spimagine.config.__OPENCLDEVICE__)
             self.isGPU = True
 
-
         except Exception as e:
             print(e)
             print("could not find GPU OpenCL device -  trying CPU...")
@@ -103,7 +107,7 @@ class VolumeRenderer:
                 print(e)
                 print("could not find any OpenCL device ... sorry")
 
-        self.memMax = .7 * get_device().get_info("MAX_MEM_ALLOC_SIZE")
+        self.memMax = 0.7 * get_device().get_info("MAX_MEM_ALLOC_SIZE")
 
         # self.memMax = 2.*get_device().get_info("MAX_MEM_ALLOC_SIZE")
 
@@ -126,7 +130,7 @@ class VolumeRenderer:
         self.set_max_val()
         self.set_min_val()
 
-        self.set_occ_strength(.1)
+        self.set_occ_strength(0.1)
         self.set_occ_radius(21)
         self.set_occ_n_points(30)
 
@@ -138,10 +142,12 @@ class VolumeRenderer:
         self.set_projection()
 
     def rebuild_program(self, interpolation="linear"):
-        build_options_basic = ["-I", "%s" % absPath("kernels/"),
-                               "-D", "maxSteps=%s" % self.__DEFAULTMAXSTEPS__,
-
-                               ]
+        build_options_basic = [
+            "-I",
+            "%s" % absPath("kernels/"),
+            "-D",
+            "maxSteps=%s" % self.__DEFAULTMAXSTEPS__,
+        ]
 
         if self.__QUALIFIER_CONSTANT_TO_GLOBAL__:
             build_options_basic += ["-D", "QUALIFIER_CONSTANT_TO_GLOBAL"]
@@ -150,21 +156,19 @@ class VolumeRenderer:
             build_options_basic += VolumeRenderer.interpolation_defines[interpolation]
         else:
             raise KeyError(
-                "interpolation = '%s' not defined ,valid: %s" % (interpolation, list(VolumeRenderer.interpolation_defines.keys())))
+                "interpolation = '%s' not defined ,valid: %s"
+                % (interpolation, list(VolumeRenderer.interpolation_defines.keys()))
+            )
 
         try:
-            self.proc = OCLProgram(absPath("kernels/all_render_kernels.cl"),
-                                   build_options=
-                                   build_options_basic +
-                                   ["-cl-finite-math-only",
-                                    "-cl-fast-relaxed-math",
-                                    "-cl-unsafe-math-optimizations",
-                                    "-cl-mad-enable"])
+            self.proc = OCLProgram(
+                absPath("kernels/all_render_kernels.cl"),
+                build_options=build_options_basic
+                + ["-cl-finite-math-only", "-cl-fast-relaxed-math", "-cl-unsafe-math-optimizations", "-cl-mad-enable"],
+            )
         except Exception as e:
             logger.debug(str(e))
-            self.proc = OCLProgram(absPath("kernels/all_render_kernels.cl"),
-                                   build_options=
-                                   build_options_basic)
+            self.proc = OCLProgram(absPath("kernels/all_render_kernels.cl"), build_options=build_options_basic)
         self.proc
 
     def set_dtype(self, dtype=None):
@@ -177,7 +181,7 @@ class VolumeRenderer:
         if dtype in self.dtypes:
             self.dtype = dtype
         else:
-            raise NotImplementedError("data type should be either %s not %s" % (self.dtypes, dtype))
+            raise NotImplementedError(f"data type should be either {self.dtypes} not {dtype}")
 
         self.reset_buffer()
 
@@ -205,7 +209,7 @@ class VolumeRenderer:
         else returns None (no downsampling)
         """
         # Nstep = int(np.ceil(np.sqrt(1.*data.nbytes/self.memMax)))
-        Nstep = int(np.ceil((1. * data.nbytes / self.memMax) ** (1. / 3)))
+        Nstep = int(np.ceil((1.0 * data.nbytes / self.memMax) ** (1.0 / 3)))
 
         slices = [slice(0, d, Nstep) for d in data.shape]
         if Nstep > 1:
@@ -214,16 +218,16 @@ class VolumeRenderer:
         else:
             return None
 
-    def set_max_val(self, maxVal=0.):
+    def set_max_val(self, maxVal=0.0):
         self.maxVal = maxVal
 
-    def set_min_val(self, minVal=0.):
+    def set_min_val(self, minVal=0.0):
         self.minVal = minVal
 
-    def set_gamma(self, gamma=1.):
+    def set_gamma(self, gamma=1.0):
         self.gamma = gamma
 
-    def set_occ_strength(self, occ=.2):
+    def set_occ_strength(self, occ=0.2):
         self.occ_strength = occ
 
     def set_occ_radius(self, rad=21):
@@ -232,20 +236,20 @@ class VolumeRenderer:
     def set_occ_n_points(self, n_points=31):
         self.occ_n_points = n_points
 
-    def set_alpha_pow(self, alphaPow=0.):
+    def set_alpha_pow(self, alphaPow=0.0):
         self.alphaPow = alphaPow
 
     def set_data(self, data, autoConvert=True, copyData=False):
         logger.debug("set_data")
 
-        if not autoConvert and not data.dtype in self.dtypes:
-            raise NotImplementedError("data type should be either %s not %s" % (self.dtypes, data.dtype))
+        if not autoConvert and data.dtype not in self.dtypes:
+            raise NotImplementedError(f"data type should be either {self.dtypes} not {data.dtype}")
 
         if data.dtype.type in self.dtypes:
             self.set_dtype(data.dtype.type)
             _data = data
         else:
-            print("converting type from %s to %s" % (data.dtype.type, self.dtype))
+            print(f"converting type from {data.dtype.type} to {self.dtype}")
             _data = data.astype(self.dtype, copy=False)
 
         self.dataSlices = self._get_downsampled_data_slices(_data)
@@ -257,7 +261,7 @@ class VolumeRenderer:
 
         t = time()
         self.update_data(_data, copyData=copyData)
-        logger.debug("update data: %s ms" % (1000. * (time() - t)))
+        logger.debug("update data: %s ms" % (1000.0 * (time() - t)))
         self.update_matrices()
 
     def set_shape(self, dataShape):
@@ -307,7 +311,7 @@ class VolumeRenderer:
         self.update_matrices()
 
     def set_modelView(self, modelView=mat4_identity()):
-        self.modelView = 1. * modelView
+        self.modelView = 1.0 * modelView
         self.update_matrices()
 
     def update_matrices(self):
@@ -325,7 +329,7 @@ class VolumeRenderer:
 
         # mScale =  scaleMat(1.,1.*dx*Nx/dy/Ny,1.*dx*Nx/dz/Nz)
         maxDim = max(d * N for d, N in zip([dx, dy, dz], [Nx, Ny, Nz]))
-        return mat4_scale(1. * dx * Nx / maxDim, 1. * dy * Ny / maxDim, 1. * dz * Nz / maxDim)
+        return mat4_scale(1.0 * dx * Nx / maxDim, 1.0 * dy * Ny / maxDim, 1.0 * dz * Nz / maxDim)
 
     def _render_max_project(self, dtype=np.float32, numParts=1, currentPart=0):
         if dtype in [np.uint16, np.uint8]:
@@ -336,27 +340,31 @@ class VolumeRenderer:
         else:
             raise NotImplementedError("wrong dtype: %s", dtype)
 
-        self.proc.run_kernel(method,
-                             (self.width, self.height),
-                             None,
-                             self.buf.data, self.buf_alpha.data,
-                             self.buf_depth.data,
-                             np.int32(self.width), np.int32(self.height),
-                             np.float32(self.boxBounds[0]),
-                             np.float32(self.boxBounds[1]),
-                             np.float32(self.boxBounds[2]),
-                             np.float32(self.boxBounds[3]),
-                             np.float32(self.boxBounds[4]),
-                             np.float32(self.boxBounds[5]),
-                             np.float32(self.minVal),
-                             np.float32(self.maxVal),
-                             np.float32(self.gamma),
-                             np.float32(self.alphaPow),
-                             np.int32(numParts),
-                             np.int32(currentPart),
-                             self.invPBuf.data,
-                             self.invMBuf.data,
-                             self.dataImg)
+        self.proc.run_kernel(
+            method,
+            (self.width, self.height),
+            None,
+            self.buf.data,
+            self.buf_alpha.data,
+            self.buf_depth.data,
+            np.int32(self.width),
+            np.int32(self.height),
+            np.float32(self.boxBounds[0]),
+            np.float32(self.boxBounds[1]),
+            np.float32(self.boxBounds[2]),
+            np.float32(self.boxBounds[3]),
+            np.float32(self.boxBounds[4]),
+            np.float32(self.boxBounds[5]),
+            np.float32(self.minVal),
+            np.float32(self.maxVal),
+            np.float32(self.gamma),
+            np.float32(self.alphaPow),
+            np.int32(numParts),
+            np.int32(currentPart),
+            self.invPBuf.data,
+            self.invMBuf.data,
+            self.dataImg,
+        )
 
         self.output = self.buf.get()
         self.output_alpha = self.buf_alpha.get()
@@ -364,50 +372,42 @@ class VolumeRenderer:
 
     def _convolve_scalar(self, buf, radius=11):
 
-        self.proc.run_kernel("conv_x",
-                             (self.width, self.height), None,
-                             buf.data,
-                             self.buf_tmp.data,
-                             np.int32(radius))
-        self.proc.run_kernel("conv_y",
-                             (self.width, self.height), None,
-                             self.buf_tmp.data,
-                             buf.data,
-                             np.int32(radius))
+        self.proc.run_kernel("conv_x", (self.width, self.height), None, buf.data, self.buf_tmp.data, np.int32(radius))
+        self.proc.run_kernel("conv_y", (self.width, self.height), None, self.buf_tmp.data, buf.data, np.int32(radius))
 
     def _convolve_vec(self, buf, radius=11):
-        self.proc.run_kernel("conv_vec_x",
-                             (self.width, self.height), None,
-                             buf.data,
-                             self.buf_tmp_vec.data,
-                             np.int32(radius))
+        self.proc.run_kernel(
+            "conv_vec_x", (self.width, self.height), None, buf.data, self.buf_tmp_vec.data, np.int32(radius)
+        )
 
-        self.proc.run_kernel("conv_vec_y",
-                             (self.width, self.height), None,
-                             self.buf_tmp_vec.data,
-                             buf.data,
-                             np.int32(radius))
+        self.proc.run_kernel(
+            "conv_vec_y", (self.width, self.height), None, self.buf_tmp_vec.data, buf.data, np.int32(radius)
+        )
 
     def _render_isosurface2(self):
-        self.proc.run_kernel("iso_surface",
-                             (self.width, self.height),
-                             None,
-                             self.buf.data, self.buf_alpha.data,
-                             self.buf_depth.data, self.buf_normals.data,
-                             np.int32(self.width), np.int32(self.height),
-                             np.float32(self.boxBounds[0]),
-                             np.float32(self.boxBounds[1]),
-                             np.float32(self.boxBounds[2]),
-                             np.float32(self.boxBounds[3]),
-                             np.float32(self.boxBounds[4]),
-                             np.float32(self.boxBounds[5]),
-                             np.float32(self.maxVal / 2),
-                             np.float32(self.gamma),
-                             self.invPBuf.data,
-                             self.invMBuf.data,
-                             self.dataImg,
-                             np.int32(self.dtype in [np.uint16, np.uint8])
-                             )
+        self.proc.run_kernel(
+            "iso_surface",
+            (self.width, self.height),
+            None,
+            self.buf.data,
+            self.buf_alpha.data,
+            self.buf_depth.data,
+            self.buf_normals.data,
+            np.int32(self.width),
+            np.int32(self.height),
+            np.float32(self.boxBounds[0]),
+            np.float32(self.boxBounds[1]),
+            np.float32(self.boxBounds[2]),
+            np.float32(self.boxBounds[3]),
+            np.float32(self.boxBounds[4]),
+            np.float32(self.boxBounds[5]),
+            np.float32(self.maxVal / 2),
+            np.float32(self.gamma),
+            self.invPBuf.data,
+            self.invMBuf.data,
+            self.dataImg,
+            np.int32(self.dtype in [np.uint16, np.uint8]),
+        )
 
         self._convolve_vec(self.buf_normals, 5)
 
@@ -421,53 +421,61 @@ class VolumeRenderer:
         with ambient occlusion
         """
 
-        self.proc.run_kernel("iso_surface",
-                             (self.width, self.height),
-                             None,
-                             self.buf.data, self.buf_alpha.data,
-                             self.buf_depth.data, self.buf_normals.data,
-                             np.int32(self.width), np.int32(self.height),
-                             np.float32(self.boxBounds[0]),
-                             np.float32(self.boxBounds[1]),
-                             np.float32(self.boxBounds[2]),
-                             np.float32(self.boxBounds[3]),
-                             np.float32(self.boxBounds[4]),
-                             np.float32(self.boxBounds[5]),
-                             np.float32(self.maxVal / 2),
-                             np.float32(self.gamma),
-                             self.invPBuf.data,
-                             self.invMBuf.data,
-                             self.dataImg,
-                             np.int32(self.dtype in [np.uint16, np.uint8])
-                             )
+        self.proc.run_kernel(
+            "iso_surface",
+            (self.width, self.height),
+            None,
+            self.buf.data,
+            self.buf_alpha.data,
+            self.buf_depth.data,
+            self.buf_normals.data,
+            np.int32(self.width),
+            np.int32(self.height),
+            np.float32(self.boxBounds[0]),
+            np.float32(self.boxBounds[1]),
+            np.float32(self.boxBounds[2]),
+            np.float32(self.boxBounds[3]),
+            np.float32(self.boxBounds[4]),
+            np.float32(self.boxBounds[5]),
+            np.float32(self.maxVal / 2),
+            np.float32(self.gamma),
+            self.invPBuf.data,
+            self.invMBuf.data,
+            self.dataImg,
+            np.int32(self.dtype in [np.uint16, np.uint8]),
+        )
         self._convolve_vec(self.buf_normals, 7)
         #
-        self.proc.run_kernel("occlusion",
-                             (self.width, self.height),
-                             None,
-                             self.buf_occlusion.data,
-                             np.int32(self.width), np.int32(self.height),
-                             np.int32(self.occ_radius),
-                             np.int32(self.occ_n_points),
-                             self.buf_depth.data,
-                             self.buf_normals.data,
-                             )
+        self.proc.run_kernel(
+            "occlusion",
+            (self.width, self.height),
+            None,
+            self.buf_occlusion.data,
+            np.int32(self.width),
+            np.int32(self.height),
+            np.int32(self.occ_radius),
+            np.int32(self.occ_n_points),
+            self.buf_depth.data,
+            self.buf_normals.data,
+        )
 
         self._convolve_scalar(self.buf_occlusion, 5)
 
-        self.proc.run_kernel("shading",
-                             (self.width, self.height),
-                             None,
-                             self.buf.data, self.buf_alpha.data,
-                             np.int32(self.width), np.int32(self.height),
-                             self.invPBuf.data,
-                             self.invMBuf.data,
-                             np.float32(self.occ_strength),
-                             self.buf_normals.data,
-                             self.buf_depth.data,
-                             self.buf_occlusion.data,
-
-                             )
+        self.proc.run_kernel(
+            "shading",
+            (self.width, self.height),
+            None,
+            self.buf.data,
+            self.buf_alpha.data,
+            np.int32(self.width),
+            np.int32(self.height),
+            self.invPBuf.data,
+            self.invMBuf.data,
+            np.float32(self.occ_strength),
+            self.buf_normals.data,
+            self.buf_depth.data,
+            self.buf_occlusion.data,
+        )
 
         # self._convolve_scalar(self.buf,13)
         # self._convolve_vec(self.buf_normals,101)
@@ -478,11 +486,21 @@ class VolumeRenderer:
         self.output_normals = self.buf_normals.get()
         self.output_occlusion = self.buf_occlusion.get()
 
-    def render(self, data=None, stackUnits=None,
-               minVal=None, maxVal=None, gamma=None,
-               modelView=None, projection=None,
-               boxBounds=None, return_alpha=False, method="max_project",
-               numParts=1, currentPart=0):
+    def render(
+        self,
+        data=None,
+        stackUnits=None,
+        minVal=None,
+        maxVal=None,
+        gamma=None,
+        modelView=None,
+        projection=None,
+        boxBounds=None,
+        return_alpha=False,
+        method="max_project",
+        numParts=1,
+        currentPart=0,
+    ):
 
         if data is not None:
             self.set_data(data)
@@ -505,11 +523,11 @@ class VolumeRenderer:
         if projection is not None:
             self.set_projection(projection)
 
-        if not hasattr(self, 'dataImg'):
+        if not hasattr(self, "dataImg"):
             print("no data provided, set_data(data) before")
             return
 
-        if modelView is None and not hasattr(self, 'modelView'):
+        if modelView is None and not hasattr(self, "modelView"):
             print("no modelView provided and set_modelView() not called before!")
             return
 

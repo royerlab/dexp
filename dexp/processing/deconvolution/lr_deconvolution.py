@@ -1,5 +1,5 @@
 import math
-from typing import Tuple, Union, Optional
+from typing import Optional, Tuple, Union
 
 import numpy
 
@@ -13,26 +13,28 @@ from dexp.processing.utils.normalise import normalise_functions
 from dexp.utils import xpArray
 
 
-def lucy_richardson_deconvolution(image: xpArray,
-                                  psf: xpArray,
-                                  num_iterations: Optional[int] = None,
-                                  max_correction: Optional[float] = None,
-                                  power: float = 1.0,
-                                  back_projection: Optional[str] = None,
-                                  wb_cutoffs: Union[float, Tuple[float, ...], None] = 0.9,
-                                  wb_beta: float = 0.05,
-                                  wb_order: int = 2,
-                                  padding: int = 0,
-                                  padding_mode: str = 'edge',
-                                  normalise_input: bool = True,
-                                  normalise_minmax: Optional[Tuple[float, float]] = None,
-                                  clip_output: bool = False,
-                                  blind_spot: int = 0,
-                                  blind_spot_mode: str = 'median+uniform',
-                                  blind_spot_axis_exclusion: Optional[Union[str, Tuple[int, ...]]] = None,
-                                  eps: float = 1e-12,
-                                  convolve_method=fft_convolve,
-                                  internal_dtype=None):
+def lucy_richardson_deconvolution(
+    image: xpArray,
+    psf: xpArray,
+    num_iterations: Optional[int] = None,
+    max_correction: Optional[float] = None,
+    power: float = 1.0,
+    back_projection: Optional[str] = None,
+    wb_cutoffs: Union[float, Tuple[float, ...], None] = 0.9,
+    wb_beta: float = 0.05,
+    wb_order: int = 2,
+    padding: int = 0,
+    padding_mode: str = "edge",
+    normalise_input: bool = True,
+    normalise_minmax: Optional[Tuple[float, float]] = None,
+    clip_output: bool = False,
+    blind_spot: int = 0,
+    blind_spot_mode: str = "median+uniform",
+    blind_spot_axis_exclusion: Optional[Union[str, Tuple[int, ...]]] = None,
+    eps: float = 1e-12,
+    convolve_method=fft_convolve,
+    internal_dtype=None,
+):
     """
     Deconvolves an nD image given a point-spread-function.
 
@@ -49,13 +51,17 @@ def lucy_richardson_deconvolution(image: xpArray,
     wb_order : Wiener-Butterworth backprojection order parameter.
     padding : padding (see numpy/cupy pad function)
     padding_mode : padding mode (see numpy/cupy pad function)
-    normalise_input : This deconvolution code assumes values within [0, 1], by default input images are normalised to that range, but if already normalised, then normalisation can be ommited.
+    normalise_input : This deconvolution code assumes values within [0, 1], by default input images
+        are normalised to that range, but if already normalised, then normalisation can be ommited.
     normalise_minmax : Use the given tuple (min, max) for normalisation
     clip_output : Clip output to input range, or not
-    blind_spot : If zero, blind-spot is disabled. If blind_spot>0 it is active and the integer represents the blind-spot kernel support. A value of 3 or 5 are good and help reduce the impact of noise on deconvolution.
+    blind_spot : If zero, blind-spot is disabled. If blind_spot>0 it is active and the integer represents
+        the blind-spot kernel support. A value of 3 or 5 are good and help reduce the impact of noise on deconvolution.
     blind_spot_mode : blind-spot mode, can be 'mean' or 'median'
-    blind_spot_axis_exclusion : if None no axis is excluded from the blind-spot support kernel, otherwise if a tuple of ints is provided, these refer to the
-    then the support kernel is clipped along these axis. For example for a 3D stack where the sampling along z (first axis) is poor, use: (0,) so that blind-spot kernel does not extend in z.
+    blind_spot_axis_exclusion : if None no axis is excluded from the blind-spot support kernel, otherwise
+        if a tuple of ints is provided, these refer to the then the support kernel is clipped along these axis.
+        For example for a 3D stack where the sampling along z (first axis) is poor,
+        use: (0,) so that blind-spot kernel does not extend in z.
     eps: epsilon to avoid dividing by zero
     convolve_method : convolution method to use
     internal_dtype : dtype to use internally for computation.
@@ -85,7 +91,7 @@ def lucy_richardson_deconvolution(image: xpArray,
         if 2 * (blind_spot // 2) == blind_spot:
             raise ValueError(f"Blind spot size must be an odd integer, blind_spot={blind_spot} is not!")
 
-        if 'gaussian' in blind_spot_mode:
+        if "gaussian" in blind_spot_mode:
             full_kernel = gaussian_kernel_nd(ndim=image.ndim, size=blind_spot, sigma=max(1, blind_spot // 2))
         else:
             full_kernel = xp.ones(shape=(blind_spot,) * image.ndim, dtype=internal_dtype)
@@ -93,8 +99,12 @@ def lucy_richardson_deconvolution(image: xpArray,
         if blind_spot_axis_exclusion is not None:
             c = blind_spot // 2
 
-            slicing_n = [slice(None, None, None), ] * image.ndim
-            slicing_p = [slice(None, None, None), ] * image.ndim
+            slicing_n = [
+                slice(None, None, None),
+            ] * image.ndim
+            slicing_p = [
+                slice(None, None, None),
+            ] * image.ndim
             for axis in blind_spot_axis_exclusion:
                 slicing_n[axis] = slice(0, c, None)
                 slicing_p[axis] = slice(c + 1, blind_spot, None)
@@ -110,9 +120,9 @@ def lucy_richardson_deconvolution(image: xpArray,
         psf = sp.ndimage.convolve(psf, donut_kernel)
         psf /= psf.sum()
 
-        if 'median' in blind_spot_mode:
+        if "median" in blind_spot_mode:
             image = sp.ndimage.filters.median_filter(image, footprint=full_kernel)
-        elif 'mean' in blind_spot_mode:
+        elif "mean" in blind_spot_mode:
             image = sp.ndimage.convolve(image, donut_kernel)
 
         # from napari import Viewer, gui_qt
@@ -129,26 +139,24 @@ def lucy_richardson_deconvolution(image: xpArray,
         #     viewer.add_image(_c(back_projector), name='psf')
 
     # Default back projection:
-    back_projection = 'tpsf' if back_projection is None else back_projection
+    back_projection = "tpsf" if back_projection is None else back_projection
 
     # Back projection setting:
-    if back_projection == 'tpsf':
+    if back_projection == "tpsf":
         back_projector = xp.flip(psf)
-    elif back_projection == 'wb':
-        back_projector = wiener_butterworth_kernel(kernel=xp.flip(psf),
-                                                   cutoffs=wb_cutoffs,
-                                                   beta=wb_beta,
-                                                   order=wb_order,
-                                                   dtype=xp.float64)
+    elif back_projection == "wb":
+        back_projector = wiener_butterworth_kernel(
+            kernel=xp.flip(psf), cutoffs=wb_cutoffs, beta=wb_beta, order=wb_order, dtype=xp.float64
+        )
         back_projector = back_projector.astype(psf.dtype)
     else:
         raise ValueError(f"back projection mode: {back_projection} not supported.")
 
     # Default number of iterations:
     if num_iterations is None:
-        if back_projection == 'tpsf':
+        if back_projection == "tpsf":
             num_iterations = 20
-        elif back_projection == 'wb':
+        elif back_projection == "wb":
             num_iterations = 3
 
     # from napari import Viewer, gui_qt
@@ -164,11 +172,9 @@ def lucy_richardson_deconvolution(image: xpArray,
     #     viewer.add_image(_c(back_projector_f), name='back_projector_f', colormap='viridis')
 
     # Normalisation:
-    norm_fun, denorm_fun = normalise_functions(image,
-                                               minmax=normalise_minmax,
-                                               do_normalise=normalise_input,
-                                               clip=False,
-                                               dtype=internal_dtype)
+    norm_fun, denorm_fun = normalise_functions(
+        image, minmax=normalise_minmax, do_normalise=normalise_input, clip=False, dtype=internal_dtype
+    )
 
     image = norm_fun(image)
 
@@ -177,11 +183,7 @@ def lucy_richardson_deconvolution(image: xpArray,
         image = numpy.pad(image, pad_width=padding, mode=padding_mode)
 
     # Result array:
-    result = xp.full(
-        image.shape,
-        float(xp.mean(image)),
-        dtype=internal_dtype
-    )
+    result = xp.full(image.shape, float(xp.mean(image)), dtype=internal_dtype)
 
     # LR iterations:
     for i in range(num_iterations):
@@ -198,24 +200,19 @@ def lucy_richardson_deconvolution(image: xpArray,
         relative_blur = nan_to_zero(relative_blur, copy=False)
         # Limits max correction:
         if max_correction is not None:
-            relative_blur[
-                relative_blur > max_correction
-                ] = max_correction
-            relative_blur[relative_blur < 1 / max_correction] = (
-                    1 / max_correction
-            )
+            relative_blur[relative_blur > max_correction] = max_correction
+            relative_blur[relative_blur < 1 / max_correction] = 1 / max_correction
 
         # Back-projection:
         multiplicative_correction = convolve_method(
             relative_blur,
             back_projector,
         )
-        # multiplicative_correction = xp.clip(multiplicative_correction, a_min=0.0, a_max=None, out=multiplicative_correction)
 
         # Multiplicative correction can be optionally elevated to a power:
         if power != 1.0:
             multiplicative_correction = xp.clip(multiplicative_correction, 0, None, out=multiplicative_correction)
-            multiplicative_correction **= (1 + (power - 1) / (math.sqrt(1 + i)))
+            multiplicative_correction **= 1 + (power - 1) / (math.sqrt(1 + i))
 
         # Apply multiplicative correction:
         result *= multiplicative_correction

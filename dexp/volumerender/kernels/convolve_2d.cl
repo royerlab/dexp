@@ -9,7 +9,7 @@ __kernel void conv_x(__global float * input,
 
   int i = get_global_id(0);
   int j = get_global_id(1);
-  
+
   int Nx = get_global_size(0);
 
   float res = 0.f;
@@ -27,7 +27,7 @@ __kernel void conv_x(__global float * input,
 
 
 
-	
+
   output[i+j*Nx] = res/sum_val;
 }
 
@@ -37,7 +37,7 @@ __kernel void conv_y(__global float * input,
 
   int i = get_global_id(0);
   int j = get_global_id(1);
-  
+
   int Nx = get_global_size(0);
   int Ny = get_global_size(1);
 
@@ -49,14 +49,14 @@ __kernel void conv_y(__global float * input,
   const int h_start = ((j-Nh/2)<0)?Nh/2-j:0;
   const int h_end = ((j+Nh/2)>=Ny)?Nh-(j+Nh/2-Ny+1):Nh;
 
-  
+
   for (int ht = h_start; ht< h_end; ++ht){
        float val = native_exp((float)(-10.f*(ht-Nh/2.f)*(ht-Nh/2.f)/Nh/Nh));
       sum_val += val;
       res += val*input[i+(start+ht)*Nx];
   }
 
-	
+
   output[i+j*Nx] = res/sum_val;
 }
 
@@ -135,8 +135,3 @@ __kernel void conv_vec_y(__global float * input,
   output[2+3*(i+j*Nx)] = res_z/sum_val;
 
 }
-
-
-
-
-

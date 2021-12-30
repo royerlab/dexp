@@ -1,20 +1,20 @@
-
 from typing import Optional
 
 import numpy
 import scipy
 
-from dexp.utils import xpArray
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.utils import xpArray
 
 
-
-def inversion_deconvolution(image: xpArray,
-                            psf: xpArray,
-                            epsilon: float = 1e-12,
-                            mode: str = 'wrap',
-                            internal_dtype: Optional[numpy.dtype] = None) -> xpArray:
+def inversion_deconvolution(
+    image: xpArray,
+    psf: xpArray,
+    epsilon: float = 1e-12,
+    mode: str = "wrap",
+    internal_dtype: Optional[numpy.dtype] = None,
+) -> xpArray:
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
@@ -33,8 +33,8 @@ def inversion_deconvolution(image: xpArray,
 
     backproj = xp.flip(psf)
 
-    if mode != 'wrap':
-        pad_width = tuple((tuple((s // 2, s // 2)) for s in backproj.shape))
+    if mode != "wrap":
+        pad_width = tuple(tuple((s // 2, s // 2)) for s in backproj.shape)
         image = xp.pad(image, pad_width=pad_width, mode=mode)
 
     s1 = numpy.array(image.shape)
@@ -50,16 +50,17 @@ def inversion_deconvolution(image: xpArray,
     deconv_fft = (image_fft + epsilon) / (backproj_fft + epsilon)
 
     import napari
+
     viewer = napari.Viewer()
-    viewer.add_image(xp.fft.fftshift(image_fft).real.get(), name='image')
-    viewer.add_image(xp.fft.fftshift(backproj_fft).real.get(), name='backprojector')
-    viewer.add_image(xp.fft.fftshift(deconv_fft).real.get(), name='deconvolved')
+    viewer.add_image(xp.fft.fftshift(image_fft).real.get(), name="image")
+    viewer.add_image(xp.fft.fftshift(backproj_fft).real.get(), name="backprojector")
+    viewer.add_image(xp.fft.fftshift(deconv_fft).real.get(), name="deconvolved")
 
     napari.run()
 
     deconv = sp.fft.irfftn(deconv_fft)
 
-    fslice = tuple([slice(0, int(sz)) for sz in shape])
+    fslice = tuple(slice(0, int(sz)) for sz in shape)
     deconv = deconv[fslice]
 
     newshape = numpy.asarray(image.shape)
@@ -70,7 +71,7 @@ def inversion_deconvolution(image: xpArray,
 
     deconv = deconv[tuple(myslice)]
 
-    if mode != 'wrap':
+    if mode != "wrap":
         slicing = tuple(slice(s // 2, -(s // 2)) for s in backproj.shape)
         deconv = deconv[slicing]
 

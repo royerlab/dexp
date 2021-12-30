@@ -22,7 +22,6 @@ def demo_register_translation_2d_cupy():
 
 
 def _register_translation_2d(shift=(13, -5), display=True):
-    xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
     with asection("generate dataset"):
@@ -45,18 +44,22 @@ def _register_translation_2d(shift=(13, -5), display=True):
 
     if display:
         from napari import Viewer, gui_qt
+
         with gui_qt():
+
             def _c(array):
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', visible=False)
-            viewer.add_image(_c(shifted), name='shifted', colormap='bop blue', blending='additive', visible=False)
-            viewer.add_image(_c(unshifted), name='unshifted', colormap='bop blue', blending='additive', visible=False)
-            viewer.add_image(_c(image1_reg), name='image1_reg', colormap='bop orange', blending='additive', visible=False)
-            viewer.add_image(_c(image2_reg), name='image2_reg', colormap='bop blue', blending='additive', visible=False)
-            viewer.add_image(_c(image1_reg_pad), name='image1_reg_pad', colormap='bop orange', blending='additive')
-            viewer.add_image(_c(image2_reg_pad), name='image2_reg_pad', colormap='bop blue', blending='additive')
+            viewer.add_image(_c(image), name="image", colormap="bop orange", blending="additive", visible=False)
+            viewer.add_image(_c(shifted), name="shifted", colormap="bop blue", blending="additive", visible=False)
+            viewer.add_image(_c(unshifted), name="unshifted", colormap="bop blue", blending="additive", visible=False)
+            viewer.add_image(
+                _c(image1_reg), name="image1_reg", colormap="bop orange", blending="additive", visible=False
+            )
+            viewer.add_image(_c(image2_reg), name="image2_reg", colormap="bop blue", blending="additive", visible=False)
+            viewer.add_image(_c(image1_reg_pad), name="image1_reg_pad", colormap="bop orange", blending="additive")
+            viewer.add_image(_c(image2_reg_pad), name="image2_reg_pad", colormap="bop blue", blending="additive")
 
     return image, shifted, unshifted, model
 

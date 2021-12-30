@@ -8,11 +8,8 @@ from dexp.processing.backends.backend import Backend
 
 
 class PytorchBackend(Backend):
-
-    def __init__(self, device: Device = 'cpu'):
-        """ Instanciates a Pytorch-based Image Processing backend
-
-        """
+    def __init__(self, device: Device = "cpu"):
+        """Instanciates a Pytorch-based Image Processing backend"""
         self.device = device
 
     def __str__(self):

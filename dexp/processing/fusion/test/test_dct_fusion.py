@@ -13,9 +13,9 @@ def test_dct_fusion_numpy():
 
 
 def dct_fusion(length_xy=128):
-    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=False,
-                                                                                       length_xy=length_xy,
-                                                                                       length_z_factor=4)
+    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(
+        add_noise=False, length_xy=length_xy, length_z_factor=4
+    )
     with timeit("dcf fusion + data transfer"):
         image_fused = fuse_dct_nd(image1, image2)
         image_fused = Backend.to_numpy(image_fused)

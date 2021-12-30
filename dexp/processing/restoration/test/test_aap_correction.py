@@ -34,8 +34,6 @@ def test_aap_correction_cupy():
 
 
 def _test_aap_correction(length_xy=128):
-    xp = Backend.get_xp_module()
-
     image = binary_blobs(length=length_xy, seed=1, n_dim=3, volume_fraction=0.01)
     image = image.astype(numpy.float32)
     image = gaussian_filter(image, sigma=4)

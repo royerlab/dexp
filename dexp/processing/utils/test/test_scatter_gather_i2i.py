@@ -21,7 +21,6 @@ def test_scatter_gather_i2i_cupy():
 
 
 def _test_scatter_gather_i2i(ndim=3, length_xy=128, splits=4, filter_size=7):
-    xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
     image = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
@@ -32,7 +31,7 @@ def _test_scatter_gather_i2i(ndim=3, length_xy=128, splits=4, filter_size=7):
     try:
         with timeit("f"):
             result_ref = Backend.to_numpy(f(Backend.to_backend(image)))
-    except:
+    except RuntimeError:
         print("Can't run this, not enough GPU memory!")
         result_ref = 0 * image + 17
 

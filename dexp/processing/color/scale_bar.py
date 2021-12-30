@@ -1,4 +1,4 @@
-from typing import Union, Tuple, Sequence
+from typing import Tuple, Union
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.color.blend import blend_color_images
@@ -6,18 +6,20 @@ from dexp.processing.color.cairo_utils import get_array_for_cairo_surface
 from dexp.utils import xpArray
 
 
-def insert_scale_bar(image: xpArray,
-                     length_in_unit: float = 1,
-                     pixel_scale: float = 1,
-                     bar_height: int = 4,
-                     margin: float = 1,
-                     translation: Union[str, Tuple[Union[int, float], ...]] = 'bottom_right',
-                     color: Tuple[float, float, float, float] = None,
-                     number_format: str = '{:.1f}',
-                     font_name: str = "Helvetica",
-                     font_size: float = 32,
-                     unit: str = 'μm',
-                     mode: str = 'max'):
+def insert_scale_bar(
+    image: xpArray,
+    length_in_unit: float = 1,
+    pixel_scale: float = 1,
+    bar_height: int = 4,
+    margin: float = 1,
+    translation: Union[str, Tuple[Union[int, float], ...]] = "bottom_right",
+    color: Tuple[float, float, float, float] = None,
+    number_format: str = "{:.1f}",
+    font_name: str = "Helvetica",
+    font_size: float = 32,
+    unit: str = "μm",
+    mode: str = "max",
+):
     """
     Inserts a scale bar into an image.
 
@@ -28,7 +30,8 @@ def insert_scale_bar(image: xpArray,
     pixel_scale: conversion factor from pixels to units -- what is the side length of a pixel/voxel in units.
     bar_height: Height of th scale bar in pixels
     margin: margin around bar expressed in units relative to the text height
-    translation: Positions of the scale bar in pixels in numpy order: (y, x). Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
+    translation: Positions of the scale bar in pixels in numpy order: (y, x).
+        Can also be a string: 'bottom_left', 'bottom_right', 'top_left', 'top_right'.
     color: Color of the bar and text as tuple of 4 values: (R, G, B, A)
     number_format: Format string to represent the start and end values.
     font_name: Font name.
@@ -41,9 +44,6 @@ def insert_scale_bar(image: xpArray,
     Image with inserted scale bar.
 
     """
-
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     # Move to backend:
     image = Backend.to_backend(image)
@@ -58,52 +58,53 @@ def insert_scale_bar(image: xpArray,
     bar_length = length_in_unit / pixel_scale
 
     # Replace um with µm:
-    if unit.strip() == 'um':
-        unit = 'µm'
+    if unit.strip() == "um":
+        unit = "µm"
 
-    scale_bar_array = _generate_scale_bar_image(width,
-                                                height,
-                                                translation,
-                                                bar_height,
-                                                bar_length,
-                                                margin,
-                                                color,
-                                                font_name,
-                                                font_size,
-                                                length_in_unit,
-                                                number_format,
-                                                unit)
+    scale_bar_array = _generate_scale_bar_image(
+        width,
+        height,
+        translation,
+        bar_height,
+        bar_length,
+        margin,
+        color,
+        font_name,
+        font_size,
+        length_in_unit,
+        number_format,
+        unit,
+    )
 
     # Blend images:
-    result = blend_color_images(images=(image, scale_bar_array),
-                                alphas=(1, 1),
-                                modes=('max', mode))
+    result = blend_color_images(images=(image, scale_bar_array), alphas=(1, 1), modes=("max", mode))
 
     return result, scale_bar_array
 
 
-def _generate_scale_bar_image(width,
-                              height,
-                              translation,
-                              bar_height,
-                              bar_length,
-                              margin,
-                              color,
-                              font_name,
-                              font_size,
-                              length_in_unit,
-                              number_format,
-                              unit):
+def _generate_scale_bar_image(
+    width,
+    height,
+    translation,
+    bar_height,
+    bar_length,
+    margin,
+    color,
+    font_name,
+    font_size,
+    length_in_unit,
+    number_format,
+    unit,
+):
     # Create surface:
     import cairocffi as cairo
+
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     context = cairo.Context(surface)
     context.scale(1, 1)
 
     # Configure text rendering:
-    context.select_font_face(font_name,
-                             cairo.FONT_SLANT_NORMAL,
-                             cairo.FONT_WEIGHT_NORMAL)
+    context.select_font_face(font_name, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
     context.set_font_size(font_size)
 
     # text to be rendered:
@@ -131,19 +132,18 @@ def _generate_scale_bar_image(width,
 
     # Set the position of the bar, that is the left-most end of it, including the margin:
     if type(translation) == str:
-        if 'top' in translation:
+        if "top" in translation:
             y = margin_height
-        elif 'bottom' in translation:
+        elif "bottom" in translation:
             y = height - (margin_height + bar_height)
-        if 'left' in translation:
+        if "left" in translation:
             x = margin_width
-        elif 'right' in translation:
+        elif "right" in translation:
             x = width - (margin_width + bar_length / 2 + max(bar_length / 2, text_width / 2))
     elif type(translation) == tuple:
         y, x = translation
     else:
         raise ValueError(f"Invalid translation: {translation}")
-
 
     # We draw the scale bar itself:
     context.rectangle(x, y - bar_height / 2, bar_length, bar_height)
@@ -159,7 +159,7 @@ def _generate_scale_bar_image(width,
     context.set_source_rgba(*color)
 
     # draw text at correct location:
-    if 'top' in translation:
+    if "top" in translation:
         context.move_to(x + bar_length / 2 - text_width / 2, y + (3 * text_height / 2))
     else:
         context.move_to(x + bar_length / 2 - text_width / 2, y - text_height / 2)

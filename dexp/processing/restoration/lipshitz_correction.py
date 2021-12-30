@@ -7,21 +7,23 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.utils import xpArray
 
 
-def lipschitz_continuity_correction(image: xpArray,
-                                    num_iterations: int = 2,
-                                    correction_percentile: float = 0.1,
-                                    lipschitz: float = 0.1,
-                                    max_proportion_corrected: float = 1,
-                                    decimation: int = 8,
-                                    in_place: bool = True,
-                                    internal_dtype=None
-                                    ):
+def lipschitz_continuity_correction(
+    image: xpArray,
+    num_iterations: int = 2,
+    correction_percentile: float = 0.1,
+    lipschitz: float = 0.1,
+    max_proportion_corrected: float = 1,
+    decimation: int = 8,
+    in_place: bool = True,
+    internal_dtype=None,
+):
     """
     'Lipshitz continuity correction'
 
     'Broken' pixels on detectors typically blink or are very dim or very bright, in any case they are 'out of context'.
-    In many cases they will locally break Lipshitz continuity implied by diffraction limited imaging. Here is a simple
-    greedy scheme that starts with the  ost infringing voxels and incrementally filters them using local median filtering.
+    In many cases they will locally break Lipshitz continuity implied by diffraction limited imaging.
+    Here is a simple greedy scheme that starts with the ost infringing voxels
+    and incrementally filters them using local median filtering.
 
 
     Parameters
@@ -61,9 +63,7 @@ def lipschitz_continuity_correction(image: xpArray,
         # could be done only once but that's less accurate..
         median, error = _compute_error(image, decimation, lipschitz, internal_dtype)
         gc.collect()
-        threshold = xp.percentile(
-            error.ravel()[::decimation], q=100 * (1 - correction_percentile)
-        )
+        threshold = xp.percentile(error.ravel()[::decimation], q=100 * (1 - correction_percentile))
 
         mask = error > threshold
 
@@ -73,11 +73,10 @@ def lipschitz_continuity_correction(image: xpArray,
         if num_corrections == 0:
             break
 
-        proportion = (
-                             num_corrections + total_number_of_corrections
-                     ) / image.size
+        proportion = (num_corrections + total_number_of_corrections) / image.size
         print(
-            f"Proportion of corrected pixels: {int(proportion * 100)}% (up to now), versus maximum: {int(max_proportion_corrected * 100)}%) "
+            f"Proportion of corrected pixels: {int(proportion * 100)}% (up to now), "
+            + f"versus maximum: {int(max_proportion_corrected * 100)}%)"
         )
 
         if proportion > max_proportion_corrected:

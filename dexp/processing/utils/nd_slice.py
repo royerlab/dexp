@@ -22,9 +22,7 @@ def nd_split_slices(array_shape, chunks, margins=None):
 
     dim_width = array_shape[-1]
 
-    for outer in nd_split_slices(
-            array_shape[:-1], chunks[:-1], margins=margins[:-1]
-    ):
+    for outer in nd_split_slices(array_shape[:-1], chunks[:-1], margins=margins[:-1]):
 
         slice_width = chunks[-1]
         slice_margin = margins[-1]

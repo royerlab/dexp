@@ -7,23 +7,25 @@ from dexp.processing.color.cairo_utils import get_array_for_cairo_surface
 from dexp.processing.color.colormap import rgb_colormap
 
 
-def depth_color_scale_legend(cmap,
-                             start: float,
-                             end: float,
-                             flip: bool = False,
-                             number_format: str = '{:.1f}',
-                             font_name: str = "Helvetica",
-                             font_size: float = 32.0,
-                             title: str = '',
-                             color: Tuple[float, float, float, float] = (1, 1, 1, 1),
-                             bar_height: float = 0.15,
-                             size: float = 1,
-                             pixel_resolution: int = 512):
+def depth_color_scale_legend(
+    cmap,
+    start: float,
+    end: float,
+    flip: bool = False,
+    number_format: str = "{:.1f}",
+    font_name: str = "Helvetica",
+    font_size: float = 32.0,
+    title: str = "",
+    color: Tuple[float, float, float, float] = (1, 1, 1, 1),
+    bar_height: float = 0.15,
+    size: float = 1,
+    pixel_resolution: int = 512,
+):
     """
     Produces a color bar legend.
 
     Note: if you need to specify the unit as microns, use this symbol: μm
-    
+
     Parameters
     ----------
     cmap: Color map to use
@@ -55,6 +57,7 @@ def depth_color_scale_legend(cmap,
 
     # Create a Cairo surface:
     import cairocffi as cairo
+
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     context = cairo.Context(surface)
     context.scale(width, height)
@@ -97,12 +100,10 @@ def depth_color_scale_legend(cmap,
 
     # draw text
     context.set_source_rgba(*color)
-    context.select_font_face(font_name,
-                             cairo.FONT_SLANT_NORMAL,
-                             cairo.FONT_WEIGHT_NORMAL)
+    context.select_font_face(font_name, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
     context.set_font_size(font_size)
 
-    text_height = context.text_extents('X')[3]
+    text_height = context.text_extents("X")[3]
 
     start_text = number_format.format(start)
     context.move_to(0.01, end_bar + text_height / 2 + text_height)
@@ -129,7 +130,7 @@ def depth_color_scale_legend(cmap,
     height = surface_array.shape[0]
     crop_top = int((vert_start - text_height / 2) * height)
     crop_bottom = int((vert_end + text_height / 2) * height)
-    surface_array = surface_array[crop_top - 10:crop_bottom + 10, ...]
+    surface_array = surface_array[crop_top - 10 : crop_bottom + 10, ...]
 
     # Move to backend:
     surface_array = Backend.to_backend(surface_array, force_copy=True)

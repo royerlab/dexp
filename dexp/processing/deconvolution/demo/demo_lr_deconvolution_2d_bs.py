@@ -36,28 +36,26 @@ def _demo_lr_deconvolution():
 
     iterations = 50
 
-    deconvolved = lucy_richardson_deconvolution(noisy, psf,
-                                                num_iterations=iterations,
-                                                padding=16)
+    deconvolved = lucy_richardson_deconvolution(noisy, psf, num_iterations=iterations, padding=16)
 
-    deconvolved_blind_spot = lucy_richardson_deconvolution(noisy, psf,
-                                                           num_iterations=iterations,
-                                                           padding=16,
-                                                           blind_spot=5,
-                                                           blind_spot_mode='uniform+median')
+    deconvolved_blind_spot = lucy_richardson_deconvolution(
+        noisy, psf, num_iterations=iterations, padding=16, blind_spot=5, blind_spot_mode="uniform+median"
+    )
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(blurry), name='blurry')
-        viewer.add_image(_c(psf), name='psf')
-        viewer.add_image(_c(noisy), name='noisy')
-        viewer.add_image(_c(deconvolved), name='deconvolved')
-        viewer.add_image(_c(deconvolved_blind_spot), name='deconvolved_blind_spot')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(blurry), name="blurry")
+        viewer.add_image(_c(psf), name="psf")
+        viewer.add_image(_c(noisy), name="noisy")
+        viewer.add_image(_c(deconvolved), name="deconvolved")
+        viewer.add_image(_c(deconvolved_blind_spot), name="deconvolved_blind_spot")
 
 
 if __name__ == "__main__":

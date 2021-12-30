@@ -1,4 +1,4 @@
-from typing import Tuple, Union, Optional
+from typing import Optional, Tuple, Union
 
 import numpy
 
@@ -7,19 +7,22 @@ from dexp.processing.utils.nd_slice import nd_split_slices, remove_margin_slice
 from dexp.processing.utils.normalise import normalise_functions
 
 
-def scatter_gather_i2i(function,
-                       image,
-                       tiles: Union[int, Tuple[int, ...]],
-                       margins: Optional[Union[int, Tuple[int, ...]]] = None,
-                       normalise: bool = False,
-                       clip: bool = False,
-                       to_numpy: bool = True,
-                       internal_dtype=None):
+def scatter_gather_i2i(
+    function,
+    image,
+    tiles: Union[int, Tuple[int, ...]],
+    margins: Optional[Union[int, Tuple[int, ...]]] = None,
+    normalise: bool = False,
+    clip: bool = False,
+    to_numpy: bool = True,
+    internal_dtype=None,
+):
     """
     Image-2-image scatter-gather.
-    'Scatters' computation of a given unary function by splitting the input array into tiles, computing using a given backend,
-    and reassembling the tiles into a single array of same shape as the inpout that is either backed by the same backend than
-    that of the input image, or that is backed by numpy -- usefull when the compute backend cannot hold the whole input and output
+    'Scatters' computation of a given unary function by splitting the input array into tiles,
+    computing using a given backend, and reassembling the tiles into a single array of same
+    shape as the inpout that is either backed by the same backend than that of the input image,
+    or that is backed by numpy -- usefull when the compute backend cannot hold the whole input and output
     images in memory.
 
     Parameters
@@ -27,10 +30,12 @@ def scatter_gather_i2i(function,
     function : unary function
     image : input image (can be any backend, numpy )
     tiles : tile sizes to cut input image into, can be a single integer or a tuple of integers.
-    margins : margins to add to each tile, can be a single integer or a tuple of integers. if None, no margins are added.
+    margins : margins to add to each tile, can be a single integer or a tuple of integers.
+        if None, no margins are added.
     normalise : normalises  the input image.
     clip : clip after normalisation/denormalisation
-    to_numpy : should the result be a numpy array? Very usefull when the compute backend cannot hold the whole input and output images in memory.
+    to_numpy : should the result be a numpy array? Very usefull when the compute backend
+        cannot hold the whole input and output images in memory.
     internal_dtype : internal dtype for computation
 
     Returns
@@ -61,9 +66,7 @@ def scatter_gather_i2i(function,
 
     # Normalise:
     norm_fun, denorm_fun = normalise_functions(
-        Backend.to_backend(image),
-        do_normalise=normalise, clip=clip,
-        quantile=0.005
+        Backend.to_backend(image), do_normalise=normalise, clip=clip, quantile=0.005
     )
 
     # image shape:
@@ -102,12 +105,11 @@ def _scatter_gather_loop(denorm_fun, function, image, internal_dtype, norm_fun, 
         else:
             image_tile = Backend.to_backend(image_tile, dtype=internal_dtype)
 
-        remove_margin_slice_tuple = remove_margin_slice(
-            shape, tile_slice, tile_slice_no_margins
-        )
+        remove_margin_slice_tuple = remove_margin_slice(shape, tile_slice, tile_slice_no_margins)
         image_tile = image_tile[remove_margin_slice_tuple]
 
         result[tile_slice_no_margins] = image_tile
+
 
 # Dask turned out not too work great here, HUGE overhead compared to the light approach above.
 # def scatter_gather_dask(backend: Backend,

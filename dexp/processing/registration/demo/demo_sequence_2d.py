@@ -9,7 +9,9 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.synthetic_datasets.binary_blobs import binary_blobs
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 
 
 def demo_register_sequence_2d_numpy():
@@ -25,16 +27,18 @@ def demo_register_sequence_2d_cupy():
         aprint("Cupy module not found! demo ignored")
 
 
-def _register_sequence_2d(length_xy=512,
-                          n=512,
-                          drift_strength=1.5,
-                          warp_grid_size=6,
-                          warp_strength=2.5,
-                          ratio_bad_frames=0.05,
-                          additive_noise=0.05,
-                          multiplicative_noise=0.1,
-                          run_test=False,
-                          display=True):
+def _register_sequence_2d(
+    length_xy=512,
+    n=512,
+    drift_strength=1.5,
+    warp_grid_size=6,
+    warp_strength=2.5,
+    ratio_bad_frames=0.05,
+    additive_noise=0.05,
+    multiplicative_noise=0.1,
+    run_test=False,
+    display=True,
+):
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
@@ -66,11 +70,15 @@ def _register_sequence_2d(length_xy=512,
             if i == n // 2 - n // 3:
                 x += 38
                 y += -35
-                vector_field += 16 * warp_strength * xp.random.uniform(low=-1, high=+1, size=(warp_grid_size,) * 2 + (2,))
+                vector_field += (
+                    16 * warp_strength * xp.random.uniform(low=-1, high=+1, size=(warp_grid_size,) * 2 + (2,))
+                )
             if i == n // 2 + n // 3:
                 x += 37
                 y += -29
-                vector_field += 16 * warp_strength * xp.random.uniform(low=-1, high=+1, size=(warp_grid_size,) * 2 + (2,))
+                vector_field += (
+                    16 * warp_strength * xp.random.uniform(low=-1, high=+1, size=(warp_grid_size,) * 2 + (2,))
+                )
 
             # keep for later:
             shifts.append((x, y))
@@ -82,17 +90,19 @@ def _register_sequence_2d(length_xy=512,
         image1 = sp.ndimage.gaussian_filter(image1, sigma=4)
 
         # camera:
-        image2 = camera().astype(xp.float32)
+        _ = camera().astype(xp.float32)  # image2
 
         # nuclei:
-        _, _, image3 = generate_nuclei_background_data(add_noise=False,
-                                                       length_xy=length_xy // 4,
-                                                       length_z_factor=1,
-                                                       independent_haze=True,
-                                                       sphere=True,
-                                                       add_offset=False,
-                                                       zoom=4,
-                                                       dtype=xp.float32)
+        _, _, image3 = generate_nuclei_background_data(
+            add_noise=False,
+            length_xy=length_xy // 4,
+            length_z_factor=1,
+            independent_haze=True,
+            sphere=True,
+            add_offset=False,
+            zoom=4,
+            dtype=xp.float32,
+        )
         image3 = image3[image3.shape[0] // 2].astype(xp.float32)
 
         # choice between 3 images:
@@ -105,8 +115,15 @@ def _register_sequence_2d(length_xy=512,
         image = xp.stack(image for _ in range(n))
 
         # generate shifted, distorted, degraded timelapse:
-        shifted = xp.stack((sp.ndimage.shift(warp(i, vf, vector_field_upsampling=4), shift=s) for i, s, vf in zip(image, shifts, vector_fields)))
-        shifted *= xp.clip(xp.random.normal(loc=1, scale=multiplicative_noise, size=shifted.shape, dtype=xp.float32), 0.1, 10)
+        shifted = xp.stack(
+            (
+                sp.ndimage.shift(warp(i, vf, vector_field_upsampling=4), shift=s)
+                for i, s, vf in zip(image, shifts, vector_fields)
+            )
+        )
+        shifted *= xp.clip(
+            xp.random.normal(loc=1, scale=multiplicative_noise, size=shifted.shape, dtype=xp.float32), 0.1, 10
+        )
         shifted += additive_noise * xp.random.rand(*shifted.shape, dtype=xp.float32)
         shifted = xp.clip(shifted - 50, 0)
 
@@ -120,12 +137,9 @@ def _register_sequence_2d(length_xy=512,
 
     with asection("register_translation_2d"):
         # compute image sequence stabilisation model:
-        model = image_stabilisation(shifted,
-                                    axis=0,
-                                    sigma=3,
-                                    edge_filter=False,
-                                    denoise_input_sigma=1,
-                                    debug_output='stabilisation')
+        model = image_stabilisation(
+            shifted, axis=0, sigma=3, edge_filter=False, denoise_input_sigma=1, debug_output="stabilisation"
+        )
         aprint(f"model: {model}")
 
     with asection("shift back"):
@@ -133,25 +147,23 @@ def _register_sequence_2d(length_xy=512,
         # apply stabilisation:
         stabilised_seq = model.apply_sequence(shifted, axis=0)
 
-        # another way to apply stabilisation:
-        stabilised_sps = xp.stack(model.apply(image, index=i, pad=True) for i, image in enumerate(shifted))
-
     if display:
         from napari import Viewer, gui_qt
+
         with gui_qt():
+
             def _c(array):
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
             viewer.grid.enabled = True
-            # viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', visible=True)
-            viewer.add_image(_c(shifted), name='shifted', colormap='bop purple', blending='additive', visible=True)
-            viewer.add_image(_c(stabilised_seq), name='stabilised_seq', colormap='bop blue', blending='additive', visible=True)
-            # viewer.add_image(_c(stabilised_sps), name='stabilised_sps', colormap='bop blue', blending='additive', visible=True)
+            viewer.add_image(_c(shifted), name="shifted", colormap="bop purple", blending="additive", visible=True)
+            viewer.add_image(
+                _c(stabilised_seq), name="stabilised_seq", colormap="bop blue", blending="additive", visible=True
+            )
 
     return image, shifted, stabilised_seq, model
 
 
 if __name__ == "__main__":
     demo_register_sequence_2d_cupy()
-    # demo_register_translation_2d_numpy()

@@ -77,13 +77,13 @@ def open_dataset(path: str):
     """
 
     # remove trailing slash:
-    if path.endswith('/'):
+    if path.endswith("/"):
         path = path[:-1]
 
-    if path.endswith('.zarr.zip') or path.endswith('.zarr'):
+    if path.endswith(".zarr.zip") or path.endswith(".zarr"):
         # we can recognise a Zarr dataset by its extension.
         dataset = ZDataset(path)
-    elif exists(join(path, 'stacks')):
+    elif exists(join(path, "stacks")):
         # we can recognise a ClearControl dataset by the presence of a 'stacks' sub folder.
         dataset = CCDataset(path)
     else:

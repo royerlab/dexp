@@ -1,17 +1,18 @@
+from functools import partial
+
 import numpy
 
 from dexp.optics.psf.standard_psfs import nikon16x08na
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.deconvolution.admm_deconvolution import admm_deconvolution
-from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
 from dexp.processing.deconvolution.blind_deconvolution import blind_deconvolution
+from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
+from dexp.processing.filters.fft_convolve import fft_convolve
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 from dexp.utils.timeit import timeit
-
-from functools import partial
 
 
 def demo_blind_deconvolution_numpy():
@@ -31,13 +32,11 @@ def _demo_blind_deconvolution(length_xy=128):
     xp = Backend.get_xp_module()
 
     with timeit("generate data"):
-        image_gt, background, image = generate_nuclei_background_data(add_noise=False,
-                                                                      length_xy=length_xy,
-                                                                      length_z_factor=1,
-                                                                      background_stength=0,
-                                                                      add_offset=False)
+        image_gt, background, image = generate_nuclei_background_data(
+            add_noise=False, length_xy=length_xy, length_z_factor=1, background_stength=0, add_offset=False
+        )
 
-    psf = nikon16x08na(xy_size=35, z_size=35) # , dxy=0.200, dz=0.94)
+    psf = nikon16x08na(xy_size=35, z_size=35)  # , dxy=0.200, dz=0.94)
     psf = psf.astype(dtype=numpy.float16)
     image = image.astype(dtype=numpy.float16)
 
@@ -47,7 +46,7 @@ def _demo_blind_deconvolution(length_xy=128):
     noisy = blurry
     noisy = noisy + 0.05 * xp.random.uniform(size=blurry.shape)
 
-    iterations = 10
+    # iterations = 10
     # normalizing (required by admm)
     noisy = noisy - noisy.min()
     noisy = noisy / noisy.max()
@@ -68,15 +67,15 @@ def _demo_blind_deconvolution(length_xy=128):
         return Backend.to_numpy(array)
 
     import napari
+
     viewer = napari.Viewer()
-    viewer.add_image(_c(image), name='image')
-    viewer.add_image(_c(blurry), name='blurry')
-    viewer.add_image(_c(psf), name='psf')
-    viewer.add_image(_c(noisy), name='noisy')
-    viewer.add_image(_c(deconvolved), name='sparse deconv')
+    viewer.add_image(_c(image), name="image")
+    viewer.add_image(_c(blurry), name="blurry")
+    viewer.add_image(_c(psf), name="psf")
+    viewer.add_image(_c(noisy), name="noisy")
+    viewer.add_image(_c(deconvolved), name="sparse deconv")
 
     napari.run()
-
 
 
 if __name__ == "__main__":

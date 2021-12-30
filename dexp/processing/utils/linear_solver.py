@@ -7,17 +7,21 @@ from scipy.optimize import minimize
 from dexp.processing.backends.backend import Backend
 
 
-def linsolve(a, y, x0=None,
-             maxiter: int = 1e12,
-             maxfun: int = 1e12,
-             tolerance: float = 1e-6,
-             order_error: float = 1,
-             order_reg: float = 1,
-             alpha_reg: float = 1e-1,
-             l2_init: bool = False,
-             bounds: Optional[Sequence[Tuple[float, float]]] = None,
-             limited: bool = True,
-             verbose: bool = False):
+def linsolve(
+    a,
+    y,
+    x0=None,
+    maxiter: int = 1e12,
+    maxfun: int = 1e12,
+    tolerance: float = 1e-6,
+    order_error: float = 1,
+    order_reg: float = 1,
+    alpha_reg: float = 1e-1,
+    l2_init: bool = False,
+    bounds: Optional[Sequence[Tuple[float, float]]] = None,
+    limited: bool = True,
+    verbose: bool = False,
+):
     xp = Backend.get_xp_module()
 
     a = Backend.to_backend(a)
@@ -25,12 +29,7 @@ def linsolve(a, y, x0=None,
 
     if x0 is None:
         if l2_init:
-            x0 = linsolve(a, y, x0=x0,
-                          maxiter=maxiter,
-                          tolerance=tolerance,
-                          order_error=2,
-                          alpha_reg=0,
-                          l2_init=False)
+            x0 = linsolve(a, y, x0=x0, maxiter=maxiter, tolerance=tolerance, order_error=2, alpha_reg=0, l2_init=False)
         else:
             x0 = numpy.zeros(a.shape[1])
 
@@ -49,23 +48,28 @@ def linsolve(a, y, x0=None,
             objective += regularisation_term
         return objective
 
-    result = minimize(fun,
-                      x0,
-                      method='L-BFGS-B' if limited else 'BFGS',
-                      tol=tolerance,
-                      bounds=bounds if limited else None,
-                      options={'disp': verbose,
-                               'maxiter': maxiter,
-                               'maxfun': maxfun,
-                               'gtol': tolerance,
-                               'eps': 1e-5,  # the minimization would not converge sometimes without this param.
-                               },
-                      )
+    result = minimize(
+        fun,
+        x0,
+        method="L-BFGS-B" if limited else "BFGS",
+        tol=tolerance,
+        bounds=bounds if limited else None,
+        options={
+            "disp": verbose,
+            "maxiter": maxiter,
+            "maxfun": maxfun,
+            "gtol": tolerance,
+            "eps": 1e-5,  # the minimization would not converge sometimes without this param.
+        },
+    )
 
     if result.nit == 0:
         aprint(f"Warning: optimisation finished after {result.nit} iterations!")
 
     if not result.success:
-        raise RuntimeError(f"Convergence failed: '{result.message}' after {result.nit} iterations and {result.nfev} function evaluations.")
+        raise RuntimeError(
+            f"Convergence failed: '{result.message}' after {result.nit} "
+            + "iterations and {result.nfev} function evaluations."
+        )
 
     return result.x

@@ -30,21 +30,19 @@ def _demo_butterworth_filter():
     cutoffs = 0.75
     n = 8
 
-    filtered = butterworth_filter(noisy,
-                                  shape=shape,
-                                  cutoffs=cutoffs,
-                                  cutoffs_in_freq_units=False,
-                                  order=n)
+    filtered = butterworth_filter(noisy, shape=shape, cutoffs=cutoffs, cutoffs_in_freq_units=False, order=n)
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(noisy), name='noisy')
-        viewer.add_image(_c(filtered), name='filtered')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(noisy), name="noisy")
+        viewer.add_image(_c(filtered), name="filtered")
 
 
 if __name__ == "__main__":

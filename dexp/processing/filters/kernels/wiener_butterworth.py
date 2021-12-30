@@ -6,14 +6,16 @@ from dexp.processing.filters.butterworth_filter import butterworth_kernel
 from dexp.processing.filters.kernels.wiener import wiener_kernel
 
 
-def wiener_butterworth_kernel(kernel,
-                              alpha: float = 1e-3,
-                              beta: float = 1e-1,
-                              cutoffs: Union[float, Tuple[float, ...], None] = None,
-                              cutoffs_in_freq_units=False,
-                              auto_cutoff_threshold=0.1,
-                              order: int = 5,
-                              dtype=None):
+def wiener_butterworth_kernel(
+    kernel,
+    alpha: float = 1e-3,
+    beta: float = 1e-1,
+    cutoffs: Union[float, Tuple[float, ...], None] = None,
+    cutoffs_in_freq_units=False,
+    auto_cutoff_threshold=0.1,
+    order: int = 5,
+    dtype=None,
+):
     """
     Computes the Wiener-Butterworth back projector according to Guo et al, bioRxiv 2019.
 
@@ -23,7 +25,8 @@ def wiener_butterworth_kernel(kernel,
     alpha : alpha
     beta : beta
     cutoffs : Butterworth cutoffs.
-    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units. If False, the units are in normalised within [0,1]
+    cutoffs_in_freq_units : If True, the cutoffs are specified in frequency units.
+        If False, the units are in normalised within [0,1]
     order : Butterworth order
     dtype : dtype for kernel
 
@@ -34,17 +37,13 @@ def wiener_butterworth_kernel(kernel,
     """
     backend = Backend.current()
     xp = backend.get_xp_module()
-    sp = backend.get_sp_module()
 
     if dtype is None:
         dtype = kernel.dtype
 
-    wk_f = wiener_kernel(kernel,
-                         alpha=alpha,
-                         frequency_domain=True,
-                         dtype=dtype)
+    wk_f = wiener_kernel(kernel, alpha=alpha, frequency_domain=True, dtype=dtype)
 
-    ##TODO: figure out cutoff from PSF ?
+    # TODO: figure out cutoff from PSF ?
 
     if cutoffs is None:
         cutoffs_in_freq_units = False
@@ -57,20 +56,22 @@ def wiener_butterworth_kernel(kernel,
             psf_sumproj.append(psf_f[slicing])
 
         psf_sumproj = tuple(p / p.max() for p in psf_sumproj)
-        psf_sumproj = tuple(p[s // 2:] for s, p in zip(psf_f.shape, psf_sumproj))
+        psf_sumproj = tuple(p[s // 2 :] for s, p in zip(psf_f.shape, psf_sumproj))
         pass_band = tuple(p > auto_cutoff_threshold for p in psf_sumproj)
         cutoffs = tuple(float(xp.count_nonzero(b) / b.size) for b in pass_band)
         # cutoffs = (max(cutoffs),)*psf_f.ndim
 
     epsilon = math.sqrt((beta ** -2) - 1)
 
-    bwk_f = butterworth_kernel(shape=kernel.shape,
-                               cutoffs=cutoffs,
-                               cutoffs_in_freq_units=cutoffs_in_freq_units,
-                               epsilon=epsilon,
-                               order=order,
-                               frequency_domain=True,
-                               dtype=dtype)
+    bwk_f = butterworth_kernel(
+        shape=kernel.shape,
+        cutoffs=cutoffs,
+        cutoffs_in_freq_units=cutoffs_in_freq_units,
+        epsilon=epsilon,
+        order=order,
+        frequency_domain=True,
+        dtype=dtype,
+    )
 
     # Weiner-Butterworth back projector
     wbwk_f = wk_f * bwk_f
@@ -92,6 +93,7 @@ def wiener_butterworth_kernel(kernel,
     wbwk = wbwk.astype(dtype=dtype, copy=False)
 
     return wbwk
+
 
 #
 # ###

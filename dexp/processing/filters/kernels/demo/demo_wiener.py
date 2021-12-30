@@ -23,9 +23,7 @@ def demo_wiener_cupy():
 def _demo_wiener():
     xp = Backend.get_xp_module()
 
-    psf = gaussian_kernel_nd(size=31,
-                             ndim=2,
-                             dtype=numpy.float32)
+    psf = gaussian_kernel_nd(size=31, ndim=2, dtype=numpy.float32)
 
     psf_f = xp.log1p(xp.absolute(xp.fft.fftshift(xp.fft.fftn(psf))))
 
@@ -34,15 +32,17 @@ def _demo_wiener():
     w_f = xp.log1p(xp.absolute(xp.fft.fftshift(xp.fft.fftn(w))))
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(psf), name='psf')
-        viewer.add_image(_c(psf_f), name='psf_f', colormap='viridis')
-        viewer.add_image(_c(w), name='b')
-        viewer.add_image(_c(w_f), name='b_f', colormap='viridis')
+        viewer.add_image(_c(psf), name="psf")
+        viewer.add_image(_c(psf_f), name="psf_f", colormap="viridis")
+        viewer.add_image(_c(w), name="b")
+        viewer.add_image(_c(w_f), name="b_f", colormap="viridis")
         viewer.grid.enabled = True
         viewer.grid.view = (2, 2)
 

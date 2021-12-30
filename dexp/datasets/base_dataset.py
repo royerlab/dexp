@@ -1,15 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Sequence, Tuple, Any
+from typing import Any, Sequence, Tuple
 
 import numpy
 
 
 class BaseDataset(ABC):
-
     def __init__(self, dask_backed=False):
-        """ Instanciates a Base Dataset
-
-        """
+        """Instanciates a Base Dataset"""
         self.dask_backed = dask_backed
 
     def _selected_channels(self, channels: Sequence[str]):
@@ -30,7 +27,7 @@ class BaseDataset(ABC):
         elif numpy.issubdtype(dtype, numpy.floating):
             return numpy.finfo(dtype).max
         else:
-            raise NotImplementedError(f'Found {type(dtype), dtype}.')
+            raise NotImplementedError(f"Found {type(dtype), dtype}.")
 
     @abstractmethod
     def close(self):

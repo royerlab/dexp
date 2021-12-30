@@ -4,7 +4,9 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deskew.classic_deskew import classic_deskew_dimensionless
 from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 from dexp.utils.timeit import timeit
 
 
@@ -23,9 +25,7 @@ def demo_classic_deskew_cupy():
         return False
 
 
-def _classic_deskew(length: int = 128,
-                    zoom: int = 4,
-                    display: bool = True):
+def _classic_deskew(length: int = 128, zoom: int = 4, display: bool = True):
 
     _deskew(1, length, zoom, display)
     _deskew(0.5, length, zoom, display)
@@ -36,18 +36,24 @@ def _deskew(shift, length, zoom, display):
     sp = Backend.get_sp_module()
     with timeit("generate demo image"):
         # generate nuclei image:
-        _, _, image = generate_nuclei_background_data(add_noise=False,
-                                                      length_xy=length,
-                                                      length_z_factor=1,
-                                                      independent_haze=True,
-                                                      sphere=True,
-                                                      zoom=zoom,
-                                                      add_offset=False,
-                                                      background_stength=0.07,
-                                                      dtype=xp.float32)
+        _, _, image = generate_nuclei_background_data(
+            add_noise=False,
+            length_xy=length,
+            length_z_factor=1,
+            independent_haze=True,
+            sphere=True,
+            zoom=zoom,
+            add_offset=False,
+            background_stength=0.07,
+            dtype=xp.float32,
+        )
 
         # Pad:
-        pad_width = ((int(shift * zoom * length // 2), int(shift * zoom * length // 2)), (0, 0), (0, 0),)
+        pad_width = (
+            (int(shift * zoom * length // 2), int(shift * zoom * length // 2)),
+            (0, 0),
+            (0, 0),
+        )
         image = xp.pad(image, pad_width=pad_width)
 
         # Add blur:
@@ -69,21 +75,45 @@ def _deskew(shift, length, zoom, display):
         skewed = skewed.astype(dtype=xp.uint16)
     with timeit("deskew image"):
         # apply deskewing:
-        deskewed = classic_deskew_dimensionless(skewed,
-                                                depth_axis=0,
-                                                lateral_axis=1,
-                                                shift=shift,
-                                                )
+        deskewed = classic_deskew_dimensionless(
+            skewed,
+            depth_axis=0,
+            lateral_axis=1,
+            shift=shift,
+        )
     if display:
-        from napari import Viewer
         import napari
+        from napari import Viewer
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer(ndisplay=3)
-        viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', rendering='attenuated_mip', attenuation=0.01)
-        viewer.add_image(_c(skewed), name='skewed_image', colormap='bop blue', blending='additive', visible=False, rendering='attenuated_mip', attenuation=0.01)
-        viewer.add_image(_c(deskewed), name='deskewed_image', colormap='bop purple', blending='additive', rendering='attenuated_mip', attenuation=0.01)
+        viewer.add_image(
+            _c(image),
+            name="image",
+            colormap="bop orange",
+            blending="additive",
+            rendering="attenuated_mip",
+            attenuation=0.01,
+        )
+        viewer.add_image(
+            _c(skewed),
+            name="skewed_image",
+            colormap="bop blue",
+            blending="additive",
+            visible=False,
+            rendering="attenuated_mip",
+            attenuation=0.01,
+        )
+        viewer.add_image(
+            _c(deskewed),
+            name="deskewed_image",
+            colormap="bop purple",
+            blending="additive",
+            rendering="attenuated_mip",
+            attenuation=0.01,
+        )
 
         napari.run()
     # compute mean absolute errors:
@@ -100,4 +130,3 @@ def _deskew(shift, length, zoom, display):
 if __name__ == "__main__":
     if not demo_classic_deskew_cupy():
         demo_classic_deskew_numpy()
-

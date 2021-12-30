@@ -14,8 +14,8 @@ def demo_standard_psfs():
 
     with napari.gui_qt():
         viewer = napari.Viewer()
-        viewer.add_image(nikon16x08na_psf, name='nikon16x08na_psf')
-        viewer.add_image(olympus20x10na_psf, name='olympus20x10na_psf')
+        viewer.add_image(nikon16x08na_psf, name="nikon16x08na_psf")
+        viewer.add_image(olympus20x10na_psf, name="olympus20x10na_psf")
 
 
 demo_standard_psfs()
