@@ -51,14 +51,14 @@ def _demo_projrender(length_xy=96, zoom=1, n=64, display=True):
         image = Backend.to_backend(image)
 
         # generate reference 'ground truth' timelapse
-        images = (image.copy() for _ in range(n))
+        images = [image.copy() for _ in range(n)]
 
         # modify each image:
-        images = (
+        images = [
             sp.ndimage.shift(image, shift=(random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)))
             for image in images
-        )
-        images = (image + random.uniform(-10, 10) for image in images)
+        ]
+        images = [image + random.uniform(-10, 10) for image in images]
 
         # turn into array:
         images = xp.stack(images)

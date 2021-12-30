@@ -141,7 +141,7 @@ def _blend_function(image_u, image_v, mode):
             # The image shows what you would expect if you held two semi-transparent slides on top of each other.
             # This operator is cairo's default operator.
             out_alpha = src_alpha + dst_alpha * (1 - src_alpha)
-            out_rgb = (src_rgb * src_alpha + dst_rgb * dst_alpha * (1 - src_alpha)) / out_alpha
+            out_rgb = (src_rgb * src_alpha + dst_rgb * dst_alpha * (1 - src_alpha)) / (out_alpha + 1e-8)
         elif mode == "in":
             # The first object is removed completely, the second is only drawn where the first was.
             out_alpha = src_alpha * dst_alpha
@@ -167,7 +167,7 @@ def _blend_function(image_u, image_v, mode):
             # The result is similar to the OVER operator. Except that the "order" of the objects is reversed,
             # so the second is drawn below the first.
             out_alpha = (1 - dst_alpha) * src_alpha + dst_alpha
-            out_rgb = (src_alpha * src_rgb * (1 - dst_alpha) + dst_alpha * dst_rgb) / out_alpha
+            out_rgb = (src_alpha * src_rgb * (1 - dst_alpha) + dst_alpha * dst_rgb) / (out_alpha + 1e-8)
         elif mode == "dest_in":
             # The blue rectangle is used to determine which part of the red one is left intact.
             # Anything outside the overlapping area is removed.
@@ -182,15 +182,16 @@ def _blend_function(image_u, image_v, mode):
         elif mode == "xor":
             # The output of the XOR operator is the same for both bounded and unbounded source interpretations.
             out_alpha = src_alpha + dst_alpha - 2 * src_alpha * dst_alpha
-            out_rgb = (src_alpha * src_rgb * (1 - dst_alpha) + dst_alpha * dst_rgb * (1 - src_alpha)) / out_alpha
+            out_rgb = src_alpha * src_rgb * (1 - dst_alpha) + dst_alpha * dst_rgb * (1 - src_alpha)
+            out_rgb /= out_alpha + 1e-8
         elif mode == "add":
             # The output of the ADD operator is the same for both bounded and unbounded source interpretations.
             out_alpha = xp.minimum(1, src_alpha + dst_alpha)
-            out_rgb = (src_alpha * src_rgb + dst_alpha * dst_rgb) / out_alpha
+            out_rgb = (src_alpha * src_rgb + dst_alpha * dst_rgb) / (out_alpha + 1e-8)
         elif mode == "saturate":
             # The output of the ADD operator is the same for both bounded and unbounded source interpretations.
             out_alpha = xp.minimum(1, src_alpha + dst_alpha)
-            out_rgb = (xp.minimum(src_alpha, 1 - dst_alpha) * src_rgb + dst_alpha * dst_rgb) / out_alpha
+            out_rgb = (xp.minimum(src_alpha, 1 - dst_alpha) * src_rgb + dst_alpha * dst_rgb) / (out_alpha + 1e-8)
         else:
             raise ValueError(
                 f"Invalid alpha blending mode {mode} or incompatible images: {image_u.shape} {image_v.shape}"

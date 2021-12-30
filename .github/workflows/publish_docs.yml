@@ -28,7 +28,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install wheel
-          pip install -e .
+          pip install -e . --no-binary pyopencl
           pip install -r docs/requirements-docs.txt
 
       - name: Make docs

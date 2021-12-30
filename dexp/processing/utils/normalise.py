@@ -80,7 +80,10 @@ def normalise_functions(
         min_value, max_value = minmax
 
     # Normalise:
-    norm_alpha = (high - low) / (max_value - min_value)
+    norm_denom = max_value - min_value
+    if norm_denom == 0:
+        norm_denom = 1
+    norm_alpha = (high - low) / norm_denom
     norm_beta = low - norm_alpha * min_value
 
     # Ensure correct type:

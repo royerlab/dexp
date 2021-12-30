@@ -29,11 +29,10 @@ def test_list_devices():
         # Test list devices:
 
         # this will fail if cupy is not available:
-        pass
-
-        available = CupyBackend.available_devices()
-        aprint(f"Available devices: {available}")
-        assert len(available) > 0
+        with CupyBackend() as backend:
+            available = backend.available_devices()
+            aprint(f"Available devices: {available}")
+            assert len(available) > 0
 
         for device_id in available:
             with CupyBackend(device_id) as backend:
