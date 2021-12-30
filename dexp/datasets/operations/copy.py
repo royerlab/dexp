@@ -1,34 +1,35 @@
-from typing import Sequence, Optional
+from typing import Optional, Sequence
 
 import numpy
 from arbol.arbol import aprint, asection
-
-from dexp.datasets.base_dataset import BaseDataset
-from dexp.utils.slicing import slice_from_shape
-from dexp.utils.misc import compute_num_workers
-
 from joblib import Parallel, delayed
 
+from dexp.datasets.base_dataset import BaseDataset
+from dexp.utils.misc import compute_num_workers
+from dexp.utils.slicing import slice_from_shape
 
-def dataset_copy(dataset: BaseDataset,
-                 dest_path: str,
-                 channels: Sequence[str],
-                 slicing,
-                 store: str = 'dir',
-                 chunks: Optional[Sequence[int]] = None,
-                 compression: str = 'zstd',
-                 compression_level: int = 3,
-                 overwrite: bool = False,
-                 zerolevel: int = 0,
-                 workers: int = 1,
-                 workersbackend: Optional[str] = None,
-                 check: bool = True,
-                 stop_at_exception: bool = True,
-                 ):
+
+def dataset_copy(
+    dataset: BaseDataset,
+    dest_path: str,
+    channels: Sequence[str],
+    slicing,
+    store: str = "dir",
+    chunks: Optional[Sequence[int]] = None,
+    compression: str = "zstd",
+    compression_level: int = 3,
+    overwrite: bool = False,
+    zerolevel: int = 0,
+    workers: int = 1,
+    workersbackend: Optional[str] = None,
+    check: bool = True,
+    stop_at_exception: bool = True,
+):
 
     # Create destination dataset:
     from dexp.datasets.zarr_dataset import ZDataset
-    mode = 'w' + ('' if overwrite else '-')
+
+    mode = "w" + ("" if overwrite else "-")
     dest_dataset = ZDataset(dest_path, mode, store, parent=dataset)
 
     # Process each channel:
@@ -40,12 +41,9 @@ def dataset_copy(dataset: BaseDataset,
             out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
 
             dtype = array.dtype
-            dest_dataset.add_channel(name=channel,
-                                     shape=out_shape,
-                                     dtype=dtype,
-                                     chunks=chunks,
-                                     codec=compression,
-                                     clevel=compression_level)
+            dest_dataset.add_channel(
+                name=channel, shape=out_shape, dtype=dtype, chunks=chunks, codec=compression, clevel=compression_level
+            )
 
             def process(i):
                 tp = time_points[i]
@@ -56,13 +54,12 @@ def dataset_copy(dataset: BaseDataset,
                         tp_array = numpy.array(tp_array)
                         tp_array = numpy.clip(tp_array, a_min=zerolevel, a_max=None, out=tp_array)
                         tp_array -= zerolevel
-                    dest_dataset.write_stack(channel=channel,
-                                             time_point=i,
-                                             stack_array=tp_array)
+                    dest_dataset.write_stack(channel=channel, time_point=i, stack_array=tp_array)
                 except Exception as error:
                     aprint(error)
                     aprint(f"Error occurred while copying time point {i} !")
                     import traceback
+
                     traceback.print_exc()
                     if stop_at_exception:
                         raise error

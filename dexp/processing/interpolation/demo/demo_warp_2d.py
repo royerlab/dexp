@@ -38,15 +38,17 @@ def _demo_warp_2d(grid_size=8):
         dewarped = warp(warped, -vector_field, vector_field_upsampling=4)
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(vector_field), name='vector_field')
-        viewer.add_image(_c(warped), name='warped')
-        viewer.add_image(_c(dewarped), name='dewarped')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(vector_field), name="vector_field")
+        viewer.add_image(_c(warped), name="warped")
+        viewer.add_image(_c(dewarped), name="dewarped")
 
 
 if __name__ == "__main__":

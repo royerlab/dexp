@@ -53,14 +53,16 @@ def _register_warp_2d(warp_grid_size=4, reg_grid_size=8, display=True):
 
     if display:
         from napari import Viewer, gui_qt
+
         with gui_qt():
+
             def _c(array):
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive')
-            viewer.add_image(_c(warped), name='warped', colormap='bop blue', blending='additive', visible=False)
-            viewer.add_image(_c(unwarped), name='unwarped', colormap='bop purple', blending='additive')
+            viewer.add_image(_c(image), name="image", colormap="bop orange", blending="additive")
+            viewer.add_image(_c(warped), name="warped", colormap="bop blue", blending="additive", visible=False)
+            viewer.add_image(_c(unwarped), name="unwarped", colormap="bop purple", blending="additive")
 
     return image, warped, unwarped, model
 

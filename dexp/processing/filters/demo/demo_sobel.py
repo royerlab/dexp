@@ -30,19 +30,21 @@ def _demo_sobel():
     assert tenengrad_image2.dtype == image2.dtype
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image_gt), name='image_gt')
-        viewer.add_image(_c(image_lowq), name='image_lowq')
-        viewer.add_image(_c(blend_a), name='blend_a')
-        viewer.add_image(_c(blend_b), name='blend_b')
-        viewer.add_image(_c(image1), name='image1')
-        viewer.add_image(_c(image2), name='image2')
-        viewer.add_image(_c(tenengrad_image1), name='tenengrad_image1')
-        viewer.add_image(_c(tenengrad_image2), name='tenengrad_image2')
+        viewer.add_image(_c(image_gt), name="image_gt")
+        viewer.add_image(_c(image_lowq), name="image_lowq")
+        viewer.add_image(_c(blend_a), name="blend_a")
+        viewer.add_image(_c(blend_b), name="blend_b")
+        viewer.add_image(_c(image1), name="image1")
+        viewer.add_image(_c(image2), name="image2")
+        viewer.add_image(_c(tenengrad_image1), name="tenengrad_image1")
+        viewer.add_image(_c(tenengrad_image2), name="tenengrad_image2")
 
 
 if __name__ == "__main__":

@@ -1,21 +1,22 @@
-from typing import Tuple, Sequence
+from typing import Sequence, Tuple
 
 import numpy
-from dask.array import Array
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.registration.model.sequence_registration_model import SequenceRegistrationModel
-from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
+from dexp.processing.registration.model.sequence_registration_model import (
+    SequenceRegistrationModel,
+)
+from dexp.processing.registration.model.translation_registration_model import (
+    TranslationRegistrationModel,
+)
 from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.utils.projection_generator import projection_generator
 from dexp.utils import xpArray
 
 
-def image_stabilisation_proj(image: xpArray,
-                             axis: int = 0,
-                             projection_type: str = 'max-min',
-                             **kwargs
-                             ) -> SequenceRegistrationModel:
+def image_stabilisation_proj(
+    image: xpArray, axis: int = 0, projection_type: str = "max-min", **kwargs
+) -> SequenceRegistrationModel:
     """
     Computes a sequence stabilisation model for an image sequence indexed along a specified axis.
     Instead of running a full nD registration, this uses projections instead, economising memory and compute.
@@ -40,21 +41,14 @@ def image_stabilisation_proj(image: xpArray,
 
     ndim = image.ndim
     image = xp.moveaxis(image, axis, 0)
-    projections = projection_generator(image,
-                                       axis_range=(1, ndim),
-                                       projection_type=projection_type)
+    projections = projection_generator(image, axis_range=(1, ndim), projection_type=projection_type)
 
-    return image_stabilisation_proj_(projections=projections,
-                                     ndim=ndim - 1,
-                                     **kwargs)
+    return image_stabilisation_proj_(projections=projections, ndim=ndim - 1, **kwargs)
 
 
-def image_stabilisation_proj_(projections: Sequence[Tuple],
-                              ndim: int,
-                              keep_best: bool = True,
-                              debug_output: str = None,
-                              **kwargs
-                              ) -> SequenceRegistrationModel:
+def image_stabilisation_proj_(
+    projections: Sequence[Tuple], ndim: int, keep_best: bool = True, debug_output: str = None, **kwargs
+) -> SequenceRegistrationModel:
     """
     Same as 'sequence_stabilisation_proj' but takes projections instead, usefull if the projections are already available.
 
@@ -74,10 +68,19 @@ def image_stabilisation_proj_(projections: Sequence[Tuple],
     sp = Backend.get_sp_module()
 
     # we stabilise along each projection:
-    seq_reg_models = list((u - 1, v - 1, image_stabilisation(image=projection,
-                                                             axis=0,
-                                                             debug_output=f'{u - 1}_{v - 1}_{debug_output}' if debug_output is not None else debug_output,
-                                                             **kwargs)) for u, v, projection in projections)
+    seq_reg_models = list(
+        (
+            u - 1,
+            v - 1,
+            image_stabilisation(
+                image=projection,
+                axis=0,
+                debug_output=f"{u - 1}_{v - 1}_{debug_output}" if debug_output is not None else debug_output,
+                **kwargs,
+            ),
+        )
+        for u, v, projection in projections
+    )
 
     # Let's sort the models by decreasing confidence:
     seq_reg_models = sorted(seq_reg_models, key=lambda t: t[2].overall_confidence(), reverse=True)
@@ -101,7 +104,10 @@ def image_stabilisation_proj_(projections: Sequence[Tuple],
     if type(model.model_list[0]) == TranslationRegistrationModel:
 
         # Create a new model list:
-        fused_model_list = [TranslationRegistrationModel(shift_vector=numpy.zeros(shape=(ndim,), dtype=numpy.float32)) for _ in range(length)]
+        fused_model_list = [
+            TranslationRegistrationModel(shift_vector=numpy.zeros(shape=(ndim,), dtype=numpy.float32))
+            for _ in range(length)
+        ]
 
         # Iterate through the sequence updating the fused model:
         for tp in range(length):
@@ -132,7 +138,7 @@ def image_stabilisation_proj_(projections: Sequence[Tuple],
         model: SequenceRegistrationModel = SequenceRegistrationModel(model_list=fused_model_list)
 
         if debug_output is not None:
-            model.plot(debug_output + '_fused_model')
+            model.plot(debug_output + "_fused_model")
 
         return model
 

@@ -18,8 +18,9 @@ def test_sobel_cupy():
 
 
 def _sobel(length_xy=128):
-    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(length_xy=length_xy,
-                                                                                       add_noise=False)
+    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(
+        length_xy=length_xy, add_noise=False
+    )
 
     tenengrad_image1 = sobel_filter(image1)
     tenengrad_image2 = sobel_filter(image2)

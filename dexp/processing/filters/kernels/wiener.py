@@ -1,11 +1,8 @@
 from dexp.processing.backends.backend import Backend
 
 
-def wiener_kernel(kernel,
-                  alpha: float = 1e-3,
-                  frequency_domain: bool = False,
-                  dtype=None):
-    """ Computes the Wiener filter for a given kernel and alpha parameter.
+def wiener_kernel(kernel, alpha: float = 1e-3, frequency_domain: bool = False, dtype=None):
+    """Computes the Wiener filter for a given kernel and alpha parameter.
 
     Parameters
     ----------

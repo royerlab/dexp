@@ -7,7 +7,8 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 def BestBackend(*args, **kwargs):
     try:
         import cupy
-        deviced_id = kwargs.get('device_id', 0)
+
+        deviced_id = kwargs.get("device_id", 0)
         with cupy.cuda.Device(deviced_id):
             array = cupy.array([1, 2, 3])
             assert cupy.median(array) == 2

@@ -1,5 +1,6 @@
+from typing import List, Tuple
+
 import numpy as np
-from typing import Tuple, List
 
 
 def slice_from_shape(shape: Tuple[int], slicing: slice) -> Tuple[Tuple[int], slice, List[int]]:

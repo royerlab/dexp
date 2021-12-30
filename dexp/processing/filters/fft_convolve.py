@@ -6,11 +6,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.utils import xpArray
 
 
-def fft_convolve(image1: xpArray,
-                 image2: xpArray,
-                 mode: str = 'reflect',
-                 in_place: bool = True,
-                 internal_dtype=None):
+def fft_convolve(image1: xpArray, image2: xpArray, mode: str = "reflect", in_place: bool = True, internal_dtype=None):
     """
     Fast FFT based convolution.
 
@@ -47,8 +43,8 @@ def fft_convolve(image1: xpArray,
     image1 = Backend.to_backend(image1, dtype=internal_dtype, force_copy=False)
     image2 = Backend.to_backend(image2, dtype=internal_dtype, force_copy=False)
 
-    if mode != 'wrap':
-        pad_width = tuple((tuple((s // 2, s // 2)) for s in image2.shape))
+    if mode != "wrap":
+        pad_width = tuple(tuple((s // 2, s // 2)) for s in image2.shape)
         image1 = xp.pad(image1, pad_width=pad_width, mode=mode)
 
     s1 = numpy.asarray(image1.shape)
@@ -66,7 +62,7 @@ def fft_convolve(image1: xpArray,
     if not in_place:
         del image1_fft
 
-    fslice = tuple([slice(0, int(sz)) for sz in shape])
+    fslice = tuple(slice(0, int(sz)) for sz in shape)
     result = result[fslice]
 
     newshape = numpy.asarray(image1.shape)
@@ -77,7 +73,7 @@ def fft_convolve(image1: xpArray,
 
     result = result[tuple(myslice)]
 
-    if mode != 'wrap':
+    if mode != "wrap":
         slicing = tuple(slice(s // 2, -(s // 2)) for s in image2.shape)
         result = result[slicing]
 

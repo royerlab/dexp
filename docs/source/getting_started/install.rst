@@ -61,5 +61,3 @@ with the following command:
    python setup.py cudalibs --cuda 11.2
 
 Change the version accordingly...
-
-

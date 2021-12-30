@@ -47,5 +47,5 @@ def _test_admm_deconvolution():
     assert error < 0.001
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_admm_deconvolution_numpy()

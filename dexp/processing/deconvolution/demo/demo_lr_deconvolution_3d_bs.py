@@ -6,7 +6,9 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 from dexp.utils.timeit import timeit
 
 
@@ -27,11 +29,9 @@ def _demo_lr_deconvolution(length_xy=128):
     xp = Backend.get_xp_module()
 
     with timeit("generate data"):
-        image_gt, background, image = generate_nuclei_background_data(add_noise=False,
-                                                                      length_xy=length_xy,
-                                                                      length_z_factor=1,
-                                                                      background_stength=0,
-                                                                      add_offset=False)
+        image_gt, background, image = generate_nuclei_background_data(
+            add_noise=False, length_xy=length_xy, length_z_factor=1, background_stength=0, add_offset=False
+        )
 
     psf = nikon16x08na()
     # psf = olympus20x10na()
@@ -50,20 +50,24 @@ def _demo_lr_deconvolution(length_xy=128):
         deconvolved = lucy_richardson_deconvolution(noisy, psf, num_iterations=iterations, padding=16)
 
     with timeit("deconvolved_blind_spot"):
-        deconvolved_blind_spot = lucy_richardson_deconvolution(noisy, psf, num_iterations=iterations, padding=16, blind_spot=3)
+        deconvolved_blind_spot = lucy_richardson_deconvolution(
+            noisy, psf, num_iterations=iterations, padding=16, blind_spot=3
+        )
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(blurry), name='blurry')
-        viewer.add_image(_c(psf), name='psf')
-        viewer.add_image(_c(noisy), name='noisy')
-        viewer.add_image(_c(deconvolved), name='deconvolved')
-        viewer.add_image(_c(deconvolved_blind_spot), name='deconvolved_blind_spot')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(blurry), name="blurry")
+        viewer.add_image(_c(psf), name="psf")
+        viewer.add_image(_c(noisy), name="noisy")
+        viewer.add_image(_c(deconvolved), name="deconvolved")
+        viewer.add_image(_c(deconvolved_blind_spot), name="deconvolved_blind_spot")
 
 
 if __name__ == "__main__":

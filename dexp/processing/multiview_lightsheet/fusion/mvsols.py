@@ -1,8 +1,8 @@
 import gc
-from typing import Tuple, Sequence
+from typing import Sequence, Tuple
 
 import numpy
-from arbol.arbol import asection, aprint, section
+from arbol.arbol import aprint, asection, section
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
@@ -13,9 +13,13 @@ from dexp.processing.fusion.dct_fusion import fuse_dct_nd
 from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
 from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion
-from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
+from dexp.processing.registration.model.pairwise_registration_model import (
+    PairwiseRegistrationModel,
+)
 from dexp.processing.registration.translation_nd import register_translation_nd
-from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
+from dexp.processing.registration.translation_nd_proj import (
+    register_translation_proj_nd,
+)
 from dexp.processing.registration.warp_multiscale_nd import register_warp_multiscale_nd
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
@@ -23,39 +27,41 @@ from dexp.utils import xpArray
 
 
 @section("mvSOLS 1C2L fusion")
-def msols_fuse_1C2L(C0L0: xpArray,
-                    C0L1: xpArray,
-                    dz: float,
-                    dx: float,
-                    angle: float,
-                    resampling_mode: str = 'yang',
-                    equalise: bool = True,
-                    equalisation_ratios: Sequence[float] = (None,),
-                    zero_level: float = 120,
-                    clip_too_high: int = 2048,
-                    fusion='tg',
-                    fusion_bias_exponent: int = 2,
-                    fusion_bias_strength_x: float = 0.1,
-                    z_pad: int = 0,
-                    z_apodise: int = 0,
-                    registration_num_iterations: int = 4,
-                    registration_confidence_threshold: float = 0.3,
-                    registration_max_residual_shift: int = 32,
-                    registration_mode: str = 'projection',
-                    registration_edge_filter: bool = False,
-                    registration_force_model: bool = False,
-                    registration_model: PairwiseRegistrationModel = None,
-                    registration_min_confidence: float = 0.5,
-                    registration_max_change: int = 16,
-                    dehaze_before_fusion: bool = True,
-                    dehaze_size: int = 65,
-                    dehaze_correct_max_level: bool = True,
-                    dark_denoise_threshold: int = 0,
-                    dark_denoise_size: int = 9,
-                    butterworth_filter_cutoff: float = 1,
-                    illumination_correction_sigma: float = None,
-                    huge_dataset_mode: bool = False,
-                    internal_dtype=numpy.float16) -> Tuple:
+def msols_fuse_1C2L(
+    C0L0: xpArray,
+    C0L1: xpArray,
+    dz: float,
+    dx: float,
+    angle: float,
+    resampling_mode: str = "yang",
+    equalise: bool = True,
+    equalisation_ratios: Sequence[float] = (None,),
+    zero_level: float = 120,
+    clip_too_high: int = 2048,
+    fusion="tg",
+    fusion_bias_exponent: int = 2,
+    fusion_bias_strength_x: float = 0.1,
+    z_pad: int = 0,
+    z_apodise: int = 0,
+    registration_num_iterations: int = 4,
+    registration_confidence_threshold: float = 0.3,
+    registration_max_residual_shift: int = 32,
+    registration_mode: str = "projection",
+    registration_edge_filter: bool = False,
+    registration_force_model: bool = False,
+    registration_model: PairwiseRegistrationModel = None,
+    registration_min_confidence: float = 0.5,
+    registration_max_change: int = 16,
+    dehaze_before_fusion: bool = True,
+    dehaze_size: int = 65,
+    dehaze_correct_max_level: bool = True,
+    dark_denoise_threshold: int = 0,
+    dark_denoise_size: int = 9,
+    butterworth_filter_cutoff: float = 1,
+    illumination_correction_sigma: float = None,
+    huge_dataset_mode: bool = False,
+    internal_dtype=numpy.float16,
+) -> Tuple:
     """
 
     Parameters
@@ -172,12 +178,12 @@ def msols_fuse_1C2L(C0L0: xpArray,
         with asection(f"Pad C0L0 and C0L1 along scanning direction:"):
             C0L0[0] = sp.ndimage.gaussian_filter(C0L0[0], sigma=4)
             C0L0[-1] = sp.ndimage.gaussian_filter(C0L0[-1], sigma=4)
-            C0L0 = xp.pad(C0L0, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode='edge')
+            C0L0 = xp.pad(C0L0, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode="edge")
             Backend.current().clear_memory_pool()
 
             C0L1[0] = sp.ndimage.gaussian_filter(C0L1[0], sigma=4)
             C0L1[-1] = sp.ndimage.gaussian_filter(C0L1[-1], sigma=4)
-            C0L1 = xp.pad(C0L1, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode='edge')
+            C0L1 = xp.pad(C0L1, pad_width=((z_pad, z_pad),) + ((0, 0),) * 2, mode="edge")
             Backend.current().clear_memory_pool()
 
     if z_apodise > 0:
@@ -217,14 +223,12 @@ def msols_fuse_1C2L(C0L0: xpArray,
 
     if dehaze_size > 0 and dehaze_before_fusion:
         with asection(f"Dehaze C0L0 & C0L1 ..."):
-            C0L0 = dehaze(C0L0,
-                          size=dehaze_size,
-                          minimal_zero_level=zero_level,
-                          correct_max_level=dehaze_correct_max_level)
-            C0L1 = dehaze(C0L1,
-                          size=dehaze_size,
-                          minimal_zero_level=zero_level,
-                          correct_max_level=dehaze_correct_max_level)
+            C0L0 = dehaze(
+                C0L0, size=dehaze_size, minimal_zero_level=zero_level, correct_max_level=dehaze_correct_max_level
+            )
+            C0L1 = dehaze(
+                C0L1, size=dehaze_size, minimal_zero_level=zero_level, correct_max_level=dehaze_correct_max_level
+            )
             Backend.current().clear_memory_pool()
 
     # from napari import Viewer, gui_qt
@@ -238,7 +242,9 @@ def msols_fuse_1C2L(C0L0: xpArray,
 
     with asection(f"Register C0L0 and C0L1"):
 
-        aprint(f"Provided registration model: {registration_model}, overall confidence: {0 if registration_model is None else registration_model.overall_confidence()}")
+        aprint(
+            f"Provided registration model: {registration_model}, overall confidence: {0 if registration_model is None else registration_model.overall_confidence()}"
+        )
 
         if huge_dataset_mode:
             aprint(f"Huge dataset mode is on: moving data to CPU RAM.")
@@ -249,19 +255,27 @@ def msols_fuse_1C2L(C0L0: xpArray,
             model = registration_model
         else:
             aprint("No registration model enforced, running registration now")
-            registration_method = register_translation_proj_nd if registration_mode == 'projection' else register_translation_nd
-            new_model = register_warp_multiscale_nd(C0L0, C0L1,
-                                                    num_iterations=registration_num_iterations,
-                                                    confidence_threshold=registration_confidence_threshold,
-                                                    max_residual_shift=registration_max_residual_shift,
-                                                    edge_filter=registration_edge_filter,
-                                                    registration_method=registration_method,
-                                                    save_memory=huge_dataset_mode)
+            registration_method = (
+                register_translation_proj_nd if registration_mode == "projection" else register_translation_nd
+            )
+            new_model = register_warp_multiscale_nd(
+                C0L0,
+                C0L1,
+                num_iterations=registration_num_iterations,
+                confidence_threshold=registration_confidence_threshold,
+                max_residual_shift=registration_max_residual_shift,
+                edge_filter=registration_edge_filter,
+                registration_method=registration_method,
+                save_memory=huge_dataset_mode,
+            )
 
             Backend.current().clear_memory_pool()
             aprint(f"Computed registration model: {new_model}, overall confidence: {new_model.overall_confidence()}")
 
-            if registration_model is None or (new_model.overall_confidence() >= registration_min_confidence or new_model.change_relative_to(registration_model) <= registration_max_change):
+            if registration_model is None or (
+                new_model.overall_confidence() >= registration_min_confidence
+                or new_model.change_relative_to(registration_model) <= registration_max_change
+            ):
                 model = new_model
             else:
                 model = registration_model
@@ -281,10 +295,13 @@ def msols_fuse_1C2L(C0L0: xpArray,
 
     if equalise:
         with asection(f"Equalise intensity of C0L0 relative to C0L1 ..."):
-            C0L0, C0L1, ratio = equalise_intensity(C0L0, C0L1,
-                                                   zero_level=0 if dehaze_before_fusion else zero_level,
-                                                   correction_ratio=equalisation_ratios[0],
-                                                   copy=False)
+            C0L0, C0L1, ratio = equalise_intensity(
+                C0L0,
+                C0L1,
+                zero_level=0 if dehaze_before_fusion else zero_level,
+                correction_ratio=equalisation_ratios[0],
+                copy=False,
+            )
             equalisation_ratios = (ratio,)
             aprint(f"Equalisation ratio: {ratio}")
             Backend.current().clear_memory_pool()
@@ -299,25 +316,25 @@ def msols_fuse_1C2L(C0L0: xpArray,
     #     viewer.add_image(_c(C0L1), name='C0L1', colormap='bop orange', blending='additive')
 
     with asection(f"Fuse detection views C0lx and C1Lx..."):
-        C1Lx = SimViewFusion._fuse_views_generic(C0L0, C0L1, bias_axis=2, mode=fusion,
-                                                 bias_exponent=fusion_bias_exponent,
-                                                 bias_strength=fusion_bias_strength_x,
-                                                 smoothing=12)
+        C1Lx = SimViewFusion._fuse_views_generic(
+            C0L0,
+            C0L1,
+            bias_axis=2,
+            mode=fusion,
+            bias_exponent=fusion_bias_exponent,
+            bias_strength=fusion_bias_strength_x,
+            smoothing=12,
+        )
         Backend.current().clear_memory_pool()
 
     if dehaze_size > 0 and not dehaze_before_fusion:
         with asection(f"Dehaze CxLx ..."):
-            C1Lx = dehaze(C1Lx,
-                          size=dehaze_size,
-                          minimal_zero_level=0,
-                          correct_max_level=dehaze_correct_max_level)
+            C1Lx = dehaze(C1Lx, size=dehaze_size, minimal_zero_level=0, correct_max_level=dehaze_correct_max_level)
             Backend.current().clear_memory_pool()
 
     if dark_denoise_threshold > 0:
         with asection(f"Denoise dark regions of CxLx..."):
-            C1Lx = clean_dark_regions(C1Lx,
-                                      size=dark_denoise_size,
-                                      threshold=dark_denoise_threshold)
+            C1Lx = clean_dark_regions(C1Lx, size=dark_denoise_size, threshold=dark_denoise_threshold)
             Backend.current().clear_memory_pool()
 
     if 0 < butterworth_filter_cutoff < 1:
@@ -347,21 +364,20 @@ def msols_fuse_1C2L(C0L0: xpArray,
     return C1Lx, model, equalisation_ratios
 
 
-def fuse_illumination_views(CxL0, CxL1,
-                            mode,
-                            bias_exponent,
-                            bias_strength,
-                            smoothing: int = 12):
-    if mode == 'tg':
-        fused = fuse_tg_nd(CxL0, CxL1,
-                           downscale=2,
-                           tenengrad_smoothing=smoothing,
-                           bias_axis=2,
-                           bias_exponent=bias_exponent,
-                           bias_strength=bias_strength)
-    elif mode == 'dct':
+def fuse_illumination_views(CxL0, CxL1, mode, bias_exponent, bias_strength, smoothing: int = 12):
+    if mode == "tg":
+        fused = fuse_tg_nd(
+            CxL0,
+            CxL1,
+            downscale=2,
+            tenengrad_smoothing=smoothing,
+            bias_axis=2,
+            bias_exponent=bias_exponent,
+            bias_strength=bias_strength,
+        )
+    elif mode == "dct":
         fused = fuse_dct_nd(CxL0, CxL1)
-    elif mode == 'dft':
+    elif mode == "dft":
         fused = fuse_dft_nd(CxL0, CxL1)
     else:
         raise NotImplementedError
@@ -369,39 +385,19 @@ def fuse_illumination_views(CxL0, CxL1,
     return fused
 
 
-def resample_C0L0(image,
-                  dx: float,
-                  dz: float,
-                  angle: float,
-                  mode: str = 'yang',
-                  num_split: int = 8):
-    if mode == 'yang':
-        return yang_deskew(image,
-                           depth_axis=0,
-                           lateral_axis=1,
-                           flip_depth_axis=True,
-                           dx=dx,
-                           dz=dz,
-                           angle=angle,
-                           num_split=num_split)
+def resample_C0L0(image, dx: float, dz: float, angle: float, mode: str = "yang", num_split: int = 8):
+    if mode == "yang":
+        return yang_deskew(
+            image, depth_axis=0, lateral_axis=1, flip_depth_axis=True, dx=dx, dz=dz, angle=angle, num_split=num_split
+        )
     else:
         raise ValueError("Invalid deskew mode")
 
 
-def resample_C0L1(image,
-                  dx: float,
-                  dz: float,
-                  angle: float,
-                  mode: str = 'yang',
-                  num_split: int = 8):
-    if mode == 'yang':
-        return yang_deskew(image,
-                           depth_axis=0,
-                           lateral_axis=1,
-                           flip_depth_axis=False,
-                           dx=dx,
-                           dz=dz,
-                           angle=angle,
-                           num_split=num_split)
+def resample_C0L1(image, dx: float, dz: float, angle: float, mode: str = "yang", num_split: int = 8):
+    if mode == "yang":
+        return yang_deskew(
+            image, depth_axis=0, lateral_axis=1, flip_depth_axis=False, dx=dx, dz=dz, angle=angle, num_split=num_split
+        )
     else:
         raise ValueError("Invalid deskew mode")

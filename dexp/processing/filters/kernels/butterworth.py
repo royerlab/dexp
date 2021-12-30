@@ -5,13 +5,15 @@ import numpy
 from dexp.processing.backends.backend import Backend
 
 
-def butterworth_kernel(shape: Tuple[int, ...],
-                       cutoffs: Union[float, Tuple[float, ...]],
-                       cutoffs_in_freq_units=False,
-                       epsilon: float = 1,
-                       order: int = 3,
-                       frequency_domain: bool = False,
-                       dtype=numpy.float32):
+def butterworth_kernel(
+    shape: Tuple[int, ...],
+    cutoffs: Union[float, Tuple[float, ...]],
+    cutoffs_in_freq_units=False,
+    epsilon: float = 1,
+    order: int = 3,
+    frequency_domain: bool = False,
+    dtype=numpy.float32,
+):
     """
 
     Parameters
@@ -39,8 +41,8 @@ def butterworth_kernel(shape: Tuple[int, ...],
 
     if ndim == 1:
 
-        lx, = shape
-        cx, = cutoffs
+        (lx,) = shape
+        (cx,) = cutoffs
 
         x = xp.fft.fftfreq(lx) if cutoffs_in_freq_units else xp.linspace(-1, 1, lx)
 
@@ -67,7 +69,11 @@ def butterworth_kernel(shape: Tuple[int, ...],
         z = xp.fft.fftfreq(lz) if cutoffs_in_freq_units else xp.linspace(-1, 1, lz)
 
         # An array with every pixel = radius relative to center
-        freq = ((x / cx) ** 2)[xp.newaxis, xp.newaxis, :] + ((y / cy) ** 2)[xp.newaxis, :, xp.newaxis] + ((z / cz) ** 2)[:, xp.newaxis, xp.newaxis]
+        freq = (
+            ((x / cx) ** 2)[xp.newaxis, xp.newaxis, :]
+            + ((y / cy) ** 2)[xp.newaxis, :, xp.newaxis]
+            + ((z / cz) ** 2)[:, xp.newaxis, xp.newaxis]
+        )
 
     kernel_fft = 1 / xp.sqrt(1.0 + (epsilon ** 2) * (freq ** order))
 

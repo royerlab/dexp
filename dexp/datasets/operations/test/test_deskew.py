@@ -9,6 +9,7 @@ def test_deskew_numpy():
     with NumpyBackend():
         _demo_deskew(display=False)
 
+
 def test_deskew_cupy():
     try:
         with CupyBackend():
@@ -16,5 +17,3 @@ def test_deskew_cupy():
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! demo ignored")
-
-

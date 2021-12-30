@@ -30,14 +30,14 @@ jobs:
           pip install wheel
           pip install -e .
           pip install -r docs/requirements-docs.txt
-      
+
       - name: Make docs
         id: docs
         run: |
           make clean -C docs
           mkdir docs/_static
           make html -C docs
-      
+
       - name: Add & Commit changes
         uses: EndBug/add-and-commit@main
         with:

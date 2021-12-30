@@ -1,16 +1,18 @@
 import math
-from typing import Tuple, Union, Any
+from typing import Any, Tuple, Union
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.utils.nd_slice import nd_split_slices
 
 
-def scatter_gather_i2v(function,
-                       images: Union[Any, Tuple[Any]],
-                       tiles: Union[int, Tuple[int, ...]],
-                       margins: Union[int, Tuple[int, ...]] = None,
-                       to_numpy: bool = True,
-                       internal_dtype=None):
+def scatter_gather_i2v(
+    function,
+    images: Union[Any, Tuple[Any]],
+    tiles: Union[int, Tuple[int, ...]],
+    margins: Union[int, Tuple[int, ...]] = None,
+    to_numpy: bool = True,
+    internal_dtype=None,
+):
     """
     Image-2-vector scatter-gather.
     Given a n-ary function that takes n images and returns a tuple of vectors per image, we split the input arrays into tiles,
@@ -99,6 +101,9 @@ def scatter_gather_i2v(function,
 
         rxps = tuple(Backend.get_xp_module(results_list[0]) for results_list in results_lists)
         results_stacked = tuple(rxp.stack(results_list) for rxp, results_list in zip(rxps, results_lists))
-        results_stacked_reshaped = tuple(rxp.reshape(stack, newshape=tile_shape + results[0].shape) for rxp, stack, results in zip(rxps, results_stacked, results_lists))
+        results_stacked_reshaped = tuple(
+            rxp.reshape(stack, newshape=tile_shape + results[0].shape)
+            for rxp, stack, results in zip(rxps, results_stacked, results_lists)
+        )
 
     return results_stacked_reshaped

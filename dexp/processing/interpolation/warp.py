@@ -6,13 +6,15 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.utils import xpArray
 
 
-def warp(image: xpArray,
-         vector_field: xpArray,
-         vector_field_upsampling: int = 2,
-         vector_field_upsampling_order: int = 1,
-         mode: str = 'border',
-         image_to_backend: bool = False,
-         internal_dtype=None):
+def warp(
+    image: xpArray,
+    vector_field: xpArray,
+    vector_field_upsampling: int = 2,
+    vector_field_upsampling_order: int = 1,
+    mode: str = "border",
+    image_to_backend: bool = False,
+    internal_dtype=None,
+):
     """
     Applies a warp transform (piece wise linear or constant) to an image based on a vector field.
     Only implemented for 1d, 2d, and 3d images.
@@ -56,7 +58,9 @@ def warp(image: xpArray,
         # Note: unfortunately numpy does support float16 zooming, and cupy does not support high-order zooming...
         vector_field = Backend.to_numpy(vector_field, dtype=numpy.float32)
         if image.ndim > 1:
-            vector_field = zoom(vector_field, zoom=(vector_field_upsampling,) * image.ndim + (1,), order=vector_field_upsampling_order)
+            vector_field = zoom(
+                vector_field, zoom=(vector_field_upsampling,) * image.ndim + (1,), order=vector_field_upsampling_order
+            )
         else:
             vector_field = zoom(vector_field, zoom=(vector_field_upsampling,), order=vector_field_upsampling_order)
 
@@ -67,6 +71,7 @@ def warp(image: xpArray,
     vector_field = Backend.to_backend(vector_field, dtype=internal_dtype)
 
     from dexp.processing.backends.cupy_backend import CupyBackend
+
     if type(Backend.current()) is NumpyBackend:
         raise NotImplementedError("Warping not yet implemented for the Numpy backend.")
 
@@ -75,12 +80,15 @@ def warp(image: xpArray,
         params = (image, vector_field, mode)
         if image.ndim == 1:
             from dexp.processing.interpolation._cupy.warp_1d import _warp_1d_cupy
+
             result = _warp_1d_cupy(*params)
         elif image.ndim == 2:
             from dexp.processing.interpolation._cupy.warp_2d import _warp_2d_cupy
+
             result = _warp_2d_cupy(*params)
         elif image.ndim == 3:
             from dexp.processing.interpolation._cupy.warp_3d import _warp_3d_cupy
+
             result = _warp_3d_cupy(*params)
         else:
             raise NotImplementedError("Warping for ndim>3 not implemented.")

@@ -1,6 +1,6 @@
 import gc
 from functools import reduce
-from time import time, sleep
+from time import sleep, time
 
 import numpy
 from arbol import aprint, asection
@@ -14,6 +14,7 @@ from dexp.processing.interpolation.warp import warp
 def test_cupy_basics():
     try:
         import cupy
+
         with cupy.cuda.Device(0):
             array = cupy.array([1, 2, 3])
             assert cupy.median(array) == 2
@@ -28,7 +29,7 @@ def test_list_devices():
         # Test list devices:
 
         # this will fail if cupy is not available:
-        import cupy
+        pass
 
         available = CupyBackend.available_devices()
         aprint(f"Available devices: {available}")
@@ -59,8 +60,6 @@ def test_allocation_pool():
                 gc.collect()
 
                 xp = backend.get_xp_module()
-
-                import cupy
 
                 in_pool_before = backend.mempool.total_bytes() - backend.mempool.used_bytes()
                 aprint(f"in_pool_before={in_pool_before}")
@@ -95,7 +94,6 @@ def test_allocation_pool():
             aprint(f"in_pool_after_context={in_pool_after_clear}")
 
             assert in_pool_after_context == in_pool_after_clear
-
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! Test passes nevertheless!")
@@ -133,7 +131,7 @@ def test_paralell():
                 aprint(f"End: Job on device #{id}")
 
         n_jobs = 2
-        Parallel(n_jobs=n_jobs, backend='threading')(delayed(f)(id) for id in range(n_jobs))
+        Parallel(n_jobs=n_jobs, backend="threading")(delayed(f)(id) for id in range(n_jobs))
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! Test passes nevertheless!")
@@ -164,7 +162,7 @@ def test_paralell_with_exclusive():
 
         start = time()
         with asection(f"Start jobs"):
-            Parallel(n_jobs=n_jobs, backend='threading')(delayed(f)(id, id % num_devices) for id in range(n_jobs))
+            Parallel(n_jobs=n_jobs, backend="threading")(delayed(f)(id, id % num_devices) for id in range(n_jobs))
         elapsed_time = time() - start
         aprint(f"elapsed_time={elapsed_time}")
 
@@ -209,8 +207,7 @@ def test_stress():
         aprint(f"n_jobs = {n_jobs}")
 
         with asection(f"Start jobs"):
-            Parallel(n_jobs=n_jobs, backend='threading')(delayed(f)(id, id % num_devices) for id in range(n_jobs))
-
+            Parallel(n_jobs=n_jobs, backend="threading")(delayed(f)(id, id % num_devices) for id in range(n_jobs))
 
     except ModuleNotFoundError:
         aprint("Cupy module not found! Test passes nevertheless!")

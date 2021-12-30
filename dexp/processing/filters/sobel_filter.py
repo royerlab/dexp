@@ -6,13 +6,15 @@ from dexp.processing.utils.normalise import normalise_functions
 from dexp.utils import xpArray
 
 
-def sobel_filter(image: xpArray,
-                 exponent: int = 2,
-                 gamma: float = 1,
-                 log_compression: bool = True,
-                 normalise_input: bool = True,
-                 in_place_normalisation: bool = False,
-                 internal_dtype=None):
+def sobel_filter(
+    image: xpArray,
+    exponent: int = 2,
+    gamma: float = 1,
+    log_compression: bool = True,
+    normalise_input: bool = True,
+    in_place_normalisation: bool = False,
+    internal_dtype=None,
+):
     """
     Computes the Sobel magnitude filter response for a given image.
 

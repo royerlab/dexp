@@ -1,24 +1,24 @@
-
+from functools import reduce
 from typing import Optional
 
 import numpy
 import scipy
-from functools import reduce
 
-from dexp.utils import xpArray
 from dexp.processing.backends.backend import Backend
 from dexp.processing.deconvolution.admm_utils import *
+from dexp.utils import xpArray
 
 
-def admm_deconvolution(image: xpArray,
-                       psf: xpArray,
-                       rho: float = 0.1,
-                       gamma: float = 0.01,
-                       iterations: int = 10,
-                       derivative: int = 1,
-                       internal_dtype: Optional[numpy.dtype] = None,
-                       display: bool = False,
-                       ) -> xpArray:
+def admm_deconvolution(
+    image: xpArray,
+    psf: xpArray,
+    rho: float = 0.1,
+    gamma: float = 0.01,
+    iterations: int = 10,
+    derivative: int = 1,
+    internal_dtype: Optional[numpy.dtype] = None,
+    display: bool = False,
+) -> xpArray:
 
     """
     Reference from: http://jamesgregson.ca/tag/admm.html
@@ -30,13 +30,14 @@ def admm_deconvolution(image: xpArray,
         derivative_func = second_derivative_func
         derivative_kernels = second_derivative_kernels
     else:
-        raise RuntimeError(f'Derivative must be 1 or 2. Found {derivative}.')
+        raise RuntimeError(f"Derivative must be 1 or 2. Found {derivative}.")
 
     backend = Backend.current()
 
     if display:
         import napari
-        viewer = napari.view_image(backend.to_numpy(image), name='original')
+
+        viewer = napari.view_image(backend.to_numpy(image), name="original")
 
     def shrink(array: xpArray) -> xpArray:
         return xp.sign(array) * xp.clip(xp.abs(array) - gamma / rho, 0.0, None)
@@ -57,10 +58,10 @@ def admm_deconvolution(image: xpArray,
     # inverting psf
     backproj = xp.flip(psf)
 
-    # padding with reflection for a better deconvolution 
+    # padding with reflection for a better deconvolution
     original_shape = image.shape
     pad_width = [(s // 2, s // 2) for s in backproj.shape]
-    image = xp.pad(image, pad_width, mode='reflect')
+    image = xp.pad(image, pad_width, mode="reflect")
     # original_slice = tuple(slice(p, p + s) for s, (p, _) in zip(original_shape, pad_width))
     original_slice = tuple(
         slice(p - 1, p + s - 1) for s, p in zip(original_shape, backproj.shape)
@@ -70,10 +71,7 @@ def admm_deconvolution(image: xpArray,
     fsize = tuple(scipy.fftpack.next_fast_len(x) for x in image.shape)
 
     # create derivative kernels
-    Ds = [
-        backend.to_backend(D)
-        for D in derivative_kernels(image.ndim)
-    ]
+    Ds = [backend.to_backend(D) for D in derivative_kernels(image.ndim)]
 
     # convert derivative kernels to freq space
     fDs = [sp.fft.fftn(D, fsize) for D in Ds]
@@ -85,14 +83,13 @@ def admm_deconvolution(image: xpArray,
 
     # pre-compute auxiliary values following reference
     nume_aux = fbackproj * fimage
-    denom = fbackproj * fbackproj.conj() +\
-        rho * reduce(xp.add, (fD.conj() * fD for fD in fDs))
+    denom = fbackproj * fbackproj.conj() + rho * reduce(xp.add, (fD.conj() * fD for fD in fDs))
     del fDs
 
     # compute parameters used for finite difference differenciation (fast diff operator)
     Daxes = derivative_axes(image.ndim)
 
-    zeros = lambda : xp.zeros(fsize, dtype=internal_dtype)
+    zeros = lambda: xp.zeros(fsize, dtype=internal_dtype)
 
     # allocate buffers
     I = zeros()  # output image
@@ -103,12 +100,10 @@ def admm_deconvolution(image: xpArray,
     for _ in range(iterations):
         # iterations according to reference
         # loop operations are done using generators to reduce memory allocation
-        V = rho * reduce(xp.add, (
-            derivative_func(Z - U, axes, True)
-            for axes, Z, U in zip(Daxes, Zs, Us)
-        ))
+        V = rho * reduce(xp.add, (derivative_func(Z - U, axes, True) for axes, Z, U in zip(Daxes, Zs, Us)))
 
-        fV = sp.fft.fftn(V, overwrite_x=True); del V
+        fV = sp.fft.fftn(V, overwrite_x=True)
+        del V
         I = sp.fft.ifftn((nume_aux + fV) / denom, overwrite_x=True).real
 
         if display:

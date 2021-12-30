@@ -4,7 +4,9 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.restoration.dehazing import dehaze
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 from dexp.utils.timeit import timeit
 
 
@@ -25,13 +27,11 @@ def _test_dehaze(length_xy=128):
     xp = Backend.get_xp_module()
 
     with timeit("generate data"):
-        image_gt, background, image = generate_nuclei_background_data(add_noise=True,
-                                                                      length_xy=length_xy,
-                                                                      length_z_factor=4,
-                                                                      independent_haze=True,
-                                                                      dtype=numpy.float32)
+        image_gt, background, image = generate_nuclei_background_data(
+            add_noise=True, length_xy=length_xy, length_z_factor=4, independent_haze=True, dtype=numpy.float32
+        )
 
-    with timeit('dehaze_new'):
+    with timeit("dehaze_new"):
         dehazed = dehaze(image, size=25, in_place=False)
 
     assert dehazed is not image

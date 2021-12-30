@@ -1,10 +1,10 @@
 import os
 from os import listdir
-from os.path import exists, isfile, join, isdir
+from os.path import exists, isdir, isfile, join
 from typing import Tuple, Union
 
 import imageio
-from arbol.arbol import asection, aprint
+from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
@@ -13,20 +13,22 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.color.crop_resize_pad import crop_resize_pad_color_image
 
 
-def crop_resize_pad_image_sequence(input_path: str,
-                                   output_path: str = None,
-                                   crop: Union[int, Tuple[int, ...], Tuple[Tuple[int, int], ...]] = None,
-                                   resize: Tuple[int, ...] = None,
-                                   resize_order: int = 3,
-                                   resize_mode: str = 'constant',
-                                   pad_width: Tuple[Tuple[int, int], ...] = None,
-                                   pad_mode: str = 'constant',
-                                   pad_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
-                                   rgba_value_max: float = 255,
-                                   overwrite: bool = False,
-                                   workers: int = -1,
-                                   workersbackend: str = 'threading',
-                                   device: int = 0):
+def crop_resize_pad_image_sequence(
+    input_path: str,
+    output_path: str = None,
+    crop: Union[int, Tuple[int, ...], Tuple[Tuple[int, int], ...]] = None,
+    resize: Tuple[int, ...] = None,
+    resize_order: int = 3,
+    resize_mode: str = "constant",
+    pad_width: Tuple[Tuple[int, int], ...] = None,
+    pad_mode: str = "constant",
+    pad_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
+    rgba_value_max: float = 255,
+    overwrite: bool = False,
+    workers: int = -1,
+    workersbackend: str = "threading",
+    device: int = 0,
+):
     """
     Crops, resizes and then pad a sequence of RGB(A) images.
 
@@ -58,7 +60,9 @@ def crop_resize_pad_image_sequence(input_path: str,
     # collect image files:
     if isdir(input_path):
         # path is folder:
-        png_file_paths = [join(input_path, f) for f in listdir(input_path) if isfile(join(input_path, f)) and f.endswith('.png')]
+        png_file_paths = [
+            join(input_path, f) for f in listdir(input_path) if isfile(join(input_path, f)) and f.endswith(".png")
+        ]
         png_file_paths.sort()
     else:
         raise ValueError("Input path must be folder containing at least one image")
@@ -70,7 +74,7 @@ def crop_resize_pad_image_sequence(input_path: str,
     nb_timepoints = len(png_file_paths)
 
     def _process(tp: int):
-        with asection(f'Processing time point: {tp}'):
+        with asection(f"Processing time point: {tp}"):
             with BestBackend(device, exclusive=True, enable_unified_memory=True):
 
                 # Output file:
@@ -86,23 +90,25 @@ def crop_resize_pad_image_sequence(input_path: str,
                     # get image:
                     image = imageio.imread(image_path)
 
-                    resized_image = crop_resize_pad_color_image(image=image,
-                                                                crop=crop,
-                                                                resize=resize,
-                                                                resize_order=resize_order,
-                                                                resize_mode=resize_mode,
-                                                                pad_width=pad_width,
-                                                                pad_mode=pad_mode,
-                                                                pad_color=pad_color,
-                                                                rgba_value_max=rgba_value_max)
+                    resized_image = crop_resize_pad_color_image(
+                        image=image,
+                        crop=crop,
+                        resize=resize,
+                        resize_order=resize_order,
+                        resize_mode=resize_mode,
+                        pad_width=pad_width,
+                        pad_mode=pad_mode,
+                        pad_color=pad_color,
+                        rgba_value_max=rgba_value_max,
+                    )
 
                     with asection(f"Writing file: {filename} in folder: {output_path}"):
-                        imageio.imwrite(filepath,
-                                        Backend.to_numpy(resized_image),
-                                        compress_level=1)
+                        imageio.imwrite(filepath, Backend.to_numpy(resized_image), compress_level=1)
                 else:
                     aprint(f"File: {filepath} already exists! use -w option to force overwrite...")
 
-    with asection(f"Cropping ({crop}), resizing ({resize}), padding ({pad_width}), images at: {input_path}, and saving to {output_path}, for a total of {nb_timepoints} time points"):
+    with asection(
+        f"Cropping ({crop}), resizing ({resize}), padding ({pad_width}), images at: {input_path}, and saving to {output_path}, for a total of {nb_timepoints} time points"
+    ):
         Parallel(n_jobs=workers, backend=workersbackend)(delayed(_process)(tp) for tp in range(nb_timepoints))
         aprint(f"Done!")

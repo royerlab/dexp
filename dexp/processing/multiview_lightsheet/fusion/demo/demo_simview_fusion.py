@@ -2,8 +2,8 @@
 # as produced for example by: dexp tiff -w -s [128:129] dataset.zarr -o /home/royer/Desktop/test_data/test_data.tiff
 
 
-from arbol import asection, aprint
-from napari import gui_qt, Viewer
+from arbol import aprint, asection
+from napari import Viewer, gui_qt
 from tifffile import imread
 
 from dexp.processing.backends.backend import Backend
@@ -11,7 +11,7 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2C2L
 
-filepath = '/home/royer/Desktop/test_data/embryo_4views.tif'
+filepath = "/home/royer/Desktop/test_data/embryo_4views.tif"
 
 
 def demo_simview_fusion_numpy():
@@ -50,11 +50,31 @@ def simview_fusion():
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(C0L0), name='C0L0', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
-        viewer.add_image(_c(C0L1), name='C0L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
-        viewer.add_image(_c(xp.flip(C1L0, -1)), name='C1L0', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
-        viewer.add_image(_c(xp.flip(C1L1, -1)), name='C1L1', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', visible=False)
-        viewer.add_image(_c(CxLx), name='CxLx', contrast_limits=(0, 1200), scale=(4, 1, 1), blending='additive', colormap='viridis')
+        viewer.add_image(
+            _c(C0L0), name="C0L0", contrast_limits=(0, 1000), scale=(4, 1, 1), blending="additive", visible=False
+        )
+        viewer.add_image(
+            _c(C0L1), name="C0L1", contrast_limits=(0, 1000), scale=(4, 1, 1), blending="additive", visible=False
+        )
+        viewer.add_image(
+            _c(xp.flip(C1L0, -1)),
+            name="C1L0",
+            contrast_limits=(0, 1000),
+            scale=(4, 1, 1),
+            blending="additive",
+            visible=False,
+        )
+        viewer.add_image(
+            _c(xp.flip(C1L1, -1)),
+            name="C1L1",
+            contrast_limits=(0, 1000),
+            scale=(4, 1, 1),
+            blending="additive",
+            visible=False,
+        )
+        viewer.add_image(
+            _c(CxLx), name="CxLx", contrast_limits=(0, 1200), scale=(4, 1, 1), blending="additive", colormap="viridis"
+        )
         # viewer.add_image(_c(CxLx_deconvolved), name='CxLx_deconvolved', contrast_limits=(0, 1000), scale=(4, 1, 1), blending='additive', colormap='viridis')
 
 

@@ -75,6 +75,7 @@ def _test_linear_solver_large():
     with asection("Running solver on large matrix: "):
         aprint(_run_solver(w=1280, h=1370, order_error=1, order_reg=1, alpha_reg=0.1, display=True, limited=True))
 
+
 # def test_linear_solver_compare():
 #     n = 16
 #

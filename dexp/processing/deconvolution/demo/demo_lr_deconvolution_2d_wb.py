@@ -33,28 +33,25 @@ def _demo_lr_deconvolution():
 
     iterations = 200
 
-    deconvolved_wbw = lucy_richardson_deconvolution(blurry, psf,
-                                                    back_projection='wb',
-                                                    wb_beta=0.1,
-                                                    num_iterations=5,
-                                                    max_correction=2,
-                                                    padding=16)
+    deconvolved_wbw = lucy_richardson_deconvolution(
+        blurry, psf, back_projection="wb", wb_beta=0.1, num_iterations=5, max_correction=2, padding=16
+    )
 
-    deconvolved_no_noise = lucy_richardson_deconvolution(blurry, psf,
-                                                         num_iterations=iterations,
-                                                         padding=16)
+    deconvolved_no_noise = lucy_richardson_deconvolution(blurry, psf, num_iterations=iterations, padding=16)
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(blurry), name='blurry')
-        viewer.add_image(_c(psf), name='psf')
-        viewer.add_image(_c(deconvolved_no_noise), name='deconvolved_no_noise')
-        viewer.add_image(_c(deconvolved_wbw), name='deconvolved_wbw')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(blurry), name="blurry")
+        viewer.add_image(_c(psf), name="psf")
+        viewer.add_image(_c(deconvolved_no_noise), name="deconvolved_no_noise")
+        viewer.add_image(_c(deconvolved_wbw), name="deconvolved_wbw")
 
 
 if __name__ == "__main__":

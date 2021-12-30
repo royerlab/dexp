@@ -4,10 +4,12 @@ from dexp.optics.psf.standard_psfs import nikon16x08na
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.optimization.grid_search import j_invariant_grid_search
-from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.deconvolution.admm_deconvolution import admm_deconvolution
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.processing.filters.fft_convolve import fft_convolve
+from dexp.processing.optimization.grid_search import j_invariant_grid_search
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 from dexp.utils.timeit import timeit
 
 
@@ -28,11 +30,9 @@ def _demo_admm_deconvolution(length_xy=128):
     xp = Backend.get_xp_module()
 
     with timeit("generate data"):
-        image_gt, background, image = generate_nuclei_background_data(add_noise=False,
-                                                                      length_xy=length_xy,
-                                                                      length_z_factor=1,
-                                                                      background_stength=0,
-                                                                      add_offset=False)
+        image_gt, background, image = generate_nuclei_background_data(
+            add_noise=False, length_xy=length_xy, length_z_factor=1, background_stength=0, add_offset=False
+        )
 
     psf = nikon16x08na()
     psf = psf.astype(dtype=numpy.float16)
@@ -45,7 +45,7 @@ def _demo_admm_deconvolution(length_xy=128):
     noisy = noisy + 0.1 * xp.random.uniform(size=blurry.shape)
 
     iterations = 20
-    
+
     # snippet to test with real data
     # from tifffile import imread
     # psf = nikon16x08na(xy_size=27, z_size=27, dxy=0.485, wvl=0.561, dz=0.94)
@@ -56,16 +56,15 @@ def _demo_admm_deconvolution(length_xy=128):
     noisy = noisy / noisy.max()
 
     psf = psf / psf.sum()
-    psf = psf.astype('float16')
+    psf = psf.astype("float16")
 
     def deconv_and_blur(image, rho, gamma):
-        deconved = admm_deconvolution(image.astype('float16'), psf, rho, gamma,
-                                      iterations=iterations, derivative=2)
+        deconved = admm_deconvolution(image.astype("float16"), psf, rho, gamma, iterations=iterations, derivative=2)
         return fft_convolve(deconved, psf)
 
     grid = {
-        'rho': numpy.power(10.0, numpy.arange(-3, 3)),
-        'gamma': numpy.power(10.0, numpy.arange(-3, 3)),
+        "rho": numpy.power(10.0, numpy.arange(-3, 3)),
+        "gamma": numpy.power(10.0, numpy.arange(-3, 3)),
     }
 
     def mse(x, y):
@@ -81,15 +80,15 @@ def _demo_admm_deconvolution(length_xy=128):
         return Backend.to_numpy(array)
 
     import napari
+
     viewer = napari.Viewer()
-    viewer.add_image(_c(image), name='image')
-    viewer.add_image(_c(blurry), name='blurry')
-    viewer.add_image(_c(psf), name='psf')
-    viewer.add_image(_c(noisy), name='noisy')
-    viewer.add_image(_c(deconvolved), name='sparse deconv')
+    viewer.add_image(_c(image), name="image")
+    viewer.add_image(_c(blurry), name="blurry")
+    viewer.add_image(_c(psf), name="psf")
+    viewer.add_image(_c(noisy), name="noisy")
+    viewer.add_image(_c(deconvolved), name="sparse deconv")
 
     napari.run()
-
 
 
 if __name__ == "__main__":

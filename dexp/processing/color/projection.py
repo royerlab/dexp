@@ -1,8 +1,8 @@
-from typing import Union, Tuple, Callable
+from typing import Callable, Tuple, Union
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.color.colormap import rgb_colormap, _normalise_colormap
+from dexp.processing.color.colormap import _normalise_colormap, rgb_colormap
 from dexp.processing.color.insert import insert_color_image
 from dexp.processing.color.projection_legend import depth_color_scale_legend
 from dexp.processing.utils.center_of_mass import center_of_mass
@@ -10,28 +10,30 @@ from dexp.processing.utils.normalise import normalise_functions
 from dexp.utils import xpArray
 
 
-def project_image(image: xpArray,
-                  axis: int = 0,
-                  dir: int = -1,
-                  mode: str = 'max',
-                  attenuation: float = 0.05,
-                  attenuation_min_density: float = 0.002,
-                  attenuation_filtering: float = 4,
-                  gamma: float = 1,
-                  clim: Tuple[float, float] = None,
-                  normalisation_quantile: float = 0.0001,
-                  cmap: Union[str, Callable] = None,
-                  dlim: Tuple[float, float] = None,
-                  depth_stabilisation: bool = False,
-                  rgb_gamma: float = 1,
-                  transparency: bool = False,
-                  legend_size: float = 0,
-                  legend_scale: float = 1,
-                  legend_title: str = 'depth (voxels)',
-                  legend_title_color: Tuple[float, float, float, float] = (1, 1, 1, 1),
-                  legend_position: Union[str, Tuple[int, int]] = 'bottom_left',
-                  legend_alpha: float = 1,
-                  internal_dtype=None):
+def project_image(
+    image: xpArray,
+    axis: int = 0,
+    dir: int = -1,
+    mode: str = "max",
+    attenuation: float = 0.05,
+    attenuation_min_density: float = 0.002,
+    attenuation_filtering: float = 4,
+    gamma: float = 1,
+    clim: Tuple[float, float] = None,
+    normalisation_quantile: float = 0.0001,
+    cmap: Union[str, Callable] = None,
+    dlim: Tuple[float, float] = None,
+    depth_stabilisation: bool = False,
+    rgb_gamma: float = 1,
+    transparency: bool = False,
+    legend_size: float = 0,
+    legend_scale: float = 1,
+    legend_title: str = "depth (voxels)",
+    legend_title_color: Tuple[float, float, float, float] = (1, 1, 1, 1),
+    legend_position: Union[str, Tuple[int, int]] = "bottom_left",
+    legend_alpha: float = 1,
+    internal_dtype=None,
+):
     """
     Projects an image along a given axis given a specified method (max projection, max projection color-coded depth, ...)
     and produces a rendered RGB image. This function offers features similar to volume rendering:
@@ -85,12 +87,12 @@ def project_image(image: xpArray,
 
     # Set default cmap:
     if cmap is None:
-        if mode == 'max':
-            cmap = 'viridis'
-        elif mode == 'maxcolor':
-            cmap = 'rainbow'
-        elif mode == 'colormax':
-            cmap = 'rainbow'
+        if mode == "max":
+            cmap = "viridis"
+        elif mode == "maxcolor":
+            cmap = "rainbow"
+        elif mode == "colormax":
+            cmap = "rainbow"
 
     # Normalise color map:
     cmap = _normalise_colormap(cmap)
@@ -120,19 +122,21 @@ def project_image(image: xpArray,
         else:
             image_for_attenuation = image
 
-        cum_density = _inplace_cumsum(attenuation_min_density + (1 - attenuation_min_density) * image_for_attenuation, axis=axis, dir=-dir)
+        cum_density = _inplace_cumsum(
+            attenuation_min_density + (1 - attenuation_min_density) * image_for_attenuation, axis=axis, dir=-dir
+        )
 
         image *= xp.exp(-attenuation * cum_density)
 
     # Perform projection
-    if mode == 'max':
+    if mode == "max":
         # max projection:
         projection = xp.max(image, axis=axis)
 
         # apply color map:
         projection = rgb_colormap(projection, cmap=cmap, bytes=False)
 
-    elif mode == 'maxcolor':
+    elif mode == "maxcolor":
 
         # compute a depth map of same shape as the image:
         depth = image.shape[axis]
@@ -151,7 +155,7 @@ def project_image(image: xpArray,
         # Projecting:
         projection = xp.max(color_image, axis=axis)
 
-    elif mode == 'colormax':
+    elif mode == "colormax":
 
         # argmax:
         image_for_argmax = image  # xp.flip(image, axis=axis).copy() if dir < 0 else image
@@ -196,34 +200,27 @@ def project_image(image: xpArray,
     projection = xp.clip(projection, 0, 255)
     projection = projection.astype(xp.uint8, copy=False)
 
-    if 'color' in mode and legend_size != 0:
+    if "color" in mode and legend_size != 0:
         depth = image.shape[axis] * (abs(dlim[1] - dlim[0])) * legend_scale
         d_min, dmax = dlim
         start = 0
         end = depth * (dmax - d_min)
-        legend = depth_color_scale_legend(cmap=cmap,
-                                          start=start,
-                                          end=end,
-                                          flip=False,
-                                          title=legend_title,
-                                          color=legend_title_color,
-                                          size=legend_size)
+        legend = depth_color_scale_legend(
+            cmap=cmap, start=start, end=end, flip=False, title=legend_title, color=legend_title_color, size=legend_size
+        )
 
         pad_length = int(legend_size * 10)
         pad_width = ((pad_length, pad_length), (6 * pad_length, 6 * pad_length), (0, 0))
         legend = xp.pad(legend, pad_width=pad_width)
 
-        projection = insert_color_image(projection,
-                                        legend,
-                                        translation=legend_position,
-                                        mode='over',
-                                        alpha=legend_alpha)
+        projection = insert_color_image(
+            projection, legend, translation=legend_position, mode="over", alpha=legend_alpha
+        )
 
     return projection
 
 
-def _apply_depth_limits(depth_map,
-                        dlim: Tuple[float, float]):
+def _apply_depth_limits(depth_map, dlim: Tuple[float, float]):
     xp = Backend.get_xp_module()
 
     min_v, max_v = dlim

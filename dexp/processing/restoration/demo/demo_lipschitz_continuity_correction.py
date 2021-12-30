@@ -6,7 +6,9 @@ from skimage.util import random_noise
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.restoration.lipshitz_correction import lipschitz_continuity_correction
+from dexp.processing.restoration.lipshitz_correction import (
+    lipschitz_continuity_correction,
+)
 
 
 def demo_lipschitz_correction_numpy():
@@ -32,14 +34,16 @@ def demo_lipschitz_correction():
     median = median_filter(image, size=3)
 
     import napari
+
     with napari.gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = napari.Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(median), name='median_filtered')
-        viewer.add_image(_c(corrected), name='corrected')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(median), name="median_filtered")
+        viewer.add_image(_c(corrected), name="corrected")
         viewer.grid.enabled = True
 
 

@@ -1,4 +1,4 @@
-from typing import Union, Callable
+from typing import Callable, Union
 
 from matplotlib.cm import get_cmap
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
@@ -8,10 +8,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.utils import xpArray
 
 
-def rgb_colormap(image: xpArray,
-                 cmap: Union[str, Callable] = None,
-                 bytes: bool = False,
-                 internal_dtype=None):
+def rgb_colormap(image: xpArray, cmap: Union[str, Callable] = None, bytes: bool = False, internal_dtype=None):
     """
     Takes an image and returns a new image of same shape + an RGB dimension.
     Colors are determined by a provided colormap.
@@ -44,7 +41,7 @@ def rgb_colormap(image: xpArray,
 
     # set default cmap:
     if cmap is None:
-        cmap = 'viridis'
+        cmap = "viridis"
 
     # normalise color map:
     cmap = _normalise_colormap(cmap)
@@ -53,11 +50,7 @@ def rgb_colormap(image: xpArray,
         listed_cmap: ListedColormap = cmap
         # force initialisation:
         listed_cmap(0)
-        rgb_image = _apply_lut(image,
-                               listed_cmap._lut,
-                               bytes=bytes,
-                               N=listed_cmap.N,
-                               internal_dtype=internal_dtype)
+        rgb_image = _apply_lut(image, listed_cmap._lut, bytes=bytes, N=listed_cmap.N, internal_dtype=internal_dtype)
     else:
         raise NotImplementedError(f"rgb_colormap not yet implemented for cmap type: {type(cmap)}")
 
@@ -66,9 +59,10 @@ def rgb_colormap(image: xpArray,
 
 def _normalise_colormap(cmap):
     if type(cmap) == str:
-        cmap = 'cet_rainbow' if cmap == 'rainbow' else cmap
-        cmap = 'cet_bmy' if cmap == 'bmy' else cmap
+        cmap = "cet_rainbow" if cmap == "rainbow" else cmap
+        cmap = "cet_bmy" if cmap == "bmy" else cmap
         from colorcet import rgb_to_hex
+
         rgb_to_hex(0, 0, 0)  # this is a dummy call to prevent elimination of the colorcet import by IDEs
         cmap = get_cmap(cmap)
     elif type(cmap) == LinearSegmentedColormap or type(cmap) == ListedColormap:
@@ -79,11 +73,7 @@ def _normalise_colormap(cmap):
     return cmap
 
 
-def _apply_lut(X,
-               lut,
-               bytes: bool = False,
-               N: int = 256,
-               internal_dtype=None):
+def _apply_lut(X, lut, bytes: bool = False, N: int = 256, internal_dtype=None):
     """
     Parameters
     ----------

@@ -58,42 +58,36 @@ def demo_blend(length_xy=512, display=True):
     # image_v[0:256, :, 3] = 128
 
     with asection("blend_mean"):
-        blend_mean = blend_color_images(images=(image_u, image_v),
-                                        alphas=(1, 1),
-                                        modes=('max', 'mean'))
+        blend_mean = blend_color_images(images=(image_u, image_v), alphas=(1, 1), modes=("max", "mean"))
 
     with asection("blend_add"):
-        blend_add = blend_color_images(images=(image_u, image_v),
-                                       alphas=(1, 1),
-                                       modes=('max', 'add'))
+        blend_add = blend_color_images(images=(image_u, image_v), alphas=(1, 1), modes=("max", "add"))
 
     # with asection("blend_erfadd"):
     #     blend_erfadd = blend((image_u, image_v), (1, 0.5), mode='erfadd')
 
     with asection("blend_max"):
-        blend_max = blend_color_images(images=(image_u, image_v),
-                                       alphas=(1, 1),
-                                       modes=('max', 'max'))
+        blend_max = blend_color_images(images=(image_u, image_v), alphas=(1, 1), modes=("max", "max"))
 
     with asection("blend_over"):
-        blend_over = blend_color_images(images=(image_u, image_v),
-                                        alphas=(1, 1),
-                                        modes=('max', 'over'))
+        blend_over = blend_color_images(images=(image_u, image_v), alphas=(1, 1), modes=("max", "over"))
 
     if display:
         from napari import Viewer, gui_qt
+
         with gui_qt():
+
             def _c(array):
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(image_u), name='image_u')
-            viewer.add_image(_c(image_v), name='image_v')
-            viewer.add_image(_c(blend_mean), name='blend_mean')
-            viewer.add_image(_c(blend_add), name='blend_add')
+            viewer.add_image(_c(image_u), name="image_u")
+            viewer.add_image(_c(image_v), name="image_v")
+            viewer.add_image(_c(blend_mean), name="blend_mean")
+            viewer.add_image(_c(blend_add), name="blend_add")
             # viewer.add_image(_c(blend_erfadd), name='blend_erfadd')
-            viewer.add_image(_c(blend_max), name='blend_max')
-            viewer.add_image(_c(blend_over), name='blend_over')
+            viewer.add_image(_c(blend_max), name="blend_max")
+            viewer.add_image(_c(blend_over), name="blend_over")
             viewer.grid.enabled = True
 
 

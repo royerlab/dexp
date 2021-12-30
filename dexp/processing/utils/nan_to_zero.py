@@ -25,4 +25,5 @@ def nan_to_zero(array, copy=True):
         return xp.nan_to_num(array, copy=copy)
     elif type(backend) is CupyBackend:
         import cupy
+
         return cupy.nan_to_num(array)

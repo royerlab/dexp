@@ -4,16 +4,17 @@ from dexp.processing.backends.backend import Backend
 from dexp.utils import xpArray
 
 
-def crop_resize_pad_color_image(image: xpArray,
-                                crop: Union[int, Tuple[int, ...], Tuple[Tuple[int, int], ...]] = None,
-                                resize: Tuple[int, ...] = None,
-                                resize_order: int = 3,
-                                resize_mode: str = 'constant',
-                                pad_width: Tuple[Tuple[int, int], ...] = None,
-                                pad_mode: str = 'constant',
-                                pad_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
-                                rgba_value_max: float = 255
-                                ):
+def crop_resize_pad_color_image(
+    image: xpArray,
+    crop: Union[int, Tuple[int, ...], Tuple[Tuple[int, int], ...]] = None,
+    resize: Tuple[int, ...] = None,
+    resize_order: int = 3,
+    resize_mode: str = "constant",
+    pad_width: Tuple[Tuple[int, int], ...] = None,
+    pad_mode: str = "constant",
+    pad_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
+    rgba_value_max: float = 255,
+):
     """
     Crops, resizes and then pad an RGB(A) image.
 
@@ -45,12 +46,12 @@ def crop_resize_pad_color_image(image: xpArray,
     if crop is not None:
 
         if type(crop) is int:
-            crop = (crop,) * (image.ndim-1)
+            crop = (crop,) * (image.ndim - 1)
         if type(crop[0]) is int:
             crop = tuple((c, c) for c in crop)
 
         # build the slice object to crop the image
-        slicing = tuple(slice(l if l > 0 else None, -r if r > 0 else None) for l, r in crop)+(slice(None), )
+        slicing = tuple(slice(l if l > 0 else None, -r if r > 0 else None) for l, r in crop) + (slice(None),)
 
         # Crop:
         image = image[slicing]
@@ -62,7 +63,7 @@ def crop_resize_pad_color_image(image: xpArray,
         factors = tuple(ns / s for ns, s in zip(resize, image.shape[:-1]))
 
         # find all non negative factors:
-        factors_no_negatives = tuple(factor for factor in factors if factor>0)
+        factors_no_negatives = tuple(factor for factor in factors if factor > 0)
 
         # compute the average (most case all factors are equal!)
         avg_factor = sum(factors_no_negatives) / len(factors_no_negatives)
@@ -74,10 +75,7 @@ def crop_resize_pad_color_image(image: xpArray,
         factors = factors + (1,)
 
         # Resizing:
-        image = sp.ndimage.zoom(input=image,
-                                zoom=factors,
-                                order=resize_order,
-                                mode=resize_mode)
+        image = sp.ndimage.zoom(input=image, zoom=factors, order=resize_order, mode=resize_mode)
 
     # Number of channels:
     nb_channels = image.shape[-1]
@@ -90,11 +88,8 @@ def crop_resize_pad_color_image(image: xpArray,
         for channel_index in range(nb_channels):
             channel = image[..., channel_index]
 
-            value = pad_color[channel_index]*rgba_value_max
-            padded_channel = xp.pad(channel,
-                                    pad_width=pad_width,
-                                    mode=pad_mode,
-                                    constant_values=value)
+            value = pad_color[channel_index] * rgba_value_max
+            padded_channel = xp.pad(channel, pad_width=pad_width, mode=pad_mode, constant_values=value)
             padded_channels.append(padded_channel)
 
         # Stacking:

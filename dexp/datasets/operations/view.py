@@ -1,4 +1,4 @@
-from typing import Sequence, Union, List
+from typing import List, Sequence, Union
 
 import dask
 from arbol import aprint
@@ -7,20 +7,25 @@ from dask.array import reshape
 from dexp.datasets.base_dataset import BaseDataset
 
 
-def dataset_view(input_dataset: BaseDataset,
-                 channels: Sequence[str],
-                 slicing,
-                 aspect: float,
-                 contrast_limits: Union[List[int], List[float]],
-                 colormap: str,
-                 name: str,
-                 windowsize: int,
-                 projections_only: bool,
-                 volume_only: bool,
-                 rescale_time: bool):
+def dataset_view(
+    input_dataset: BaseDataset,
+    channels: Sequence[str],
+    slicing,
+    aspect: float,
+    contrast_limits: Union[List[int], List[float]],
+    colormap: str,
+    name: str,
+    windowsize: int,
+    projections_only: bool,
+    volume_only: bool,
+    rescale_time: bool,
+):
 
     import napari
-    from napari.layers.utils._link_layers import link_layers, _get_common_evented_attributes
+    from napari.layers.utils._link_layers import (
+        _get_common_evented_attributes,
+        link_layers,
+    )
 
     if rescale_time:
         nb_time_points = [input_dataset.shape(channel)[0] for channel in input_dataset.channels()]
@@ -54,15 +59,20 @@ def dataset_view(input_dataset: BaseDataset,
                     elif axis == 2:
                         proj_array = dask.array.rot90(proj_array, axes=(2, 1))  #
 
-                    shape = (proj_array.shape[0], 1,) + proj_array.shape[1:]
+                    shape = (
+                        proj_array.shape[0],
+                        1,
+                    ) + proj_array.shape[1:]
                     proj_array = reshape(proj_array, shape=shape)
 
                     if proj_array is not None:
-                        proj_layer = viewer.add_image(proj_array,
-                                                        name=channel + '_proj_' + str(axis),
-                                                        contrast_limits=contrast_limits,
-                                                        blending='additive',
-                                                        colormap=colormap, )
+                        proj_layer = viewer.add_image(
+                            proj_array,
+                            name=channel + "_proj_" + str(axis),
+                            contrast_limits=contrast_limits,
+                            blending="additive",
+                            colormap=colormap,
+                        )
                         layers.append(proj_layer)
 
                         if aspect is not None:
@@ -86,16 +96,18 @@ def dataset_view(input_dataset: BaseDataset,
             aprint(f"Adding array of shape={array.shape} and dtype={array.dtype} for channel '{channel}'.")
 
             # flip x for second camera:
-            if 'C1' in channel:
+            if "C1" in channel:
                 array = dask.array.flip(array, -1)
 
-            layer = viewer.add_image(array,
-                                        name=channel,
-                                        contrast_limits=contrast_limits,
-                                        blending='additive',
-                                        colormap=colormap,
-                                        attenuation=0.04,
-                                        rendering='attenuated_mip')
+            layer = viewer.add_image(
+                array,
+                name=channel,
+                contrast_limits=contrast_limits,
+                blending="additive",
+                colormap=colormap,
+                attenuation=0.04,
+                rendering="attenuated_mip",
+            )
             layers.append(layer)
 
             if aspect is not None:
@@ -103,12 +115,12 @@ def dataset_view(input_dataset: BaseDataset,
                     layer.scale = (aspect, 1, 1)
                 elif array.ndim == 4:
                     layer.scale = (time_scale, aspect, 1, 1)
-                    aprint(f'Setting time scale to {time_scale}')
+                    aprint(f"Setting time scale to {time_scale}")
                 aprint(f"Setting aspect ratio to {aspect} (layer.scale={layer.scale})")
 
         if layers:
             attr = _get_common_evented_attributes(layers)
-            attr.remove('visible')
+            attr.remove("visible")
             link_layers(layers, attr)
 
     napari.run()

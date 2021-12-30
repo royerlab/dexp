@@ -3,11 +3,7 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.utils import xpArray
 
 
-def fuse_dct_nd(image_a: xpArray,
-                image_b: xpArray,
-                cutoff: float = 0,
-                clip: bool = True,
-                internal_dtype=None):
+def fuse_dct_nd(image_a: xpArray, image_b: xpArray, cutoff: float = 0, clip: bool = True, internal_dtype=None):
     """
     Fuses two images in DCT domain by picking coefficients with maximal magnitude.
 
@@ -53,8 +49,8 @@ def fuse_dct_nd(image_a: xpArray,
     min_value = min(min_a, min_b)
     max_value = min(max_a, max_b)
 
-    tranform = lambda x: sp.fft.dctn(x, norm='ortho')
-    itranform = lambda x: sp.fft.idctn(x, norm='ortho')
+    tranform = lambda x: sp.fft.dctn(x, norm="ortho")
+    itranform = lambda x: sp.fft.idctn(x, norm="ortho")
 
     image_a_dct = tranform(image_a)
     image_b_dct = tranform(image_b)
@@ -69,8 +65,10 @@ def fuse_dct_nd(image_a: xpArray,
         c = cutoff
         cutoffs = tuple(int(s * c) for s in image_a.shape)
         cutoffs_slice = tuple(slice(0, c) for c in cutoffs)
-        image_fused_dct[cutoffs_slice] = ~image_a_is_max[cutoffs_slice] * image_a_dct[cutoffs_slice] \
-                                         + image_a_is_max[cutoffs_slice] * image_b_dct[cutoffs_slice]
+        image_fused_dct[cutoffs_slice] = (
+            ~image_a_is_max[cutoffs_slice] * image_a_dct[cutoffs_slice]
+            + image_a_is_max[cutoffs_slice] * image_b_dct[cutoffs_slice]
+        )
 
     image_fused = itranform(image_fused_dct)
 

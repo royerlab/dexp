@@ -7,21 +7,22 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.utils import xpArray
 
 
-def classic_deskew(image: xpArray,
-                   depth_axis: int,
-                   lateral_axis: int,
-                   dx: float,
-                   dz: float,
-                   angle: float,
-                   camera_orientation: int = 0,
-                   flip_depth_axis: bool = False,
-                   epsilon: float = 1e-2,
-                   order: int = 1,
-                   padding: bool = True,
-                   copy: bool = True,
-                   internal_dtype=None
-                   ):
-    """ Classic Deskewing.
+def classic_deskew(
+    image: xpArray,
+    depth_axis: int,
+    lateral_axis: int,
+    dx: float,
+    dz: float,
+    angle: float,
+    camera_orientation: int = 0,
+    flip_depth_axis: bool = False,
+    epsilon: float = 1e-2,
+    order: int = 1,
+    padding: bool = True,
+    copy: bool = True,
+    internal_dtype=None,
+):
+    """Classic Deskewing.
 
     Parameters
     ----------
@@ -49,36 +50,39 @@ def classic_deskew(image: xpArray,
     shift = dx * math.sin(angle * math.pi / 180) / dz
     lateral_scaling = math.cos(angle * math.pi / 180)
 
-    image = classic_deskew_dimensionless(image=image,
-                                         shift=shift,
-                                         depth_axis=depth_axis,
-                                         lateral_axis=lateral_axis,
-                                         flip_depth_axis=flip_depth_axis,
-                                         lateral_scaling=lateral_scaling,
-                                         camera_orientation=camera_orientation,
-                                         epsilon=epsilon,
-                                         order=order,
-                                         padding=padding,
-                                         copy=copy,
-                                         internal_dtype=internal_dtype)
+    image = classic_deskew_dimensionless(
+        image=image,
+        shift=shift,
+        depth_axis=depth_axis,
+        lateral_axis=lateral_axis,
+        flip_depth_axis=flip_depth_axis,
+        lateral_scaling=lateral_scaling,
+        camera_orientation=camera_orientation,
+        epsilon=epsilon,
+        order=order,
+        padding=padding,
+        copy=copy,
+        internal_dtype=internal_dtype,
+    )
 
     return image
 
 
-def classic_deskew_dimensionless(image: xpArray,
-                                 depth_axis: int,
-                                 lateral_axis: int,
-                                 shift: float,
-                                 lateral_scaling: float = 1.0,
-                                 flip_depth_axis: bool = False,
-                                 camera_orientation: int = 0,
-                                 epsilon: float = 1e-2,
-                                 order: int = 1,
-                                 padding: bool = False,
-                                 copy: bool = True,
-                                 internal_dtype=None
-                                 ):
-    """ Classic Deskewing with the dimensionless parametrisation.
+def classic_deskew_dimensionless(
+    image: xpArray,
+    depth_axis: int,
+    lateral_axis: int,
+    shift: float,
+    lateral_scaling: float = 1.0,
+    flip_depth_axis: bool = False,
+    camera_orientation: int = 0,
+    epsilon: float = 1e-2,
+    order: int = 1,
+    padding: bool = False,
+    copy: bool = True,
+    internal_dtype=None,
+):
+    """Classic Deskewing with the dimensionless parametrisation.
 
     Parameters
     ----------
@@ -118,9 +122,7 @@ def classic_deskew_dimensionless(image: xpArray,
 
     # First we compute the permutation that will reorder the axis so that the depth and lateral axis are the first axis in the image:
     permutation = (depth_axis, lateral_axis) + tuple(
-        axis
-        for axis in range(image.ndim)
-        if axis not in [depth_axis, lateral_axis]
+        axis for axis in range(image.ndim) if axis not in [depth_axis, lateral_axis]
     )
     permutation = numpy.asarray(permutation)
     inverse_permutation = numpy.argsort(permutation)
@@ -141,7 +143,11 @@ def classic_deskew_dimensionless(image: xpArray,
     # Padding:
     if padding:
         pad_width_z = int(round(abs(shift) * height / 2))
-        pad_width = ((pad_width_z, pad_width_z), (0, 0), (0, 0),)
+        pad_width = (
+            (pad_width_z, pad_width_z),
+            (0, 0),
+            (0, 0),
+        )
         image = xp.pad(image, pad_width=pad_width)
 
     # Is the shift integral?

@@ -5,16 +5,14 @@ import numpy
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
+from dexp.processing.registration.model.pairwise_registration_model import (
+    PairwiseRegistrationModel,
+)
 
 
 class WarpRegistrationModel(PairwiseRegistrationModel):
-
-    def __init__(self,
-                 vector_field,
-                 confidence=None,
-                 force_numpy: bool = False):
-        """ Warp registration model.
+    def __init__(self, vector_field, confidence=None, force_numpy: bool = False):
+        """Warp registration model.
         A warp registration model consists in a vector field of shape (w,1), (h,w,2), or (d,h,w,3) and a confidence matrix of shape (w), (h,w), or (d,h,w),
         The vector field represents a warp transform, and the confidence matrix the confidence score -- within [0, 1] -- of each vector in the vector field.
 
@@ -46,9 +44,11 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
             return False
 
     def to_json(self) -> str:
-        return json.dumps({'type': 'warp', 'vector_field': self.vector_field.tolist(), 'confidence': self.confidence.tolist()})
+        return json.dumps(
+            {"type": "warp", "vector_field": self.vector_field.tolist(), "confidence": self.confidence.tolist()}
+        )
 
-    def to_numpy(self) -> 'WarpRegistrationModel':
+    def to_numpy(self) -> "WarpRegistrationModel":
         self.vector_field = Backend.to_numpy(self.vector_field)
         self.confidence = Backend.to_numpy(self.confidence)
         return self
@@ -61,13 +61,12 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
 
     def change_relative_to(self, other) -> float:
         ndim = self.vector_field.ndim
-        robust_average = numpy.median(numpy.linalg.norm(Backend.to_numpy(other.vector_field) - Backend.to_numpy(self.vector_field), axis=ndim - 1))
+        robust_average = numpy.median(
+            numpy.linalg.norm(Backend.to_numpy(other.vector_field) - Backend.to_numpy(self.vector_field), axis=ndim - 1)
+        )
         return float(robust_average)
 
-    def clean(self,
-              max_shift: float = None,
-              confidence_threshold: float = 0.1,
-              mode: str = 'mean'):
+    def clean(self, max_shift: float = None, confidence_threshold: float = 0.1, mode: str = "mean"):
         """
         Cleans the vector field by in-filling vectors of low confidence with the median of neighbooring higher-confidence vectors.
         Parameters
@@ -93,10 +92,14 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         mask = confidence > confidence_threshold
         vector_field[~mask] = 0
         for i in range(num_iterations):
-            if mode == 'median':
-                vector_field = sp.ndimage.median_filter(vector_field, size=(3,) * (confidence.ndim) + (1,), mode='nearest')
-            elif mode == 'mean':
-                vector_field = sp.ndimage.uniform_filter(vector_field, size=(3,) * (confidence.ndim) + (1,), mode='nearest')
+            if mode == "median":
+                vector_field = sp.ndimage.median_filter(
+                    vector_field, size=(3,) * (confidence.ndim) + (1,), mode="nearest"
+                )
+            elif mode == "mean":
+                vector_field = sp.ndimage.uniform_filter(
+                    vector_field, size=(3,) * (confidence.ndim) + (1,), mode="nearest"
+                )
             else:
                 raise ValueError("Unsupported mode")
             # we make sure to keep the high-confidence vectors unchanged:
@@ -105,27 +108,28 @@ class WarpRegistrationModel(PairwiseRegistrationModel):
         self.vector_field = vector_field
         self.confidence = confidence
 
-    def apply(self,
-              image,
-              pad: bool = False,
-              vector_field_upsampling: int = 2,
-              vector_field_upsampling_order: int = 1,
-              mode: str = 'border',
-              internal_dtype=None
-              ) -> 'Array':
+    def apply(
+        self,
+        image,
+        pad: bool = False,
+        vector_field_upsampling: int = 2,
+        vector_field_upsampling_order: int = 1,
+        mode: str = "border",
+        internal_dtype=None,
+    ) -> "Array":
 
-        image_warped = warp(image=image,
-                            vector_field=self.vector_field,
-                            vector_field_upsampling=vector_field_upsampling,
-                            vector_field_upsampling_order=vector_field_upsampling_order,
-                            mode=mode,
-                            internal_dtype=internal_dtype)
+        image_warped = warp(
+            image=image,
+            vector_field=self.vector_field,
+            vector_field_upsampling=vector_field_upsampling,
+            vector_field_upsampling_order=vector_field_upsampling_order,
+            mode=mode,
+            internal_dtype=internal_dtype,
+        )
 
         return image_warped
 
-    def apply_pair(self,
-                   image_a, image_b,
-                   **kwargs) -> Tuple['Array', 'Array']:
+    def apply_pair(self, image_a, image_b, **kwargs) -> Tuple["Array", "Array"]:
 
         return image_a, self.apply(image_b, **kwargs)
 

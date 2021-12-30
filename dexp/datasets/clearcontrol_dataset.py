@@ -2,8 +2,8 @@ import os
 import re
 from fnmatch import fnmatch
 from os import listdir
-from os.path import join, exists
-from typing import Sequence, Tuple, Any
+from os.path import exists, join
+from typing import Any, Sequence, Tuple
 
 import numpy
 from arbol.arbol import aprint
@@ -17,7 +17,6 @@ from dexp.utils.config import config_blosc
 
 
 class CCDataset(BaseDataset):
-
     def __init__(self, path, cache_size=8e9):
 
         super().__init__(dask_backed=False)
@@ -32,9 +31,9 @@ class CCDataset(BaseDataset):
         # print(all_files)
 
         for file in all_files:
-            if fnmatch(file, '*.index.txt'):
-                if not file.startswith('._'):
-                    channel = file.replace('.index.txt', '')
+            if fnmatch(file, "*.index.txt"):
+                if not file.startswith("._"):
+                    channel = file.replace(".index.txt", "")
                     self._channels.append(channel)
                     self._index_files[channel] = join(path, file)
 
@@ -63,14 +62,14 @@ class CCDataset(BaseDataset):
 
         lines = [line.strip() for line in lines]
 
-        lines = [re.split(r'\t+', line) for line in lines]
+        lines = [re.split(r"\t+", line) for line in lines]
 
         self._time_points[channel] = []
 
         for line in lines:
             time_point = int(line[0])
             time_sec = float(line[1])
-            shape = eval('(' + line[2] + ')')[::-1]
+            shape = eval("(" + line[2] + ")")[::-1]
 
             self._times_sec[(channel, time_point)] = time_sec
             self._shapes[(channel, time_point)] = shape
@@ -78,7 +77,9 @@ class CCDataset(BaseDataset):
             if channel in self._channel_shape:
                 existing_shape = self._channel_shape[channel]
                 if shape != existing_shape:
-                    aprint(f"Warning: Channel {channel} has varying stack shape! Shape changes from {existing_shape} to {shape} at time point {time_point}")
+                    aprint(
+                        f"Warning: Channel {channel} has varying stack shape! Shape changes from {existing_shape} to {shape} at time point {time_point}"
+                    )
             self._channel_shape[channel] = shape
 
             self._time_points[channel].append(time_point)
@@ -87,8 +88,8 @@ class CCDataset(BaseDataset):
 
     def _get_stack_file_name(self, channel, time_point):
 
-        compressed_file_name = join(self.folder, 'stacks', channel, str(time_point).zfill(6) + '.blc')
-        raw_file_name = join(self.folder, 'stacks', channel, str(time_point).zfill(6) + '.raw')
+        compressed_file_name = join(self.folder, "stacks", channel, str(time_point).zfill(6) + ".blc")
+        raw_file_name = join(self.folder, "stacks", channel, str(time_point).zfill(6) + ".raw")
 
         if self._is_compressed is None:
             if exists(compressed_file_name):
@@ -101,19 +102,18 @@ class CCDataset(BaseDataset):
         else:
             return raw_file_name
 
-
     def _get_array_for_stack_file(self, file_name, shape=None, dtype=None):
 
         try:
-            if file_name.endswith('.raw'):
+            if file_name.endswith(".raw"):
                 aprint(f"Accessing file: {file_name}")
 
                 dt = numpy.dtype(uint16)
-                dt = dt.newbyteorder('L')
+                dt = dt.newbyteorder("L")
 
                 array = numpy.fromfile(file_name, dtype=dt)
 
-            elif file_name.endswith('.blc'):
+            elif file_name.endswith(".blc"):
                 array = numpy.empty(shape=shape, dtype=dtype)
                 with open(file_name, "rb") as binary_file:
                     # Read the whole file at once
@@ -126,7 +126,6 @@ class CCDataset(BaseDataset):
 
             return array
 
-
         except FileNotFoundError:
             aprint(f"Could not find file: {file_name} for array of shape: {shape}")
             return numpy.zeros(shape, dtype=uint16)
@@ -134,17 +133,17 @@ class CCDataset(BaseDataset):
     def _get_slice_array_for_stack_file_and_z(self, file_name, shape, z):
 
         try:
-            if file_name.endswith('.raw'):
+            if file_name.endswith(".raw"):
                 aprint(f"Accessing file: {file_name} at z={z}")
 
                 length = shape[1] * shape[2] * numpy.dtype(uint16).itemsize
                 offset = z * length
 
                 dt = numpy.dtype(uint16)
-                dt = dt.newbyteorder('L')
+                dt = dt.newbyteorder("L")
 
                 array = numpy.fromfile(file_name, offset=offset, count=length, dtype=dt)
-            elif file_name.endswith('.blc'):
+            elif file_name.endswith(".blc"):
                 raise NotImplementedError("This type of access is not yet supported")
 
             array = array.reshape(shape[1:])
@@ -172,7 +171,9 @@ class CCDataset(BaseDataset):
 
     def info(self, channel: str = None) -> str:
         if channel:
-            info_str = f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]} "
+            info_str = (
+                f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]} "
+            )
             return info_str
         else:
             return self.tree()
@@ -193,10 +194,10 @@ class CCDataset(BaseDataset):
         lazy_stacks = [lazy_get_stack(channel, time_point, per_z_slice) for time_point in self._time_points[channel]]
 
         # Construct a small Dask array for every lazy value:
-        arrays = [array.from_delayed(lazy_stack,
-                                     dtype=uint16,
-                                     shape=self._channel_shape[channel])
-                  for lazy_stack in lazy_stacks]
+        arrays = [
+            array.from_delayed(lazy_stack, dtype=uint16, shape=self._channel_shape[channel])
+            for lazy_stack in lazy_stacks
+        ]
 
         stacked_array = array.stack(arrays, axis=0)  # Stack all small Dask arrays into one
 
@@ -209,15 +210,14 @@ class CCDataset(BaseDataset):
 
         if per_z_slice and not self._is_compressed:
 
-            lazy_get_slice_array_for_stack_file_and_z = delayed(self.cache.memoize(self._get_slice_array_for_stack_file_and_z), pure=True)
+            lazy_get_slice_array_for_stack_file_and_z = delayed(
+                self.cache.memoize(self._get_slice_array_for_stack_file_and_z), pure=True
+            )
 
             # Lazily load each stack for each time point:
             lazy_stacks = [lazy_get_slice_array_for_stack_file_and_z(file_name, shape, z) for z in range(0, shape[0])]
 
-            arrays = [array.from_delayed(lazy_stack,
-                                         dtype=uint16,
-                                         shape=shape[1:])
-                      for lazy_stack in lazy_stacks]
+            arrays = [array.from_delayed(lazy_stack, dtype=uint16, shape=shape[1:]) for lazy_stack in lazy_stacks]
 
             stack = array.stack(arrays, axis=0)
 
@@ -227,16 +227,16 @@ class CCDataset(BaseDataset):
         return stack
 
     def add_channel(self, name: str, shape: Tuple[int, ...], dtype, enable_projections: bool = True, **kwargs) -> Any:
-        raise NotImplementedError('Not implemented!')
+        raise NotImplementedError("Not implemented!")
 
     def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = True) -> Any:
         return None
 
     def write_array(self, channel: str, array: numpy.ndarray):
-        raise NotImplementedError('Not implemented!')
+        raise NotImplementedError("Not implemented!")
 
     def write_stack(self, channel: str, time_point: int, stack: numpy.ndarray):
-        raise NotImplementedError('Not implemented!')
+        raise NotImplementedError("Not implemented!")
 
     def check_integrity(self, channels: Sequence[str]) -> bool:
         # TODO: actually implement!

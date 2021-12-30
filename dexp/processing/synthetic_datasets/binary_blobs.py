@@ -1,8 +1,7 @@
 from dexp.processing.backends.backend import Backend
 
 
-def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2,
-                 volume_fraction=0.5, seed=None):
+def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2, volume_fraction=0.5, seed=None):
     """
     Generate synthetic binary image with several rounded blob-like objects.
 
@@ -52,7 +51,7 @@ def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2,
     rs = xp.random.RandomState(seed)
     shape = tuple([length] * n_dim)
     mask = xp.zeros(shape)
-    n_pts = max(int(1. / blob_size_fraction) ** n_dim, 1)
+    n_pts = max(int(1.0 / blob_size_fraction) ** n_dim, 1)
     points = (length * rs.rand(n_dim, n_pts)).astype(int)
     mask[tuple(indices for indices in points)] = 1
 

@@ -6,10 +6,12 @@ def set_mkl_threads(num_threads=None):
     try:
         if num_threads is None:
             import multiprocessing
+
             num_threads = multiprocessing.cpu_count() // 2 - 1
 
         try:
             import mkl
+
             mkl.set_num_threads(num_threads)
             return 0
         except Exception as e:
@@ -39,5 +41,6 @@ def set_mkl_threads(num_threads=None):
         # import traceback
         # traceback.print_exc()
         # print(e)
+
 
 # set_mkl_threads(8)

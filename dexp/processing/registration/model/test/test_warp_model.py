@@ -3,10 +3,13 @@ import numpy
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.processing.registration.model.warp_registration_model import (
+    WarpRegistrationModel,
+)
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 from dexp.utils.timeit import timeit
-
 
 # TODO: implement numpy version of warp.
 # def test_warp_model_numpy():
@@ -25,11 +28,9 @@ def test_warp_model_cupy():
 def _test_warp_model(length_xy=128, warp_grid_size=3):
     xp = Backend.get_xp_module()
 
-    _, _, image = generate_nuclei_background_data(add_noise=False,
-                                                  length_xy=length_xy,
-                                                  length_z_factor=1,
-                                                  zoom=2,
-                                                  dtype=numpy.float32)
+    _, _, image = generate_nuclei_background_data(
+        add_noise=False, length_xy=length_xy, length_z_factor=1, zoom=2, dtype=numpy.float32
+    )
     image = image[0:255, 0:253, 0:251]
 
     magnitude = 15

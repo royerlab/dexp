@@ -1,22 +1,22 @@
 import json
-from typing import List, Sequence, Tuple, Optional, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.registration.model.pairwise_registration_model import PairwiseRegistrationModel
-from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
+from dexp.processing.registration.model.pairwise_registration_model import (
+    PairwiseRegistrationModel,
+)
+from dexp.processing.registration.model.translation_registration_model import (
+    TranslationRegistrationModel,
+)
 from dexp.utils import xpArray
 
 
 class SequenceRegistrationModel:
+    def __init__(self, model_list: List[PairwiseRegistrationModel] = [], force_numpy: bool = True):
 
-    def __init__(self,
-                 model_list: List[PairwiseRegistrationModel] = [],
-                 force_numpy: bool = True
-                 ):
-
-        """ Instantiates a sequence-registration-model. A sequence registration model describes how to register jointly each n-1 D slice of a nD image.
+        """Instantiates a sequence-registration-model. A sequence registration model describes how to register jointly each n-1 D slice of a nD image.
         In effect, this object contains a sequence of registration models that describe how to transform each image in the sequence to the registered image
         that maximises registration coherence across the whole sequence.
 
@@ -56,9 +56,9 @@ class SequenceRegistrationModel:
 
     def to_json(self) -> str:
         models_json = list(model.to_json() for model in self.model_list)
-        return json.dumps({'type': 'translation_sequence', 'model_list': models_json})
+        return json.dumps({"type": "translation_sequence", "model_list": models_json})
 
-    def to_numpy(self) -> 'SequenceRegistrationModel':
+    def to_numpy(self) -> "SequenceRegistrationModel":
         self.model_list = list(model.to_numpy() for model in self.model_list)
         return self
 
@@ -77,25 +77,24 @@ class SequenceRegistrationModel:
         new_shape = tuple(s + pl + pr for s, (pl, pr) in zip(shape, self.padding()))
         return new_shape
 
-    def apply_sequence(self,
-                       image, axis: int,
-                       pad_width: Optional[Union[float, Tuple[Tuple[float, float], ...]]] = None,
-                       **kwargs) -> xpArray:
-        """ Applies this sequence registration model to the an image sequence of given sequence axis.
-            A new registered image is returned.
+    def apply_sequence(
+        self, image, axis: int, pad_width: Optional[Union[float, Tuple[Tuple[float, float], ...]]] = None, **kwargs
+    ) -> xpArray:
+        """Applies this sequence registration model to the an image sequence of given sequence axis.
+        A new registered image is returned.
 
-            Parameters
-            ----------
-            image: image sequence to register must be n+1 dimensional (1 dimension is the sequence axis)
-            axis: sequence axis
-            pad_width: Can be: (i) list of pad widths for all image edges : ((pad_left, pad_right),(...,...),..) (see numpy.pad pad_widths parameter), (ii) '0' (zero) for no padding, or (iii) None for automatic padding.
-            **kwargs: parameters passthrough to the apply method of the pairwise registration model
+        Parameters
+        ----------
+        image: image sequence to register must be n+1 dimensional (1 dimension is the sequence axis)
+        axis: sequence axis
+        pad_width: Can be: (i) list of pad widths for all image edges : ((pad_left, pad_right),(...,...),..) (see numpy.pad pad_widths parameter), (ii) '0' (zero) for no padding, or (iii) None for automatic padding.
+        **kwargs: parameters passthrough to the apply method of the pairwise registration model
 
-            Returns
-            -------
-            stabilised image sequence
+        Returns
+        -------
+        stabilised image sequence
 
-            """
+        """
 
         xp = Backend.get_xp_module()
 
@@ -114,7 +113,9 @@ class SequenceRegistrationModel:
             # no padding
             pass
 
-        registered_image = xp.stack((self.apply(image[index], index=index, **kwargs) for index in range(image.shape[axis])))
+        registered_image = xp.stack(
+            self.apply(image[index], index=index, **kwargs) for index in range(image.shape[axis])
+        )
 
         # put back axis where it belongs, if necessary:
         if axis != 0:
@@ -122,27 +123,23 @@ class SequenceRegistrationModel:
 
         return registered_image
 
-    def apply(self,
-              image,
-              index: int,
-              pad: bool = False,
-              **kwargs) -> xpArray:
-        """ Applies this sequence registration model to the image at a given index.
-            A new registered image is returned.
+    def apply(self, image, index: int, pad: bool = False, **kwargs) -> xpArray:
+        """Applies this sequence registration model to the image at a given index.
+        A new registered image is returned.
 
 
-            Parameters
-            ----------
-            image: image to register
-            index: index of image in sequence
-            pad : pads the image before registration
-            **kwargs : parameters passthrough to the apply method of the pairwise registration model
+        Parameters
+        ----------
+        image: image to register
+        index: index of image in sequence
+        pad : pads the image before registration
+        **kwargs : parameters passthrough to the apply method of the pairwise registration model
 
-            Returns
-            -------
-            image_reg: registered image against all others in the sequence
+        Returns
+        -------
+        image_reg: registered image against all others in the sequence
 
-            """
+        """
         xp = Backend.get_xp_module()
         model = self.model_list[index]
 
@@ -166,29 +163,29 @@ class SequenceRegistrationModel:
 
         fig, ax = plt.subplots()  # Create a figure and an axes.
         for axis in range(ndim):
-            ax.plot(x, y[:, axis], label=f'axis {axis}')  # Plot some data on the axes.
+            ax.plot(x, y[:, axis], label=f"axis {axis}")  # Plot some data on the axes.
 
-        ax.set_xlabel('time points')  # Add an x-label to the axes.
-        ax.set_ylabel('shift')  # Add a y-label to the axes.
+        ax.set_xlabel("time points")  # Add an x-label to the axes.
+        ax.set_ylabel("shift")  # Add a y-label to the axes.
         ax.set_title(f"{path} shifts")  # Add a title to the axes.
         ax.legend()  # Add a legend.
 
-        plt.savefig(path + '_shifts.pdf')
+        plt.savefig(path + "_shifts.pdf")
 
-    def reduce(self, step: int) -> 'SequenceRegistrationModel':
+    def reduce(self, step: int) -> "SequenceRegistrationModel":
         if not isinstance(self.model_list[0], TranslationRegistrationModel):
             raise NotImplementedError
 
         new_model_list = []
         for i in range(0, len(self.model_list), step):
             new_model = self.model_list[i].copy()
-            for j in range(i+1, min(len(self.model_list), i+step)):
-                centered_model = self.model_list[j] - self.model_list[j-1]
+            for j in range(i + 1, min(len(self.model_list), i + step)):
+                centered_model = self.model_list[j] - self.model_list[j - 1]
                 new_model += centered_model
             new_model_list.append(new_model)
 
         return SequenceRegistrationModel(new_model_list)
-    
+
     def total_displacement(self) -> List[Tuple[int]]:
         if not isinstance(self.model_list[0], TranslationRegistrationModel):
             raise NotImplementedError
@@ -198,5 +195,5 @@ class SequenceRegistrationModel:
         for model in self:
             lower_disp = np.minimum(lower_disp, model.shift_vector)
             upper_disp = np.maximum(upper_disp, model.shift_vector)
-        
+
         return [(l.item(), u.item()) for l, u in zip(lower_disp, upper_disp)]

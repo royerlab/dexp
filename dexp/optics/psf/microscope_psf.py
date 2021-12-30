@@ -39,14 +39,10 @@ class MicroscopePSF:
     """
 
     def __init__(self):
-        """
-
-        """
+        """ """
 
         # Internal constants.
-        self.num_basis = (
-            100  # Number of rescaled Bessels that approximate the phase function.
-        )
+        self.num_basis = 100  # Number of rescaled Bessels that approximate the phase function.
         self.rho_samples = 1000  # Number of pupil sample along the radial direction.
 
         # Microscope parameters.
@@ -78,20 +74,12 @@ class MicroscopePSF:
 
         # Scaling factors for the Fourier-Bessel series expansion
         min_wavelength = 0.436  # microns
-        scaling_factor = (
-                mp["NA"]
-                * (3 * numpy.arange(1, self.num_basis + 1) - 2)
-                * min_wavelength
-                / wvl
-        )
+        scaling_factor = mp["NA"] * (3 * numpy.arange(1, self.num_basis + 1) - 2) * min_wavelength / wvl
 
         # Not sure this is completely correct for the case where the axial
         # location of the flourophore is 0.0.
         #
-        max_rho = (
-                min([mp["NA"], mp["ng0"], mp["ng"], mp["ni0"], mp["ni"], mp["ns"]])
-                / mp["NA"]
-        )
+        max_rho = min([mp["NA"], mp["ng0"], mp["ng"], mp["ni0"], mp["ni"], mp["ns"]]) / mp["NA"]
 
         return [scaling_factor, max_rho]
 
@@ -107,9 +95,7 @@ class MicroscopePSF:
         a = mp["NA"] * mp["zd0"] / mp["M"]  # Aperture radius at the back focal plane.
         return a * a * (mp["zd0"] - zd) / (2.0 * mp["zd0"] * zd)
 
-    def gLXYZCameraScan(
-            self, dxy, xy_size, zd, normalize=True, pz=0.0, wvl=0.6, zv=0.0
-    ):
+    def gLXYZCameraScan(self, dxy, xy_size, zd, normalize=True, pz=0.0, wvl=0.6, zv=0.0):
         """
         NOTE: Does not work!
 
@@ -137,9 +123,7 @@ class MicroscopePSF:
         # Create XYZ PSF by interpolation.
         return self.psfRZToPSFXYZ(dxy, xy_size, rv, PSF_rz)
 
-    def gLXYZFocalScan(
-            self, dxy, xy_size, zv, normalize=True, pz=0.0, wvl=0.6, zd=None
-    ):
+    def gLXYZFocalScan(self, dxy, xy_size, zv, normalize=True, pz=0.0, wvl=0.6, zd=None):
         """
         Calculate 3D G-L PSF. This is models the PSF you would measure by scanning the microscopes
         focus.
@@ -165,9 +149,7 @@ class MicroscopePSF:
         # Create XYZ PSF by interpolation.
         return self.psfRZToPSFXYZ(dxy, xy_size, rv, PSF_rz)
 
-    def gLXYZParticleScan(
-            self, dxy, xy_size, pz, normalize=True, wvl=0.6, zd=None, zv=0.0
-    ):
+    def gLXYZParticleScan(self, dxy, xy_size, pz, normalize=True, wvl=0.6, zd=None, zv=0.0):
         """
         Calculate 3D G-L PSF. This is models the PSF you would measure by scanning a particle
         through the microscopes focus.
@@ -189,9 +171,7 @@ class MicroscopePSF:
         rv = self._calcRv(dxy, xy_size)
 
         # Calculate radial/Z PSF.
-        PSF_rz = self.gLZRParticleScan(
-            rv, pz, normalize=normalize, wvl=wvl, zd=zd, zv=zv
-        )
+        PSF_rz = self.gLZRParticleScan(rv, pz, normalize=normalize, wvl=wvl, zd=zd, zv=zv)
 
         # Create XYZ PSF by interpolation.
         return self.psfRZToPSFXYZ(dxy, xy_size, rv, PSF_rz)
@@ -219,7 +199,7 @@ class MicroscopePSF:
         rho = numpy.linspace(0.0, max_rho, self.rho_samples)
 
         a = (
-                mp["NA"] * mp["zd0"] / math.sqrt(mp["M"] * mp["M"] + mp["NA"] * mp["NA"])
+            mp["NA"] * mp["zd0"] / math.sqrt(mp["M"] * mp["M"] + mp["NA"] * mp["NA"])
         )  # Aperture radius at the back focal plane.
         k = 2.0 * numpy.pi / wvl
 
@@ -253,8 +233,8 @@ class MicroscopePSF:
         # See equation 5 in Li, Xue, and Blu
         denom = scaling_factor * scaling_factor - b * b
         R = (
-                scaling_factor * J1(scaling_factor * max_rho) * J0(b * max_rho) * max_rho
-                - b * J0(scaling_factor * max_rho) * J1(b * max_rho) * max_rho
+            scaling_factor * J1(scaling_factor * max_rho) * J0(b * max_rho) * max_rho
+            - b * J0(scaling_factor * max_rho) * J1(b * max_rho) * max_rho
         )
         R /= denom
 
@@ -376,9 +356,7 @@ class MicroscopePSF:
         OPDg = tg * numpy.sqrt(ng * ng - NA * NA * rho * rho) - tg0 * numpy.sqrt(
             ng0 * ng0 - NA * NA * rho * rho
         )  # OPD in the coverslip.
-        OPDt = (
-                a * a * (zd0 - zd) * rho * rho / (2.0 * zd0 * zd)
-        )  # OPD in camera position.
+        OPDt = a * a * (zd0 - zd) * rho * rho / (2.0 * zd0 * zd)  # OPD in camera position.
 
         return k * (OPDs + OPDi + OPDg + OPDt)
 
@@ -389,9 +367,7 @@ class MicroscopePSF:
         # Create XY grid of radius values.
         c_xy = float(xy_size) * 0.5
         xy = numpy.mgrid[0:xy_size, 0:xy_size] + 0.5
-        r_pixel = dxy * numpy.sqrt(
-            (xy[1] - c_xy) * (xy[1] - c_xy) + (xy[0] - c_xy) * (xy[0] - c_xy)
-        )
+        r_pixel = dxy * numpy.sqrt((xy[1] - c_xy) * (xy[1] - c_xy) + (xy[0] - c_xy) * (xy[0] - c_xy))
 
         # Create XYZ PSF by interpolation.
         PSF_xyz = numpy.zeros((PSF_rz.shape[0], xy_size, xy_size))
@@ -419,7 +395,7 @@ class MicroscopePSF:
         mp = self.parameters
 
         a = (
-                mp["NA"] * mp["zd0"] / math.sqrt(mp["M"] * mp["M"] + mp["NA"] * mp["NA"])
+            mp["NA"] * mp["zd0"] / math.sqrt(mp["M"] * mp["M"] + mp["NA"] * mp["NA"])
         )  # Aperture radius at the back focal plane.
         k = 2.0 * numpy.pi / wvl
         ti = zv + mp["ti0"]

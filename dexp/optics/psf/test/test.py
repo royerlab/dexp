@@ -3,7 +3,6 @@
 Test focal scan G-L PSF.
 """
 import numpy
-
 from aydin.util.psf.microscope_psf import MicroscopePSF
 
 

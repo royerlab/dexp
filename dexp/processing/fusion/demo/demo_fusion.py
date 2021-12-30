@@ -25,7 +25,9 @@ def demo_fusion_cupy():
 
 def demo_fusion(include_dct=True, length_xy=120):
     with asection("generate data"):
-        image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=True, length_xy=length_xy, length_z_factor=4)
+        image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(
+            add_noise=True, length_xy=length_xy, length_z_factor=4
+        )
         image_gt = Backend.to_numpy(image_gt)
 
     with asection("dct fusion"):
@@ -48,20 +50,22 @@ def demo_fusion(include_dct=True, length_xy=120):
     print(f"error_tg={error_tg}")
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image_gt), name='image_gt')
-        viewer.add_image(_c(image_lowq), name='image_lowq')
-        viewer.add_image(_c(blend_a), name='blend_a')
-        viewer.add_image(_c(blend_b), name='blend_b')
-        viewer.add_image(_c(image1), name='image1')
-        viewer.add_image(_c(image2), name='image2')
-        viewer.add_image(_c(image_fused_dct), name='image_fused_dct')
-        viewer.add_image(_c(image_fused_dft), name='image_fused_dft')
-        viewer.add_image(_c(image_fused_tg), name='image_fused_tg')
+        viewer.add_image(_c(image_gt), name="image_gt")
+        viewer.add_image(_c(image_lowq), name="image_lowq")
+        viewer.add_image(_c(blend_a), name="blend_a")
+        viewer.add_image(_c(blend_b), name="blend_b")
+        viewer.add_image(_c(image1), name="image1")
+        viewer.add_image(_c(image2), name="image2")
+        viewer.add_image(_c(image_fused_dct), name="image_fused_dct")
+        viewer.add_image(_c(image_fused_dft), name="image_fused_dft")
+        viewer.add_image(_c(image_fused_tg), name="image_fused_tg")
 
 
 if __name__ == "__main__":

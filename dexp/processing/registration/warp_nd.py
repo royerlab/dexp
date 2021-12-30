@@ -1,22 +1,28 @@
-from typing import Union, Tuple
+from typing import Tuple, Union
 
-from arbol import section, aprint
+from arbol import aprint, section
 
 from dexp.processing.backends.backend import Backend
-from dexp.processing.registration.model.warp_registration_model import WarpRegistrationModel
-from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
+from dexp.processing.registration.model.warp_registration_model import (
+    WarpRegistrationModel,
+)
+from dexp.processing.registration.translation_nd_proj import (
+    register_translation_proj_nd,
+)
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
 from dexp.utils import xpArray
 
 
 @section("register_warp_nd")
-def register_warp_nd(image_a: xpArray,
-                     image_b: xpArray,
-                     chunks: Union[int, Tuple[int, ...]],
-                     margins: Union[int, Tuple[int, ...]] = None,
-                     registration_method=register_translation_proj_nd,
-                     force_numpy: bool = False,
-                     **kwargs) -> WarpRegistrationModel:
+def register_warp_nd(
+    image_a: xpArray,
+    image_b: xpArray,
+    chunks: Union[int, Tuple[int, ...]],
+    margins: Union[int, Tuple[int, ...]] = None,
+    registration_method=register_translation_proj_nd,
+    force_numpy: bool = False,
+    **kwargs,
+) -> WarpRegistrationModel:
     """
     Registers two nD images using warp model (piece-wise translation model).
 
@@ -48,10 +54,7 @@ def register_warp_nd(image_a: xpArray,
         shift, confidence = model.get_shift_and_confidence()
         return xp.asarray(shift), xp.asarray(confidence)
 
-    vector_field, confidence = scatter_gather_i2v(f,
-                                                  (image_a, image_b),
-                                                  tiles=chunks,
-                                                  margins=margins)
+    vector_field, confidence = scatter_gather_i2v(f, (image_a, image_b), tiles=chunks, margins=margins)
 
     model = WarpRegistrationModel(vector_field=vector_field, confidence=confidence, force_numpy=force_numpy)
 

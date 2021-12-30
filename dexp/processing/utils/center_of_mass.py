@@ -4,12 +4,13 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.utils.projection_generator import projection_generator
 
 
-def center_of_mass(image,
-                   mode: str = 'projection',
-                   projection_type: str = 'mean',
-                   offset_mode: str = 'min',
-                   bounding_box: bool = False,
-                   ):
+def center_of_mass(
+    image,
+    mode: str = "projection",
+    projection_type: str = "mean",
+    offset_mode: str = "min",
+    bounding_box: bool = False,
+):
     """
     Computes the center of mass of an image.
 
@@ -31,7 +32,7 @@ def center_of_mass(image,
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
-    if mode == 'full':
+    if mode == "full":
         if offset_mode is not None:
             image = _remove_offset(image, offset_mode, xp)
 
@@ -45,15 +46,13 @@ def center_of_mass(image,
 
         com = _center_of_mass(image, bounding_box)
 
-    elif mode == 'projection':
+    elif mode == "projection":
         ndim = image.ndim
 
         com = xp.zeros((ndim,), dtype=xp.float32)
         count = xp.zeros((ndim,), dtype=xp.float32)
 
-        for u, v, projected_image in projection_generator(image,
-                                                          projection_type=projection_type,
-                                                          nb_axis=2):
+        for u, v, projected_image in projection_generator(image, projection_type=projection_type, nb_axis=2):
             if offset_mode is not None:
                 projected_image = _remove_offset(projected_image, offset_mode, xp)
 
@@ -100,16 +99,16 @@ def _bounding_box(image):
 
 
 def _remove_offset(image, offset_mode, xp):
-    if offset_mode == 'min':
+    if offset_mode == "min":
         image -= image.min()
-    elif offset_mode.startswith('p='):
-        percentile = float(offset_mode.split('=')[1].strip())
+    elif offset_mode.startswith("p="):
+        percentile = float(offset_mode.split("=")[1].strip())
         image -= xp.percentile(image, percentile).astype(image.dtype, copy=False)
-    elif offset_mode == 'median':
+    elif offset_mode == "median":
         image -= xp.median(image).astype(image.dtype, copy=False)
-    elif offset_mode == 'mean':
+    elif offset_mode == "mean":
         image -= xp.mean(image).astype(image.dtype, copy=False)
-    elif offset_mode == 'middle':
+    elif offset_mode == "middle":
         minv = image.min()
         maxv = image.max()
         offset = 0.5 * (maxv + minv)

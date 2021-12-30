@@ -74,7 +74,7 @@ __kernel void occlusion(__global float *d_output,
 	// if ((x==200)&&(y==200)){
 	//   printf("%d \n",i);
 	// }
-	
+
   }
 
   d_output[x+Nx*y]  = occ/number_points;

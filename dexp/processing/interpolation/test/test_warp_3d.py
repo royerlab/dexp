@@ -3,9 +3,10 @@ import numpy
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.interpolation.warp import warp
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 from dexp.utils.timeit import timeit
-
 
 # def test_warp_2d_numpy():
 #     backend = NumpyBackend()
@@ -25,11 +26,9 @@ def _test_warp_3d(length_xy=256, grid_size=8):
     sp = Backend.get_sp_module()
 
     with timeit("generate data"):
-        _, _, image = generate_nuclei_background_data(add_noise=True,
-                                                      length_xy=length_xy,
-                                                      length_z_factor=1,
-                                                      zoom=2,
-                                                      dtype=numpy.float32)
+        _, _, image = generate_nuclei_background_data(
+            add_noise=True, length_xy=length_xy, length_z_factor=1, zoom=2, dtype=numpy.float32
+        )
 
     newimage = image[0:512, 0:511, 0:509]
     image = newimage

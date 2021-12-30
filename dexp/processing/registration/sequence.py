@@ -1,40 +1,47 @@
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
+import dask
 import numpy
 from arbol import aprint, asection
-import dask
 from dask.array import Array
 from joblib import Parallel, delayed
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.model.sequence_registration_model import SequenceRegistrationModel
-from dexp.processing.registration.model.translation_registration_model import TranslationRegistrationModel
-from dexp.processing.registration.translation_nd_proj import register_translation_proj_nd
+from dexp.processing.registration.model.sequence_registration_model import (
+    SequenceRegistrationModel,
+)
+from dexp.processing.registration.model.translation_registration_model import (
+    TranslationRegistrationModel,
+)
+from dexp.processing.registration.translation_nd_proj import (
+    register_translation_proj_nd,
+)
 from dexp.processing.utils.center_of_mass import center_of_mass
 from dexp.processing.utils.linear_solver import linsolve
 from dexp.utils import xpArray
 
 
-def image_stabilisation(image: xpArray,
-                        axis: int,
-                        preload_images: bool = True,
-                        mode: str = 'translation',
-                        max_range: int = 7,
-                        min_confidence: float = 0.5,
-                        enable_com: bool = False,
-                        quantile: float = 0.5,
-                        bounding_box: bool = False,
-                        tolerance: float = 1e-7,
-                        order_error: float = 2.0,
-                        order_reg: float = 1.0,
-                        alpha_reg: float = 0.1,
-                        detrend: bool = False,
-                        debug_output: str = None,
-                        workers: int = 1,
-                        internal_dtype=None,
-                        **kwargs
-                        ) -> SequenceRegistrationModel:
+def image_stabilisation(
+    image: xpArray,
+    axis: int,
+    preload_images: bool = True,
+    mode: str = "translation",
+    max_range: int = 7,
+    min_confidence: float = 0.5,
+    enable_com: bool = False,
+    quantile: float = 0.5,
+    bounding_box: bool = False,
+    tolerance: float = 1e-7,
+    order_error: float = 2.0,
+    order_reg: float = 1.0,
+    alpha_reg: float = 0.1,
+    detrend: bool = False,
+    debug_output: str = None,
+    workers: int = 1,
+    internal_dtype=None,
+    **kwargs,
+) -> SequenceRegistrationModel:
     """
     Computes a sequence stabilisation model for an image sequence.
 
@@ -70,7 +77,9 @@ def image_stabilisation(image: xpArray,
     image_sequence = None
     if preload_images:
         with asection(f"Preloading images to backend..."):
-            image_sequence = list(Backend.to_backend(Backend.get_xp_module(image).take(image, i, axis=axis)) for i in range(length))
+            image_sequence = list(
+                Backend.to_backend(Backend.get_xp_module(image).take(image, i, axis=axis)) for i in range(length)
+            )
 
     scales = list(i for i in range(max_range) if i < length)
 
@@ -97,7 +106,7 @@ def image_stabilisation(image: xpArray,
                         uv_set.add(atuple)
 
         with asection(f"Computing pairwise registrations for {len(uv_set)} (u,v) pairs..."):
-            
+
             def _compute_model(pair: Tuple[int, int]) -> Optional[TranslationRegistrationModel]:
                 u, v = pair
                 if image_sequence:
@@ -109,17 +118,21 @@ def image_stabilisation(image: xpArray,
                 else:
                     image_u = xp.take(image, u, axis=axis)
                     image_v = xp.take(image, v, axis=axis)
-                model = _pairwise_registration(u, v,
-                                               image_u, image_v,
-                                               mode,
-                                               min_confidence,
-                                               enable_com,
-                                               quantile,
-                                               bounding_box,
-                                               internal_dtype,
-                                               **kwargs)
+                model = _pairwise_registration(
+                    u,
+                    v,
+                    image_u,
+                    image_v,
+                    mode,
+                    min_confidence,
+                    enable_com,
+                    quantile,
+                    bounding_box,
+                    internal_dtype,
+                    **kwargs,
+                )
                 return model
-            
+
             pairwise_models = Parallel(n_jobs=workers)(delayed(_compute_model)(pair) for pair in uv_set)
             pairwise_models = [model for model in pairwise_models if model is not None]
 
@@ -130,6 +143,7 @@ def image_stabilisation(image: xpArray,
             with asection(f"Generating pairwise registration confidence matrix: '{debug_output}' "):
                 import matplotlib.pyplot as plt
                 import seaborn as sns
+
                 sns.set_theme()
                 plt.clf()
                 plt.cla()
@@ -141,19 +155,19 @@ def image_stabilisation(image: xpArray,
                     array[u, v] = model.overall_confidence()
                 sns.heatmap(array)
 
-                plt.savefig(debug_output + '_prcm.pdf')
+                plt.savefig(debug_output + "_prcm.pdf")
 
         with asection(f"Solving for optimal sequence registration"):
             with NumpyBackend():
                 xp = Backend.get_xp_module()
                 sp = Backend.get_sp_module()
 
-                if mode == 'translation':
+                if mode == "translation":
 
                     # prepares list of models:
-                    translation_models: List[TranslationRegistrationModel] =\
-                        list(TranslationRegistrationModel(xp.zeros((ndim,), dtype=internal_dtype))
-                             for _ in range(length))
+                    translation_models: List[TranslationRegistrationModel] = list(
+                        TranslationRegistrationModel(xp.zeros((ndim,), dtype=internal_dtype)) for _ in range(length)
+                    )
 
                     # initialise count for average:
                     for model in translation_models:
@@ -197,11 +211,9 @@ def image_stabilisation(image: xpArray,
                         a = sp.sparse.coo_matrix(a)
 
                         # solve system:
-                        x_opt = linsolve(a, y,
-                                         tolerance=tolerance,
-                                         order_error=order_error,
-                                         order_reg=order_reg,
-                                         alpha_reg=alpha_reg)
+                        x_opt = linsolve(
+                            a, y, tolerance=tolerance, order_error=order_error, order_reg=order_reg, alpha_reg=alpha_reg
+                        )
 
                         # detrend:
                         if detrend:
@@ -236,32 +248,28 @@ def image_stabilisation(image: xpArray,
             # image_b = Backend.to_backend(image_b, dtype=internal_dtype)
 
 
-def _pairwise_registration(u, v,
-                           image_u, image_v,
-                           mode,
-                           min_confidence,
-                           enable_com,
-                           quantile,
-                           bounding_box,
-                           internal_dtype,
-                           **kwargs):
+def _pairwise_registration(
+    u, v, image_u, image_v, mode, min_confidence, enable_com, quantile, bounding_box, internal_dtype, **kwargs
+):
     image_u = Backend.to_backend(image_u, dtype=internal_dtype)
     image_v = Backend.to_backend(image_v, dtype=internal_dtype)
 
-    if mode == 'translation':
-        model = register_translation_proj_nd(image_u, image_v,
-                                             _display_phase_correlation=False,
-                                             **kwargs)
+    if mode == "translation":
+        model = register_translation_proj_nd(image_u, image_v, _display_phase_correlation=False, **kwargs)
         model.u = u
         model.v = v
         confidence = model.overall_confidence()
 
-        if (confidence < min_confidence):
+        if confidence < min_confidence:
             if enable_com:
                 # aprint(f"Warning: low confidence ({confidence}) for pair: ({u}, {v}) falling back to center-of-mass calculation")
-                offset_mode = f'p={quantile * 100}'
-                com_u = center_of_mass(image_u, mode='full', projection_type='max-min', offset_mode=offset_mode, bounding_box=bounding_box)
-                com_v = center_of_mass(image_v, mode='full', projection_type='max-min', offset_mode=offset_mode, bounding_box=bounding_box)
+                offset_mode = f"p={quantile * 100}"
+                com_u = center_of_mass(
+                    image_u, mode="full", projection_type="max-min", offset_mode=offset_mode, bounding_box=bounding_box
+                )
+                com_v = center_of_mass(
+                    image_v, mode="full", projection_type="max-min", offset_mode=offset_mode, bounding_box=bounding_box
+                )
                 model = TranslationRegistrationModel(shift_vector=com_u - com_v, confidence=min_confidence)
                 model.u = u
                 model.v = v

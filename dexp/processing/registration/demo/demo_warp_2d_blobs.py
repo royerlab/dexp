@@ -31,7 +31,7 @@ def _register_warp_2d_blobs(length_xy=512, warp_grid_size=4, reg_grid_size=8, di
         image = binary_blobs(length=length_xy, seed=1, n_dim=2, blob_size_fraction=0.04, volume_fraction=0.05)
         image = image.astype(numpy.float32)
         image = gaussian_filter(image, sigma=4)
-        image = image[0:length_xy - 3, 0:length_xy - 5]
+        image = image[0 : length_xy - 3, 0 : length_xy - 5]
         image = Backend.to_backend(image)
 
     with asection("warp"):
@@ -56,14 +56,16 @@ def _register_warp_2d_blobs(length_xy=512, warp_grid_size=4, reg_grid_size=8, di
 
     if display:
         from napari import Viewer, gui_qt
+
         with gui_qt():
+
             def _c(array):
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive')
-            viewer.add_image(_c(warped), name='warped', colormap='bop blue', blending='additive', visible=False)
-            viewer.add_image(_c(unwarped), name='unwarped', colormap='bop purple', blending='additive')
+            viewer.add_image(_c(image), name="image", colormap="bop orange", blending="additive")
+            viewer.add_image(_c(warped), name="warped", colormap="bop blue", blending="additive", visible=False)
+            viewer.add_image(_c(unwarped), name="unwarped", colormap="bop purple", blending="additive")
 
     return image, warped, unwarped, model
 

@@ -5,13 +5,9 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.utils import xpArray
 
 
-def clean_dark_regions(image: xpArray,
-                       threshold: float,
-                       size: int = 3,
-                       mode: str = 'uniform',
-                       in_place: bool = True,
-                       internal_dtype=None
-                       ):
+def clean_dark_regions(
+    image: xpArray, threshold: float, size: int = 3, mode: str = "uniform", in_place: bool = True, internal_dtype=None
+):
     """
     Clean Dark Regions
 
@@ -44,16 +40,16 @@ def clean_dark_regions(image: xpArray,
     original_dtype = image.dtype
     image = Backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
 
-    if mode == 'none':
+    if mode == "none":
         filtered = image.copy()
-    elif mode == 'min':
+    elif mode == "min":
         filtered = sp.ndimage.filters.minimum_filter(image, size=size)
-    elif mode == 'median':
+    elif mode == "median":
         filtered = sp.ndimage.filters.median_filter(image, size=size)
-    elif mode == 'uniform':
+    elif mode == "uniform":
         filtered = sp.ndimage.filters.uniform_filter(image, size=size)
     else:
-        raise ValueError(f'Unknown mode: {mode}, only min, median and uniform supported!')
+        raise ValueError(f"Unknown mode: {mode}, only min, median and uniform supported!")
 
     mask = sp.ndimage.filters.maximum_filter(filtered, size=size) < threshold
 

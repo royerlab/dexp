@@ -1,4 +1,4 @@
-from typing import Union, Tuple, Sequence
+from typing import Sequence, Tuple, Union
 
 from arbol import aprint
 
@@ -8,17 +8,19 @@ from dexp.processing.color.border import add_border
 from dexp.utils import xpArray
 
 
-def insert_color_image(image: xpArray,
-                       inset_image: xpArray,
-                       scale: Union[float, Tuple[float, ...]] = 1,
-                       translation: Union[str, Sequence[Tuple[Union[int, float], ...]]] = None,
-                       border_width: int = 0,
-                       border_color: Tuple[float, float, float, float] = None,
-                       border_over_image: bool = False,
-                       mode: str = 'max',
-                       alpha: float = 1,
-                       background_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
-                       rgba_value_max: float = 255):
+def insert_color_image(
+    image: xpArray,
+    inset_image: xpArray,
+    scale: Union[float, Tuple[float, ...]] = 1,
+    translation: Union[str, Sequence[Tuple[Union[int, float], ...]]] = None,
+    border_width: int = 0,
+    border_color: Tuple[float, float, float, float] = None,
+    border_over_image: bool = False,
+    mode: str = "max",
+    alpha: float = 1,
+    background_color: Tuple[float, float, float, float] = (0, 0, 0, 0),
+    rgba_value_max: float = 255,
+):
     """
     Inserts an inset image into a base image.
     After scaling the inset image must be smaller than the base image.
@@ -66,12 +68,13 @@ def insert_color_image(image: xpArray,
     # Add border:
     if border_width != 0:
         aprint(f"Adding border of width: {border_width}, and color: {border_color}")
-        inset_image = add_border(inset_image,
-                                 width=border_width,
-                                 color=border_color,
-                                 over_image=border_over_image,
-                                 rgba_value_max=rgba_value_max,
-                                 )
+        inset_image = add_border(
+            inset_image,
+            width=border_width,
+            color=border_color,
+            over_image=border_over_image,
+            rgba_value_max=rgba_value_max,
+        )
 
     # Check that if after scaling, the inset image is smaller than the base image:
     if any(u > v for u, v in zip(inset_image.shape, image.shape)):
@@ -79,7 +82,9 @@ def insert_color_image(image: xpArray,
 
     # Check that both images have the same number of dimensions:
     if inset_image.ndim != image.ndim:
-        raise ValueError(f"Inset image number of dimensions: {inset_image.ndim} does not match base image number of dimensions: {image.ndim}.")
+        raise ValueError(
+            f"Inset image number of dimensions: {inset_image.ndim} does not match base image number of dimensions: {image.ndim}."
+        )
 
     # Pad inset image:
     pad_width = tuple((v - u for u, v in zip(inset_image.shape, image.shape)))
@@ -95,13 +100,13 @@ def insert_color_image(image: xpArray,
         pass
     elif type(translation) == str:
         shift = list(shift)
-        if 'top' in translation:
+        if "top" in translation:
             shift[0] += 0
-        elif 'bottom' in translation:
+        elif "bottom" in translation:
             shift[0] += image.shape[0] - inset_image.shape[0]
-        if 'left' in translation:
+        if "left" in translation:
             shift[1] += 0
-        elif 'right' in translation:
+        elif "right" in translation:
             shift[1] += image.shape[1] - inset_image.shape[1]
         shift = tuple(shift)
     elif type(translation) == tuple:
@@ -115,10 +120,12 @@ def insert_color_image(image: xpArray,
     padded_inset_image = xp.roll(padded_inset_image, axis=axis, shift=shift)
 
     # Blend images together:
-    result = blend_color_images(images=(image, padded_inset_image),
-                                alphas=(1, alpha),
-                                modes=('max', mode),
-                                background_color=background_color,
-                                rgba_value_max=rgba_value_max)
+    result = blend_color_images(
+        images=(image, padded_inset_image),
+        alphas=(1, alpha),
+        modes=("max", mode),
+        background_color=background_color,
+        rgba_value_max=rgba_value_max,
+    )
 
     return result

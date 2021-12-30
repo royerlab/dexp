@@ -1,5 +1,5 @@
 import itertools
-from typing import List, Tuple, Any
+from typing import Any, List, Tuple
 
 import numpy
 
@@ -8,15 +8,16 @@ from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.utils import xpArray
 
 
-def axis_aligned_pattern_correction(image: xpArray,
-                                    axis_combinations: List[Tuple[int]] = None,
-                                    quantile: float = 0.5,
-                                    sigma: float = 0,
-                                    decimation: int = 8,
-                                    robust_statistics: bool = True,
-                                    in_place: bool = True,
-                                    internal_dtype=None
-                                    ):
+def axis_aligned_pattern_correction(
+    image: xpArray,
+    axis_combinations: List[Tuple[int]] = None,
+    quantile: float = 0.5,
+    sigma: float = 0,
+    decimation: int = 8,
+    robust_statistics: bool = True,
+    in_place: bool = True,
+    internal_dtype=None,
+):
     """
     Axis aligned pattern correction
 
@@ -49,28 +50,18 @@ def axis_aligned_pattern_correction(image: xpArray,
 
     image = Backend.to_backend(image, dtype=internal_dtype, force_copy=not in_place)
 
-    axis_combinations = (
-        _all_axis_combinations(image.ndim)
-        if axis_combinations is None
-        else axis_combinations
-    )
+    axis_combinations = _all_axis_combinations(image.ndim) if axis_combinations is None else axis_combinations
 
     for axis_combination in axis_combinations:
         print(f"Supressing variations across hyperplane: {axis_combination}")
 
-        overall_value = xp.percentile(
-            image.ravel()[::decimation], q=100 * quantile, keepdims=True
-        )
+        overall_value = xp.percentile(image.ravel()[::decimation], q=100 * quantile, keepdims=True)
 
         if robust_statistics:
-            value = xp.percentile(
-                image, q=100 * quantile, axis=axis_combination, keepdims=True
-            )
+            value = xp.percentile(image, q=100 * quantile, axis=axis_combination, keepdims=True)
             value = value.astype(dtype=internal_dtype, copy=False)
         else:
-            value = xp.mean(
-                image, axis=axis_combination, keepdims=True, dtype=internal_dtype
-            )
+            value = xp.mean(image, axis=axis_combination, keepdims=True, dtype=internal_dtype)
 
         if sigma > 0:
             value -= sp.ndimage.filters.gaussian_filter(value, sigma=sigma)

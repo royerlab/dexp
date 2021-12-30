@@ -33,16 +33,18 @@ def _demo_fft_convolve():
     reference_result = convolve(noisy, psf)
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(noisy), name='noisy')
-        viewer.add_image(_c(psf), name='psf')
-        viewer.add_image(_c(reference_result), name='reference_result')
-        viewer.add_image(_c(result), name='result')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(noisy), name="noisy")
+        viewer.add_image(_c(psf), name="psf")
+        viewer.add_image(_c(reference_result), name="reference_result")
+        viewer.add_image(_c(result), name="result")
 
 
 if __name__ == "__main__":

@@ -30,18 +30,18 @@ def demo_aap_correction(length_xy=128, level=0.3):
     image = gaussian_filter(image, sigma=4)
     image = add_patterned_noise(image, length_xy)
 
-    corrected = axis_aligned_pattern_correction(image,
-                                                in_place=False)
+    corrected = axis_aligned_pattern_correction(image, in_place=False)
 
     import napari
 
     with napari.gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = napari.Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(corrected), name='corrected')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(corrected), name="corrected")
         viewer.grid.enabled = True
 
 

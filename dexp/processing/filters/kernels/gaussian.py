@@ -1,4 +1,4 @@
-from typing import Union, Tuple
+from typing import Tuple, Union
 
 import numpy
 
@@ -6,10 +6,9 @@ from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 
 
-def gaussian_kernel_nd(size: Union[int, Tuple[int, ...]] = 5,
-                       ndim: int = None,
-                       sigma: float = 1.0,
-                       dtype=numpy.float16):
+def gaussian_kernel_nd(
+    size: Union[int, Tuple[int, ...]] = 5, ndim: int = None, sigma: float = 1.0, dtype=numpy.float16
+):
     """
     Computes a nD Gaussian kernel
     Parameters

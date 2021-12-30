@@ -29,19 +29,22 @@ def element_wise_affine(array, alpha, beta, sum_first=False, out=None):
 
     if type(Backend.current()) is NumpyBackend:
         if sum_first:
-            return numexpr.evaluate("alpha*(array+beta)", casting='same_kind', out=out)
+            return numexpr.evaluate("alpha*(array+beta)", casting="same_kind", out=out)
         else:
-            return numexpr.evaluate("alpha*array+beta", casting='same_kind', out=out)
+            return numexpr.evaluate("alpha*array+beta", casting="same_kind", out=out)
 
     elif type(Backend.current()) is CupyBackend:
         import cupy
+
         if sum_first:
+
             @cupy.fuse()
             def affine_function(_array, _alpha, _beta):
                 return _alpha * (_array + _beta)
 
             return affine_function(array, alpha, beta)
         else:
+
             @cupy.fuse()
             def affine_function(_array, _alpha, _beta):
                 return _alpha * _array + _beta

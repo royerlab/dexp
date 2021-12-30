@@ -19,7 +19,9 @@ def test_multiview_data_cupy():
 
 def _test_multiview_data(length_xy=128):
     with timeit("generate data"):
-        image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(add_noise=False, length_xy=length_xy, length_z_factor=2)
+        image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(
+            add_noise=False, length_xy=length_xy, length_z_factor=2
+        )
 
     assert image_gt.shape == image_lowq.shape
     assert image_gt.shape == image1.shape

@@ -1,5 +1,6 @@
-from arbol import aprint
 import multiprocessing
+
+from arbol import aprint
 from numcodecs import blosc
 
 

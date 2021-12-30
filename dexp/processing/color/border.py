@@ -4,12 +4,13 @@ from dexp.processing.backends.backend import Backend
 from dexp.utils import xpArray
 
 
-def add_border(image: xpArray,
-               width: int = 2,
-               color: Tuple[float, float, float, float] = None,
-               over_image: bool = False,
-               rgba_value_max: float = 255
-               ):
+def add_border(
+    image: xpArray,
+    width: int = 2,
+    color: Tuple[float, float, float, float] = None,
+    over_image: bool = False,
+    rgba_value_max: float = 255,
+):
     """
     Adds a color border to an image
 
@@ -56,11 +57,8 @@ def add_border(image: xpArray,
         if over_image:
             channel = channel[..., width:-width, width:-width]
 
-        padded_channel = xp.pad(channel,
-                                pad_width=width,
-                                mode='constant',
-                                constant_values=value)
-        image_with_border[i,...] = padded_channel
+        padded_channel = xp.pad(channel, pad_width=width, mode="constant", constant_values=value)
+        image_with_border[i, ...] = padded_channel
 
     image_with_border = image_with_border.transpose(1, 2, 0)
 

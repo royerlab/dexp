@@ -1,24 +1,33 @@
 import os
 import subprocess
 
-from arbol import aprint, section, asection
+from arbol import aprint, asection
 
 
-def robocopy(source_folder: str, dest_folder: str, move_files: bool = False, nb_threads: int = 8, large_files: bool = False, wait_to_finish: bool = True):
-    '''
-        Start a generic robocopy job on Windows to copy files from one folder to another
+def robocopy(
+    source_folder: str,
+    dest_folder: str,
+    move_files: bool = False,
+    nb_threads: int = 8,
+    large_files: bool = False,
+    wait_to_finish: bool = True,
+):
+    """
+    Start a generic robocopy job on Windows to copy files from one folder to another
 
-        Args
-        ---------
+    Args
+    ---------
 
-        Returns
-        ---------
-        copyProcess (Popen Object) :
-        > this is the Popen object that's running the copy process. This can be
-        > used to check or kill the process if necessary.
-    '''
+    Returns
+    ---------
+    copyProcess (Popen Object) :
+    > this is the Popen object that's running the copy process. This can be
+    > used to check or kill the process if necessary.
+    """
 
-    with asection(f"Starting a Windows Robocopy job: copying all files and folders from {source_folder} to {dest_folder} with {nb_threads} threads."):
+    with asection(
+        f"Starting a Windows Robocopy job: copying all files and folders from {source_folder} to {dest_folder} with {nb_threads} threads."
+    ):
         # checks for network file paths in source and destination paths
         if "\\" in source_folder[:1]:
             source_folder = "\\" + source_folder
@@ -27,37 +36,38 @@ def robocopy(source_folder: str, dest_folder: str, move_files: bool = False, nb_
             dest_folder = "\\" + dest_folder
 
         # replaces slashes:
-        source                      = (source_folder).replace('/', '\\')
-        dest                        = (dest_folder).replace('/', '\\')
+        source = (source_folder).replace("/", "\\")
+        dest = (dest_folder).replace("/", "\\")
 
         # logfile:
-        log_file = 'robocopy_log.txt'
+        log_file = "robocopy_log.txt"
         if os.path.exists(log_file):
             os.remove(log_file)
 
         # format the command list for Popen
-        copyCommand                 = ["ROBOCOPY",
-                                        source,
-                                        dest,
-                                       '/e',
-                                       '/R:10',
-                                       '/W:5',
-                                       '/TBD',
-                                       '/NP',
-                                       #'/V',
-                                       '/eta',
-                                       '/tee',
-                                       f'/MT:{nb_threads}',
-                                       f'/log:{log_file}'
-                                       ]
+        copyCommand = [
+            "ROBOCOPY",
+            source,
+            dest,
+            "/e",
+            "/R:10",
+            "/W:5",
+            "/TBD",
+            "/NP",
+            #'/V',
+            "/eta",
+            "/tee",
+            f"/MT:{nb_threads}",
+            f"/log:{log_file}",
+        ]
 
         if move_files:
-            copyCommand.append('/move')
+            copyCommand.append("/move")
 
         if large_files:
-            copyCommand.append('/j')
+            copyCommand.append("/j")
 
-         # use subprocess to start a copy command
+        # use subprocess to start a copy command
         aprint(f"Robocopy command: {copyCommand}")
         copy_process = subprocess.Popen(copyCommand)
 

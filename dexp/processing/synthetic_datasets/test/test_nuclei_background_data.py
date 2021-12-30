@@ -1,7 +1,8 @@
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 from dexp.utils.timeit import timeit
 
 
@@ -20,9 +21,9 @@ def test_nuclei_background_data_cupy():
 
 def _test_nuclei_background_data(length_xy=128):
     with timeit("generate data"):
-        image_gt, background, image = generate_nuclei_background_data(add_noise=True,
-                                                                      length_xy=length_xy,
-                                                                      length_z_factor=4)
+        image_gt, background, image = generate_nuclei_background_data(
+            add_noise=True, length_xy=length_xy, length_z_factor=4
+        )
     assert image_gt.shape == background.shape
     assert image_gt.shape == image.shape
 

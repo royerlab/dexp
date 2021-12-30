@@ -20,15 +20,17 @@ def demo_blobs_cupy():
 
 def demo_blobs(length_xy=320):
     with timeit("generate data"):
-        image_blobs = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype('f4')
+        image_blobs = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype("f4")
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image_blobs), name='image_gt')
+        viewer.add_image(_c(image_blobs), name="image_gt")
 
 
 if __name__ == "__main__":

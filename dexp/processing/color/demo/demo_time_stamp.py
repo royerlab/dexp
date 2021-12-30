@@ -44,16 +44,17 @@ def demo_time_stamp(n=32, display=True):
     with asection("Apply time stamp..."):
         images_with_time_stamps = []
         for tp, image in enumerate(images):
-            image_with_time_stamp = insert_time_stamp(image=image,
-                                                      time_point_index=tp,
-                                                      nb_time_points=len(images),
-                                                      start_time=0,
-                                                      time_interval=20 / 60.0,
-                                                      unit='min',
-                                                      translation='top_right',
-                                                      color=(1, 1, 1, 1),
-                                                      alpha=1.0
-                                                      )
+            image_with_time_stamp = insert_time_stamp(
+                image=image,
+                time_point_index=tp,
+                nb_time_points=len(images),
+                start_time=0,
+                time_interval=20 / 60.0,
+                unit="min",
+                translation="top_right",
+                color=(1, 1, 1, 1),
+                alpha=1.0,
+            )
             images_with_time_stamps.append(image_with_time_stamp)
 
         # Convert sequences to arrays:
@@ -62,12 +63,14 @@ def demo_time_stamp(n=32, display=True):
 
     if display:
         from napari import Viewer, gui_qt
+
         with gui_qt():
+
             def _c(array):
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(images_with_time_stamp_tr), name='images_with_time_stamp_tr', rgb=True)
+            viewer.add_image(_c(images_with_time_stamp_tr), name="images_with_time_stamp_tr", rgb=True)
             viewer.grid.enabled = True
 
 

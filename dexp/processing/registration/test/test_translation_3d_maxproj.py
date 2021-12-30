@@ -3,8 +3,13 @@ from pytest import approx
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
-from dexp.processing.registration.demo.demo_translation_3d_proj import _register_translation_3d_proj
-from dexp.processing.registration.translation_2d import register_translation_2d_skimage, register_translation_2d_dexp
+from dexp.processing.registration.demo.demo_translation_3d_proj import (
+    _register_translation_3d_proj,
+)
+from dexp.processing.registration.translation_2d import (
+    register_translation_2d_dexp,
+    register_translation_2d_skimage,
+)
 
 
 def test_register_translation_3d_maxproj_numpy():

@@ -1,13 +1,15 @@
 import numpy
 import scipy
-from arbol import asection, aprint
+from arbol import aprint, asection
 
 from dexp.processing.backends.backend import Backend
 from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.warp_nd import register_warp_nd
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 
 
 def demo_register_warp_3d_numpy():
@@ -27,15 +29,17 @@ def _register_warp_3d(length_xy=256, warp_grid_size=3, reg_grid_size=6, display=
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
-    _, _, image = generate_nuclei_background_data(add_noise=False,
-                                                  length_xy=length_xy,
-                                                  length_z_factor=1,
-                                                  independent_haze=True,
-                                                  sphere=True,
-                                                  zoom=2,
-                                                  dtype=numpy.float32)
+    _, _, image = generate_nuclei_background_data(
+        add_noise=False,
+        length_xy=length_xy,
+        length_z_factor=1,
+        independent_haze=True,
+        sphere=True,
+        zoom=2,
+        dtype=numpy.float32,
+    )
 
-    image = image[0:length_xy * 2 - 3, 0:length_xy * 2 - 5, 0:length_xy * 2 - 7]
+    image = image[0 : length_xy * 2 - 3, 0 : length_xy * 2 - 5, 0 : length_xy * 2 - 7]
 
     with asection("warp"):
         magnitude = 10
@@ -62,16 +66,40 @@ def _register_warp_3d(length_xy=256, warp_grid_size=3, reg_grid_size=6, display=
 
     if display:
         from napari import Viewer, gui_qt
+
         with gui_qt():
+
             def _c(array):
                 return Backend.to_numpy(array)
 
             viewer = Viewer()
-            viewer.add_image(_c(image), name='image', colormap='bop orange', blending='additive', rendering='attenuated_mip', attenuation=0.01)
-            viewer.add_image(_c(warped), name='warped', colormap='bop blue', blending='additive', visible=False, rendering='attenuated_mip', attenuation=0.01)
-            viewer.add_image(_c(unwarped), name='unwarped', colormap='bop purple', blending='additive', rendering='attenuated_mip', attenuation=0.01)
-            viewer.add_vectors(_c(vector_field), name='gt vector_field')
-            viewer.add_vectors(_c(model.vector_field), name='model vector_field')
+            viewer.add_image(
+                _c(image),
+                name="image",
+                colormap="bop orange",
+                blending="additive",
+                rendering="attenuated_mip",
+                attenuation=0.01,
+            )
+            viewer.add_image(
+                _c(warped),
+                name="warped",
+                colormap="bop blue",
+                blending="additive",
+                visible=False,
+                rendering="attenuated_mip",
+                attenuation=0.01,
+            )
+            viewer.add_image(
+                _c(unwarped),
+                name="unwarped",
+                colormap="bop purple",
+                blending="additive",
+                rendering="attenuated_mip",
+                attenuation=0.01,
+            )
+            viewer.add_vectors(_c(vector_field), name="gt vector_field")
+            viewer.add_vectors(_c(model.vector_field), name="model vector_field")
 
     return image, warped, unwarped, model
 

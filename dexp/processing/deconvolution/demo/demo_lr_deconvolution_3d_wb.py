@@ -6,7 +6,9 @@ from dexp.processing.backends.cupy_backend import CupyBackend
 from dexp.processing.backends.numpy_backend import NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.synthetic_datasets.nuclei_background_data import generate_nuclei_background_data
+from dexp.processing.synthetic_datasets.nuclei_background_data import (
+    generate_nuclei_background_data,
+)
 from dexp.utils.timeit import timeit
 
 
@@ -27,16 +29,12 @@ def _demo_lr_deconvolution(length_xy=128):
     xp = Backend.get_xp_module()
 
     with timeit("generate data"):
-        image_gt, background, image = generate_nuclei_background_data(add_noise=False,
-                                                                      length_xy=length_xy,
-                                                                      length_z_factor=1,
-                                                                      zoom=2,
-                                                                      background_stength=0,
-                                                                      add_offset=False)
+        image_gt, background, image = generate_nuclei_background_data(
+            add_noise=False, length_xy=length_xy, length_z_factor=1, zoom=2, background_stength=0, add_offset=False
+        )
     psf_size = 31
 
-    psf = nikon16x08na(xy_size=psf_size,
-                       z_size=psf_size)
+    psf = nikon16x08na(xy_size=psf_size, z_size=psf_size)
     # psf = olympus20x10na()
     psf = psf.astype(dtype=numpy.float16)
     image = image.astype(dtype=numpy.float16)
@@ -57,26 +55,27 @@ def _demo_lr_deconvolution(length_xy=128):
     wb_beta = 0.05
 
     with timeit("deconvolved_wb"):
-        deconvolved_wb = lucy_richardson_deconvolution(noisy, psf,
-                                                       num_iterations=iterations_wb,
-                                                       back_projection='wb',
-                                                       wb_cutoffs=wb_cutoffs,
-                                                       wb_beta=wb_beta,
-                                                       wb_order=wb_order,
-                                                       max_correction=max_correction,
-                                                       padding=psf_size)
+        deconvolved_wb = lucy_richardson_deconvolution(
+            noisy,
+            psf,
+            num_iterations=iterations_wb,
+            back_projection="wb",
+            wb_cutoffs=wb_cutoffs,
+            wb_beta=wb_beta,
+            wb_order=wb_order,
+            max_correction=max_correction,
+            padding=psf_size,
+        )
 
     with timeit("deconvolved_same"):
-        deconvolved_same = lucy_richardson_deconvolution(noisy, psf,
-                                                         num_iterations=iterations_wb,
-                                                         max_correction=max_correction,
-                                                         padding=psf_size)
+        deconvolved_same = lucy_richardson_deconvolution(
+            noisy, psf, num_iterations=iterations_wb, max_correction=max_correction, padding=psf_size
+        )
 
     with timeit("deconvolved"):
-        deconvolved = lucy_richardson_deconvolution(noisy, psf,
-                                                    num_iterations=iterations,
-                                                    max_correction=max_correction,
-                                                    padding=psf_size)
+        deconvolved = lucy_richardson_deconvolution(
+            noisy, psf, num_iterations=iterations, max_correction=max_correction, padding=psf_size
+        )
 
     # with timeit("lucy_richardson_deconvolution (scatter-gather)"):
     #     def f(_image):
@@ -96,18 +95,20 @@ def _demo_lr_deconvolution(length_xy=128):
     #                                         to_numpy=True)
 
     from napari import Viewer, gui_qt
+
     with gui_qt():
+
         def _c(array):
             return Backend.to_numpy(array)
 
         viewer = Viewer()
-        viewer.add_image(_c(image), name='image')
-        viewer.add_image(_c(blurry), name='blurry')
-        viewer.add_image(_c(psf), name='psf')
-        viewer.add_image(_c(noisy), name='noisy')
-        viewer.add_image(_c(deconvolved), name='deconvolved')
-        viewer.add_image(_c(deconvolved_same), name='deconvolved_same')
-        viewer.add_image(_c(deconvolved_wb), name='deconvolved_wb')
+        viewer.add_image(_c(image), name="image")
+        viewer.add_image(_c(blurry), name="blurry")
+        viewer.add_image(_c(psf), name="psf")
+        viewer.add_image(_c(noisy), name="noisy")
+        viewer.add_image(_c(deconvolved), name="deconvolved")
+        viewer.add_image(_c(deconvolved_same), name="deconvolved_same")
+        viewer.add_image(_c(deconvolved_wb), name="deconvolved_wb")
         # viewer.add_image(_c(deconvolved_sg_wb), name='deconvolved_sg_wb')
 
 
