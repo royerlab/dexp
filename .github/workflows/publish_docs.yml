@@ -42,7 +42,7 @@ jobs:
       - name: Add & Commit changes
         uses: EndBug/add-and-commit@main
         with:
-          pull: --rebase --autostash
+          pull: origin master --rebase --autostash
           branch_mode: create
           branch: gh-pages
           message: |
