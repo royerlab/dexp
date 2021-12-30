@@ -55,5 +55,5 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        stages: [push, manual]
+        stages: [manual]
         verbose: true
