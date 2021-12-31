@@ -8,10 +8,8 @@ from dask.array.image import imread
 
 from dexp.datasets import ZDataset
 from dexp.datasets.operations.projrender import dataset_projection_rendering
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_projrender_numpy():

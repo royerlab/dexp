@@ -1,8 +1,8 @@
 import math
 from typing import Any, Tuple, Union
 
-from dexp.processing.backends import Backend
 from dexp.processing.utils.nd_slice import nd_split_slices
+from dexp.utils.backends import Backend
 
 
 def scatter_gather_i2v(

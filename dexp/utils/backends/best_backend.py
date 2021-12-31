@@ -1,7 +1,7 @@
 from arbol import aprint
 
-from dexp.processing.backends.cupy_backend import CupyBackend
-from dexp.processing.backends.numpy_backend import NumpyBackend
+from dexp.utils.backends.cupy_backend import CupyBackend
+from dexp.utils.backends.numpy_backend import NumpyBackend
 
 
 def BestBackend(*args, **kwargs):

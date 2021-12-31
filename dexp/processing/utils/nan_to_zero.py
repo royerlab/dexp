@@ -1,4 +1,4 @@
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def nan_to_zero(array, copy=True):

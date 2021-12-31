@@ -1,5 +1,5 @@
-from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.color.demo.demo_crop_resize_pad import demo_crop_resize_pad
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_crop_resize_pad_numpy():

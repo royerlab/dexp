@@ -1,7 +1,7 @@
 import numpy
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def clean_dark_regions(

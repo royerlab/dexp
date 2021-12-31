@@ -1,7 +1,7 @@
 import numpy
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 

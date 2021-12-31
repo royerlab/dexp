@@ -1,12 +1,10 @@
 import numpy
 from arbol import asection
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.processing.color.projection import project_image
 from dexp.processing.color.projection_legend import depth_color_scale_legend
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_projection_numpy():

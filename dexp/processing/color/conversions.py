@@ -1,5 +1,5 @@
-from dexp.processing.backends import Backend
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 def gray2rgba(image: xpArray, alpha=None, rgba_value_max: float = 255):

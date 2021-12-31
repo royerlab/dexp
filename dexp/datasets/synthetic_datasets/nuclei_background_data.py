@@ -3,7 +3,7 @@ from arbol import asection
 from skimage.data import binary_blobs
 from skimage.util import random_noise
 
-from dexp.processing.backends import Backend, NumpyBackend
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def generate_nuclei_background_data(

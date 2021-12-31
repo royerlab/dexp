@@ -2,7 +2,7 @@ from typing import Tuple, Union
 
 import numpy
 
-from dexp.processing.backends import Backend
+from dexp.utils.backends import Backend
 
 
 def butterworth_kernel(

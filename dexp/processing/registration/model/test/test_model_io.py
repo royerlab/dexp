@@ -1,6 +1,5 @@
 from arbol import aprint
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.registration.model.model_io import (
     from_json,
     model_list_from_file,
@@ -15,6 +14,7 @@ from dexp.processing.registration.model.translation_registration_model import (
 from dexp.processing.registration.model.warp_registration_model import (
     WarpRegistrationModel,
 )
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_model_io_numpy():

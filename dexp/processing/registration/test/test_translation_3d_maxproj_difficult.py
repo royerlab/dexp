@@ -1,10 +1,10 @@
 from pytest import approx
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.registration.demo.demo_translation_3d_proj_difficult import (
     _register_translation_3d_proj_diff,
 )
 from dexp.processing.registration.translation_2d import register_translation_2d_dexp
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_register_translation_3d_maxproj_diff_numpy():

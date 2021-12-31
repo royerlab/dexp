@@ -1,5 +1,5 @@
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.utils.fit_shape import fit_to_shape
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_fit_shape_numpy():

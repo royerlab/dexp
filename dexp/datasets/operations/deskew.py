@@ -5,9 +5,9 @@ from joblib import Parallel, delayed
 from zarr.errors import ContainsArrayError, ContainsGroupError
 
 from dexp.datasets import BaseDataset
-from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.deskew.classic_deskew import classic_deskew
 from dexp.processing.deskew.yang_deskew import yang_deskew
+from dexp.utils.backends import Backend, BestBackend
 
 
 def dataset_deskew(

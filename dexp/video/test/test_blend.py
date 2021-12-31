@@ -1,6 +1,6 @@
 from arbol import aprint
 
-from dexp.processing.backends import CupyBackend, NumpyBackend
+from dexp.utils.backends import CupyBackend, NumpyBackend
 from dexp.video.demo.demo_blend import demo_blend
 
 

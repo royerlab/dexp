@@ -1,5 +1,5 @@
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.utils.projection_generator import projection_generator
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_projection_generator_numpy():

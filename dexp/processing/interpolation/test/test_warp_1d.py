@@ -1,7 +1,7 @@
 import numpy
 
-from dexp.processing.backends import Backend, CupyBackend
 from dexp.processing.interpolation.warp import warp
+from dexp.utils.backends import Backend, CupyBackend
 from dexp.utils.timeit import timeit
 
 # def test_warp_2d_numpy():

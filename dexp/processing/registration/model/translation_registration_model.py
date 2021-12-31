@@ -3,11 +3,11 @@ from typing import Sequence, Tuple, Union
 
 import numpy
 
-from dexp.processing.backends import Backend
 from dexp.processing.registration.model.pairwise_registration_model import (
     PairwiseRegistrationModel,
 )
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 class TranslationRegistrationModel(PairwiseRegistrationModel):

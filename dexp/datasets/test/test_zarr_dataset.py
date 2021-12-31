@@ -8,7 +8,7 @@ from skimage.data import binary_blobs
 from skimage.filters import gaussian
 
 from dexp.datasets import ZDataset
-from dexp.processing.backends import NumpyBackend
+from dexp.utils.backends import NumpyBackend
 
 
 def test_zarr_dataset_livecycle():

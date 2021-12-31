@@ -1,9 +1,9 @@
 from scipy.ndimage import gaussian_filter
 from skimage.data import binary_blobs
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.restoration.aap_correction import axis_aligned_pattern_correction
 from dexp.processing.restoration.test.test_aap_correction import add_patterned_noise
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_aap_correction_numpy():

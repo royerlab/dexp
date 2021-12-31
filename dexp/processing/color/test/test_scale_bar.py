@@ -1,5 +1,5 @@
-from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.color.demo.demo_scale_bar import demo_scale_bar
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_scale_bar_numpy():

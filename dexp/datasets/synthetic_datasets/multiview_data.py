@@ -5,7 +5,7 @@ from arbol import asection
 from skimage.data import binary_blobs
 from skimage.util import random_noise
 
-from dexp.processing.backends import Backend
+from dexp.utils.backends import Backend
 
 
 def generate_fusion_test_data(

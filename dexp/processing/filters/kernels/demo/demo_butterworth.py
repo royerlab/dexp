@@ -1,5 +1,5 @@
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.filters.kernels.butterworth import butterworth_kernel
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_butterworth_numpy():

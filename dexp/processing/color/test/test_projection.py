@@ -1,5 +1,5 @@
-from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.color.demo.demo_projection import demo_projection
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_projection_numpy():

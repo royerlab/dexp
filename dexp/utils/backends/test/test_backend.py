@@ -1,4 +1,4 @@
-from dexp.processing.backends import Backend, NumpyBackend
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def test_backend_context():

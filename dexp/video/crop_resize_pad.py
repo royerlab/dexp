@@ -7,8 +7,8 @@ import imageio
 from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
-from dexp.processing.backends import Backend, BestBackend, CupyBackend
 from dexp.processing.color.crop_resize_pad import crop_resize_pad_color_image
+from dexp.utils.backends import Backend, BestBackend, CupyBackend
 
 
 def crop_resize_pad_image_sequence(

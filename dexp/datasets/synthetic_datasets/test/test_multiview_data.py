@@ -1,5 +1,5 @@
-from dexp.processing.backends import CupyBackend, NumpyBackend
-from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
+from dexp.datasets.synthetic_datasets import generate_fusion_test_data
+from dexp.utils.backends import CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 

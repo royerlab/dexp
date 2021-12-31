@@ -1,5 +1,5 @@
-from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.color.demo.demo_blend import demo_blend
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_blend_numpy():

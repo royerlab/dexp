@@ -1,7 +1,7 @@
 import itertools
 
-from dexp.processing.backends import Backend
 from dexp.processing.utils.projection_generator import projection_generator
+from dexp.utils.backends import Backend
 
 
 def center_of_mass(

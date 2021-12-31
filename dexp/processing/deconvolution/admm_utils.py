@@ -4,8 +4,8 @@ from typing import List
 import numpy as np
 from numpy.typing import ArrayLike
 
-from dexp.processing.backends import Backend
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 __all__ = [
     "first_derivative_func",

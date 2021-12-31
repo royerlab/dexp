@@ -1,4 +1,4 @@
-from dexp.processing.backends import Backend
+from dexp.utils.backends import Backend
 
 
 def fit_to_shape(array, shape):

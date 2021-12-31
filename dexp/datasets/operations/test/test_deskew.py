@@ -1,7 +1,7 @@
 from arbol import aprint
 
 from dexp.datasets.operations.demo.demo_deskew import _demo_deskew
-from dexp.processing.backends import CupyBackend, NumpyBackend
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_deskew_numpy():

@@ -2,13 +2,11 @@ import random
 
 from arbol import aprint, asection
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.registration.sequence_proj import image_stabilisation_proj
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_register_sequence_3d_numpy():

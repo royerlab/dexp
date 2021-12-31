@@ -1,5 +1,5 @@
-from dexp.processing.backends import Backend, CupyBackend
 from dexp.processing.registration.demo.demo_warp_2d import _register_warp_2d
+from dexp.utils.backends import Backend, CupyBackend
 
 # TODO: implement numpy version of warp.
 # def test_register_warp_nD_numpy():

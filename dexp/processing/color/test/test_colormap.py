@@ -1,5 +1,5 @@
-from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.color.demo.demo_colormap import demo_colormap
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_colormap_numpy():

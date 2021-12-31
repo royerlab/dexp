@@ -2,7 +2,6 @@ from typing import Tuple, Union
 
 from arbol import aprint, section
 
-from dexp.processing.backends import Backend
 from dexp.processing.registration.model.warp_registration_model import (
     WarpRegistrationModel,
 )
@@ -11,6 +10,7 @@ from dexp.processing.registration.translation_nd_proj import (
 )
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 @section("register_warp_nd")

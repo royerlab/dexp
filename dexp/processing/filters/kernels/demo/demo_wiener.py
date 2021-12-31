@@ -1,8 +1,8 @@
 import numpy
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.filters.kernels.gaussian import gaussian_kernel_nd
 from dexp.processing.filters.kernels.wiener import wiener_kernel
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_wiener_numpy():

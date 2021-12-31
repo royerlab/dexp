@@ -7,12 +7,12 @@ from arbol.arbol import aprint, asection
 from dask.distributed import Client
 from dask_cuda import LocalCUDACluster
 
-from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion
 from dexp.processing.registration.model.model_io import model_list_to_file
 from dexp.processing.registration.model.translation_registration_model import (
     TranslationRegistrationModel,
 )
+from dexp.utils.backends import Backend, BestBackend
 from dexp.utils.slicing import slice_from_shape
 
 

@@ -1,11 +1,9 @@
 import numpy
 from arbol import aprint, asection
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.processing.utils.center_of_mass import center_of_mass
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_com_numpy():

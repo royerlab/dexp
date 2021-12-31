@@ -1,5 +1,5 @@
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.registration.translation_nd import register_translation_nd
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_register_translation_nd_numpy():

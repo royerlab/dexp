@@ -1,8 +1,8 @@
 import numpy
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
-from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
+from dexp.datasets.synthetic_datasets import generate_fusion_test_data
 from dexp.processing.utils.blend_images import blend_images
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_blend_numpy():

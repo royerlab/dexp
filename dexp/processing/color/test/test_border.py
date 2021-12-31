@@ -1,5 +1,5 @@
-from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.color.demo.demo_border import demo_border
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_border_numpy():

@@ -1,5 +1,5 @@
-from dexp.processing.backends import CupyBackend
 from dexp.processing.registration.demo.demo_sequence_3d import _register_sequence_3d
+from dexp.utils.backends import CupyBackend
 
 
 def test_register_translation_3d_cupy():

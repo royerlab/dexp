@@ -1,7 +1,7 @@
 from arbol import aprint
 
-from dexp.processing.backends import Backend, CupyBackend
 from dexp.processing.registration.demo.demo_warp_3d import _register_warp_3d
+from dexp.utils.backends import Backend, CupyBackend
 
 # TODO: implement numpy version of warp.
 # def test_register_warp_nD_numpy():

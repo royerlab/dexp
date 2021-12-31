@@ -5,7 +5,6 @@ import numpy
 import pandas as pd
 from arbol import aprint, asection
 
-from dexp.processing.backends import Backend
 from dexp.processing.equalise.equalise_intensity import equalise_intensity
 from dexp.processing.filters.butterworth_filter import butterworth_filter
 from dexp.processing.fusion.dct_fusion import fuse_dct_nd
@@ -20,6 +19,7 @@ from dexp.processing.registration.translation_nd_proj import (
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 class SimViewFusion(BaseFusion):

@@ -1,5 +1,5 @@
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.filters.kernels.gaussian import gaussian_kernel_nd
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_kernels_numpy():

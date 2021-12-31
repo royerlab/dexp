@@ -1,11 +1,11 @@
 from typing import Optional
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.filters.sobel_filter import sobel_filter
 from dexp.processing.utils.blend_images import blend_images
 from dexp.processing.utils.element_wise_affine import element_wise_affine
 from dexp.processing.utils.fit_shape import fit_to_shape
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def fuse_tg_nd(

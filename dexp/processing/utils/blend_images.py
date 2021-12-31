@@ -1,6 +1,6 @@
 import numexpr
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def blend_images(array_a, array_b, blend_map, dtype=None):

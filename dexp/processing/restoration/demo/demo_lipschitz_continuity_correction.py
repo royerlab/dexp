@@ -3,10 +3,10 @@ from scipy.ndimage import median_filter
 from skimage.data import camera
 from skimage.util import random_noise
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.restoration.lipshitz_correction import (
     lipschitz_continuity_correction,
 )
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_lipschitz_correction_numpy():

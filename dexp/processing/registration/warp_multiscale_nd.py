@@ -2,12 +2,12 @@ from typing import Tuple, Union
 
 from arbol import aprint, asection, section
 
-from dexp.processing.backends import Backend
 from dexp.processing.registration.model.warp_registration_model import (
     WarpRegistrationModel,
 )
 from dexp.processing.registration.warp_nd import register_warp_nd
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 @section("register_warp_multiscale_nd")

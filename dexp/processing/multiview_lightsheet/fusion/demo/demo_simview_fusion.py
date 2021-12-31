@@ -6,8 +6,8 @@ from arbol import aprint, asection
 from napari import Viewer, gui_qt
 from tifffile import imread
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.simview import simview_fuse_2C2L
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 filepath = "/home/royer/Desktop/test_data/embryo_4views.tif"
 

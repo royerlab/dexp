@@ -3,8 +3,8 @@ from scipy.ndimage import convolve
 from skimage.data import camera
 from skimage.util import random_noise
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_fft_convolve_numpy():

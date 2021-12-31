@@ -2,9 +2,9 @@ from typing import Tuple
 
 import numpy
 
-from dexp.processing.backends import Backend
 from dexp.processing.color.cairo_utils import get_array_for_cairo_surface
 from dexp.processing.color.colormap import rgb_colormap
+from dexp.utils.backends import Backend
 
 
 def depth_color_scale_legend(

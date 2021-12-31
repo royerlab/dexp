@@ -8,8 +8,8 @@ import numpy
 from arbol import aprint
 from dask.array import Array
 
-from dexp.processing.backends.backend import Backend
 from dexp.utils import xpArray
+from dexp.utils.backends.backend import Backend
 
 
 class CupyBackend(Backend):

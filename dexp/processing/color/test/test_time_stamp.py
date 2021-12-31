@@ -1,5 +1,5 @@
-from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.color.demo.demo_time_stamp import demo_time_stamp
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_time_stamp_numpy():

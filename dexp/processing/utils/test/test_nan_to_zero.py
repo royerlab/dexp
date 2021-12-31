@@ -1,7 +1,7 @@
 import numpy as np
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.utils.nan_to_zero import nan_to_zero
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_nan_to_zero_numpy():

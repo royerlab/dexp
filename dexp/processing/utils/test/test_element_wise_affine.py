@@ -1,8 +1,8 @@
 import numpy
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
-from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
+from dexp.datasets.synthetic_datasets import generate_fusion_test_data
 from dexp.processing.utils.element_wise_affine import element_wise_affine
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_element_wise_affine_numpy():

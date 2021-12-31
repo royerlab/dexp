@@ -7,9 +7,9 @@ import imageio
 from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
-from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.insert import insert_color_image
+from dexp.utils.backends import Backend, BestBackend
 
 
 def blend_color_image_sequences(

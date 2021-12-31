@@ -1,12 +1,12 @@
 from typing import Callable, Tuple, Union
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.color.colormap import _normalise_colormap, rgb_colormap
 from dexp.processing.color.insert import insert_color_image
 from dexp.processing.color.projection_legend import depth_color_scale_legend
 from dexp.processing.utils.center_of_mass import center_of_mass
 from dexp.processing.utils.normalise import normalise_functions
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def project_image(

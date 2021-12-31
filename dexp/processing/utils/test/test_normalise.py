@@ -1,10 +1,8 @@
 import numpy
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.processing.utils.normalise import normalise_functions
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_normalise_numpy():

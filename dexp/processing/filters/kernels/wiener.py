@@ -1,4 +1,4 @@
-from dexp.processing.backends import Backend
+from dexp.utils.backends import Backend
 
 
 def wiener_kernel(kernel, alpha: float = 1e-3, frequency_domain: bool = False, dtype=None):

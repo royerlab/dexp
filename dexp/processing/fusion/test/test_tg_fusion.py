@@ -1,8 +1,8 @@
 import numpy
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.datasets.synthetic_datasets import generate_fusion_test_data
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
-from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 

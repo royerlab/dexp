@@ -3,7 +3,6 @@ from typing import Sequence, Union
 
 from arbol import asection
 
-from dexp.processing.backends import Backend
 from dexp.processing.registration.model.pairwise_registration_model import (
     PairwiseRegistrationModel,
 )
@@ -16,6 +15,7 @@ from dexp.processing.registration.model.translation_registration_model import (
 from dexp.processing.registration.model.warp_registration_model import (
     WarpRegistrationModel,
 )
+from dexp.utils.backends import Backend
 
 
 def from_json(json_str: str) -> Union[PairwiseRegistrationModel, SequenceRegistrationModel]:

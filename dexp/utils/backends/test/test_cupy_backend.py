@@ -6,8 +6,8 @@ import numpy
 from arbol import aprint, asection
 from joblib import Parallel, delayed
 
-from dexp.processing.backends import Backend, CupyBackend
 from dexp.processing.interpolation.warp import warp
+from dexp.utils.backends import Backend, CupyBackend
 
 
 def test_cupy_basics():

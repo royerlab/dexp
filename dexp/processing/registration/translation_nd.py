@@ -3,12 +3,12 @@ from functools import reduce
 import numpy
 from arbol import aprint
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.filters.sobel_filter import sobel_filter
 from dexp.processing.registration.model.translation_registration_model import (
     TranslationRegistrationModel,
 )
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def register_translation_nd(

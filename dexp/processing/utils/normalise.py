@@ -2,8 +2,8 @@ from typing import Tuple
 
 import numpy
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.utils.element_wise_affine import element_wise_affine
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def normalise_functions(

@@ -1,6 +1,6 @@
-from dexp.processing.backends import CupyBackend, NumpyBackend
+from dexp.datasets.synthetic_datasets import generate_fusion_test_data
 from dexp.processing.filters.sobel_filter import sobel_filter
-from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_sobel_numpy():

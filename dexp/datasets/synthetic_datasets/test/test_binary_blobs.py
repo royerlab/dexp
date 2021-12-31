@@ -2,10 +2,8 @@ import numpy
 import pytest
 from skimage.data import binary_blobs as binary_blobs_skimage
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
-from dexp.processing.synthetic_datasets.binary_blobs import (
-    binary_blobs as binary_blobs_dexp,
-)
+from dexp.datasets.synthetic_datasets import binary_blobs as binary_blobs_dexp
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_blobs_numpy():

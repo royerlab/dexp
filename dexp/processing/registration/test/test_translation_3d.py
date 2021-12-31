@@ -1,9 +1,9 @@
 from pytest import approx
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.registration.demo.demo_translation_3d import (
     _register_translation_3d,
 )
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def test_register_translation_3d_numpy():

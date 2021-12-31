@@ -3,8 +3,8 @@ from scipy.ndimage import gaussian_filter
 from skimage.data import binary_blobs
 from skimage.util import random_noise
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.restoration.aap_correction import axis_aligned_pattern_correction
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 

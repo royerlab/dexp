@@ -1,7 +1,7 @@
 from arbol import aprint, asection
 
-from dexp.processing.backends import CupyBackend
-from dexp.processing.backends._cupy.texture.texture import create_cuda_texture
+from dexp.utils.backends import CupyBackend
+from dexp.utils.backends._cupy.texture.texture import create_cuda_texture
 
 
 def test_cupy_texture_4channels():

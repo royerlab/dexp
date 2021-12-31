@@ -3,8 +3,8 @@ from typing import Any, List, Tuple
 
 import numpy
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def axis_aligned_pattern_correction(

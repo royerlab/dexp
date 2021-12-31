@@ -2,8 +2,8 @@ from arbol import asection
 from skimage.color import gray2rgba
 from skimage.data import camera
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.color.scale_bar import insert_scale_bar
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_scale_bar_numpy():

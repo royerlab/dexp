@@ -2,8 +2,8 @@ import numpy
 from arbol import aprint, asection
 from numpy import random
 
-from dexp.processing.backends import CupyBackend, NumpyBackend
 from dexp.processing.utils.linear_solver import linsolve
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_linear_solver_numpy():

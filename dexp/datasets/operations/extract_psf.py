@@ -4,8 +4,8 @@ import numpy as np
 from arbol import aprint, asection
 
 from dexp.datasets import BaseDataset
-from dexp.processing.backends import BestBackend
 from dexp.processing.remove_beads import BeadsRemover
+from dexp.utils.backends import BestBackend
 from dexp.utils.slicing import slice_from_shape
 
 
