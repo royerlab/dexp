@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from dexp.processing.utils.element_wise_affine import element_wise_affine
@@ -15,10 +14,9 @@ from dexp.utils.testing import execute_both_backends
 def test_element_wise_affine(dexp_fusion_test_data):
     _, _, _, _, image, _ = dexp_fusion_test_data
 
+    xp = Backend.current().get_xp_module()
     transformed = element_wise_affine(image, 2, 0.3)
+    error = xp.median(xp.abs(image * 2 + 0.3 - transformed)).item()
 
-    transformed = Backend.to_numpy(transformed)
-    image = Backend.to_numpy(image)
-    error = np.median(np.abs(image * 2 + 0.3 - transformed))
-    print(f"error={error}")
-    assert error < 22
+    print(f"Error = {error}")
+    assert error < 1e-4
