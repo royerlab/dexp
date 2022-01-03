@@ -1,36 +1,28 @@
-import numpy
+import numpy as np
+import pytest
+from arbol import aprint
 
-from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.processing.utils.normalise import normalise_functions
-from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend
+from dexp.utils.testing.testing import execute_both_backends
 
 
-def test_normalise_numpy():
-    with NumpyBackend():
-        _test_normalise()
+@execute_both_backends
+@pytest.mark.parametrize(
+    "dexp_nuclei_background_data",
+    [dict(length_xy=128, dtype=np.float32)],
+    indirect=True,
+)
+def test_normalise(dexp_nuclei_background_data):
+    _, _, image = dexp_nuclei_background_data
+    image = image.astype(np.uint16)  # required to convert afterwards
 
-
-def test_normalise_cupy():
-    try:
-        with CupyBackend():
-            _test_normalise()
-    except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
-
-
-def _test_normalise(length_xy=128):
-    _, _, image = generate_nuclei_background_data(
-        add_noise=True, length_xy=length_xy, length_z_factor=4, dtype=numpy.float32
-    )
-
-    image = image.astype(numpy.uint16)
-
-    norm_fun, denorm_fun = normalise_functions(image, low=-0.5, high=1, in_place=False, clip=True, dtype=numpy.float32)
+    norm_fun, denorm_fun = normalise_functions(image, low=-0.5, high=1, in_place=False, clip=True, dtype=np.float32)
 
     image_normalised = norm_fun(image)
     image_denormalised = denorm_fun(image_normalised)
 
-    assert image_normalised.dtype == numpy.float32
+    assert image_normalised.dtype == np.float32
     assert image_denormalised.dtype == image.dtype
 
     assert image_normalised.shape == image.shape
@@ -44,17 +36,7 @@ def _test_normalise(length_xy=128):
     assert image_denormalised.max() <= (1 + 1e-3) * image.max()
     assert (image_denormalised.max() - image_denormalised.min()) * (1 + 1e-3) >= image.max() - image.min()
 
-    image = Backend.to_numpy(image)
-    image_denormalised = Backend.to_numpy(image_denormalised)
-    error = numpy.median(numpy.abs(image - image_denormalised))
-    print(f"error={error}")
-    assert error < 0.02
-
-    # from napari import Viewer, gui_qt
-    # with gui_qt():
-    #     viewer = Viewer()
-    #     viewer.add_image(image_gt, name='image_gt')
-    #     viewer.add_image(image1, name='image1')
-    #     viewer.add_image(image2, name='image2')
-    #     viewer.add_image(blend_a, name='blend_a')
-    #     viewer.add_image(blended, name='blended')
+    xp = Backend.get_xp_module()
+    error = xp.median(xp.abs(image - image_denormalised)).item()
+    aprint(f"Error = {error}")
+    assert error < 1e-6

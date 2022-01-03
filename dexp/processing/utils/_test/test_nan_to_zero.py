@@ -1,23 +1,12 @@
 import numpy as np
 
 from dexp.processing.utils.nan_to_zero import nan_to_zero
-from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend
+from dexp.utils.testing.testing import execute_both_backends
 
 
-def test_nan_to_zero_numpy():
-    with NumpyBackend():
-        _test_nan_to_zero_shape()
-
-
-def test_nan_to_zero_cupy():
-    try:
-        with CupyBackend():
-            _test_nan_to_zero_shape()
-    except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
-
-
-def _test_nan_to_zero_shape(length_xy=128):
+@execute_both_backends
+def test_nan_to_zero_shape():
     xp = Backend.get_xp_module()
 
     array_1 = xp.random.uniform(0, 1, size=(32, 10, 17)).astype(dtype=xp.float32)
@@ -27,6 +16,6 @@ def _test_nan_to_zero_shape(length_xy=128):
     with np.errstate(divide="ignore"):
         array_1 /= array_2
 
-    assert xp.isinf(array_1).any()  # xp.isnan(array_1).any() or
+    assert xp.isinf(array_1).any()
     array_1 = nan_to_zero(array_1)
-    assert not xp.isinf(array_1).any()  # not xp.isnan(array_1).any() and
+    assert not xp.isinf(array_1).any()

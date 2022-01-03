@@ -1,21 +1,10 @@
 from dexp.processing.utils.fit_shape import fit_to_shape
-from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend
+from dexp.utils.testing.testing import execute_both_backends
 
 
-def test_fit_shape_numpy():
-    with NumpyBackend():
-        _test_fit_shape()
-
-
-def test_fit_shape_cupy():
-    try:
-        with CupyBackend():
-            _test_fit_shape()
-    except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
-
-
-def _test_fit_shape():
+@execute_both_backends
+def test_fit_shape():
     xp = Backend.get_xp_module()
 
     array_1 = xp.random.uniform(0, 1, size=(31, 10, 17))
@@ -25,10 +14,3 @@ def _test_fit_shape():
 
     assert array_2_fit is not array_2
     assert array_2_fit.shape == array_1.shape
-
-    # from napari import Viewer, gui_qt
-    # with gui_qt():
-    #     viewer = Viewer()
-    #     viewer.add_image(array_1, name='array_1')
-    #     viewer.add_image(array_2, name='array_2')
-    #     viewer.add_image(array_2_fit, name='array_2_fit')

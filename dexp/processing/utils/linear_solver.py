@@ -4,13 +4,14 @@ import numpy
 from arbol import aprint
 from scipy.optimize import minimize
 
+from dexp.utils import xpArray
 from dexp.utils.backends import Backend
 
 
 def linsolve(
-    a,
-    y,
-    x0=None,
+    a: xpArray,
+    y: xpArray,
+    x0: Optional[xpArray] = None,
     maxiter: int = 1e12,
     maxfun: int = 1e12,
     tolerance: float = 1e-6,
@@ -21,7 +22,7 @@ def linsolve(
     bounds: Optional[Sequence[Tuple[float, float]]] = None,
     limited: bool = True,
     verbose: bool = False,
-):
+) -> xpArray:
     xp = Backend.get_xp_module()
 
     a = Backend.to_backend(a)
@@ -72,4 +73,4 @@ def linsolve(
             + "iterations and {result.nfev} function evaluations."
         )
 
-    return result.x
+    return Backend.to_backend(result.x)

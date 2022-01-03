@@ -1,27 +1,18 @@
-import numpy
+import numpy as np
+from arbol import aprint
 
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
-from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend
+from dexp.utils.testing.testing import execute_both_backends
 from dexp.utils.timeit import timeit
 
 
-def test_scatter_gather_i2i_numpy():
-    with NumpyBackend():
-        _test_scatter_gather_i2i()
-
-
-def test_scatter_gather_i2i_cupy():
-    try:
-        with CupyBackend():
-            _test_scatter_gather_i2i(length_xy=512, splits=4, filter_size=7)
-    except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
-
-
-def _test_scatter_gather_i2i(ndim=3, length_xy=128, splits=4, filter_size=7):
+@execute_both_backends
+def test_scatter_gather_i2i(ndim=3, length_xy=128, splits=4, filter_size=7):
     sp = Backend.get_sp_module()
+    rng = np.random.default_rng()
 
-    image = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
+    image = rng.uniform(0, 1, size=(length_xy,) * ndim)
 
     def f(x):
         return sp.ndimage.filters.uniform_filter(x, size=filter_size)
@@ -40,14 +31,7 @@ def _test_scatter_gather_i2i(ndim=3, length_xy=128, splits=4, filter_size=7):
     result_ref = Backend.to_numpy(result_ref)
     result = Backend.to_numpy(result)
 
-    error = numpy.linalg.norm(result.ravel() - result_ref.ravel(), ord=1) / result_ref.size
-    print(f"Error = {error}")
-
-    # from napari import Viewer, gui_qt
-    # with gui_qt():
-    #     viewer = Viewer()
-    #     viewer.add_image(image, name='image')
-    #     viewer.add_image(result_ref, name='result_ref')
-    #     viewer.add_image(result, name='result')
+    error = np.linalg.norm(result.ravel() - result_ref.ravel(), ord=1) / result_ref.size
+    aprint(f"Error = {error}")
 
     assert error < 0.0001

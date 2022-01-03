@@ -25,7 +25,7 @@ def demo_lr_deconvolution_cupy():
 def _demo_lr_deconvolution(length_xy=256):
     with timeit("generate data"):
         _, _, image = generate_nuclei_background_data(
-            add_noise=False, length_xy=length_xy, zoom=2, length_z_factor=1, background_stength=0, add_offset=False
+            add_noise=False, length_xy=length_xy, zoom=2, length_z_factor=1, background_strength=0, add_offset=False
         )
 
     psf = nikon16x08na()

@@ -29,7 +29,7 @@ def demo_projection(length_xy=120, display=True):
             add_noise=False,
             length_xy=length_xy,
             length_z_factor=1,
-            background_stength=0.001,
+            background_strength=0.001,
             sphere=True,
             radius=0.7,
             zoom=2,

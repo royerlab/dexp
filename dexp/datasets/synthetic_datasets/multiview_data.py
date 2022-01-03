@@ -8,6 +8,7 @@ from skimage.util import random_noise
 from dexp.utils.backends import Backend
 
 
+@asection("Generating synthetic fusion data")
 def generate_fusion_test_data(
     length_xy: Optional[int] = 320,
     length_z_factor: Optional[int] = 4,

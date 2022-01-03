@@ -6,12 +6,13 @@ from skimage.util import random_noise
 from dexp.utils.backends import Backend, NumpyBackend
 
 
+@asection("Generating synthetic nuclei data")
 def generate_nuclei_background_data(
     length_xy=320,
     length_z_factor=4,
     zoom=1,
     add_noise=True,
-    background_stength=0.2,
+    background_strength=0.2,
     background_scale=0.5,
     independent_haze=False,
     sphere: bool = False,
@@ -79,13 +80,13 @@ def generate_nuclei_background_data(
             image_gt *= mask
 
     with asection("prepare high/low image pair"):
-        if background_stength > 0:
+        if background_strength > 0:
             background = sp.ndimage.gaussian_filter(background, sigma=15)
             background = background / xp.max(background)
 
     with asection("generate two views via blending"):
-        if background_stength > 0:
-            image = background_stength * background
+        if background_strength > 0:
+            image = background_strength * background
             image += image_gt
         else:
             image = image_gt

@@ -24,7 +24,7 @@ def demo_clean_dark_regions_data(length_xy=256):
 
     with timeit("generate data"):
         image_gt, background, image = generate_nuclei_background_data(
-            add_noise=True, length_xy=length_xy, length_z_factor=1, independent_haze=False, background_stength=0.1
+            add_noise=True, length_xy=length_xy, length_z_factor=1, independent_haze=False, background_strength=0.1
         )
 
     # remove zero level

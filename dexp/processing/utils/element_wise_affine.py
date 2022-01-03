@@ -1,9 +1,15 @@
+from typing import Optional
+
 import numexpr
 
-from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils import xpArray
+from dexp.utils.backends import Backend, CupyBackend
 
 
-def element_wise_affine(array, alpha, beta, sum_first=False, out=None):
+def element_wise_affine(
+    array: xpArray, alpha: float, beta: float, sum_first: bool = False, out: Optional[xpArray] = None
+) -> xpArray:
+
     """
     Applies the affine function: alpha*x + beta to every value x of a given array.
     If sum_first is True, then alpha*(x + beta) is computed instead.
@@ -27,13 +33,7 @@ def element_wise_affine(array, alpha, beta, sum_first=False, out=None):
 
     array = Backend.to_backend(array)
 
-    if type(Backend.current()) is NumpyBackend:
-        if sum_first:
-            return numexpr.evaluate("alpha*(array+beta)", casting="same_kind", out=out)
-        else:
-            return numexpr.evaluate("alpha*array+beta", casting="same_kind", out=out)
-
-    elif type(Backend.current()) is CupyBackend:
+    if isinstance(Backend.current(), CupyBackend):
         import cupy
 
         if sum_first:
@@ -42,11 +42,16 @@ def element_wise_affine(array, alpha, beta, sum_first=False, out=None):
             def affine_function(_array, _alpha, _beta):
                 return _alpha * (_array + _beta)
 
-            return affine_function(array, alpha, beta)
         else:
 
             @cupy.fuse()
             def affine_function(_array, _alpha, _beta):
                 return _alpha * _array + _beta
 
-            return affine_function(array, alpha, beta)
+        return affine_function(array, alpha, beta)
+
+    else:
+        if sum_first:
+            return numexpr.evaluate("alpha*(array+beta)", casting="same_kind", out=out)
+        else:
+            return numexpr.evaluate("alpha*array+beta", casting="same_kind", out=out)

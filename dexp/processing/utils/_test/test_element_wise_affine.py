@@ -11,7 +11,10 @@ from dexp.utils.testing import execute_both_backends
     [dict(length_xy=128, add_noise=False)],
     indirect=True,
 )
-def test_element_wise_affine(dexp_fusion_test_data):
+def test_element_wise_affine(dexp_fusion_test_data) -> None:
+    # TODO:
+    #  - why do we need to generate the data for this?
+    #  - isn't any array sufficient?
     _, _, _, _, image, _ = dexp_fusion_test_data
 
     xp = Backend.current().get_xp_module()

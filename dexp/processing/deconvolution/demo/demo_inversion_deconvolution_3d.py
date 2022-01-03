@@ -28,7 +28,7 @@ def _demo_inversion_deconvolution(length_xy=128):
 
     with timeit("generate data"):
         image_gt, background, image = generate_nuclei_background_data(
-            add_noise=False, length_xy=length_xy, length_z_factor=1, background_stength=0, add_offset=False
+            add_noise=False, length_xy=length_xy, length_z_factor=1, background_strength=0, add_offset=False
         )
 
     psf = nikon16x08na()

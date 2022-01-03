@@ -1,66 +1,64 @@
-import numpy
-from arbol import aprint, asection
+import numpy as np
+import pytest
+from arbol import aprint
 
-from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.processing.utils.center_of_mass import center_of_mass
-from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend
+from dexp.utils.testing.testing import execute_both_backends
 
 
-def test_com_numpy():
-    with NumpyBackend():
-        _test_com()
-
-
-def test_com_cupy():
-    try:
-        with CupyBackend():
-            _test_com()
-    except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
-
-
-def _test_com(length_xy=128):
-    xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
-
-    with asection("generate data"):
-        _, _, image = generate_nuclei_background_data(
+@execute_both_backends
+@pytest.mark.parametrize(
+    "dexp_nuclei_background_data",
+    [
+        dict(
+            length_xy=128,
             add_noise=False,
-            length_xy=length_xy,
             length_z_factor=1,
-            background_stength=0.001,
+            background_strength=0.001,
             sphere=True,
             radius=0.5,
             zoom=2,
             add_offset=False,
-            dtype=numpy.uint16,
+            dtype=np.uint16,
         )
+    ],
+    indirect=True,
+)
+def test_center_of_mass(dexp_nuclei_background_data, display: bool = False) -> None:
+    xp = Backend.get_xp_module()
+    sp = Backend.get_sp_module()
 
-        # from napari import Viewer, gui_qt
-        # with gui_qt():
-        #     def _c(array):
-        #         return Backend.to_numpy(array)
-        #     viewer = Viewer()
-        #     viewer.add_image(_c(image), name='image')
+    _, _, image = dexp_nuclei_background_data
 
-        com_before = center_of_mass(image)
-        aprint(f"com_before: {com_before}")
+    com_before = center_of_mass(image)
 
-        image_shifted = sp.ndimage.shift(image, shift=(50, 70, -23), order=1, mode="nearest")
+    shift = xp.array([50, 70, -23])
 
-        com_after = center_of_mass(image_shifted)
-        aprint(f"com_after: {com_after}")
+    image_shifted = sp.ndimage.shift(image, shift=shift, order=1, mode="constant")
 
-        com_after_bb = center_of_mass(image_shifted, offset_mode="p=75", bounding_box=True)
-        aprint(f"com_after_bb: {com_after_bb}")
+    com_after = center_of_mass(image_shifted)
 
-        # from napari import Viewer, gui_qt
-        # with gui_qt():
-        #     def _c(array):
-        #         return Backend.to_numpy(array)
-        #     viewer = Viewer()
-        #     viewer.add_image(_c(image), name='image')
-        #     viewer.add_image(_c(image_shifted), name='image_shifted')
+    com_after_bb = center_of_mass(image_shifted, offset_mode="p=75", bounding_box=True)
 
-        assert xp.mean(xp.absolute(com_after - xp.asarray((50, 70, -23)) - com_before)) < 10
-        assert xp.mean(xp.absolute(com_after_bb - xp.asarray((50, 70, -23)) - com_before)) < 10
+    err = xp.mean(xp.absolute(com_after - shift - com_before))
+    err_bb = xp.mean(xp.absolute(com_after_bb - shift - com_before))
+
+    aprint(f"com_before: {com_before}")
+    aprint(f"translation: {shift}")
+    aprint(f"com_after: {com_after}")
+    aprint(f"com_after_bb: {com_after_bb}")
+    aprint(f"Error = {err}")
+    aprint(f"Error bounding-box = {err_bb}")
+
+    if display:
+        import napari
+
+        viewer = napari.Viewer()
+        viewer.add_image(Backend.to_numpy(image), name="image")
+        viewer.add_image(Backend.to_numpy(image_shifted), name="image_shifted")
+
+        napari.run()
+
+    assert err < 10
+    assert err_bb < 10

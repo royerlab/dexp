@@ -1,85 +1,36 @@
-import numpy
+import pytest
 from arbol import aprint, asection
 from numpy import random
 
 from dexp.processing.utils.linear_solver import linsolve
-from dexp.utils.backends import CupyBackend, NumpyBackend
+from dexp.utils.backends.backend import Backend
+from dexp.utils.testing.testing import execute_both_backends
 
 
-def test_linear_solver_numpy():
-    with NumpyBackend():
-        _test_linear_solver_small()
-        # _test_linear_solver_large()
-        # test_linear_solver_compare()
+@execute_both_backends
+@pytest.mark.parametrize(
+    "w, h, noise, note",
+    [(37, 41, 1e-2, "small")],
+)
+def test_linear_solver(w: int, h: int, noise: float, note: str) -> None:
+    with asection(f"Running l2 solver on {note} matrix: "):
+        error = _run_solver(w=w, h=h, noise=noise)
+        aprint(f"Error = {error}")
 
 
-def test_linear_solver_cupy():
-    try:
-        with CupyBackend():
-            _test_linear_solver_small()
-            # _test_linear_solver_large()
-            # test_linear_solver_compare()
-    except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
+def _run_solver(w=37, h=41, noise=1e-2, **kwargs):
+    xp = Backend.get_xp_module()
 
-
-def _test_linear_solver_small():
-    w = 37
-    h = 41
-    noise = 1e-2
-
-    a = random.rand(w, h)
-    a *= random.rand(w, h) > 0.9
-    x_gt = random.rand(h)
-    x_gt *= random.rand(h) > 0.5
-    y_obs = a @ x_gt + noise * (random.rand(w) - 0.5)
-
-    with asection("Running l2 solver on small matrix: "):
-        aprint(f"error = {numpy.mean(numpy.absolute(linsolve(a, y_obs, order_error=2, alpha_reg=0) - x_gt))}")
-
-
-def _run_solver(w=37, h=41, noise=1e-2, display=False, **kwargs):
     a = random.rand(w, h)
     a *= random.rand(w, h) > 0.9
     x_gt = random.rand(h)
     x_gt *= random.rand(h) > 0.5
     y_obs = a @ x_gt + noise * (random.rand(w) - 0.5)
     x = linsolve(a, y_obs, **kwargs)
-    mean_abs_error = numpy.mean(numpy.absolute(x - x_gt))
+    mean_abs_error = xp.mean(xp.absolute(x - x_gt)).item()
 
-    if display:
-        aprint(f"x_gt  : {x_gt} ")
-        aprint(f"x     : {x} ")
-        aprint(f"error : {numpy.absolute(x - x_gt)} ")
+    aprint(f"X_gt  : {x_gt} ")
+    aprint(f"u     : {x} ")
+    aprint(f"error : {xp.absolute(x - x_gt)} ")
 
     return mean_abs_error
-
-
-def _test_linear_solver_large():
-    with asection("Running solver on large matrix: "):
-        aprint(_run_solver(w=1280, h=1370, order_error=1, order_reg=1, alpha_reg=0.1, display=True, limited=True))
-
-
-# def test_linear_solver_compare():
-#     n = 16
-#
-#     mean_error = numpy.mean(list(_run_solver(order_error=2, alpha_reg=0) for _ in range(n)))
-#     aprint(f"L2 mean_error={mean_error}")
-#
-#     mean_error = numpy.mean(list(_run_solver(order_error=1, alpha_reg=0) for _ in range(n)))
-#     aprint(f"L1 mean_error={mean_error}")
-#
-#     mean_error = numpy.mean(list(_run_solver(order_error=0.5, alpha_reg=0) for _ in range(n)))
-#     aprint(f"L0.5 mean_error={mean_error}")
-#
-#     mean_error = numpy.mean(list(_run_solver(order_error=2, order_reg=2, alpha_reg=0.1) for _ in range(n)))
-#     aprint(f"L2L2 mean_error={mean_error}")
-#
-#     mean_error = numpy.mean(list(_run_solver(order_error=2, order_reg=1, alpha_reg=0.1) for _ in range(n)))
-#     aprint(f"L2L1 mean_error={mean_error}")
-#
-#     mean_error = numpy.mean(list(_run_solver(order_error=1, order_reg=1, alpha_reg=0.1) for _ in range(n)))
-#     aprint(f"L1L1 mean_error={mean_error}")
-#
-#     mean_error = numpy.mean(list(_run_solver(order_error=1, order_reg=0.5, alpha_reg=0.1) for _ in range(n)))
-#     aprint(f"L1L0.5 mean_error={mean_error}")

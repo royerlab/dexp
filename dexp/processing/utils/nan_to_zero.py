@@ -1,7 +1,8 @@
+from dexp.utils import xpArray
 from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
-def nan_to_zero(array, copy=True):
+def nan_to_zero(array: xpArray, copy: bool = True) -> xpArray:
     """
     Replaces every nan in an array to zero. It might, or not, be able to operate in-place.
     To be safe, the returned array should always be used...
@@ -16,6 +17,7 @@ def nan_to_zero(array, copy=True):
     Array for which NaNs have been replace by zero.
 
     """
+    # TODO: should we remove this function?
     backend = Backend.current()
 
     if type(backend) is NumpyBackend:

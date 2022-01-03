@@ -23,7 +23,7 @@ def demo_colormap_cupy():
 def demo_colormap(length_xy=120, display=True):
     with asection("generate data"):
         _, _, image = generate_nuclei_background_data(
-            add_noise=False, length_xy=length_xy, length_z_factor=1, background_stength=0.001, sphere=True, zoom=2
+            add_noise=False, length_xy=length_xy, length_z_factor=1, background_strength=0.001, sphere=True, zoom=2
         )
 
         image -= image.min()

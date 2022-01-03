@@ -1,28 +1,19 @@
-import numpy
+import numpy as np
+from arbol import aprint
 
 from dexp.processing.utils.scatter_gather_i2v import scatter_gather_i2v
-from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend
+from dexp.utils.testing.testing import execute_both_backends
 from dexp.utils.timeit import timeit
 
 
-def test_scatter_gather_i2v_numpy():
-    with NumpyBackend():
-        _test_scatter_gather_i2v()
-
-
-def test_scatter_gather_i2v_cupy():
-    try:
-        with CupyBackend():
-            _test_scatter_gather_i2v(length_xy=512, splits=4, filter_size=7)
-    except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
-
-
-def _test_scatter_gather_i2v(ndim=3, length_xy=128, splits=4, filter_size=7):
+@execute_both_backends
+def test_scatter_gather_i2v(ndim=3, length_xy=128, splits=4):
     xp = Backend.get_xp_module()
+    rng = np.random.default_rng()
 
-    image1 = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
-    image2 = numpy.random.uniform(0, 1, size=(length_xy,) * ndim)
+    image1 = rng.uniform(0, 1, size=(length_xy,) * ndim)
+    image2 = rng.uniform(0, 1, size=(length_xy,) * ndim)
 
     def f(x, y):
         return xp.stack([x.min(), x.max()]), xp.stack([y.max(), y.mean(), y.min()])
@@ -31,31 +22,21 @@ def _test_scatter_gather_i2v(ndim=3, length_xy=128, splits=4, filter_size=7):
         chunks = (length_xy // splits,) * ndim
         result1, result2 = scatter_gather_i2v(f, (image1, image2), tiles=chunks, margins=8)
 
-    print(result1.shape)
-    print(result2.shape)
-
     assert result1.ndim == ndim + 1
     assert result2.ndim == ndim + 1
 
+    assert result1.shape[:-1] == result2.shape[:-1]
     assert result1.shape[-1] == 2
     assert result2.shape[-1] == 3
 
-    mean = result1.mean(axis=tuple(a for a in range(ndim)))
-    result1 -= mean
+    result1 -= (0, 1)  # expected stats from uniform distribution
     result1 = Backend.to_numpy(result1)
-    error = numpy.linalg.norm(result1.ravel(), ord=1) / result1.size
-    print(f"Error = {error}")
+    error = np.linalg.norm(result1.ravel(), ord=1) / result1.size
+    aprint(f"Error = {error}")
     assert error < 0.001
 
-    mean = result2.mean(axis=tuple(a for a in range(ndim)))
-    result2 -= mean
+    result2 -= (1, 0.5, 0)  # expected stats from uniform distribution
     result2 = Backend.to_numpy(result2)
-    error = numpy.linalg.norm(result2.ravel(), ord=1) / result2.size
-    print(f"Error = {error}")
+    error = np.linalg.norm(result2.ravel(), ord=1) / result2.size
+    aprint(f"Error = {error}")
     assert error < 0.001
-
-    # from napari import Viewer, gui_qt
-    # with gui_qt():
-    #     viewer = Viewer()
-    #     viewer.add_image(result, name='result', color=False)
-    #

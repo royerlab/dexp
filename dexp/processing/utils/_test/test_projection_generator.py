@@ -1,21 +1,10 @@
 from dexp.processing.utils.projection_generator import projection_generator
-from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend
+from dexp.utils.testing.testing import execute_both_backends
 
 
-def test_projection_generator_numpy():
-    with NumpyBackend():
-        _test_projection_generator()
-
-
-def test_projection_generator_cupy():
-    try:
-        with CupyBackend():
-            _test_projection_generator()
-    except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
-
-
-def _test_projection_generator():
+@execute_both_backends
+def test_projection_generator():
     xp = Backend.get_xp_module()
 
     image = xp.random.rand(12, 14, 17, 19)

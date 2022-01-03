@@ -28,7 +28,7 @@ def _test_clean_dark_regions(length_xy=128):
             length_xy=length_xy,
             length_z_factor=1,
             independent_haze=False,
-            background_stength=0.05,
+            background_strength=0.05,
             dtype=numpy.float32,
         )
 

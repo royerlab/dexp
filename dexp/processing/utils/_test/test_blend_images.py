@@ -1,27 +1,21 @@
-import numpy
+import numpy as np
+import pytest
 
-from dexp.datasets.synthetic_datasets import generate_fusion_test_data
 from dexp.processing.utils.blend_images import blend_images
-from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend
+from dexp.utils.testing.testing import execute_both_backends
 
 
-def test_blend_numpy():
-    with NumpyBackend():
-        _test_blend()
-
-
-def test_blend_cupy():
-    try:
-        with CupyBackend():
-            _test_blend()
-    except ModuleNotFoundError:
-        print("Cupy module not found! Test passes nevertheless!")
-
-
-def _test_blend(length_xy=128):
-    image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(
-        add_noise=False, length_xy=length_xy, length_z_factor=4, dtype=numpy.float32
-    )
+@execute_both_backends
+@pytest.mark.parametrize(
+    "dexp_fusion_test_data",
+    [dict(length_xy=128, add_noise=False)],
+    indirect=True,
+)
+def test_blend(dexp_fusion_test_data, display: bool = False) -> None:
+    # TODO: improv this testing, too broad
+    #  - error too big?
+    image_gt, _, blend_a, _, image1, image2 = dexp_fusion_test_data
 
     blended = blend_images(image1, image2, blend_a)
 
@@ -33,15 +27,18 @@ def _test_blend(length_xy=128):
 
     image_gt = Backend.to_numpy(image_gt)
     blended = Backend.to_numpy(blended)
-    error = numpy.median(numpy.abs(image_gt - blended))
-    print(f"error={error}")
+    error = np.median(np.abs(image_gt - blended))
+    print(f"Error = {error}")
     assert error < 23
 
-    # from napari import Viewer, gui_qt
-    # with gui_qt():
-    #     viewer = Viewer()
-    #     viewer.add_image(image_gt, name='image_gt')
-    #     viewer.add_image(image1, name='image1')
-    #     viewer.add_image(image2, name='image2')
-    #     viewer.add_image(blend_a, name='blend_a')
-    #     viewer.add_image(blended, name='blended')
+    if display:
+        import napari
+
+        viewer = napari.Viewer()
+        viewer.add_image(image_gt, name="image_gt")
+        viewer.add_image(image1, name="image1")
+        viewer.add_image(image2, name="image2")
+        viewer.add_image(blend_a, name="blend_a")
+        viewer.add_image(blended, name="blended")
+
+        napari.run()

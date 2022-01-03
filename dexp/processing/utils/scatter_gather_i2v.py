@@ -1,18 +1,21 @@
 import math
-from typing import Any, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
+
+import numpy as np
 
 from dexp.processing.utils.nd_slice import nd_split_slices
+from dexp.utils import xpArray
 from dexp.utils.backends import Backend
 
 
 def scatter_gather_i2v(
-    function,
-    images: Union[Any, Tuple[Any]],
+    function: Callable,
+    images: Union[xpArray, Tuple[xpArray]],
     tiles: Union[int, Tuple[int, ...]],
-    margins: Union[int, Tuple[int, ...]] = None,
+    margins: Optional[Union[int, Tuple[int, ...]]] = None,
     to_numpy: bool = True,
-    internal_dtype=None,
-):
+    internal_dtype: Optional[np.dtype] = None,
+) -> xpArray:
     """
     Image-2-vector scatter-gather.
     Given a n-ary function that takes n images and returns a tuple of vectors per image,

@@ -1,6 +1,9 @@
+from arbol.arbol import asection
+
 from dexp.utils.backends import Backend
 
 
+@asection("Generating synthetic binary blobs data")
 def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2, volume_fraction=0.5, seed=None):
     """
     Generate synthetic binary image with several rounded blob-like objects.

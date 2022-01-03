@@ -42,7 +42,7 @@ def _deskew(shift, length, zoom, display):
             sphere=True,
             zoom=zoom,
             add_offset=False,
-            background_stength=0.07,
+            background_strength=0.07,
             dtype=xp.float32,
         )
 

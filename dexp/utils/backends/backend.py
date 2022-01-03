@@ -1,4 +1,5 @@
 import threading
+import types
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -124,7 +125,7 @@ class Backend(ABC):
         raise NotImplementedError("Method not implemented!")
 
     @abstractmethod
-    def _get_xp_module(self, array: xpArray = None) -> Any:
+    def _get_xp_module(self, array: xpArray = None) -> types.ModuleType:
         """Returns the numpy-like module for a given array
 
         Parameters
@@ -139,7 +140,7 @@ class Backend(ABC):
         raise NotImplementedError("Method not implemented!")
 
     @abstractmethod
-    def _get_sp_module(self, array: xpArray = None) -> Any:
+    def _get_sp_module(self, array: xpArray = None) -> types.ModuleType:
         """Returns the scipy-like module for a given array
 
         Parameters
