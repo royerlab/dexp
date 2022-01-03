@@ -3,13 +3,13 @@ import random
 from arbol import aprint, asection
 from skimage.data import camera
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
-from dexp.processing.interpolation.warp import warp
-from dexp.processing.registration.sequence import image_stabilisation
-from dexp.processing.synthetic_datasets.binary_blobs import binary_blobs
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
+from dexp.datasets.synthetic_datasets import (
+    binary_blobs,
     generate_nuclei_background_data,
 )
+from dexp.processing.interpolation.warp import warp
+from dexp.processing.registration.sequence import image_stabilisation
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_register_sequence_2d_numpy():

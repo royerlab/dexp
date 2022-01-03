@@ -1,8 +1,8 @@
 import numpy
 from skimage.data import camera
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.interpolation.warp import warp
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 

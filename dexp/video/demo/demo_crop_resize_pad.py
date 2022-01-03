@@ -8,19 +8,19 @@ from arbol import aprint, asection
 from dask.array.image import imread
 from skimage.data import astronaut
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.video.crop_resize_pad import crop_resize_pad_image_sequence
 
 
 def demo_crop_resize_pad_numpy():
     with NumpyBackend():
-        demo_crop_resize_pad(display=True)
+        demo_video_crop_resize_pad(display=True)
 
 
 def demo_crop_resize_pad_cupy():
     try:
         with CupyBackend():
-            demo_crop_resize_pad(display=True)
+            demo_video_crop_resize_pad(display=True)
             return True
 
     except ModuleNotFoundError:
@@ -28,7 +28,7 @@ def demo_crop_resize_pad_cupy():
         return False
 
 
-def demo_crop_resize_pad(n=64, display=True):
+def demo_video_crop_resize_pad(n=64, display=True):
     sp = Backend.get_sp_module()
 
     with asection("Prepare dataset..."):

@@ -1,10 +1,8 @@
 from arbol import asection
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.processing.color.colormap import rgb_colormap
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_colormap_numpy():
@@ -25,7 +23,7 @@ def demo_colormap_cupy():
 def demo_colormap(length_xy=120, display=True):
     with asection("generate data"):
         _, _, image = generate_nuclei_background_data(
-            add_noise=False, length_xy=length_xy, length_z_factor=1, background_stength=0.001, sphere=True, zoom=2
+            add_noise=False, length_xy=length_xy, length_z_factor=1, background_strength=0.001, sphere=True, zoom=2
         )
 
         image -= image.min()

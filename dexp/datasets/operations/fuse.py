@@ -4,13 +4,13 @@ from arbol.arbol import aprint, asection
 from toolz import curry
 
 from dexp.datasets import ZDataset
-from dexp.processing.backends import Backend, BestBackend, NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
 from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion
 from dexp.processing.registration.model.model_io import (
     model_list_from_file,
     model_list_to_file,
 )
+from dexp.utils.backends import Backend, BestBackend, NumpyBackend
 from dexp.utils.slicing import slice_from_shape
 
 

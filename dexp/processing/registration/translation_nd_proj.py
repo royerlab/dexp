@@ -1,11 +1,11 @@
 from typing import Callable
 
-from dexp.processing.backends import Backend
 from dexp.processing.registration.model.translation_registration_model import (
     TranslationRegistrationModel,
 )
 from dexp.processing.registration.translation_2d import register_translation_2d_dexp
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 def register_translation_proj_nd(

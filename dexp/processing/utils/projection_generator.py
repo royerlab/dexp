@@ -1,11 +1,27 @@
-from typing import Optional, Tuple
+from typing import Callable, Iterator, Optional, Tuple
 
-from dexp.processing.backends import Backend
+from dexp.utils import xpArray
+from dexp.utils.backends import Backend
+
+
+def _get_projection_type(type: str, axis: Tuple[int]) -> Callable:
+    xp = Backend.get_xp_module()
+    projections = {
+        "mean": lambda im: xp.mean(im, axis=axis),
+        "median": lambda im: xp.median(im, axis=axis),
+        "max": lambda im: xp.median(im, axis=axis),
+        "min": lambda im: xp.min(im, axis=axis),
+        "max-min": lambda im: xp.max(im, axis=axis) - xp.min(im, axis=axis),
+    }
+    try:
+        return projections[type]
+    except KeyError:
+        raise ValueError(f"Unknown projection type: {type}")
 
 
 def projection_generator(
-    image, axis_range: Optional[Tuple[int, ...]] = None, projection_type: str = "mean", nb_axis: int = 2
-):
+    image: xpArray, axis_range: Optional[Tuple[int, ...]] = None, projection_type: str = "mean", nb_axis: int = 2
+) -> Iterator[Tuple[int, int, xpArray]]:
     """
     Generates all nD projection of an image. Currently only supports 2D projections.
 
@@ -22,9 +38,8 @@ def projection_generator(
     tuples of axis and projections: (u,v,..., projection)
 
     """
-    xp = Backend.get_xp_module()
-
     if nb_axis != 2:
+        # TODO: this could be fixed using itertools.combinations
         raise NotImplementedError("Not implemented for nb_axis!=2")
 
     ndim = image.ndim
@@ -36,20 +51,8 @@ def projection_generator(
         for v in range(*axis_range):
             if u < v:
                 proj_axis = tuple(set(range(*axis_range)).difference({u, v}))
-                if projection_type == "mean":
-                    projected_image = xp.mean(image, axis=proj_axis)
-                elif projection_type == "median":
-                    projected_image = xp.median(image, axis=proj_axis)
-                elif projection_type == "max":
-                    projected_image = xp.max(image, axis=proj_axis)
-                elif projection_type == "min":
-                    projected_image = xp.min(image, axis=proj_axis)
-                elif projection_type == "max-min":
-                    projected_image = xp.max(image, axis=proj_axis)
-                    projected_image -= xp.min(image, axis=proj_axis)
-                else:
-                    raise ValueError(f"Unknown projection type: {projection_type}")
-
+                projection = _get_projection_type(projection_type.lower(), proj_axis)
+                projected_image = projection(image)
                 projected_image = projected_image.astype(dtype=image.dtype, copy=False)
 
                 yield u, v, projected_image

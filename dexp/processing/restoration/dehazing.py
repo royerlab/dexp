@@ -1,9 +1,9 @@
 import numpy
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.utils.fit_shape import fit_to_shape
 from dexp.processing.utils.nan_to_zero import nan_to_zero
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def dehaze(

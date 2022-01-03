@@ -4,7 +4,6 @@ from typing import Optional
 import numpy
 import scipy
 
-from dexp.processing.backends import Backend
 from dexp.processing.deconvolution.admm_utils import (
     derivative_axes,
     first_derivative_func,
@@ -13,6 +12,7 @@ from dexp.processing.deconvolution.admm_utils import (
     second_derivative_kernels,
 )
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 def admm_deconvolution(

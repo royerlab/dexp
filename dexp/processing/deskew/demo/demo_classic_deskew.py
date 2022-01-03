@@ -1,10 +1,8 @@
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.optics.psf.standard_psfs import nikon16x08na
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.deskew.classic_deskew import classic_deskew_dimensionless
 from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 
@@ -42,7 +40,7 @@ def _deskew(shift, length, zoom, display):
             sphere=True,
             zoom=zoom,
             add_offset=False,
-            background_stength=0.07,
+            background_strength=0.07,
             dtype=xp.float32,
         )
 

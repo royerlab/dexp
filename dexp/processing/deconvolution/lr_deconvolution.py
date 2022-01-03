@@ -3,13 +3,13 @@ from typing import Optional, Tuple, Union
 
 import numpy
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels.gaussian import gaussian_kernel_nd
 from dexp.processing.filters.kernels.wiener_butterworth import wiener_butterworth_kernel
 from dexp.processing.utils.nan_to_zero import nan_to_zero
 from dexp.processing.utils.normalise import normalise_functions
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def lucy_richardson_deconvolution(

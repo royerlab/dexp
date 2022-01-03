@@ -2,9 +2,9 @@ import numpy
 from arbol import aprint, asection
 from skimage.data import camera
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.warp_multiscale_nd import register_warp_multiscale_nd
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_register_warp_2d_ms_numpy():

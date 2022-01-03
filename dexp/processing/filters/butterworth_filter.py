@@ -2,10 +2,10 @@ from typing import Tuple, Union
 
 import numpy
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels.butterworth import butterworth_kernel
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def butterworth_filter(

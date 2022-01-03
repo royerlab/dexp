@@ -3,9 +3,9 @@ from arbol import aprint, asection
 from scipy.ndimage import gaussian_filter
 from skimage.data import binary_blobs
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.warp_nd import register_warp_nd
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_register_warp_2d_blobs_numpy():

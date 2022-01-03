@@ -1,7 +1,10 @@
-from dexp.processing.backends import Backend
+from typing import Tuple
+
+from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
-def fit_to_shape(array, shape):
+def fit_to_shape(array: xpArray, shape: Tuple[int, ...]) -> xpArray:
     """
     Pads or crops an array to attain a certain shape
 

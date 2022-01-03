@@ -5,7 +5,7 @@ Processing module has various submodules. Here summary and detailed
 documentation of some of the submodules:
 
 Backends
-    .. currentmodule:: dexp.processing.backends
+    .. currentmodule:: dexp.utils.backends
 
     .. autosummary::
         Backend
@@ -90,23 +90,23 @@ Restoration
 Backends
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. currentmodule:: dexp.processing.backends.backend
+.. currentmodule:: dexp.utils.backends.backend
 
 .. autoclass:: Backend
     :members:
     :inherited-members:
 
-.. currentmodule:: dexp.processing.backends.best_backend
+.. currentmodule:: dexp.utils.backends.best_backend
 
 .. autofunction:: BestBackend
 
-.. currentmodule:: dexp.processing.backends.cupy_backend
+.. currentmodule:: dexp.utils.backends.cupy_backend
 
 .. autoclass:: CupyBackend
     :members:
     :inherited-members:
 
-.. currentmodule:: dexp.processing.backends.numpy_backend
+.. currentmodule:: dexp.utils.backends.numpy_backend
 
 .. autoclass:: NumpyBackend
     :members:

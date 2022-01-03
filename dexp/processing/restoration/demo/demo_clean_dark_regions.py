@@ -1,10 +1,8 @@
 from napari import Viewer, gui_qt
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 
@@ -26,7 +24,7 @@ def demo_clean_dark_regions_data(length_xy=256):
 
     with timeit("generate data"):
         image_gt, background, image = generate_nuclei_background_data(
-            add_noise=True, length_xy=length_xy, length_z_factor=1, independent_haze=False, background_stength=0.1
+            add_noise=True, length_xy=length_xy, length_z_factor=1, independent_haze=False, background_strength=0.1
         )
 
     # remove zero level

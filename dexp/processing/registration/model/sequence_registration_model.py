@@ -3,7 +3,6 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from dexp.processing.backends import Backend
 from dexp.processing.registration.model.pairwise_registration_model import (
     PairwiseRegistrationModel,
 )
@@ -11,6 +10,7 @@ from dexp.processing.registration.model.translation_registration_model import (
     TranslationRegistrationModel,
 )
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 class SequenceRegistrationModel:

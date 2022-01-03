@@ -2,14 +2,12 @@ from functools import partial
 
 import numpy
 
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.optics.psf.standard_psfs import nikon16x08na
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.deconvolution.blind_deconvolution import blind_deconvolution
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 
@@ -31,7 +29,7 @@ def _demo_blind_deconvolution(length_xy=128):
 
     with timeit("generate data"):
         image_gt, background, image = generate_nuclei_background_data(
-            add_noise=False, length_xy=length_xy, length_z_factor=1, background_stength=0, add_offset=False
+            add_noise=False, length_xy=length_xy, length_z_factor=1, background_strength=0, add_offset=False
         )
 
     psf = nikon16x08na(xy_size=35, z_size=35)  # , dxy=0.200, dz=0.94)

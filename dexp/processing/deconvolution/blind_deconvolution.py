@@ -7,9 +7,9 @@ from pyotf.utils import prep_data_for_PR
 from scipy.optimize import minimize
 from toolz import curry
 
-from dexp.processing.backends import Backend
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 @curry

@@ -2,7 +2,6 @@ from typing import Sequence, Tuple
 
 import numpy
 
-from dexp.processing.backends import Backend
 from dexp.processing.registration.model.sequence_registration_model import (
     SequenceRegistrationModel,
 )
@@ -12,6 +11,7 @@ from dexp.processing.registration.model.translation_registration_model import (
 from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.utils.projection_generator import projection_generator
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 def image_stabilisation_proj(

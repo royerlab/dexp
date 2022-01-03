@@ -4,8 +4,8 @@ from arbol import asection
 from skimage.color import gray2rgba
 from skimage.data import camera
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.color.time_stamp import insert_time_stamp
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_time_stamp_numpy():

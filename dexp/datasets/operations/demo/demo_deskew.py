@@ -6,12 +6,10 @@ from arbol import aprint, asection
 
 from dexp.datasets import ZDataset
 from dexp.datasets.operations.deskew import dataset_deskew
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.optics.psf.standard_psfs import nikon16x08na
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_deskew_numpy():
@@ -43,7 +41,7 @@ def _demo_deskew(length=96, zoom=1, shift=1, display=True):
             sphere=True,
             zoom=zoom,
             add_offset=False,
-            background_stength=0.07,
+            background_strength=0.07,
             dtype=xp.float32,
         )
 

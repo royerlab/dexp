@@ -1,8 +1,8 @@
 from arbol import asection
 from skimage.data import astronaut, logo
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.color.insert import insert_color_image
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_insert_numpy():

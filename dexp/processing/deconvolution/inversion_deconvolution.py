@@ -3,8 +3,8 @@ from typing import Optional
 import numpy
 import scipy
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def inversion_deconvolution(

@@ -3,12 +3,12 @@ from typing import Tuple
 
 import numpy
 
-from dexp.processing.backends import Backend
 from dexp.processing.interpolation.warp import warp
 from dexp.processing.registration.model.pairwise_registration_model import (
     PairwiseRegistrationModel,
 )
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 class WarpRegistrationModel(PairwiseRegistrationModel):

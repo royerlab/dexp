@@ -107,3 +107,6 @@ venv.bak/
 # VScode
 .history
 .idea/
+
+# macos
+.DS_Store

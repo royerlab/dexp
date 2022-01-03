@@ -1,11 +1,11 @@
 from arbol import aprint, asection
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.datasets.synthetic_datasets import generate_fusion_test_data
 from dexp.processing.registration.translation_nd import register_translation_nd
 from dexp.processing.registration.translation_nd_proj import (
     register_translation_proj_nd,
 )
-from dexp.processing.synthetic_datasets.multiview_data import generate_fusion_test_data
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_register_translation_3d_numpy():

@@ -2,7 +2,7 @@ from typing import Tuple, Union
 
 import numpy
 
-from dexp.processing.backends import Backend, NumpyBackend
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def gaussian_kernel_nd(

@@ -3,8 +3,8 @@ from typing import Callable, Union
 from matplotlib.cm import get_cmap
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def rgb_colormap(image: xpArray, cmap: Union[str, Callable] = None, bytes: bool = False, internal_dtype=None):

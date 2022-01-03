@@ -1,22 +1,23 @@
-from typing import Optional, Tuple, Union
+from typing import Callable, Optional, Sequence, Tuple, Union
 
 import numpy
 
-from dexp.processing.backends import Backend
 from dexp.processing.utils.nd_slice import nd_split_slices, remove_margin_slice
 from dexp.processing.utils.normalise import normalise_functions
+from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 def scatter_gather_i2i(
-    function,
-    image,
+    function: Callable,
+    image: xpArray,
     tiles: Union[int, Tuple[int, ...]],
     margins: Optional[Union[int, Tuple[int, ...]]] = None,
     normalise: bool = False,
     clip: bool = False,
     to_numpy: bool = True,
-    internal_dtype=None,
-):
+    internal_dtype: Optional[numpy.dtype] = None,
+) -> xpArray:
     """
     Image-2-image scatter-gather.
     'Scatters' computation of a given unary function by splitting the input array into tiles,
@@ -95,7 +96,18 @@ def scatter_gather_i2i(
     return result
 
 
-def _scatter_gather_loop(denorm_fun, function, image, internal_dtype, norm_fun, result, shape, slices, to_numpy):
+def _scatter_gather_loop(
+    denorm_fun: Callable,
+    function: Callable,
+    image: xpArray,
+    internal_dtype: numpy.dtype,
+    norm_fun: Callable,
+    result: Callable,
+    shape: Tuple[int, ...],
+    slices: Sequence[Tuple[slice, ...]],
+    to_numpy: bool,
+) -> None:
+
     for tile_slice, tile_slice_no_margins in slices:
         image_tile = image[tile_slice]
         image_tile = Backend.to_backend(image_tile, dtype=internal_dtype)

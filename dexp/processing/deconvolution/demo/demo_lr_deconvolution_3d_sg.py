@@ -1,13 +1,11 @@
 import numpy
 
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.optics.psf.standard_psfs import nikon16x08na
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.filters.fft_convolve import fft_convolve
-from dexp.processing.synthetic_datasets.nuclei_background_data import (
-    generate_nuclei_background_data,
-)
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 
@@ -27,7 +25,7 @@ def demo_lr_deconvolution_cupy():
 def _demo_lr_deconvolution(length_xy=256):
     with timeit("generate data"):
         _, _, image = generate_nuclei_background_data(
-            add_noise=False, length_xy=length_xy, zoom=2, length_z_factor=1, background_stength=0, add_offset=False
+            add_noise=False, length_xy=length_xy, zoom=2, length_z_factor=1, background_strength=0, add_offset=False
         )
 
     psf = nikon16x08na()

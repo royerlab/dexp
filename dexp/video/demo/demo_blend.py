@@ -10,7 +10,7 @@ from PIL import Image
 from skimage.color import gray2rgba
 from skimage.data import astronaut, camera, logo
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.video.blend import blend_color_image_sequences
 
 

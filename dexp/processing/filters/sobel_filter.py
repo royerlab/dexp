@@ -1,8 +1,8 @@
 import numpy
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.utils.normalise import normalise_functions
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def sobel_filter(

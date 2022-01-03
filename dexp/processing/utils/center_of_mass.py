@@ -1,7 +1,7 @@
 import itertools
 
-from dexp.processing.backends import Backend
 from dexp.processing.utils.projection_generator import projection_generator
+from dexp.utils.backends import Backend
 
 
 def center_of_mass(
@@ -23,8 +23,7 @@ def center_of_mass(
     offset_mode: Choice of offset to remove, can be either: 'min', 'median', 'mean', 'middle',
         and for example: 'p=10' for removing and clipping the lower 10% percentile. Set to N one for no offset removal.
     remove_offset: removes offset to help remove the influence of the background on the center of mass
-    bounding_box: if True, the center of mass of the bouning box of non-zero pixels is returned.
-
+    bounding_box: if True, the center of mass of the bounding box of non-zero pixels is returned.
 
     Returns
     -------

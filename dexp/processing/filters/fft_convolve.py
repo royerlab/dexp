@@ -1,8 +1,8 @@
 import numpy
 import scipy.fftpack
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def fft_convolve(image1: xpArray, image2: xpArray, mode: str = "reflect", in_place: bool = True, internal_dtype=None):

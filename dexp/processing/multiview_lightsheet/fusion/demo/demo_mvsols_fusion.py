@@ -4,8 +4,8 @@ from arbol import aprint, asection
 from napari import Viewer
 
 from dexp.datasets import ZDataset
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 dataset_path = "/mnt/raid0/dexp_datasets/tail/raw.zarr"
 

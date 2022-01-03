@@ -4,10 +4,10 @@ from napari import Viewer, gui_qt
 from tifffile import imread
 
 from dexp.optics.psf.standard_psfs import nikon16x08na
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.deconvolution.lr_deconvolution import lucy_richardson_deconvolution
 from dexp.processing.restoration.dehazing import dehaze
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 filepath = "/home/royer/Desktop/test_data/embryo_fused.tif"

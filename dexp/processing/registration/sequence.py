@@ -6,7 +6,6 @@ from arbol import aprint, asection
 from dask.array import Array
 from joblib import Parallel, delayed
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.registration.model.sequence_registration_model import (
     SequenceRegistrationModel,
 )
@@ -19,6 +18,7 @@ from dexp.processing.registration.translation_nd_proj import (
 from dexp.processing.utils.center_of_mass import center_of_mass
 from dexp.processing.utils.linear_solver import linsolve
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def image_stabilisation(

@@ -1,7 +1,7 @@
 import cupy
 
-from dexp.processing.backends import Backend
-from dexp.processing.backends._cupy.texture.texture import create_cuda_texture
+from dexp.utils.backends import Backend
+from dexp.utils.backends._cupy.texture.texture import create_cuda_texture
 
 
 def _warp_2d_cupy(image, vector_field, mode, block_size: int = 16):

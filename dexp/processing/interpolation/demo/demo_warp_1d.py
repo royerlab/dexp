@@ -2,8 +2,8 @@ from pprint import pprint
 
 import numpy
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
 from dexp.processing.interpolation.warp import warp
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 

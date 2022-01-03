@@ -4,8 +4,8 @@ from typing import Callable, Dict
 import numpy
 from numpy.typing import ArrayLike
 
-from dexp.processing.backends import Backend
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 def j_invariant_grid_search(

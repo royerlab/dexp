@@ -5,12 +5,12 @@ from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
 from dexp.datasets import BaseDataset
-from dexp.processing.backends import BestBackend, NumpyBackend
 from dexp.processing.registration.model.sequence_registration_model import (
     SequenceRegistrationModel,
 )
 from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.registration.sequence_proj import image_stabilisation_proj_
+from dexp.utils.backends import BestBackend, NumpyBackend
 from dexp.utils.misc import compute_num_workers
 
 

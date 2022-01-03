@@ -4,7 +4,6 @@ from typing import Sequence, Tuple
 import numpy
 from arbol.arbol import aprint, asection, section
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.deskew.yang_deskew import yang_deskew
 from dexp.processing.equalise.equalise_intensity import equalise_intensity
 from dexp.processing.filters.butterworth_filter import butterworth_filter
@@ -23,6 +22,7 @@ from dexp.processing.registration.warp_multiscale_nd import register_warp_multis
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 @section("mvSOLS 1C2L fusion")

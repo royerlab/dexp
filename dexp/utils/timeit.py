@@ -1,6 +1,8 @@
 from contextlib import contextmanager
 from time import time
 
+from arbol import aprint
+
 
 @contextmanager
 def timeit(description: str = "") -> None:
@@ -8,5 +10,5 @@ def timeit(description: str = "") -> None:
     yield
     elapsed_time = time() - start
 
-    print(f"Elapsed time for '{description}': {elapsed_time} seconds")
+    aprint(f"Elapsed time for '{description}': {elapsed_time} seconds")
     return elapsed_time

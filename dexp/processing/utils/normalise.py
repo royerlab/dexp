@@ -1,13 +1,14 @@
-from typing import Tuple
+from typing import Callable, Tuple
 
-import numpy
+import numpy as np
 
-from dexp.processing.backends import Backend, NumpyBackend
 from dexp.processing.utils.element_wise_affine import element_wise_affine
+from dexp.utils import xpArray
+from dexp.utils.backends import Backend, NumpyBackend
 
 
 def normalise_functions(
-    image,
+    image: xpArray,
     low: float = 0.0,
     high: float = 1.0,
     minmax: Tuple[float, float] = None,
@@ -16,7 +17,7 @@ def normalise_functions(
     do_normalise: bool = True,
     in_place: bool = True,
     dtype=None,
-):
+) -> Tuple[Callable, Callable]:
     """Returns a pair of functions: the first normalises the given image to the range [low, high],
     the second denormalises back to the original range (and dtype).
     Usefull when determining the normalisation parameters and doing the actual normalisation must be decoupled,
@@ -43,23 +44,16 @@ def normalise_functions(
 
     xp = Backend.get_xp_module()
 
-    if dtype is None:
-        # FIXME: this is ugly, it shouldn't be done like this :()
-        if (
-            image.dtype.name == "uint8"
-            or image.dtype.name == "uint16"
-            or image.dtype.name == "int8"
-            or image.dtype.name == "uint16"
-            or image.dtype.name == "float16"
-        ):
-            dtype = xp.float16
-        elif image.dtype.name == "uint32" or image.dtype.name == "int32" or image.dtype.name == "float32":
-            dtype = xp.float32
-        elif image.dtype.name == "uint64" or image.dtype.name == "int64" or image.dtype.name == "float64":
-            dtype = xp.float32
+    if isinstance(Backend.current(), NumpyBackend):
+        dtype = np.float32
 
-    if type(Backend.current()) is NumpyBackend:
-        dtype = numpy.float32
+    elif dtype is None:
+        if image.itemsize <= 2:
+            dtype = xp.float16
+        elif image.itemsize == 4 or image.itemsize == 8:
+            dtype = xp.float32
+        else:
+            raise ValueError(f"Failed to converted type {image.dtype}")
 
     original_dtype = image.dtype
 

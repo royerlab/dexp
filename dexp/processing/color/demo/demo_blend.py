@@ -1,9 +1,9 @@
 from arbol import asection
 
-from dexp.processing.backends import Backend, CupyBackend, NumpyBackend
+from dexp.datasets.synthetic_datasets import binary_blobs
 from dexp.processing.color.blend import blend_color_images
 from dexp.processing.color.conversions import gray2rgba
-from dexp.processing.synthetic_datasets.binary_blobs import binary_blobs
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_blend_numpy():

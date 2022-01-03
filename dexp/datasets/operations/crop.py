@@ -8,8 +8,8 @@ from numpy.typing import ArrayLike
 from scipy import ndimage as ndi
 
 from dexp.datasets import BaseDataset
-from dexp.processing.backends import Backend, BestBackend
 from dexp.processing.filters.fft_convolve import fft_convolve
+from dexp.utils.backends import Backend, BestBackend
 from dexp.utils.misc import compute_num_workers
 
 

@@ -1,7 +1,7 @@
 from typing import Tuple
 
-from dexp.processing.backends import Backend
 from dexp.utils import xpArray
+from dexp.utils.backends import Backend
 
 
 def add_border(
