@@ -7,7 +7,7 @@ from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.filters.kernels.gaussian import gaussian_kernel_nd
 from dexp.processing.filters.kernels.wiener_butterworth import wiener_butterworth_kernel
 from dexp.processing.utils.nan_to_zero import nan_to_zero
-from dexp.processing.utils.normalise import normalise_functions
+from dexp.processing.utils.normalise import Normalise
 from dexp.utils import xpArray
 from dexp.utils.backends import Backend, NumpyBackend
 
@@ -171,11 +171,11 @@ def lucy_richardson_deconvolution(
     #     viewer.add_image(_c(back_projector_f), name='back_projector_f', colormap='viridis')
 
     # Normalisation:
-    norm_fun, denorm_fun = normalise_functions(
+    normalise = Normalise(
         image, minmax=normalise_minmax, do_normalise=normalise_input, clip=False, dtype=internal_dtype
     )
 
-    image = norm_fun(image)
+    image = normalise.forward(image)
 
     # Padding:
     if padding > 0:
@@ -227,7 +227,7 @@ def lucy_richardson_deconvolution(
             result = xp.clip(result, xp.min(image), xp.max(image), out=result)
 
     # Denormalises result:
-    result = denorm_fun(result)
+    result = normalise.backward(result)
 
     # Removes padding:
     if padding > 0:

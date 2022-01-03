@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from arbol import aprint
 
-from dexp.processing.utils.normalise import normalise_functions
+from dexp.processing.utils.normalise import Normalise
 from dexp.utils.backends import Backend
 from dexp.utils.testing.testing import execute_both_backends
 
@@ -17,10 +17,10 @@ def test_normalise(dexp_nuclei_background_data):
     _, _, image = dexp_nuclei_background_data
     image = image.astype(np.uint16)  # required to convert afterwards
 
-    norm_fun, denorm_fun = normalise_functions(image, low=-0.5, high=1, in_place=False, clip=True, dtype=np.float32)
+    normalise = Normalise(image, low=-0.5, high=1, in_place=False, clip=True, dtype=np.float32)
 
-    image_normalised = norm_fun(image)
-    image_denormalised = denorm_fun(image_normalised)
+    image_normalised = normalise.forward(image)
+    image_denormalised = normalise.backward(image_normalised)
 
     assert image_normalised.dtype == np.float32
     assert image_denormalised.dtype == image.dtype

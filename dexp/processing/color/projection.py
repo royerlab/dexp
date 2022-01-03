@@ -4,7 +4,7 @@ from dexp.processing.color.colormap import _normalise_colormap, rgb_colormap
 from dexp.processing.color.insert import insert_color_image
 from dexp.processing.color.projection_legend import depth_color_scale_legend
 from dexp.processing.utils.center_of_mass import center_of_mass
-from dexp.processing.utils.normalise import normalise_functions
+from dexp.processing.utils.normalise import Normalise
 from dexp.utils import xpArray
 from dexp.utils.backends import Backend, NumpyBackend
 
@@ -110,8 +110,8 @@ def project_image(
     dlim = (0, 1) if dlim is None else dlim
 
     # Normalise image:
-    norm_fun, _ = normalise_functions(image, quantile=normalisation_quantile, minmax=clim, clip=True)
-    image = norm_fun(image)
+    normalise = Normalise(image, quantile=normalisation_quantile, minmax=clim, clip=True)
+    image = normalise.forward(image)
 
     # Apply gamma:
     if gamma != 1:
