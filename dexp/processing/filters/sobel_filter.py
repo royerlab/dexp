@@ -1,6 +1,6 @@
 import numpy
 
-from dexp.processing.utils.normalise import normalise_functions
+from dexp.processing.utils.normalise import Normalise
 from dexp.utils import xpArray
 from dexp.utils.backends import Backend, NumpyBackend
 
@@ -66,9 +66,9 @@ def sobel_filter(
     if log_compression:
         image = xp.log1p(image, out=image if force_copy else None)
 
-    norm_fun, denorm_fun = normalise_functions(image, do_normalise=normalise_input, dtype=internal_dtype)
+    normalise = Normalise(image, do_normalise=normalise_input, dtype=internal_dtype)
 
-    image = norm_fun(image)
+    image = normalise.forward(image)
 
     if gamma != 1:
         image **= gamma

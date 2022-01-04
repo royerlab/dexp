@@ -3,7 +3,7 @@ from typing import Callable, Optional, Sequence, Tuple, Union
 import numpy
 
 from dexp.processing.utils.nd_slice import nd_split_slices, remove_margin_slice
-from dexp.processing.utils.normalise import normalise_functions
+from dexp.processing.utils.normalise import Normalise
 from dexp.utils import xpArray
 from dexp.utils.backends import Backend
 
@@ -66,9 +66,7 @@ def scatter_gather_i2i(
         result = Backend.get_xp_module(image).empty_like(image, dtype=internal_dtype)
 
     # Normalise:
-    norm_fun, denorm_fun = normalise_functions(
-        Backend.to_backend(image), do_normalise=normalise, clip=clip, quantile=0.005
-    )
+    norm = Normalise(Backend.to_backend(image), do_normalise=normalise, clip=clip, quantile=0.005)
 
     # image shape:
     shape = image.shape
@@ -85,13 +83,15 @@ def scatter_gather_i2i(
 
     if number_of_tiles == 1:
         # If there is only one tile, let's not be complicated about it:
-        result = denorm_fun(function(norm_fun(image)))
+        result = norm.backward(function(norm.forward(image)))
         if to_numpy:
             result = Backend.to_numpy(result, dtype=internal_dtype)
         else:
             result = Backend.to_backend(result, dtype=internal_dtype)
     else:
-        _scatter_gather_loop(denorm_fun, function, image, internal_dtype, norm_fun, result, shape, slices, to_numpy)
+        _scatter_gather_loop(
+            norm.backward, function, image, internal_dtype, norm.forward, result, shape, slices, to_numpy
+        )
 
     return result
 
