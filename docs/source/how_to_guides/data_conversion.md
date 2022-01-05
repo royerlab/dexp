@@ -1,6 +1,6 @@
 # Converting to our file format
 
-Our preferred file format is `.zarr` which is accessed in DEXP through `ZDataset` class from `dexp.datasets`.
+Our preferred file format is `.zarr` which is accessed in DEXP through `ZDataset` class from `dexp.datasets` submodule.
 
 As long as you can load your dataset as a numpy array you can convert your data into a `ZDataset` as below:
 
