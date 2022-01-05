@@ -17,6 +17,11 @@ DEXP
    Visualizing your data <how_to_guides/visualization.md>
 
 .. toctree::
+<<<<<<< HEAD
+=======
+   :maxdepth: 2
+   :hidden:
+>>>>>>> master
    :caption: Commands
 
    Image processing <commands/dexp_commands.rst>
