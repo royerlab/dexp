@@ -5,8 +5,6 @@ DEXP
 .. mdinclude:: ../../README.md
 
 .. toctree::
-   :maxdepth: 2
-   :hidden:
    :caption: Getting started
 
    Install <getting_started/install.rst>
@@ -19,16 +17,12 @@ DEXP
    Visualizing your data <how_to_guides/visualization.md>
 
 .. toctree::
-   :maxdepth: 2
-   :hidden:
    :caption: Commands
 
    Image processing <commands/dexp_commands.rst>
    Video rendering <commands/video_commands.rst>
 
 .. toctree::
-   :maxdepth: 2
-   :hidden:
    :caption: API
 
    Introduction <api/introduction.rst>
