@@ -3,7 +3,7 @@ import pytest
 
 from dexp.processing.utils.blend_images import blend_images
 from dexp.utils.backends import Backend
-from dexp.utils.testing.testing import execute_both_backends
+from dexp.utils.testing import execute_both_backends
 
 
 @execute_both_backends
@@ -12,7 +12,7 @@ from dexp.utils.testing.testing import execute_both_backends
     [dict(length_xy=128, add_noise=False)],
     indirect=True,
 )
-def test_blend(dexp_fusion_test_data, display: bool = False) -> None:
+def test_blend(dexp_fusion_test_data, display_test: bool) -> None:
     # TODO: improv this testing, too broad
     #  - error too big?
     image_gt, _, blend_a, _, image1, image2 = dexp_fusion_test_data
@@ -31,7 +31,7 @@ def test_blend(dexp_fusion_test_data, display: bool = False) -> None:
     print(f"Error = {error}")
     assert error < 23
 
-    if display:
+    if display_test:
         import napari
 
         viewer = napari.Viewer()

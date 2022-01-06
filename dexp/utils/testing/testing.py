@@ -2,15 +2,27 @@ import inspect
 from functools import wraps
 from typing import Any, Callable, Dict, Iterable
 
+import numpy as np
 import pytest
 
-from dexp.utils import xpArray
 from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def _maybe_to_backend(backend: Backend, obj: Any) -> Any:
-    if isinstance(obj, xpArray):
+
+    if isinstance(obj, np.ndarray):
+        # this must be first because arrays are iterables
         return backend.to_backend(obj)
+
+    if isinstance(obj, Dict):
+        dispatch_data_to_backend(backend, [], obj)
+        return obj
+
+    elif isinstance(obj, Iterable):
+        obj = list(obj)
+        dispatch_data_to_backend(backend, obj, {})
+        return obj
+
     else:
         return obj
 
@@ -51,7 +63,7 @@ def execute_both_backends(func: Callable) -> Callable:
         if cuda:
             try:
                 with CupyBackend() as backend:
-                    dispatch_data_to_backend(backend, kwargs)
+                    dispatch_data_to_backend(backend, args, kwargs)
                     func(*args, **kwargs)
             except ModuleNotFoundError:
                 pytest.skip(f"Cupy not found. Skipping {func.__name__} gpu test.")

@@ -56,6 +56,7 @@ REQUIRED = [
     "seaborn",
     "ome-zarr",
     "pyotf",
+    "higra",
 ]
 
 # What packages are optional?
