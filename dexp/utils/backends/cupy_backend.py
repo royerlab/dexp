@@ -306,3 +306,12 @@ class CupyBackend(Backend):
             import cupyx
 
             return cupyx.scipy.get_array_module(array)
+
+
+def is_cupy_available() -> bool:
+    try:
+        import cupy  # noqa
+
+        return True
+    except ImportError:
+        return False

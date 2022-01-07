@@ -4,7 +4,7 @@ from dexp.utils.backends import Backend
 
 
 @asection("Generating synthetic binary blobs data")
-def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2, volume_fraction=0.5, seed=None):
+def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2, volume_fraction=0.5, seed: int = 42):
     """
     Generate synthetic binary image with several rounded blob-like objects.
 

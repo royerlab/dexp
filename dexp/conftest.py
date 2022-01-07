@@ -20,3 +20,14 @@ def dexp_nuclei_background_data(request):
 @pytest.fixture
 def dexp_fusion_test_data(request):
     return generate_fusion_test_data(**request.param)
+
+
+def pytest_addoption(parser):
+    """pytest command line parser"""
+    parser.addoption("--display", action="store", type=bool, default=False)
+
+
+@pytest.fixture()
+def display_test(pytestconfig):
+    """display test fixture from pytest parser"""
+    return pytestconfig.getoption("display")
