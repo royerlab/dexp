@@ -69,7 +69,7 @@ def execute_both_backends(func: Callable) -> Callable:
                 pytest.skip(f"Cupy not found. Skipping {func.__name__} gpu test.")
         else:
             with NumpyBackend() as backend:
-                dispatch_data_to_backend(backend, args, kwargs)
+                # it assumes that is a numpy array by default
                 func(*args, **kwargs)
 
     return _add_cuda_signature(wrapper)
