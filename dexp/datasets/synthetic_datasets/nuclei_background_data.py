@@ -1,8 +1,10 @@
+from typing import Any
+
 import numpy
 from arbol import asection
-from skimage.data import binary_blobs
 from skimage.util import random_noise
 
+from dexp.datasets.synthetic_datasets import binary_blobs
 from dexp.utils.backends import Backend, NumpyBackend
 
 
@@ -20,6 +22,7 @@ def generate_nuclei_background_data(
     add_offset=True,
     dtype=numpy.float16,
     internal_dtype=numpy.float16,
+    rng: Any = 42,
 ):
     """
 
@@ -44,6 +47,9 @@ def generate_nuclei_background_data(
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
+    if isinstance(rng, int):
+        rng = xp.random.RandomState(seed=rng)
+
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = xp.float32
 
@@ -51,14 +57,23 @@ def generate_nuclei_background_data(
         dtype = numpy.float32
 
     with asection("generate blob images"):
-        image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype(
-            internal_dtype
-        )
+        image_gt = binary_blobs(
+            length=length_xy,
+            n_dim=3,
+            blob_size_fraction=0.07,
+            volume_fraction=0.1,
+            rng=rng,
+        ).astype(internal_dtype)
 
         if independent_haze:
             background = binary_blobs(
-                length=length_xy, n_dim=3, blob_size_fraction=background_scale, volume_fraction=0.5
+                length=length_xy,
+                n_dim=3,
+                blob_size_fraction=background_scale,
+                volume_fraction=0.5,
+                rng=rng,
             ).astype(internal_dtype)
+
         else:
             background = image_gt.copy()
 
@@ -100,13 +115,11 @@ def generate_nuclei_background_data(
     if add_noise:
         with asection("add noise"):
             image = Backend.to_numpy(image)
-            image = random_noise(image, mode="speckle", var=0.5)
+            image = random_noise(image, mode="speckle", var=0.5, seed=123)
             image = Backend.to_backend(image)
 
     with asection("scale image intensities"):
-        zero_level = (1 if add_offset else 0) * xp.random.uniform(
-            95, 95 + (10 if add_noise else 0), size=image_gt.shape
-        )
+        zero_level = (1 if add_offset else 0) * rng.uniform(95, 95 + (10 if add_noise else 0), size=image_gt.shape)
         zero_level = zero_level.astype(image.dtype, copy=False)
         image *= 300
         image += zero_level

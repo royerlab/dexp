@@ -17,9 +17,6 @@ class CupyBackend(Backend):
     CupyBackend
     """
 
-    _dexp_cuda_cluster = None
-    _dexp_dask_client = None
-
     @staticmethod
     def num_devices():
         import GPUtil
@@ -64,15 +61,12 @@ class CupyBackend(Backend):
         self,
         device_id=0,
         exclusive: bool = False,
-        enable_streaming: bool = True,
         enable_memory_pool: bool = True,
         enable_memory_pool_clearing: bool = True,
         enable_unified_memory: bool = True,
         enable_cub: bool = True,
         enable_cutensor: bool = True,
         enable_fft_planning: bool = True,
-        enable_dask_cuda_cluster: bool = False,
-        enable_dask_cuda_nvlink: bool = False,
     ):
         """
         Instantiates a Cupy-based Image Processing backend
@@ -88,8 +82,6 @@ class CupyBackend(Backend):
         enable_cub : enables CUB accelerator
         enable_cutensor : enables cuTensor accelerator
         enable_fft_planning : enables FFT planning
-        enable_dask_cuda_cluster : enables dask cuda cluster
-        enable_dask_cuda_nvlink : enables nvlink
         """
 
         super().__init__()
@@ -97,16 +89,12 @@ class CupyBackend(Backend):
         self.exclusive = exclusive
         self.enable_memory_pool = enable_memory_pool
         self.enable_memory_pool_clearing = enable_memory_pool_clearing
-        self.enable_streaming = enable_streaming
         self.enable_unified_memory = enable_unified_memory
         self.enable_cub = enable_cub
         self.enable_cutensor = enable_cutensor
         self.enable_fft_planning = enable_fft_planning
-        self.enable_dask_cuda_cluster = enable_dask_cuda_cluster
-        self.enable_dask_cuda_nvlink = enable_dask_cuda_nvlink
 
         self.mempool = None
-        self.stream = None
         self._previous_allocator = None
 
         import cupy
@@ -126,16 +114,7 @@ class CupyBackend(Backend):
             pass
 
         if not enable_fft_planning:
-            import cupy
-
             cupy.fft.config.enable_nd_planning = False
-
-        if enable_dask_cuda_cluster and CupyBackend._dexp_cuda_cluster is None:
-            from dask_cuda import LocalCUDACluster
-            from distributed import Client
-
-            CupyBackend._dexp_cuda_cluster = LocalCUDACluster(enable_nvlink=enable_dask_cuda_nvlink)
-            CupyBackend._dexp_dask_client = Client(CupyBackend._dexp_cuda_cluster)
 
         # Important: Leave this, this is to make sure that some package works properly!
         exec("import cupyx.scipy.ndimage")
@@ -146,15 +125,12 @@ class CupyBackend(Backend):
         return CupyBackend(
             device_id=self.device_id,
             exclusive=self.exclusive if exclusive is None else exclusive,
-            enable_streaming=self.enable_streaming,
             enable_memory_pool=self.enable_memory_pool,
             enable_memory_pool_clearing=self.enable_memory_pool_clearing,
             enable_unified_memory=self.enable_unified_memory,
             enable_cub=self.enable_cub,
             enable_cutensor=self.enable_cutensor,
             enable_fft_planning=self.enable_fft_planning,
-            enable_dask_cuda_cluster=self.enable_dask_cuda_cluster,
-            enable_dask_cuda_nvlink=self.enable_dask_cuda_nvlink,
         )
 
     def __str__(self):
@@ -168,6 +144,7 @@ class CupyBackend(Backend):
         )
 
     def __enter__(self):
+        import cupy as cp
 
         # lock device:
         if self.exclusive:
@@ -179,40 +156,21 @@ class CupyBackend(Backend):
         # setup allocation:
         if self.enable_memory_pool:
             if self.mempool is None:
-                import cupy
-                from cupy.cuda.memory import SingleDeviceMemoryPool
+                self.mempool = cp.cuda.MemoryPool(cp.cuda.memory.malloc_managed if self.enable_unified_memory else None)
+            self._previous_allocator = cp.cuda.memory._get_thread_local_allocator()
+            cp.cuda.memory._set_thread_local_allocator(self.mempool.malloc)
 
-                self.mempool = SingleDeviceMemoryPool(
-                    cupy.cuda.memory.malloc_managed if self.enable_unified_memory else None
-                )
-                from cupy.cuda import memory
-            self._previous_allocator = memory._get_thread_local_allocator()
-            memory._set_thread_local_allocator(self.mempool.malloc)
         else:
-            from cupy.cuda import memory
-
-            memory._set_thread_local_allocator(None)
-
-        # setup stream:
-        if self.enable_streaming:
-            import cupy
-
-            self.stream = cupy.cuda.stream.Stream(non_blocking=True)
-            self.stream.__enter__()
+            cp.cuda.memory._set_thread_local_allocator(None)
 
         return super().__enter__()
 
     def __exit__(self, type, value, traceback):
-
         super().__exit__(type, value, traceback)
-
-        # unset stream:
-        if self.enable_streaming and self.stream is not None:
-            self.stream.synchronize()
-            self.stream.__exit__()
 
         # unset allocation:
         self.clear_memory_pool()
+
         if self._previous_allocator is not None:
             from cupy.cuda import memory
 
@@ -226,24 +184,23 @@ class CupyBackend(Backend):
             CupyBackend.device_locks[self.device_id].release()
 
     def synchronise(self):
-        if self.stream is not None:
-            self.stream.synchronize()
+        self.cupy_device.synchronize()
 
     def clear_memory_pool(self):
 
         if self.enable_memory_pool_clearing:
             if self.mempool is not None:
                 n_free_blocks_before = self.mempool.n_free_blocks()
-                used_before = self.mempool.used_bytes() // 1e9
+                used_before = self.mempool.used_bytes() / 1e9
                 gc.collect()
-                self.mempool.free_all_blocks(self.stream)
+                self.mempool.free_all_blocks()
                 n_free_blocks_after = self.mempool.n_free_blocks()
-                used_after = self.mempool.used_bytes() // 1e9
-                total_after = self.mempool.total_bytes() // 1e9
+                used_after = self.mempool.used_bytes() / 1e9
+                total_after = self.mempool.total_bytes() / 1e9
 
                 aprint(
                     f"Number of free blocks before and after release: {n_free_blocks_before}->{n_free_blocks_after}, "
-                    + f"used:{used_before}GB->{used_after}GB, total:{total_after}GB"
+                    + f"used: {used_before:.3f} GBs -> {used_after:.3f} GBs, total:{total_after:.3f} GBs"
                 )
             else:
                 aprint("Warning: default cupy memory pool is 'None'")

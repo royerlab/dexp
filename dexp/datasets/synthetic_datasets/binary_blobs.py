@@ -4,7 +4,7 @@ from dexp.utils.backends import Backend
 
 
 @asection("Generating synthetic binary blobs data")
-def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2, volume_fraction=0.5, seed: int = 42):
+def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2, volume_fraction=0.5, rng=42):
     """
     Generate synthetic binary image with several rounded blob-like objects.
 
@@ -20,9 +20,8 @@ def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2, volume_fraction=0.
     volume_fraction : float, default 0.5
         Fraction of image pixels covered by the blobs (where the output is 1).
         Should be in [0, 1].
-    seed : int, optional
-        Seed to initialize the random number generator.
-        If `None`, a random seed from the operating system is used.
+    rng : int or Generator
+        If an integer is provided it's used to create an numpy (cupy) default random number generator.
 
     Returns
     -------
@@ -51,11 +50,13 @@ def binary_blobs(length=512, blob_size_fraction=0.1, n_dim=2, volume_fraction=0.
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
-    rs = xp.random.RandomState(seed)
+    if isinstance(rng, int):
+        rng = xp.random.RandomState(seed=rng)
+
     shape = tuple([length] * n_dim)
     mask = xp.zeros(shape)
     n_pts = max(int(1.0 / blob_size_fraction) ** n_dim, 1)
-    points = (length * rs.rand(n_dim, n_pts)).astype(int)
+    points = (length * rng.rand(n_dim, n_pts)).astype(int)
     mask[tuple(indices for indices in points)] = 1
 
     mask = sp.ndimage.gaussian_filter(mask, sigma=0.25 * length * blob_size_fraction)

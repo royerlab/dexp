@@ -6,6 +6,7 @@ from dexp.processing.registration.translation_nd_proj import (
     register_translation_proj_nd,
 )
 from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.fft import clear_fft_plan_cache
 
 
 def demo_register_translation_3d_numpy():
@@ -30,6 +31,8 @@ def _register_translation_3d(length_xy=256, display=True):
     with asection("register_translation_nd"):
         shifts, error = register_translation_nd(image1, image2).get_shift_and_confidence()
         aprint(f"shifts: {shifts}, error: {error}")
+
+    clear_fft_plan_cache()  # required to avoid error during testing.
 
     with asection("register_translation_maxproj_nd"):
         model = register_translation_proj_nd(image1, image2)

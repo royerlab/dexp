@@ -83,7 +83,7 @@ def _register_sequence_2d(
             vector_fields.append(xp.copy(vector_field))
 
         # blobs:
-        image1 = binary_blobs(length=length_xy, seed=1, n_dim=2, blob_size_fraction=0.04, volume_fraction=0.05)
+        image1 = binary_blobs(length=length_xy, n_dim=2, blob_size_fraction=0.04, volume_fraction=0.05)
         image1 = image1.astype(xp.float32)
         image1 = sp.ndimage.gaussian_filter(image1, sigma=4)
 

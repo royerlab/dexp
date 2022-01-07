@@ -28,7 +28,7 @@ class Backend(ABC):
             Backend._local.backend_stack = []
 
     @staticmethod
-    def current(raise_error_if_none: bool = False):
+    def current(raise_error_if_none: bool = False) -> "Backend":
 
         if hasattr(Backend._local, "backend_stack"):
             backend_stack = Backend._local.backend_stack
@@ -152,3 +152,6 @@ class Backend(ABC):
         scipy-like module
         """
         raise NotImplementedError("Method not implemented!")
+
+    def synchronise(self) -> None:
+        pass

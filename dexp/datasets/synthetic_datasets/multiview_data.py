@@ -1,10 +1,10 @@
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import numpy
 from arbol import asection
-from skimage.data import binary_blobs
 from skimage.util import random_noise
 
+from dexp.datasets.synthetic_datasets import binary_blobs
 from dexp.utils.backends import Backend
 
 
@@ -20,6 +20,7 @@ def generate_fusion_test_data(
     odd_dimension: Optional[float] = True,
     z_overlap: Optional[float] = None,
     dtype=numpy.float32,
+    rng: Any = 42,
 ):
     """
 
@@ -43,13 +44,30 @@ def generate_fusion_test_data(
     xp = Backend.get_xp_module()
     sp = Backend.get_sp_module()
 
+    if isinstance(rng, int):
+        rng = xp.random.RandomState(seed=rng)
+
     with asection("generate blob images"):
-        image_gt = binary_blobs(length=length_xy, n_dim=3, blob_size_fraction=0.07, volume_fraction=0.1).astype(dtype)
+        image_gt = binary_blobs(
+            length=length_xy,
+            n_dim=3,
+            blob_size_fraction=0.07,
+            volume_fraction=0.1,
+            rng=rng,
+        ).astype(dtype)
         blend_a = binary_blobs(
-            length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction
+            length=length_xy,
+            n_dim=3,
+            blob_size_fraction=0.2,
+            volume_fraction=volume_fraction,
+            rng=rng,
         ).astype(dtype)
         blend_b = binary_blobs(
-            length=length_xy, n_dim=3, blob_size_fraction=0.2, volume_fraction=volume_fraction
+            length=length_xy,
+            n_dim=3,
+            blob_size_fraction=0.2,
+            volume_fraction=volume_fraction,
+            rng=rng,
         ).astype(dtype)
 
     with asection("convert blob images to backend"):
@@ -104,8 +122,8 @@ def generate_fusion_test_data(
         with asection("add noise"):
             image1 = Backend.to_numpy(image1)
             image2 = Backend.to_numpy(image2)
-            image1 = random_noise(image1, mode="speckle", var=0.5)
-            image2 = random_noise(image2, mode="speckle", var=0.5)
+            image1 = random_noise(image1, mode="speckle", var=0.5, seed=123)
+            image2 = random_noise(image2, mode="speckle", var=0.5, seed=42)
             image1 = Backend.to_backend(image1)
             image2 = Backend.to_backend(image2)
 

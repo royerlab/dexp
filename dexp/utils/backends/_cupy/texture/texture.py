@@ -135,9 +135,8 @@ def create_cuda_texture(
         array = array.copy()
 
     # We need to synchronise otherwise some weird stuff happens! see warp 3d demo does not work withoutv this!
-    # Backend.current().synchronise()
-    cuda_array.copy_from(array, stream=Backend.current().stream)
-    # Backend.current().synchronise()
+    Backend.current().synchronise()
+    cuda_array.copy_from(array)
 
     del format_descriptor, texture_descriptor, ressource_descriptor
 
