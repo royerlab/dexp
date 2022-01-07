@@ -1,6 +1,6 @@
 import inspect
 from functools import wraps
-from typing import Any, Callable, Dict, Iterable
+from typing import Any, Callable, Dict, Iterable, List, Tuple
 
 import numpy as np
 import pytest
@@ -18,7 +18,7 @@ def _maybe_to_backend(backend: Backend, obj: Any) -> Any:
         dispatch_data_to_backend(backend, [], obj)
         return obj
 
-    elif isinstance(obj, Iterable):
+    elif isinstance(obj, (List, Tuple)):
         obj = list(obj)
         dispatch_data_to_backend(backend, obj, {})
         return obj
