@@ -15,3 +15,13 @@ line-length = 120
 filterwarnings = [
     "ignore::UserWarning:tifffile",
 ]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if display",
+    "if display_test",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]

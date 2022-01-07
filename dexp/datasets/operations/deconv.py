@@ -82,7 +82,7 @@ def dataset_deconv(
         out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
 
         out_shape = tuple(int(round(u * v)) for u, v in zip(out_shape, (1,) + scaling))
-        dtype = numpy.float16 if method == "admm" else array.dtype
+        dtype = numpy.float32 if method == "admm" else array.dtype
 
         # Adds destination array channel to dataset
         dest_array = dest_dataset.add_channel(
