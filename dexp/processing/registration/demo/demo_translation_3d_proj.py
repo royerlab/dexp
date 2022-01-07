@@ -6,6 +6,7 @@ from dexp.processing.registration.translation_nd_proj import (
     register_translation_proj_nd,
 )
 from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.fft import clear_fft_plan_cache
 
 
 def demo_register_translation_3d_proj_numpy():
@@ -26,6 +27,8 @@ def _register_translation_3d_proj(method=register_translation_2d_dexp, length_xy
         image_gt, image_lowq, blend_a, blend_b, image1, image2 = generate_fusion_test_data(
             add_noise=False, shift=(1, 5, -13), volume_fraction=0.5, length_xy=length_xy, length_z_factor=1
         )
+
+    clear_fft_plan_cache()  # required to avoid error during testing
 
     with asection("register_translation_maxproj_nd"):
         model = register_translation_proj_nd(image1, image2, register_translation_2d=method)
