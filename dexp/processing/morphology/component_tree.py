@@ -110,8 +110,9 @@ def area_closing(
 
 def area_white_top_hat(image: xpArray, area_threshold: float, sampling: int, clip_negatives: bool = True) -> xpArray:
     """Area white hot transform on the downsampled input.
+    This operation returns every *bright* component smaller than the given `area_threshold`.
     The white top hat transform is I - O(I), where O(.) is the area opening operator and I the original input.
-    Note: Moves the data to the CPU.
+    Note: It moves the data to the CPU.
 
     Parameters
     ----------
@@ -144,8 +145,10 @@ def area_white_top_hat(image: xpArray, area_threshold: float, sampling: int, cli
 
 def area_black_top_hat(image: xpArray, area_threshold: float, sampling: int) -> xpArray:
     """Area black hot transform on the downsampled input.
+    This operation returns the complement (inverse mapping) of every *dark* component smaller than
+    the given `area_threshold`.
     The black top hat transform is C(I) - I, where C(.) is the area closing operator and I the original input.
-    Note: Moves the data to the CPU.
+    Note: It moves the data to the CPU.
 
     Parameters
     ----------

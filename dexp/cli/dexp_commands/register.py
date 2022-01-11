@@ -86,23 +86,14 @@ from dexp.datasets.operations.register import dataset_register
     show_default=True,
 )
 @click.option(
-    "--workers",
-    "-k",
-    type=int,
-    default=-1,
-    help="Number of worker threads to spawn, if -1 then num workers = num devices",
-    show_default=True,
-)
-@click.option(
-    "--workers-backend",
-    "-wkb",
-    type=str,
-    default=_default_workers_backend,
-    help="What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ",
-    show_default=True,
-)
-@click.option(
     "--devices", "-d", type=str, default="0", help="Sets the CUDA devices id, e.g. 0,1,2 or ‘all’", show_default=True
+)
+@click.option(
+    "--white-top-hat-size", "-wth", default=0, type=float,
+    help="Area opening value after down sampling for white top hat transform transform. Larger values will keep larger components. Recommended value of 1e5."
+)
+@click.option(
+    "--white-top-hat-sampling", "-wths", default=4, type=int, help="Down sampling size to compute the area opening"
 )
 def register(
     input_paths,
@@ -118,8 +109,8 @@ def register(
     dehaze_size,
     edge_filter,
     max_proj,
-    workers,
-    workers_backend,
+    white_top_hat_size,
+    white_top_hat_sampling,
     devices,
 ):
     """
@@ -134,7 +125,7 @@ def register(
         f"Fusing dataset: {input_paths}, saving it at: {out_model_path}, for channels: {channels}, slicing: {slicing} "
     ):
         aprint(f"Microscope type: {microscope}, fusion type: {fusion}")
-        aprint(f"Devices used: {devices}, workers: {workers} ")
+        aprint(f"Devices used: {devices}")
         dataset_register(
             dataset=input_dataset,
             model_path=out_model_path,
@@ -148,8 +139,8 @@ def register(
             fusion_bias_strength_i=fusion_bias_strength,
             dehaze_size=dehaze_size,
             registration_edge_filter=edge_filter,
+            white_top_hat_size=white_top_hat_size,
+            white_top_hat_sampling=white_top_hat_sampling,
             max_proj=max_proj,
-            workers=workers,
-            workers_backend=workers_backend,
             devices=devices,
         )

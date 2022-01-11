@@ -5,7 +5,6 @@ from dexp.cli.defaults import (
     _default_clevel,
     _default_codec,
     _default_store,
-    _default_workers_backend,
 )
 from dexp.cli.parsing import (
     _get_output_path,
@@ -101,7 +100,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
     show_default=True,
 )  #
 @click.option(
-    "--dark_denoise_threshold",
+    "--dark-denoise-threshold",
     "-ddt",
     type=int,
     default=0,
@@ -177,26 +176,17 @@ from dexp.datasets.operations.fuse import dataset_fuse
     show_default=True,
 )  #
 @click.option(
-    "--workers",
-    "-k",
-    type=int,
-    default=-1,
-    help="Number of worker threads to spawn, if -1 then num workers = num devices",
-    show_default=True,
-)  #
-@click.option(
-    "--workersbackend",
-    "-wkb",
-    type=str,
-    default=_default_workers_backend,
-    help="What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ",
-    show_default=True,
-)  #
-@click.option(
     "--devices", "-d", type=str, default="0", help="Sets the CUDA devices id, e.g. 0,1,2 or ‘all’", show_default=True
 )  #
 @click.option(
     "--pad", "-p", is_flag=True, default=False, help="Use this flag to pad views according to the registration models."
+)
+@click.option(
+    "--white-top-hat-size", "-wth", default=0, type=float,
+    help="Area opening value after down sampling for white top hat transform transform. Larger values will keep larger components. Recommended value of 1e5."
+)
+@click.option(
+    "--white-top-hat-sampling", "-wths", default=4, type=int, help="Down sampling size to compute the area opening"
 )
 @click.option("--check", "-ck", default=True, help="Checking integrity of written file.", show_default=True)  #
 def fuse(
@@ -226,10 +216,10 @@ def fuse(
     regedgefilter,
     maxproj,
     hugedataset,
-    workers,
-    workersbackend,
     devices,
     pad,
+    white_top_hat_size,
+    white_top_hat_sampling,
     check,
 ):
     """Fuses the views of a multi-view light-sheet microscope dataset (available: simview and mvsols)"""
@@ -245,7 +235,7 @@ def fuse(
         f"Fusing dataset: {input_paths}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "
     ):
         aprint(f"Microscope type: {microscope}, fusion type: {fusion}")
-        aprint(f"Devices used: {devices}, workers: {workers} ")
+        aprint(f"Devices used: {devices}")
         dataset_fuse(
             input_dataset,
             output_path,
@@ -274,10 +264,10 @@ def fuse(
             registration_edge_filter=regedgefilter,
             maxproj=maxproj,
             huge_dataset=hugedataset,
-            workers=workers,
-            workersbackend=workersbackend,
             devices=devices,
             pad=pad,
+            white_top_hat_size=white_top_hat_size,
+            white_top_hat_sampling=white_top_hat_sampling,
             check=check,
         )
 

@@ -30,8 +30,8 @@ def dataset_register(
     dehaze_size,
     registration_edge_filter,
     max_proj,
-    workers,
-    workers_backend,
+    white_top_hat_size,
+    white_top_hat_sampling,
     devices,
     stop_at_exception=True,
 ):
@@ -74,6 +74,8 @@ def dataset_register(
                         dark_denoise_threshold=0,
                         dark_denoise_size=0,
                         butterworth_filter_cutoff=0.0,
+                        white_top_hat_size=white_top_hat_size,
+                        white_top_hat_sampling=white_top_hat_sampling,
                         flip_camera1=True,
                     )
 
