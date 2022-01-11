@@ -1,11 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import (
-    _default_clevel,
-    _default_codec,
-    _default_store,
-)
+from dexp.cli.defaults import _default_clevel, _default_codec, _default_store
 from dexp.cli.parsing import (
     _get_output_path,
     _parse_channels,
@@ -182,8 +178,11 @@ from dexp.datasets.operations.fuse import dataset_fuse
     "--pad", "-p", is_flag=True, default=False, help="Use this flag to pad views according to the registration models."
 )
 @click.option(
-    "--white-top-hat-size", "-wth", default=0, type=float,
-    help="Area opening value after down sampling for white top hat transform transform. Larger values will keep larger components. Recommended value of 1e5."
+    "--white-top-hat-size",
+    "-wth",
+    default=0,
+    type=float,
+    help="Area opening value after down sampling for white top hat transform transform. Larger values will keep larger components. Recommended value of 1e5.",
 )
 @click.option(
     "--white-top-hat-sampling", "-wths", default=4, type=int, help="Down sampling size to compute the area opening"

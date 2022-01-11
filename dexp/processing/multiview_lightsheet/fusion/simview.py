@@ -10,6 +10,7 @@ from dexp.processing.filters.butterworth_filter import butterworth_filter
 from dexp.processing.fusion.dct_fusion import fuse_dct_nd
 from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
+from dexp.processing.morphology import area_opening
 from dexp.processing.multiview_lightsheet.fusion.basefusion import BaseFusion
 from dexp.processing.registration.model import RegistrationModel
 from dexp.processing.registration.translation_nd import register_translation_nd
@@ -18,7 +19,6 @@ from dexp.processing.registration.translation_nd_proj import (
 )
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
-from dexp.processing.morphology import area_opening
 from dexp.utils import xpArray
 from dexp.utils.backends import Backend
 
@@ -67,8 +67,10 @@ class SimViewFusion(BaseFusion):
         self._white_top_hat_sampling = white_top_hat_sampling
 
         if self._dehaze_size != 0 and self._white_top_hat_size != 0:
-            raise ValueError('`dehaze_size` and `white_top_hat_size` cannot be different from'
-                             f'zero at the same time. Found {self._dehaze_size} and {self._white_top_hat_size}')
+            raise ValueError(
+                "`dehaze_size` and `white_top_hat_size` cannot be different from"
+                f"zero at the same time. Found {self._dehaze_size} and {self._white_top_hat_size}"
+            )
 
         self._fusion_bias_exponent = fusion_bias_exponent
         self._fusion_bias_strength_i = fusion_bias_strength_i
@@ -100,7 +102,7 @@ class SimViewFusion(BaseFusion):
             view = xp.flip(view, -1).copy()
 
         return view
-    
+
     def _filtered_white_top_hat(self, view: xpArray) -> xpArray:
         # we don't use our area_white_top_hat because we want remove
         # the noise only from the background estimation

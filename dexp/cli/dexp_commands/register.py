@@ -1,7 +1,6 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import _default_workers_backend
 from dexp.cli.parsing import _parse_channels, _parse_devices, _parse_slicing
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.register import dataset_register
@@ -89,8 +88,11 @@ from dexp.datasets.operations.register import dataset_register
     "--devices", "-d", type=str, default="0", help="Sets the CUDA devices id, e.g. 0,1,2 or ‘all’", show_default=True
 )
 @click.option(
-    "--white-top-hat-size", "-wth", default=0, type=float,
-    help="Area opening value after down sampling for white top hat transform transform. Larger values will keep larger components. Recommended value of 1e5."
+    "--white-top-hat-size",
+    "-wth",
+    default=0,
+    type=float,
+    help="Area opening value after down sampling for white top hat transform transform. Larger values will keep larger components. Recommended value of 1e5.",
 )
 @click.option(
     "--white-top-hat-sampling", "-wths", default=4, type=int, help="Down sampling size to compute the area opening"
