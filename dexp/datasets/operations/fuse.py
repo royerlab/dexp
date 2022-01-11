@@ -42,11 +42,11 @@ def dataset_fuse(
     registration_edge_filter,
     maxproj,
     huge_dataset,
-    workers,
-    workersbackend,
     devices,
     check,
     pad,
+    white_top_hat_size,
+    white_top_hat_sampling,
     stop_at_exception=True,
 ):
 
@@ -109,11 +109,14 @@ def dataset_fuse(
                             dehaze_correct_max_level=True,
                             dark_denoise_threshold=dark_denoise_threshold,
                             dark_denoise_size=9,
+                            white_top_hat_size=white_top_hat_size,
+                            white_top_hat_sampling=white_top_hat_sampling,
                             butterworth_filter_cutoff=1,
                             flip_camera1=True,
+                            pad=pad,
                         )
 
-                        tp_array = fuse_obj(**views_tp, pad=pad)
+                        tp_array = fuse_obj(**views_tp)
                         new_equalisation_ratios = fuse_obj._equalisation_ratios
 
                     elif microscope == "mvsols":

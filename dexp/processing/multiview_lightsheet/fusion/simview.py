@@ -10,6 +10,7 @@ from dexp.processing.filters.butterworth_filter import butterworth_filter
 from dexp.processing.fusion.dct_fusion import fuse_dct_nd
 from dexp.processing.fusion.dft_fusion import fuse_dft_nd
 from dexp.processing.fusion.tg_fusion import fuse_tg_nd
+from dexp.processing.morphology import area_opening
 from dexp.processing.multiview_lightsheet.fusion.basefusion import BaseFusion
 from dexp.processing.registration.model import RegistrationModel
 from dexp.processing.registration.translation_nd import register_translation_nd
@@ -39,10 +40,12 @@ class SimViewFusion(BaseFusion):
         dehaze_correct_max_level: bool,
         dark_denoise_threshold: int,
         dark_denoise_size: int,
+        white_top_hat_size: int,
+        white_top_hat_sampling: int,
         butterworth_filter_cutoff: float,
         flip_camera1: bool,
         internal_dtype: numpy.dtype = numpy.float16,
-        pad: bool = True,
+        pad: bool = False,
     ):
         super().__init__(
             registration_model,
@@ -60,10 +63,20 @@ class SimViewFusion(BaseFusion):
             internal_dtype,
         )
 
+        self._white_top_hat_size = white_top_hat_size
+        self._white_top_hat_sampling = white_top_hat_sampling
+
+        if self._dehaze_size != 0 and self._white_top_hat_size != 0:
+            raise ValueError(
+                "`dehaze_size` and `white_top_hat_size` cannot be different from"
+                f"zero at the same time. Found {self._dehaze_size} and {self._white_top_hat_size}"
+            )
+
         self._fusion_bias_exponent = fusion_bias_exponent
         self._fusion_bias_strength_i = fusion_bias_strength_i
         self._fusion_bias_strength_d = fusion_bias_strength_d
         self._flip_camera1 = flip_camera1
+        self._pad = pad
 
     def _preprocess_single_view(self, view: xpArray, camera: int, lightsheet: int, flip: bool) -> xpArray:
         xp = Backend.get_xp_module()
@@ -81,8 +94,30 @@ class SimViewFusion(BaseFusion):
             with asection(f"Dehaze C{camera}L{lightsheet} ..."):
                 view = dehaze(view, size=self._dehaze_size, minimal_zero_level=0, correct_max_level=True)
 
+        elif self._white_top_hat_size > 0:
+            with asection(f"Filtering with White Top Hat transform C{camera}L{lightsheet} ..."):
+                view = self._filtered_white_top_hat(view)
+
         if flip:
             view = xp.flip(view, -1).copy()
+
+        return view
+
+    def _filtered_white_top_hat(self, view: xpArray) -> xpArray:
+        # we don't use our area_white_top_hat because we want remove
+        # the noise only from the background estimation
+        xp = Backend.get_xp_module()
+        sp = Backend.get_sp_module()
+
+        # removing salt and pepper noise (morphological opening)
+        filtered = sp.ndimage.minimum_filter(view, size=3)
+        filtered = sp.ndimage.maximum_filter(filtered, size=3).astype(numpy.float32)
+
+        # estimating background
+        background = area_opening(filtered, self._white_top_hat_size, self._white_top_hat_sampling)
+
+        # white top hat
+        view = xp.clip(view - background, a_min=0, a_max=None).astype(view.dtype)
 
         return view
 
@@ -174,7 +209,7 @@ class SimViewFusion(BaseFusion):
             raise RuntimeError("Registration must be computed beforehand.")
 
         with asection("Register_stacks C0Lx and C1Lx ..."):
-            C0Lx, C1Lx = self._registration_model.apply_pair(C0Lx, C1Lx, pad=pad)
+            C0Lx, C1Lx = self._registration_model.apply_pair(C0Lx, C1Lx, pad)
 
         with asection("Fuse detection views C0lx and C1Lx..."):
             CxLx = self._fuse_detection_views(C0Lx, C1Lx)
@@ -187,7 +222,6 @@ class SimViewFusion(BaseFusion):
         C0L1: Optional[xpArray] = None,
         C1L0: Optional[xpArray] = None,
         C1L1: Optional[xpArray] = None,
-        pad: bool = False,
     ) -> xpArray:
 
         original_dtype = C0L0.dtype
@@ -198,7 +232,7 @@ class SimViewFusion(BaseFusion):
             # fusing only two views from two different light sheets
             CxLx = C0Lx
         else:
-            CxLx = self.fuse(C0Lx, C1Lx, pad=pad)
+            CxLx = self.fuse(C0Lx, C1Lx, pad=self._pad)
             CxLx = self.postprocess(CxLx)
 
         with asection("Converting back to original dtype..."):
