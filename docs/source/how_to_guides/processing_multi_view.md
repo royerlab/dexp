@@ -1,7 +1,7 @@
 
 # Processing a multi-view dataset
 
-In this example we will show how to process the multi views acquired by our multi-view light-sheet microscope to
+In this example we will show how to process the multi views acquired by our multi-view light-sheet microscope [[1]](#1) to
 obtain a single fused image.
 
 The processing consists of two main steps:
@@ -132,3 +132,10 @@ $ dexp info demo_4views_fused_deconv.zarr
 ```
 
 We encourage you to play with the other parameters to obtain the optimal results. Their description can be found through `dexp --help` or `dexp <command (e.g. deconv)> --help`.
+
+## References
+
+<a id="1">[1]</a>
+Royer, Loïc A., et al.
+"Adaptive light-sheet microscopy for long-term, high-resolution imaging in living organisms."
+Nature biotechnology 34.12 (2016): 1267-1278.
