@@ -15,6 +15,7 @@ DEXP
 
    Converting to our file format <how_to_guides/data_conversion.md>
    Visualizing your data <how_to_guides/visualization.md>
+   Processing a multi-view dataset <how_to_guides/processing_multi_view.md>
 
 .. toctree::
    :caption: Commands
