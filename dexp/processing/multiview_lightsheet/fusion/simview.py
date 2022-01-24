@@ -209,7 +209,7 @@ class SimViewFusion(BaseFusion):
             raise RuntimeError("Registration must be computed beforehand.")
 
         with asection("Register_stacks C0Lx and C1Lx ..."):
-            C0Lx, C1Lx = self._registration_model.apply_pair(C0Lx, C1Lx, pad)
+            C0Lx, C1Lx = self._registration_model.apply_pair(C0Lx, C1Lx, pad=pad)
 
         with asection("Fuse detection views C0lx and C1Lx..."):
             CxLx = self._fuse_detection_views(C0Lx, C1Lx)
