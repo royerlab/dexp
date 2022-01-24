@@ -91,8 +91,8 @@ def equalise_intensity(
         lowvalue2 = xp.percentile(strided_image2, q=quantile_low * 100)
 
         # Compute ratios:
-        range1 = highvalues1 - lowvalue1
-        range2 = highvalues2 - lowvalue2
+        range1 = xp.clip(highvalues1 - lowvalue1, 0, None)
+        range2 = xp.clip(highvalues2 - lowvalue2, 0, None)
         ratios = range1 / range2
 
         # Keep only valid ratios:
@@ -114,12 +114,13 @@ def equalise_intensity(
                 + "to compute correction ratio! Relax percentile or reduction!"
             )
 
-        correction_ratio = xp.percentile(ratios.astype(internal_dtype, copy=False), q=50)
+        correction_ratio = xp.median(ratios.astype(internal_dtype, copy=False))
     else:
         correction_ratio = Backend.to_backend(correction_ratio, dtype=internal_dtype)
 
     # remove zero level and clip:
     if zero_level != 0:
+        # FIXME: shouldn't the order be inverted? this might create edges
         image1 = xp.clip(image1, a_min=zero_level, a_max=None, out=image1)
         image1 -= zero_level
         image2 = xp.clip(image2, a_min=zero_level, a_max=None, out=image2)
@@ -149,6 +150,6 @@ def equalise_intensity(
     #
     #     viewer = Viewer()
     #     viewer.add_image(_c(image1), name='image_1')
-    #     viewer.add_image(_c(image1), name='image_2')
+    #     viewer.add_image(_c(image2), name='image_2')
 
     return image1, image2, correction_ratio

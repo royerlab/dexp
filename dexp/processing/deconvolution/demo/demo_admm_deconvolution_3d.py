@@ -48,7 +48,7 @@ def _demo_admm_deconvolution(length_xy=128):
     noisy = noisy / noisy.max()
 
     with timeit("sparse deconv"):
-        sparse_deconvolved = admm_deconvolution(noisy, psf, iterations=iterations)
+        sparse_deconvolved = admm_deconvolution(noisy, psf, iterations=iterations, derivative=2)
 
     with timeit("lr deconv"):
         lr_deconvolved = lucy_richardson_deconvolution(
