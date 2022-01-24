@@ -1,4 +1,5 @@
 import numpy
+from arbol.arbol import aprint
 
 from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.optics.psf.standard_psfs import nikon16x08na
@@ -69,8 +70,10 @@ def _demo_admm_deconvolution(length_xy=128):
     with timeit("Estimating optimal parameters"):
         params = j_invariant_grid_search(noisy, deconv_and_blur, mse, grid, display=True)
 
+    aprint("Optimal params", params)
+
     with timeit("sparse deconv"):
-        deconvolved = admm_deconvolution(noisy, psf, iterations=iterations, **params)
+        deconvolved = admm_deconvolution(noisy, psf, iterations=iterations, **params, derivative=2)
 
     def _c(array):
         return Backend.to_numpy(array)

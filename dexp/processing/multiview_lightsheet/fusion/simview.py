@@ -306,6 +306,9 @@ class SimViewFusion(BaseFusion):
 
     @staticmethod
     def validate_views(views: Dict[str, xpArray]) -> Dict[str, xpArray]:
+        if not isinstance(views, dict):
+            raise ValueError("Views must be of type Dict[str, xpArray]")
+
         if len(views) == 4:
             return views
         assert len(views) == 2, f"Found only {views.keys()}, expected 2 or 4 views."
