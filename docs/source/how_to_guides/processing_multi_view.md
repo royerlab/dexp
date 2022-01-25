@@ -118,7 +118,7 @@ Finally, the data processing is done and the final dataset can be visualized wit
 $ napari demo_4views_fused_deconv.zarr
 ```
 
-And the command line history reports what operations where to produce it:
+And the command line history reports what operations were used to produce it:
 
 ```
 $ dexp info demo_4views_fused_deconv.zarr
