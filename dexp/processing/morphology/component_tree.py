@@ -1,7 +1,6 @@
 from functools import partial
 from typing import Optional
 
-import higra as hg
 import numpy as np
 from scipy.signal.signaltools import _centered
 
@@ -36,6 +35,7 @@ def _generic_area_filtering(
     xpArray
         Area filtered result.
     """
+    import higra as hg
 
     if tree_type.lower() == "min":
         component_tree_fun = hg.component_tree_min_tree

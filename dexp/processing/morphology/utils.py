@@ -1,10 +1,9 @@
 from typing import Tuple
 
-import higra as hg
 
-
-def get_3d_image_graph(shape: Tuple[int, ...]) -> hg.UndirectedGraph:
+def get_3d_image_graph(shape: Tuple[int, ...]):
     assert len(shape) == 3
+    import higra as hg
 
     neighbors = []
     for i in range(3):
