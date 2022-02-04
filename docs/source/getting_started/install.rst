@@ -36,16 +36,16 @@ If instead you do not wish to add CUDA support, you can instead do:
    pip install dexp
 
 
-Quick one-line environment setup and installation:
+Quick environment setup and installation:
 ***************************************************
 
-The following line will delete any existing dexp environment, recreate it, and install **dexp** with support for CUDA 11.2:
+The following commands delete any existing dexp environment, recreate it, and install **dexp** with support for CUDA 11.2:
 
 .. code-block:: bash
 
    conda deactivate
    conda env remove --name dexp
-   conda create -y --name dexp python=3.8
+   conda create -y --name dexp python=3.9
    conda activate dexp
    pip install dexp[cuda112]
 

@@ -1,7 +1,7 @@
 
-# Processing a multi-view dataset
+# Processing a multi-view dataset using DEXP CLI
 
-In this example we will show how to process the multi views acquired by our multi-view light-sheet microscope [[1]](#1) to
+In this example, we will show how to process the multi views acquired by our multi-view light-sheet microscope [[1]](#1) to
 obtain a single fused image.
 
 The processing consists of two main steps:
