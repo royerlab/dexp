@@ -47,6 +47,8 @@ conda activate dexp
 pip install dexp[color,cuda112,napari]
 ```
 
+Windows users should call `conda install -c conda-forge pyopencl` before running the last step.
+
 ### Leveraging extra CUDA libraries for faster processing:
 
 If you want you **dexp** CUDA-based processing to be even faster, you can install additional libraries such as CUDNN and CUTENSOR
