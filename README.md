@@ -74,13 +74,13 @@ conda deactivate
 conda env remove --name dexp
 conda create -y --name dexp python=3.9
 conda activate dexp
-conda install -c conda-forge cupy cudatoolkit=11.2
-conda install -c conda-forge cupy cudnn cutensor nccl
+conda install -y -c conda-forge cupy cudatoolkit=11.2
+conda install -y -c conda-forge cupy cudnn cutensor nccl
 pip install dexp[color]
 pip install napari[pyqt5]
 ```
 
-The commands above will install dexp on a fresh environment,
+The commands above will install dexp on a fresh environment, with cupy, napari, cudnn cutensor and nccl.
 
 
 ### **dexp** Zarr dataset structure
