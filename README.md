@@ -44,10 +44,13 @@ conda deactivate
 conda env remove --name dexp
 conda create -y --name dexp python=3.9
 conda activate dexp
-pip install dexp[color,cuda112,napari]
+pip install dexp[color,cuda112]
+pip install napari[pyqt5]
 ```
 
-Windows users should call `conda install -c conda-forge pyopencl` before running the last step.
+Notes:
+- Adjust your driver version (here 11.2) to your card(s) and drivers.
+- Windows users should call `conda install -c conda-forge pyopencl` before running the last step.
 
 ### Leveraging extra CUDA libraries for faster processing:
 
@@ -58,6 +61,27 @@ with the following command:
 install cudalibs 11.2
 ```
 Change the CUDA version accordingly...
+This is not needed when installing cupy from conda-forge
+
+
+### Alternative instalation of cupy from conda-forge:
+
+In some cases cupy installed with pip might not recognise your CUDA drivers.
+If that's the case, you can instead insall dexp with the following commands:
+
+```
+conda deactivate
+conda env remove --name dexp
+conda create -y --name dexp python=3.9
+conda activate dexp
+conda install -c conda-forge cupy cudatoolkit=11.2
+conda install -c conda-forge cupy cudnn cutensor nccl
+pip install dexp[color]
+pip install napari[pyqt5]
+```
+
+The commands above will install dexp on a fresh environment,
+
 
 ### **dexp** Zarr dataset structure
 
