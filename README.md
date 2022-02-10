@@ -64,7 +64,7 @@ Change the CUDA version accordingly...
 This is not needed when installing cupy from conda-forge
 
 
-### Alternative instalation of cupy from conda-forge:
+### Alternative instalation that pulls cupy from conda-forge:
 
 In some cases cupy installed with pip might not recognise your CUDA drivers.
 If that's the case, you can instead insall dexp with the following commands:
