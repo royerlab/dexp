@@ -30,15 +30,14 @@ CUPY_VERSION = "9.1.0"
 # What packages are required for this module to be executed?
 REQUIRED = [
     "numpy>=1.20",
-    "scipy",
+    "scipy>=1.8.0",
     "numcodecs",
-    #    'cucim',  # optional
     "scikit-image",
     "tifffile",
     "numexpr",
     "joblib",
     "pytest",
-    "click==7.1.2",
+    "click>=8.0.0",
     "dask",
     "dask-image",
     "dask-cuda",
@@ -47,7 +46,6 @@ REQUIRED = [
     "cachey",
     "gputil",
     "gpustat",
-    "gputools",
     "arbol",
     "colorcet",
     "PyYAML",
@@ -55,8 +53,6 @@ REQUIRED = [
     "blosc",
     "seaborn",
     "ome-zarr",
-    "pyotf",
-    "higra",
 ]
 
 # What packages are optional?
@@ -88,6 +84,14 @@ EXTRAS = {
     ],
     "napari": [
         "napari[all]",
+    ],
+    "optional": [
+        "higra",
+        "pyotf",
+    ],
+    "gpu": [
+        "gputools",
+        "cucim",
     ],
     "dev": [
         "flake8",
