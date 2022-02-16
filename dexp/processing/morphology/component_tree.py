@@ -2,7 +2,7 @@ from functools import partial
 from typing import Optional
 
 import numpy as np
-from scipy.signal.signaltools import _centered
+from scipy.signal._signaltools import _centered
 
 from dexp.processing.morphology.utils import get_3d_image_graph
 from dexp.processing.utils import apply_func
