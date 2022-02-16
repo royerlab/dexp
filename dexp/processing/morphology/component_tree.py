@@ -49,7 +49,8 @@ def _generic_area_filtering(
     if sampling != 1:
         image = sp.ndimage.zoom(image, zoom=1 / sampling, order=1)
 
-    image = Backend.to_numpy(image)
+    orig_dtype = image.dtype
+    image = Backend.to_numpy(image, dtype=np.float32)
 
     if image.ndim == 2:
         graph = hg.get_4_adjacency_graph(image.shape)
@@ -65,7 +66,7 @@ def _generic_area_filtering(
 
     hg.clear_auto_cache()
 
-    filtered = Backend.to_backend(filtered)
+    filtered = Backend.to_backend(filtered, dtype=orig_dtype)
     if sampling != 1:
         filtered = sp.ndimage.zoom(filtered, zoom=sampling, order=1)
 
