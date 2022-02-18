@@ -5,6 +5,7 @@ from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
 from dexp.datasets import BaseDataset
+from dexp.processing.registration.model.model_io import from_json
 from dexp.processing.registration.model.sequence_registration_model import (
     SequenceRegistrationModel,
 )
@@ -114,6 +115,8 @@ def dataset_stabilize(
     dataset: BaseDataset,
     output_path: str,
     channels: Sequence[str],
+    model_output_path: str,
+    model_input_path: Optional[str] = None,
     reference_channel: Optional[str] = None,
     slicing=None,
     zarr_store: str = "dir",
@@ -183,13 +186,20 @@ def dataset_stabilize(
     stop_at_exception: True to stop as soon as there is an exception during processing.
     """
 
+    if model_input_path is not None and reference_channel is not None:
+        raise ValueError("`model_input_path` and `reference channel` cannot be supplied at the same time.")
+
     from dexp.datasets import ZDataset
 
     mode = "w" + ("" if overwrite else "-")
     dest_dataset = ZDataset(output_path, mode, zarr_store, parent=dataset)
 
     model = None
-    if reference_channel is not None:
+    if model_input_path is not None:
+        with open(model_input_path) as f:
+            model = from_json(f.read())
+
+    elif reference_channel is not None:
         if reference_channel not in dataset.channels():
             raise ValueError(f"Reference channel {reference_channel} not found.")
         model = _compute_model(
@@ -214,9 +224,11 @@ def dataset_stabilize(
             workers=workers,
             debug_output=debug_output,
         )
+        with open(model_output_path, mode="w") as f:
+            f.write(model.to_json())
 
     for channel in dataset._selected_channels(channels):
-        if reference_channel is None:
+        if model is None:
             channel_model = _compute_model(
                 input_dataset=dataset,
                 channel=channel,
@@ -239,6 +251,10 @@ def dataset_stabilize(
                 workers=workers,
                 debug_output=debug_output,
             )
+            formatted_path = f"{model_output_path.split('.')[0]}_{channel}.json"
+            with open(formatted_path, mode="w") as f:
+                f.write(channel_model.to_json())
+
         else:
             channel_model = model
 
