@@ -56,9 +56,14 @@ class BaseDataset(ABC):
             tree_str += "  └──" + self.info(channel) + "\n"
         return tree_str
 
-    @abstractmethod
     def info(self, channel: str = None) -> str:
-        pass
+        if channel:
+            info_str = (
+                f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]} "
+            )
+            return info_str
+        else:
+            return self.tree()
 
     @abstractmethod
     def get_metadata(self):
