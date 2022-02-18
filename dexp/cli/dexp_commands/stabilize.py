@@ -131,6 +131,21 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
     show_default=True,
 )
 @click.option(
+    "--model-input-path",
+    "-mi",
+    type=str,
+    default=None,
+    help="Path to pre-computed model for image registration",
+)
+@click.option(
+    "--model-output-path",
+    "-mo",
+    type=str,
+    default="stabilization_model.json",
+    show_default=True,
+    help="Output path for computed registration model",
+)
+@click.option(
     "--workers",
     "-k",
     type=int,
@@ -172,6 +187,8 @@ def stabilize(
     edgefilter,
     detrend,
     maxproj,
+    model_input_path,
+    model_output_path,
     workers,
     workersbackend,
     device,
@@ -192,6 +209,8 @@ def stabilize(
             input_dataset,
             output_path,
             channels=channels,
+            model_output_path=model_output_path,
+            model_input_path=model_input_path,
             reference_channel=reference_channel,
             slicing=slicing,
             zarr_store=store,
