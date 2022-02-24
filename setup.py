@@ -25,7 +25,7 @@ ten_minutes_since_midnight = int(seconds_since_midnight // 600)
 VERSION = datetime.today().strftime("%Y.%m.%d") + f".{minutes_since_midnight}"
 print(f"Version: {VERSION}")
 
-CUPY_VERSION = "9.1.0"
+CUPY_VERSION = "10.1.0"
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -183,8 +183,8 @@ setup(
     entry_points={
         "console_scripts": [
             "dexp=dexp.cli.dexp_main:cli",
-            "video=dexp.cli.video_main:cli",
-            "install=dexp.cli.install_main:cli",
+            "dexp-video=dexp.cli.video_main:cli",
+            "dexp-install=dexp.cli.install_main:cli",
         ]
     },
     install_requires=REQUIRED,
