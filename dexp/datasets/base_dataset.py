@@ -3,11 +3,14 @@ from typing import Any, Sequence, Tuple
 
 import numpy
 
+from dexp.datasets.stack_iterator import StackIterator
+
 
 class BaseDataset(ABC):
     def __init__(self, dask_backed=False):
         """Instanciates a Base Dataset"""
         self.dask_backed = dask_backed
+        self._slicing = None
 
     def _selected_channels(self, channels: Sequence[str]):
         if channels is None:
@@ -100,3 +103,9 @@ class BaseDataset(ABC):
     @abstractmethod
     def check_integrity(self, channels: Sequence[str]) -> bool:
         pass
+
+    def set_slicing(self, slicing: slice) -> None:
+        self._slicing = slicing
+
+    def __getitem__(self, channel: str) -> StackIterator:
+        return StackIterator(self.get_array(channel), self._slicing)
