@@ -4,8 +4,6 @@ import dask
 import numpy
 import numpy as np
 from arbol.arbol import aprint, asection
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 
 from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion
 from dexp.processing.registration.model.model_io import model_list_to_file
@@ -13,14 +11,13 @@ from dexp.processing.registration.model.translation_registration_model import (
     TranslationRegistrationModel,
 )
 from dexp.utils.backends import Backend, BestBackend
-from dexp.utils.slicing import slice_from_shape
+from dexp.utils.dask import get_dask_client
 
 
 def dataset_register(
     dataset,
     model_path,
     channels,
-    slicing,
     microscope,
     equalise,
     zero_level,
@@ -36,25 +33,23 @@ def dataset_register(
     stop_at_exception=True,
 ):
 
-    views = {channel.split("-")[-1]: dataset.get_array(channel, per_z_slice=False) for channel in channels}
+    views = {channel.split("-")[-1]: dataset[channel] for channel in channels}
 
     with asection("Views:"):
         for channel, view in views.items():
             aprint(f"View: {channel} of shape: {view.shape} and dtype: {view.dtype}")
 
     key = list(views.keys())[0]
-    print(f"Slicing with: {slicing}")
-    _, volume_slicing, time_points = slice_from_shape(views[key].shape, slicing)
+    n_time_pts = len(views[key])
 
     if microscope == "simview":
         views = SimViewFusion.validate_views(views)
 
     @dask.delayed
     def process(i):
-        tp = time_points[i]
         try:
-            with asection(f"Loading channels {channel} for time point {i}/{len(time_points)}"):
-                views_tp = {k: np.asarray(view[tp][volume_slicing]) for k, view in views.items()}
+            with asection(f"Loading channels {channel} for time point {i}/{n_time_pts}"):
+                views_tp = {k: np.asarray(view[i]) for k, view in views.items()}
 
             with BestBackend(exclusive=True, enable_unified_memory=True):
                 if microscope == "simview":
@@ -95,7 +90,7 @@ def dataset_register(
                 else:
                     raise NotImplementedError
 
-            aprint(f"Done processing time point: {i}/{len(time_points)} .")
+            aprint(f"Done processing time point: {i}/{n_time_pts} .")
 
         except Exception as error:
             aprint(error)
@@ -109,12 +104,11 @@ def dataset_register(
 
         return model
 
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
+    client = get_dask_client(devices)
     aprint("Dask Client", client)
 
     lazy_computations = []
-    for i in range(len(time_points)):
+    for i in range(n_time_pts):
         lazy_computations.append(process(i))
 
     models = dask.compute(*lazy_computations)

@@ -119,9 +119,11 @@ def register(
     Computes registration model for fusing.
     """
     input_dataset, input_paths = glob_datasets(input_paths)
-    slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
     devices = parse_devices(devices)
+    slicing = _parse_slicing(slicing)
+    if slicing is not None:
+        input_dataset.set_slicing(slicing)
 
     with asection(
         f"Fusing dataset: {input_paths}, saving it at: {out_model_path}, for channels: {channels}, slicing: {slicing} "
@@ -132,7 +134,6 @@ def register(
             dataset=input_dataset,
             model_path=out_model_path,
             channels=channels,
-            slicing=slicing,
             microscope=microscope,
             equalise=equalise,
             zero_level=zero_level,
