@@ -97,7 +97,7 @@ def _compute_error(array, decimation: int, lipschitz: float, dtype=numpy.float16
     xp = Backend.get_xp_module()
     array = Backend.to_backend(array, dtype=dtype)
     # we compute the error map:
-    median = sp.ndimage.filters.median_filter(array, size=3)
+    median = sp.ndimage.median_filter(array, size=3)
     error = median.copy()
     error -= array
     xp.abs(error, out=error)

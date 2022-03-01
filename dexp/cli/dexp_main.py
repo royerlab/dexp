@@ -10,6 +10,7 @@ from dexp.cli.dexp_commands.deskew import deskew
 from dexp.cli.dexp_commands.extract_psf import extract_psf
 from dexp.cli.dexp_commands.fastcopy import fastcopy
 from dexp.cli.dexp_commands.fuse import fuse
+from dexp.cli.dexp_commands.histogram import histogram
 from dexp.cli.dexp_commands.info import info
 from dexp.cli.dexp_commands.isonet import isonet
 from dexp.cli.dexp_commands.projrender import projrender
@@ -72,6 +73,7 @@ cli.add_command(register)
 cli.add_command(stabilize)
 cli.add_command(deconv)
 cli.add_command(isonet)
+cli.add_command(histogram)
 
 cli.add_command(speedtest)
 

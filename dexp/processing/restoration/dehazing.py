@@ -48,19 +48,19 @@ def dehaze(
     minimal_zero_level = xp.asarray(minimal_zero_level, dtype=internal_dtype)
 
     # get rid of low values due to noise:
-    image_zero_level = sp.ndimage.filters.maximum_filter(image, size=3)
+    image_zero_level = sp.ndimage.maximum_filter(image, size=3)
 
     # downscale to speed up the rest of the computation:
     downscaled_image = sp.ndimage.interpolation.zoom(image_zero_level, zoom=1 / downscale, order=0)
 
     # find min values:
-    image_zero_level = sp.ndimage.filters.minimum_filter(downscaled_image, size=max(1, size // downscale))
+    image_zero_level = sp.ndimage.minimum_filter(downscaled_image, size=max(1, size // downscale))
 
     # expand reach of these min values:
-    image_zero_level = sp.ndimage.filters.maximum_filter(image_zero_level, size=max(1, size // downscale))
+    image_zero_level = sp.ndimage.maximum_filter(image_zero_level, size=max(1, size // downscale))
 
     # smooth out:
-    image_zero_level = sp.ndimage.filters.gaussian_filter(image_zero_level, sigma=max(1, size // (2 * downscale)))
+    image_zero_level = sp.ndimage.gaussian_filter(image_zero_level, sigma=max(1, size // (2 * downscale)))
 
     # scale up again:
     image_zero_level = sp.ndimage.zoom(image_zero_level, zoom=downscale, order=1)
@@ -83,18 +83,14 @@ def dehaze(
         # get image max level before:
         # twice filtering is to match the extent reached for the zero_level image
         # (see above combination of min then max filters)
-        downscaled_image = sp.ndimage.filters.maximum_filter(downscaled_image, size=max(1, size // downscale))
-        image_max_level_before = sp.ndimage.filters.gaussian_filter(downscaled_image, sigma=max(1, size // downscale))
+        downscaled_image = sp.ndimage.maximum_filter(downscaled_image, size=max(1, size // downscale))
+        image_max_level_before = sp.ndimage.gaussian_filter(downscaled_image, sigma=max(1, size // downscale))
 
         # get image max level after:
-        downscaled_image_after = sp.ndimage.filters.maximum_filter(image, size=3)
+        downscaled_image_after = sp.ndimage.maximum_filter(image, size=3)
         downscaled_image_after = sp.ndimage.interpolation.zoom(downscaled_image_after, zoom=1 / downscale, order=0)
-        image_max_level_after = sp.ndimage.filters.maximum_filter(
-            downscaled_image_after, size=max(1, size // downscale)
-        )
-        image_max_level_after = sp.ndimage.filters.gaussian_filter(
-            image_max_level_after, sigma=max(1, size // downscale)
-        )
+        image_max_level_after = sp.ndimage.maximum_filter(downscaled_image_after, size=max(1, size // downscale))
+        image_max_level_after = sp.ndimage.gaussian_filter(image_max_level_after, sigma=max(1, size // downscale))
 
         # Correction ratio:
         epsilon = xp.asarray(1e-6, dtype=internal_dtype)

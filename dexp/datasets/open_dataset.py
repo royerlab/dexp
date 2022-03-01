@@ -21,9 +21,14 @@ def glob_datasets(glob_paths: Sequence[str]):
     -------
 
     """
+    if len(glob_paths) == 0:
+        raise ValueError("No dataset path provided.")
 
     # Apply glob:
     paths = tuple(glob.glob(glob_path) for glob_path in glob_paths)
+
+    if len(paths) == 0:
+        raise ValueError("Could not find any dataset with provided paths", glob_paths)
 
     # concatenate list of paths:
     paths = reduce(lambda u, v: u + v, paths)

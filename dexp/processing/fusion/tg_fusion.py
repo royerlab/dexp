@@ -143,7 +143,7 @@ def fuse_tg_nd(
     blend_map = fit_to_shape(blend_map, shape=image_a.shape)
 
     # Smooth blend map to have less seams:
-    blend_map = sp.ndimage.filters.uniform_filter(blend_map, size=blend_map_smoothing)
+    blend_map = sp.ndimage.uniform_filter(blend_map, size=blend_map_smoothing)
 
     # Fuse using blending map:
     image_fused = blend_images(image_a, image_b, blend_map)

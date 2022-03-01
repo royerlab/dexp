@@ -34,6 +34,7 @@ REQUIRED = [
     "numcodecs",
     "scikit-image",
     "tifffile",
+    "tqdm",
     "numexpr",
     "joblib",
     "pytest",
@@ -88,6 +89,7 @@ EXTRAS = {
     "optional": [
         "higra",
         "pyotf",
+        "tensorstore",
     ],
     "gpu": [
         "gputools",

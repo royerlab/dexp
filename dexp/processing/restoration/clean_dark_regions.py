@@ -41,17 +41,17 @@ def clean_dark_regions(
     if mode == "none":
         filtered = image.copy()
     elif mode == "min":
-        filtered = sp.ndimage.filters.minimum_filter(image, size=size)
+        filtered = sp.ndimage.minimum_filter(image, size=size)
     elif mode == "median":
-        filtered = sp.ndimage.filters.median_filter(image, size=size)
+        filtered = sp.ndimage.median_filter(image, size=size)
     elif mode == "uniform":
-        filtered = sp.ndimage.filters.uniform_filter(image, size=size)
+        filtered = sp.ndimage.uniform_filter(image, size=size)
     else:
         raise ValueError(f"Unknown mode: {mode}, only min, median and uniform supported!")
 
-    mask = sp.ndimage.filters.maximum_filter(filtered, size=size) < threshold
+    mask = sp.ndimage.maximum_filter(filtered, size=size) < threshold
 
-    filtered = sp.ndimage.filters.minimum_filter(image, size=size)
+    filtered = sp.ndimage.minimum_filter(image, size=size)
 
     image[mask] = filtered[mask]
 
