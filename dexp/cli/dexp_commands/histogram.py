@@ -16,7 +16,23 @@ from dexp.datasets.operations.histogram import dataset_histogram
     help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
 )
 @click.option("--device", "-d", type=int, default=0, show_default=True)
-def histogram(input_paths, output_directory, channels, slicing, device):
+@click.option(
+    "--minimum-count",
+    "-m",
+    default=5,
+    show_default=True,
+    type=int,
+    help="Minimum count on the histogram used to select upper limit, values lower than this are not considered.",
+)
+@click.option(
+    "--maximum-count",
+    "-M",
+    default=None,
+    show_default=True,
+    type=float,
+    help="Maximum count to clip histogram and improve visualization.",
+)
+def histogram(input_paths, output_directory, channels, slicing, device, minimum_count, maximum_count):
 
     input_dataset, input_paths = glob_datasets(input_paths)
     channels = _parse_channels(input_dataset, channels)
@@ -25,4 +41,11 @@ def histogram(input_paths, output_directory, channels, slicing, device):
     if slicing is not None:
         input_dataset.set_slicing(slicing)
 
-    dataset_histogram(input_dataset, output_directory, channels, device)
+    dataset_histogram(
+        dataset=input_dataset,
+        output_dir=output_directory,
+        channels=channels,
+        device=device,
+        minimum_count=minimum_count,
+        maximum_count=maximum_count,
+    )

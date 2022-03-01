@@ -15,6 +15,7 @@ from zarr import Blosc, CopyError, Group, convenience, open_group
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.datasets.ome_dataset import default_omero_metadata
+from dexp.datasets.stack_iterator import StackIterator
 from dexp.utils.backends import Backend
 from dexp.utils.config import config_blosc
 
@@ -608,3 +609,6 @@ class ZDataset(BaseDataset):
         group.attrs["multiscales"] = [{"version": CurrentFormat().version, "datasets": [{"path": "0"}]}]
 
         group.attrs["omero"] = default_omero_metadata(self._path, self.channels(), dtype)
+
+    def __getitem__(self, channel: str) -> StackIterator:
+        return StackIterator(self.get_array(channel, wrap_with_tensorstore=True), self._slicing)
