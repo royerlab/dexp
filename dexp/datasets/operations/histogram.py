@@ -50,6 +50,7 @@ def dataset_histogram(
                     histograms.append(hist)
 
                 max_length = max(len(h) for h in histograms)
+                max_count = max(h.max() for h in histograms)
                 hist_2d = np.zeros((len(histograms), max_length), dtype=int)
 
                 for i, hist in enumerate(histograms):
@@ -60,7 +61,8 @@ def dataset_histogram(
                     plt.title(f"Histogram of {channel} and index {i}.")
                     plt.ylabel("Count")
                     plt.yscale("log")
-                    plt.xlim((0, max_length))
+                    plt.ylim(top=max_count)
+                    plt.xlim(0, max_length)
                     plt.xlabel("Image intensity")
                     pdf.savefig()
                     plt.close()

@@ -72,8 +72,8 @@ def register_translation_nd(
     image_b = Backend.to_backend(image_b, dtype=internal_dtype)
 
     if denoise_input_sigma is not None and denoise_input_sigma > 0:
-        image_a = sp.ndimage.filters.gaussian_filter(image_a, sigma=denoise_input_sigma)
-        image_b = sp.ndimage.filters.gaussian_filter(image_b, sigma=denoise_input_sigma)
+        image_a = sp.ndimage.gaussian_filter(image_a, sigma=denoise_input_sigma)
+        image_b = sp.ndimage.gaussian_filter(image_b, sigma=denoise_input_sigma)
 
     if log_compression is not None and log_compression:
         image_a = xp.log1p(image_a)
@@ -114,7 +114,7 @@ def register_translation_nd(
 
     # Denoise cropped correlation image:
     if sigma > 0:
-        correlation = sp.ndimage.filters.gaussian_filter(correlation, sigma=sigma, mode="wrap")
+        correlation = sp.ndimage.gaussian_filter(correlation, sigma=sigma, mode="wrap")
 
     # Use the max as quickly computed proxy for the real center:
     max_correlation_flat_index = xp.argmax(correlation, axis=None)

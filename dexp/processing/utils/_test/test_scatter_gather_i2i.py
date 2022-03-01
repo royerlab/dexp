@@ -15,7 +15,7 @@ def test_scatter_gather_i2i(ndim=3, length_xy=128, splits=4, filter_size=7):
     image = rng.uniform(0, 1, size=(length_xy,) * ndim)
 
     def f(x):
-        return sp.ndimage.filters.uniform_filter(x, size=filter_size)
+        return sp.ndimage.uniform_filter(x, size=filter_size)
 
     try:
         with timeit("f"):

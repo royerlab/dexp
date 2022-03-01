@@ -63,7 +63,7 @@ def axis_aligned_pattern_correction(
             value = xp.mean(image, axis=axis_combination, keepdims=True, dtype=internal_dtype)
 
         if sigma > 0:
-            value -= sp.ndimage.filters.gaussian_filter(value, sigma=sigma)
+            value -= sp.ndimage.gaussian_filter(value, sigma=sigma)
 
         image += overall_value
         image -= value

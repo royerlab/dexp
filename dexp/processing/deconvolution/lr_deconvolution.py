@@ -120,7 +120,7 @@ def lucy_richardson_deconvolution(
         psf /= psf.sum()
 
         if "median" in blind_spot_mode:
-            image = sp.ndimage.filters.median_filter(image, footprint=full_kernel)
+            image = sp.ndimage.median_filter(image, footprint=full_kernel)
         elif "mean" in blind_spot_mode:
             image = sp.ndimage.convolve(image, donut_kernel)
 
