@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple, Union
 
 from arbol import aprint
 from numpy import s_
@@ -48,14 +48,19 @@ def _parse_channels(input_dataset, channels):
     return channels
 
 
-def _parse_devices(devices):
+def parse_devices(devices: str) -> Union[str, Sequence[int]]:
     aprint(f"Requested devices    :  '{'--All--' if 'all' in devices else devices}' ")
-    if "all" in devices:
+
+    if devices.endswith(".json"):
+        return devices
+
+    elif "all" in devices:
         from dexp.utils.backends import CupyBackend
 
-        devices = tuple(range(len(CupyBackend.available_devices())))
+        devices = list(range(len(CupyBackend.available_devices())))
+
     else:
-        devices = tuple(int(device.strip()) for device in devices.split(","))
+        devices = list(int(device.strip()) for device in devices.split(","))
 
     return devices
 

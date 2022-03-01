@@ -5,8 +5,8 @@ from dexp.cli.defaults import _default_clevel, _default_codec, _default_store
 from dexp.cli.parsing import (
     _get_output_path,
     _parse_channels,
-    _parse_devices,
     _parse_slicing,
+    parse_devices,
 )
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.fuse import dataset_fuse
@@ -227,8 +227,11 @@ def fuse(
     output_path = _get_output_path(input_paths[0], output_path, "_fused")
 
     slicing = _parse_slicing(slicing)
+    if slicing is not None:
+        input_dataset.set_slicing(slicing)
+
     channels = _parse_channels(input_dataset, channels)
-    devices = _parse_devices(devices)
+    devices = parse_devices(devices)
 
     with asection(
         f"Fusing dataset: {input_paths}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "
@@ -239,7 +242,6 @@ def fuse(
             input_dataset,
             output_path,
             channels=channels,
-            slicing=slicing,
             store=store,
             compression=codec,
             compression_level=clevel,

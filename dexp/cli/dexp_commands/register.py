@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.parsing import _parse_channels, _parse_devices, _parse_slicing
+from dexp.cli.parsing import _parse_channels, _parse_slicing, parse_devices
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.register import dataset_register
 
@@ -121,7 +121,7 @@ def register(
     input_dataset, input_paths = glob_datasets(input_paths)
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
-    devices = _parse_devices(devices)
+    devices = parse_devices(devices)
 
     with asection(
         f"Fusing dataset: {input_paths}, saving it at: {out_model_path}, for channels: {channels}, slicing: {slicing} "

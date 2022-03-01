@@ -10,8 +10,8 @@ from dexp.cli.defaults import (
 from dexp.cli.parsing import (
     _get_output_path,
     _parse_channels,
-    _parse_devices,
     _parse_slicing,
+    parse_devices,
 )
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.deconv import dataset_deconv
@@ -174,8 +174,11 @@ def deconv(
     output_path = _get_output_path(input_paths[0], output_path, "_deconv")
 
     slicing = _parse_slicing(slicing)
+    if slicing is not None:
+        input_dataset.set_slicing(slicing)
+
     channels = _parse_channels(input_dataset, channels)
-    devices = _parse_devices(devices)
+    devices = parse_devices(devices)
 
     if "," in scaling:
         scaling = tuple(float(v) for v in scaling.split(","))
@@ -187,7 +190,6 @@ def deconv(
             input_dataset,
             output_path,
             channels=channels,
-            slicing=slicing,
             store=store,
             compression=codec,
             compression_level=clevel,
