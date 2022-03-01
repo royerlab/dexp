@@ -21,7 +21,10 @@ class CupyBackend(Backend):
     def num_devices():
         import GPUtil
 
-        return len(GPUtil.getGPUs())
+        try:
+            return len(GPUtil.getGPUs())
+        except ValueError:
+            return 0
 
     @staticmethod
     def available_devices(order="first", maxLoad=math.inf, maxMemory=math.inf):

@@ -5,8 +5,7 @@ import numpy as np
 from arbol.arbol import aprint, asection
 from toolz import curry
 
-from build.lib.dexp.datasets.base_dataset import BaseDataset
-from dexp.datasets import ZDataset
+from dexp.datasets import BaseDataset, ZDataset
 from dexp.datasets.stack_iterator import StackIterator
 from dexp.processing.multiview_lightsheet.fusion.mvsols import msols_fuse_1C2L
 from dexp.processing.multiview_lightsheet.fusion.simview import SimViewFusion
