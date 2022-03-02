@@ -610,5 +610,5 @@ class ZDataset(BaseDataset):
 
         group.attrs["omero"] = default_omero_metadata(self._path, self.channels(), dtype)
 
-    def __getitem__(self, channel: str) -> StackIterator:
-        return StackIterator(self.get_array(channel, wrap_with_tensorstore=True), self._slicing)
+    # def __getitem__(self, channel: str) -> StackIterator:
+    #     return StackIterator(self.get_array(channel, wrap_with_tensorstore=True), self._slicing)

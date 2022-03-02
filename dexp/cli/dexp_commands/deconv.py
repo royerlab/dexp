@@ -210,8 +210,6 @@ def deconv(
             psf_z_size=zsize,
             psf_show=showpsf,
             scaling=scaling,
-            workers=workers,
-            workersbackend=workersbackend,
             devices=devices,
             check=check,
         )

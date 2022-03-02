@@ -41,7 +41,6 @@ def _process(
     dehaze_size,
     dark_denoise_threshold,
     z_pad_apodise,
-    loadreg,
     warpreg_num_iterations,
     min_confidence,
     max_change,
@@ -57,7 +56,7 @@ def _process(
     # FIXME: look how the parameters are provided multiple times, this should be curried or a class
 
     equalisation_ratios_reference, model, dest_dataset = fusion_params
-    n_time_pts = len(next(views.values()))
+    n_time_pts = len(list(views.values())[0])
 
     with asection(f"Fusing time point for time point {index}/{n_time_pts}"):
         with asection(f"Loading channels {views.keys()}"):
@@ -224,7 +223,7 @@ def dataset_fuse(
                     f"differs from number of input time points ({n_time_pts})"
                 )
         else:
-            models = [None] * len(n_time_pts)
+            models = [None] * n_time_pts
 
     process = _process(
         dataset=dataset,
@@ -281,7 +280,7 @@ def dataset_fuse(
         params = init_params[:2] + (params[2],)
 
     lazy_computations = []  # it is only lazy if len(devices) > 1
-    for i in range(1, len(n_time_pts)):
+    for i in range(1, n_time_pts):
         lazy_computations.append(process(i, params))
 
     if len(devices) > 1:
