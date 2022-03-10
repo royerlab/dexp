@@ -1,4 +1,5 @@
 import numpy
+import warnings
 from arbol import aprint
 
 from dexp.utils import xpArray
@@ -105,9 +106,12 @@ def equalise_intensity(
         # Number of values in ratio:
         nb_values = ratios.size
         if nb_values < 16:
-            raise ValueError(
+            warnings.warn(
                 f"No enough values ({nb_values}<16) to compute correction ratio! Relax percentile or reduction! "
             )
+            image1 = image1.astype(original_dtype, copy=False)
+            image2 = image2.astype(original_dtype, copy=False)
+            return image1, image2, 1.0
         elif nb_values < 128:
             aprint(
                 f"Warning: too few ratio values ({nb_values}<128)"
