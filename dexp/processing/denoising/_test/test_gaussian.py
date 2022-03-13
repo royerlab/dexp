@@ -1,13 +1,21 @@
-from aydin.io.datasets import cropped_newyork
-
-from aydin.it.classic_denoisers.demo.demo_2D_gaussian import demo_gaussian
-from aydin.it.classic_denoisers.gaussian import denoise_gaussian
-from aydin.it.classic_denoisers.test.util_test_nd import check_nd
 
 
-def test_gaussian():
-    assert demo_gaussian(cropped_newyork(), display=False) >= 0.600 - 0.02
+from dexp.processing.denoising.demo.demo_2D_gaussian import _demo_gaussian
+from dexp.utils.backends import NumpyBackend, CupyBackend
 
 
-def test_gaussian_nd():
-    check_nd(denoise_gaussian)
+def test_gaussian_numpy():
+    with NumpyBackend():
+        _test_gaussian()
+
+
+def test_gaussian_cupy():
+    try:
+        with CupyBackend():
+            _test_gaussian()
+    except ModuleNotFoundError:
+        print("Cupy module not found! Test passes nevertheless!")
+
+def _test_gaussian():
+    assert _demo_gaussian(display=False) >= 0.600 - 0.02
+

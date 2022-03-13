@@ -1,10 +1,9 @@
 # flake8: noqa
 
 from arbol import Arbol
-from skimage.metrics import peak_signal_noise_ratio as psnr
-from skimage.metrics import structural_similarity as ssim
 
 from dexp.processing.denoising.gaussian import calibrate_denoise_gaussian
+from dexp.processing.denoising.metrics import psnr, ssim
 from dexp.processing.denoising.noise import add_noise
 from dexp.utils.backends import NumpyBackend, CupyBackend, Backend
 
@@ -56,11 +55,10 @@ def _demo_gaussian( display=True):
 
     if display:
         import napari
-
         viewer = napari.Viewer()
-        viewer.add_image(image, name='image')
-        viewer.add_image(noisy, name='noisy')
-        viewer.add_image(denoised, name='denoised')
+        viewer.add_image(Backend.to_numpy(image), name='image')
+        viewer.add_image(Backend.to_numpy(noisy), name='noisy')
+        viewer.add_image(Backend.to_numpy(denoised), name='denoised')
         napari.run()
 
     return ssim_denoised

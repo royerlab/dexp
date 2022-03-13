@@ -4,9 +4,11 @@ from functools import partial
 
 import numpy
 from arbol import aprint, asection
-from skimage.metrics import mean_squared_error
 
+from dexp.processing.denoising.metrics import mean_squared_error
 from dexp.utils.backends import Backend
+
+
 
 
 def calibrate_denoiser_classic(
@@ -59,6 +61,10 @@ def calibrate_denoiser_classic(
 
     """
 
+    # Backend:
+    xp = Backend.get_xp_module(image)
+    sp = Backend.get_sp_module(image)
+
     aprint(f"Calibrating denoiser on image of shape: {image.shape}")
     aprint(f"Stride for Noise2Self loss: {stride}")
     aprint(f"Fixed parameters: {other_fixed_parameters}")
@@ -75,9 +81,7 @@ def calibrate_denoiser_classic(
         display_images=display_images,
     )
 
-
-
-    idx = numpy.argmin(losses)
+    idx = numpy.argmin(numpy.asarray(losses))
     best_parameters = parameters_tested[idx]
 
     aprint(f"Best parameters are: {best_parameters}")
@@ -85,11 +89,13 @@ def calibrate_denoiser_classic(
     return best_parameters | other_fixed_parameters
 
 
+
+
 def _j_invariant_loss(
     image,
     denoise_function,
     mask,
-    loss_function=mean_squared_error,  # _structural_loss, #
+    loss_function= mean_squared_error,  # _structural_loss, #
     denoiser_kwargs=None,
 ):
     image = image.astype(dtype=numpy.float32, copy=False)
@@ -250,6 +256,9 @@ def _calibrate_denoiser_search(
                 if math.isnan(loss) or math.isinf(loss):
                     loss = math.inf
                 aprint(f"J-inv loss is: {loss}")
+
+                loss = Backend.to_numpy(loss)
+
                 losses.append(loss)
                 if display_images and not (math.isnan(loss) or math.isinf(loss)):
                     denoised = denoise_function(image, **denoiser_kwargs)
@@ -264,3 +273,6 @@ def _calibrate_denoiser_search(
             viewer.add_image(numpy.stack(denoised_images), name='denoised')
 
     return parameters_tested, losses
+
+
+

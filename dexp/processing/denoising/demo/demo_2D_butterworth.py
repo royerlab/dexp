@@ -1,50 +1,50 @@
 # flake8: noqa
-import numpy
-import numpy as np
-from skimage.data import camera
-from skimage.metrics import peak_signal_noise_ratio as psnr
-from skimage.metrics import structural_similarity as ssim
+from arbol import Arbol
 
-from aydin.io.datasets import (
-    normalise,
-    add_noise,
-    dots,
-    lizard,
-    pollen,
-    newyork,
-    characters,
-)
-from aydin.io.io import imwrite, imread
-from aydin.it.classic_denoisers.butterworth import calibrate_denoise_butterworth
-from aydin.util.log.log import Log
+from dexp.processing.denoising.butterworth import calibrate_denoise_butterworth
+from dexp.processing.denoising.metrics import psnr, ssim
+from dexp.processing.denoising.noise import add_noise
+from dexp.utils.backends import NumpyBackend, CupyBackend, Backend
 
 
-def demo_butterworth(image, display=True):
+def demo_butterworth_numpy():
+    with NumpyBackend():
+        _demo_butterworth()
+
+
+def demo_butterworth_cupy():
+    try:
+        with CupyBackend():
+            _demo_butterworth()
+    except ModuleNotFoundError:
+        print("Cupy module not found! Test passes nevertheless!")
+
+
+def _demo_butterworth(display=True):
     """
     Demo for self-supervised denoising using camera image with synthetic noise
     """
-    Log.enable_output = True
-    Log.set_log_max_depth(5)
+    # Backend:
+    xp = Backend.get_xp_module()
 
-    #    image, _  = imread('/mnt/raid0/aydin_datasets/_example_datasets_for_use_cases/Gauss.png')
+    Arbol.enable_output = True
+    Arbol.set_log_max_depth(5)
 
-    image = normalise(image.astype(np.float32))
+    from skimage import data
+    from skimage.color import rgb2gray
+
+    image = data.astronaut()
+    image = rgb2gray(image)
+    image = Backend.to_backend(image)
 
     noisy = add_noise(image)
-    # noisy = add_noise(
-    #     image,
-    #     intensity=1024,
-    #     variance=0.005,
-    #     sap=0.0)
-    #
-    # imwrite(noisy, '/mnt/raid0/aydin_datasets/_example_datasets_for_use_cases/Gauss_noisy.png')
 
     function, parameters, memreq = calibrate_denoise_butterworth(noisy)
     denoised = function(noisy, **parameters)
 
-    image = numpy.clip(image, 0, 1)
-    noisy = numpy.clip(noisy, 0, 1)
-    denoised = numpy.clip(denoised, 0, 1)
+    image = xp.clip(image, 0, 1)
+    noisy = xp.clip(noisy, 0, 1)
+    denoised = xp.clip(denoised, 0, 1)
     psnr_noisy = psnr(image, noisy)
     ssim_noisy = ssim(image, noisy)
     psnr_denoised = psnr(image, denoised)
@@ -54,20 +54,15 @@ def demo_butterworth(image, display=True):
 
     if display:
         import napari
-
-        with napari.gui_qt():
-            viewer = napari.Viewer()
-            viewer.add_image(image, name='image')
-            viewer.add_image(noisy, name='noisy')
-            viewer.add_image(denoised, name='denoised')
+        viewer = napari.Viewer()
+        viewer.add_image(Backend.to_numpy(image), name='image')
+        viewer.add_image(Backend.to_numpy(noisy), name='noisy')
+        viewer.add_image(Backend.to_numpy(denoised), name='denoised')
+        napari.run()
 
     return ssim_denoised
 
 
 if __name__ == "__main__":
-    demo_butterworth(newyork())
-    demo_butterworth(characters())
-    demo_butterworth(pollen())
-    demo_butterworth(lizard())
-    demo_butterworth(dots())
-    demo_butterworth(camera())
+    demo_butterworth_cupy()
+    #demo_butterworth_numpy()

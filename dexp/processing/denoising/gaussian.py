@@ -1,6 +1,8 @@
 from functools import partial
 from typing import Optional
 
+import numpy
+
 from dexp.processing.crop.representative_crop import representative_crop
 from dexp.processing.denoising.j_invariance import calibrate_denoiser_classic
 from dexp.utils.backends import Backend
@@ -9,9 +11,9 @@ from dexp.utils.backends import Backend
 def calibrate_denoise_gaussian(
     image,
     max_sigma: float = 2,
+    num_sigma: int = 100,
     max_num_truncate: int = 4,
     crop_size_in_voxels: Optional[int] = 128000,
-    max_num_evaluations: int = 256,
     display_images: bool = False,
     **other_fixed_parameters,
 ):
@@ -27,6 +29,9 @@ def calibrate_denoise_gaussian(
     max_sigma: float
         Maximum sigma for Gaussian filter.
 
+    num_sigma: int
+        Number of sigma values to use for calibration
+
     max_num_truncate: int
         Maximum number of Gaussian filter truncations to try.
         (advanced)
@@ -34,11 +39,6 @@ def calibrate_denoise_gaussian(
     crop_size_in_voxels: int or None for default
         Number of voxels for crop used to calibrate
         denoiser.
-        (advanced)
-
-    max_num_evaluations: int
-        Maximum number of evaluations for finding
-        the optimal parameters.
         (advanced)
 
     display_images: bool
@@ -64,7 +64,8 @@ def calibrate_denoise_gaussian(
     crop = representative_crop(image, crop_size=crop_size_in_voxels)
 
     # Size range:
-    sigma_range = (0.0, max(0.0, max_sigma) + 1e-9)  # numpy.arange(0.2, 2, 0.1) ** 1.5
+    max_sigma = max(0.0, max_sigma) + 1e-9
+    sigma_range = numpy.arange(0, max_sigma, (max_sigma)/num_sigma)
 
     # Truncate range (order matters: we want 4 -- the default -- first):
     truncate_range = [4, 8, 2, 1][: min(max_num_truncate, 4)]

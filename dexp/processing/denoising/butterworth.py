@@ -1,14 +1,12 @@
 from functools import partial
 from typing import Sequence, Union, Optional, Tuple
 
-# import numpy
+import numpy
 from numba import jit
+
 from dexp.processing.crop.representative_crop import representative_crop
 from dexp.processing.denoising.j_invariance import calibrate_denoiser_classic
-from dexp.utils.backends import Backend
-
-__fastmath = {'contract', 'afn', 'reassoc'}
-__error_model = 'numpy'
+from dexp.utils.backends import Backend, CupyBackend
 
 
 def calibrate_denoise_butterworth(
@@ -18,10 +16,11 @@ def calibrate_denoise_butterworth(
     max_padding: int = 32,
     min_freq: float = 0.001,
     max_freq: float = 1.0,
+    num_freq: int = 100,
     min_order: float = 0.5,
     max_order: float = 6.0,
+    num_order: int = 16,
     crop_size_in_voxels: Optional[int] = 128000,
-    max_num_evaluations: int = 512,
     display_images: bool = False,
     **other_fixed_parameters,
 ):
@@ -61,20 +60,22 @@ def calibrate_denoise_butterworth(
         typically close to one.
         (advanced)
 
+    num_freq: int
+        Number of frequencies to use for calibration.
+
+    min_order: float
+        Minimal order for the Butterworth filter to use for calibration.
+        (advanced)
+
     max_order: float
         Maximal order for the Butterworth filter to use for calibration.
         (advanced)
 
-    max_order: float
-        Minimal order for the Butterworth filter to use for calibration.
-        (advanced)
+    num_order: int
+        Number of orders to use for calibration.
 
     crop_size_in_voxels: int or None for default
         Number of voxels for crop used to calibrate denoiser.
-        (advanced)
-
-    max_num_evaluations: int
-        Maximum number of evaluations for finding the optimal parameters.
         (advanced)
 
     display_images: bool
@@ -101,8 +102,8 @@ def calibrate_denoise_butterworth(
     crop = representative_crop(image, crop_size=crop_size_in_voxels)
 
     # ranges:
-    freq_cutoff_range = (min_freq, max_freq)
-    order_range = (min_order, max_order)
+    freq_cutoff_range = numpy.arange(min_freq, max_freq, (max_freq-min_freq)/num_freq)
+    order_range = numpy.arange(min_order, max_order, (max_order-min_order)/num_order)
 
     # Combine fixed parameters:
     other_fixed_parameters = other_fixed_parameters | {
@@ -113,7 +114,7 @@ def calibrate_denoise_butterworth(
     if isotropic:
         # Partial function:
         _denoise_butterworth = partial(
-            denoise_butterworth, **(other_fixed_parameters | {'multi_core': False})
+            denoise_butterworth, **(other_fixed_parameters)
         )
 
         # Parameters to test when calibrating the denoising algorithm
@@ -127,7 +128,7 @@ def calibrate_denoise_butterworth(
             return denoise_butterworth(
                 *args,
                 freq_cutoff=_freq_cutoff,
-                **(kwargs | other_fixed_parameters | {'multi_core': False}),
+                **(kwargs | other_fixed_parameters),
             )
 
         # Parameters to test when calibrating the denoising algorithm
@@ -141,7 +142,6 @@ def calibrate_denoise_butterworth(
             crop,
             _denoise_butterworth,
             denoise_parameters=parameter_ranges,
-            #max_num_evaluations=max_num_evaluations,
             display_images=display_images,
         )
         | other_fixed_parameters
@@ -165,8 +165,7 @@ def denoise_butterworth(
     axes: Optional[Tuple[int, ...]] = None,
     freq_cutoff: Union[float, Sequence[float]] = 0.5,
     order: float = 1,
-    max_padding: int = 32,
-    multi_core: bool = True,
+    max_padding: int = 32
 ):
     """
     Denoises the given image by applying a configurable <a
@@ -199,10 +198,6 @@ def denoise_butterworth(
     max_padding: int
         Maximum amount of padding to be added to avoid edge effects.
 
-    multi_core: bool
-        By default we use as many cores as possible, in some cases, for small
-        (test) images, it might be faster to run on a single core instead of
-        starting the whole parallelization machinery.
 
 
     Returns
@@ -222,9 +217,6 @@ def denoise_butterworth(
     if type(freq_cutoff) is not tuple:
         freq_cutoff = tuple((freq_cutoff,) * image.ndim)
 
-    # Number of workers:
-    workers = -1 if multi_core else 1
-
     # Default axes:
     if axes is None:
         axes = tuple(range(image.ndim))
@@ -243,7 +235,7 @@ def denoise_butterworth(
     image = xp.pad(image, pad_width=pad_width, mode='reflect')
 
     # Move to frequency space:
-    image_f = sp.fft.fftn(image, workers=workers, axes=axes)
+    image_f = _fftn(axes, image, sp)
 
     # Center frequencies:
     image_f = sp.fft.fftshift(image_f, axes=axes)
@@ -252,7 +244,11 @@ def denoise_butterworth(
     f = _compute_distance_image(freq_cutoff, image, selected_axes)
 
     # Chose filter implementation:
-    filter = jit(nopython=True, parallel=multi_core)(_filter)
+    if isinstance(Backend.current(), CupyBackend):
+        import cupy
+        filter = cupy.vectorize(_filter)
+    else:
+        filter = jit(nopython=True, parallel=True)(_filter)
 
     # Apply filter:
     image_f = filter(image_f, f, order)
@@ -261,12 +257,28 @@ def denoise_butterworth(
     image_f = sp.fft.ifftshift(image_f, axes=axes)
 
     # Back in real space:
-    denoised = xp.real(sp.fft.ifftn(image_f, workers=workers, axes=axes))
+    denoised = xp.real(_ifftn(axes, image_f, sp))
 
     # Crop to remove padding:
     denoised = denoised[tuple(slice(u, -v) for u, v in pad_width)]
 
     return denoised
+
+
+def _ifftn(axes, image_f, sp):
+    try:
+        return sp.fft.ifftn(image_f, axes=axes, workers=-1)
+    except TypeError:
+        # Some backends do not support the workers argument:
+        return sp.fft.ifftn(image_f, axes=axes)
+
+
+def _fftn(axes, image, sp):
+    try:
+        return sp.fft.fftn(image, axes=axes, workers=-1)
+    except TypeError:
+        # Some backends do not support the workers argument:
+        return sp.fft.fftn(image, axes=axes)
 
 
 def _compute_distance_image(freq_cutoff, image, selected_axes):
@@ -290,8 +302,8 @@ def _apw(freq_cutoff, max_padding):
 
 def _filter(image_f, f, order):
 
-    # Backend:
-    xp = Backend.get_xp_module(image_f)
-
-    image_f *= (1 + xp.sqrt(f) ** (2 * order)) ** (-0.5)
+    image_f *= (1 + f ** order) ** (-0.5)
     return image_f
+
+
+
