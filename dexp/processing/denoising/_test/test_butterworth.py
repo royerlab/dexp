@@ -1,13 +1,19 @@
-from aydin.io.datasets import cropped_newyork
-
-from aydin.it.classic_denoisers.demo.demo_2D_butterworth import demo_butterworth
-from aydin.it.classic_denoisers.butterworth import denoise_butterworth
-from aydin.it.classic_denoisers.test.util_test_nd import check_nd
+from dexp.processing.denoising.demo.demo_2D_butterworth import _demo_butterworth
+from dexp.utils.backends import NumpyBackend, CupyBackend
 
 
-def test_butterworth():
-    assert demo_butterworth(cropped_newyork(), display=False) >= 0.608 - 0.03
+def test_butterworth_numpy():
+    with NumpyBackend():
+        _test_butterworth()
 
 
-def test_butterworth_nd():
-    check_nd(denoise_butterworth)
+def test_butterworth_cupy():
+    try:
+        with CupyBackend():
+            _test_butterworth()
+    except ModuleNotFoundError:
+        print("Cupy module not found! Test passes nevertheless!")
+
+def _test_butterworth():
+    assert _demo_butterworth(display=False) >= 0.608 - 0.03
+

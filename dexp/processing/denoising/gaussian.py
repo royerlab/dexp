@@ -4,7 +4,7 @@ from typing import Optional
 import numpy
 
 from dexp.processing.crop.representative_crop import representative_crop
-from dexp.processing.denoising.j_invariance import calibrate_denoiser_classic
+from dexp.processing.denoising.j_invariance import calibrate_denoiser
 from dexp.utils.backends import Backend
 
 
@@ -65,7 +65,7 @@ def calibrate_denoise_gaussian(
 
     # Size range:
     max_sigma = max(0.0, max_sigma) + 1e-9
-    sigma_range = numpy.arange(0, max_sigma, (max_sigma)/num_sigma)
+    sigma_range = (0, max_sigma, (max_sigma)/num_sigma)
 
     # Truncate range (order matters: we want 4 -- the default -- first):
     truncate_range = [4, 8, 2, 1][: min(max_num_truncate, 4)]
@@ -78,13 +78,13 @@ def calibrate_denoise_gaussian(
 
     # Calibrate denoiser
     best_parameters = (
-        calibrate_denoiser_classic(
+            calibrate_denoiser(
             crop,
             _denoise_gaussian,
             denoise_parameters=parameter_ranges,
             display_images=display_images,
         )
-        | other_fixed_parameters
+            | other_fixed_parameters
     )
 
     # Memory needed:

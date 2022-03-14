@@ -65,4 +65,4 @@ def _demo_butterworth(display=True):
 
 if __name__ == "__main__":
     demo_butterworth_cupy()
-    #demo_butterworth_numpy()
+    demo_butterworth_numpy()

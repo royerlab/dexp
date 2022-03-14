@@ -5,7 +5,7 @@ import numpy
 from numba import jit
 
 from dexp.processing.crop.representative_crop import representative_crop
-from dexp.processing.denoising.j_invariance import calibrate_denoiser_classic
+from dexp.processing.denoising.j_invariance import calibrate_denoiser
 from dexp.utils.backends import Backend, CupyBackend
 
 
@@ -102,8 +102,8 @@ def calibrate_denoise_butterworth(
     crop = representative_crop(image, crop_size=crop_size_in_voxels)
 
     # ranges:
-    freq_cutoff_range = numpy.arange(min_freq, max_freq, (max_freq-min_freq)/num_freq)
-    order_range = numpy.arange(min_order, max_order, (max_order-min_order)/num_order)
+    freq_cutoff_range = (min_freq, max_freq, (max_freq-min_freq)/num_freq) #numpy.arange(min_freq, max_freq, (max_freq-min_freq)/num_freq)
+    order_range = (min_order, max_order, (max_order-min_order)/num_order)#numpy.arange(min_order, max_order, (max_order-min_order)/num_order)
 
     # Combine fixed parameters:
     other_fixed_parameters = other_fixed_parameters | {
@@ -138,13 +138,14 @@ def calibrate_denoise_butterworth(
 
     # Calibrate denoiser
     best_parameters = (
-        calibrate_denoiser_classic(
+            calibrate_denoiser(
             crop,
             _denoise_butterworth,
             denoise_parameters=parameter_ranges,
+            #mode="bruteforce",
             display_images=display_images,
         )
-        | other_fixed_parameters
+            | other_fixed_parameters
     )
 
     if not isotropic:

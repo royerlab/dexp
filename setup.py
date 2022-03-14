@@ -53,7 +53,7 @@ REQUIRED = [
     "cairocffi",
     "blosc",
     "seaborn",
-    "ome-zarr",
+    "ome-zarr"
 ]
 
 # What packages are optional?

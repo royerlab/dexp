@@ -5,12 +5,16 @@ from dexp.utils.backends import NumpyBackend, CupyBackend
 
 def test_noise_numpy():
     with NumpyBackend():
-        _demo_noise(display=False)
+        _test_noise()
 
 
 def test_noise_cupy():
     try:
         with CupyBackend():
-            _demo_noise(display=False)
+            _test_noise()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
+
+
+def _test_noise():
+    _demo_noise(display=False)
