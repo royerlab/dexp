@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import aprint
 
-from dexp.cli.defaults import _default_workers_backend
+from dexp.cli.defaults import DEFAULT_WORKERS_BACKEND
 from dexp.video.blend import blend_color_image_sequences
 
 
@@ -64,7 +64,7 @@ from dexp.video.blend import blend_color_image_sequences
     "--workersbackend",
     "-wkb",
     type=str,
-    default=_default_workers_backend,
+    default=DEFAULT_WORKERS_BACKEND,
     help="What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ",
     show_default=True,
 )  #

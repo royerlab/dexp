@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import _default_store
+from dexp.cli.defaults import DEFAULT_STORE
 from dexp.cli.parsing import _get_output_path, _parse_channels
 from dexp.datasets.open_dataset import glob_datasets
 
@@ -16,7 +16,7 @@ from dexp.datasets.open_dataset import glob_datasets
     default=None,
     help="You can rename channels: e.g. if channels are ‘channel1,anotherc’ then ‘gfp,rfp’ would rename the ‘channel1’ channel to ‘gfp’, and ‘anotherc’ to ‘rfp’ ",
 )
-@click.option("--store", "-st", default=_default_store, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
+@click.option("--store", "-st", default=DEFAULT_STORE, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
 @click.option("--overwrite", "-w", is_flag=True, help="Forces overwrite of target", show_default=True)
 @click.option(
     "--projection", "-p/-np", is_flag=True, default=True, help="If flags should be copied.", show_default=True

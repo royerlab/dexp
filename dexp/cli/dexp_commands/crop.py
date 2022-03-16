@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import _default_clevel, _default_codec, _default_store
+from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC, DEFAULT_STORE
 from dexp.cli.parsing import _get_output_path, _parse_channels, _parse_chunks
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.crop import dataset_crop
@@ -25,16 +25,16 @@ from dexp.datasets.operations.crop import dataset_crop
     default=None,
     help="Reference channel to estimate cropping. If no provided it picks the first one.",
 )
-@click.option("--store", "-st", default=_default_store, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
+@click.option("--store", "-st", default=DEFAULT_STORE, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
 @click.option("--chunks", "-chk", default=None, help="Dataset chunks dimensions, e.g. (1, 126, 512, 512).")
 @click.option(
     "--codec",
     "-z",
-    default=_default_codec,
+    default=DEFAULT_CODEC,
     help="Compression codec: zstd for ’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ",
     show_default=True,
 )
-@click.option("--clevel", "-l", type=int, default=_default_clevel, help="Compression level", show_default=True)
+@click.option("--clevel", "-l", type=int, default=DEFAULT_CLEVEL, help="Compression level", show_default=True)
 @click.option("--overwrite", "-w", is_flag=True, help="Forces overwrite of target", show_default=True)
 @click.option(
     "--workers",

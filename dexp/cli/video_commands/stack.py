@@ -8,7 +8,7 @@ import numpy
 from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 
-from dexp.cli.defaults import _default_workers_backend
+from dexp.cli.defaults import DEFAULT_WORKERS_BACKEND
 from dexp.utils.backends import Backend
 
 
@@ -29,7 +29,7 @@ from dexp.utils.backends import Backend
     "--workersbackend",
     "-wkb",
     type=str,
-    default=_default_workers_backend,
+    default=DEFAULT_WORKERS_BACKEND,
     help="What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ",
     show_default=True,
 )
