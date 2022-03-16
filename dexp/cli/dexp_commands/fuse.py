@@ -187,6 +187,13 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option(
     "--white-top-hat-sampling", "-wths", default=4, type=int, help="Down sampling size to compute the area opening"
 )
+@click.option(
+    "--remove-beads",
+    "-rb",
+    is_flag=True,
+    default=False,
+    help="Use this flag to remove beads before equalizing and fusing",
+)
 @click.option("--check", "-ck", default=True, help="Checking integrity of written file.", show_default=True)  #
 def fuse(
     input_paths,
@@ -219,6 +226,7 @@ def fuse(
     pad,
     white_top_hat_size,
     white_top_hat_sampling,
+    remove_beads,
     check,
 ):
     """Fuses the views of a multi-view light-sheet microscope dataset (available: simview and mvsols)"""
@@ -267,6 +275,7 @@ def fuse(
             pad=pad,
             white_top_hat_size=white_top_hat_size,
             white_top_hat_sampling=white_top_hat_sampling,
+            remove_beads=remove_beads,
             check=check,
         )
 

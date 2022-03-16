@@ -6,6 +6,7 @@ from numpy.typing import ArrayLike
 
 from dexp.utils import xpArray
 from dexp.utils.backends import Backend
+from dexp.processing.morphology import area_opening
 
 
 class Bead:
@@ -149,3 +150,19 @@ class BeadsRemover:
         for bead in self.beads:
             array[bead.slicing] = fill_value
         return array
+
+
+def remove_beads(image: xpArray, area_threshold: float = 1e2) -> xpArray:
+    from cucim.skimage.filters import threshold_otsu
+
+    sp = Backend.get_sp_module(image)
+
+    filtered = sp.ndimage.morphology.grey_closing(image, size=3)
+    
+    opened = area_opening(filtered, area_threshold=area_threshold, sampling=4)
+    threshold = threshold_otsu(opened)
+
+    image = image.copy()
+    image[opened < threshold] = 0
+
+    return image
