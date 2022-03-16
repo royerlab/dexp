@@ -16,11 +16,11 @@ def calibrate_denoise_butterworth(
     max_padding: int = 32,
     min_freq: float = 0.001,
     max_freq: float = 1.0,
-    num_freq: int = 100,
+    num_freq: int = 32,
     min_order: float = 0.5,
     max_order: float = 6.0,
-    num_order: int = 16,
-    crop_size_in_voxels: Optional[int] = 128000,
+    num_order: int = 32,
+    crop_size_in_voxels: Optional[int] = 1280000,
     display_images: bool = False,
     **other_fixed_parameters,
 ):
@@ -142,7 +142,7 @@ def calibrate_denoise_butterworth(
             crop,
             _denoise_butterworth,
             denoise_parameters=parameter_ranges,
-            #mode="bruteforce",
+            mode="l-bfgs-b", #,"shgo"
             display_images=display_images,
         )
             | other_fixed_parameters
