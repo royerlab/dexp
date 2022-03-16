@@ -115,7 +115,7 @@ def dataset_deconv(
         elif Path(psf_objective).exists():
             psf_kernel = numpy.load(psf_objective)
             if sz != 1.0 or sy != 1.0 or sx != 1.0:
-                psf_kernel = scipy.ndimage.interpolation.zoom(psf_kernel, zoom=(sz, sy, sx), order=1)
+                psf_kernel = scipy.ndimage.zoom(psf_kernel, zoom=(sz, sy, sx), order=1)
             psf_z_size = psf_kernel.shape[0] + 10
             psf_xy_size = max(psf_kernel.shape[1:]) + 10
         else:
@@ -183,7 +183,7 @@ def dataset_deconv(
                             with asection(f"Applying scaling {(sz, sy, sx)} to image."):
                                 sp = Backend.get_sp_module()
                                 tp_array = Backend.to_backend(tp_array)
-                                tp_array = sp.ndimage.interpolation.zoom(tp_array, zoom=(sz, sy, sx), order=1)
+                                tp_array = sp.ndimage.zoom(tp_array, zoom=(sz, sy, sx), order=1)
                                 tp_array = Backend.to_numpy(tp_array)
 
                         with asection(

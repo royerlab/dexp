@@ -79,8 +79,8 @@ def fuse_tg_nd(
     del min_a, max_a, min_b, max_b
 
     # downscale to speed up computation and reduce noise
-    d_image_a = sp.ndimage.interpolation.zoom(image_a, zoom=1 / downscale, order=0)
-    d_image_b = sp.ndimage.interpolation.zoom(image_b, zoom=1 / downscale, order=0)
+    d_image_a = sp.ndimage.zoom(image_a, zoom=1 / downscale, order=0)
+    d_image_b = sp.ndimage.zoom(image_b, zoom=1 / downscale, order=0)
 
     # Denoise further:
     d_image_a = sp.ndimage.gaussian_filter(d_image_a, sigma=1.5)

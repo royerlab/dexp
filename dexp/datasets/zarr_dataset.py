@@ -4,7 +4,7 @@ import shutil
 import sys
 from os.path import exists, isdir, isfile, join
 from pathlib import Path
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import dask
 import numpy
@@ -57,7 +57,7 @@ class ZDataset(BaseDataset):
         self._path = path
         self._store = None
         self._root_group = None
-        self._arrays = {}
+        self._arrays: Dict[str, zarr.Array] = {}
         self._projections = {}
 
         self._codec = codec
@@ -184,6 +184,9 @@ class ZDataset(BaseDataset):
             return None
         else:
             return groups[0]
+
+    def chunk_shape(self, channel: str) -> Sequence[int]:
+        return self._arrays[channel].chunks
 
     @staticmethod
     def _default_chunks(shape: Tuple[int], dtype: Union[str, numpy.dtype], max_size: int = 2147483647) -> Tuple[int]:

@@ -51,7 +51,7 @@ def dehaze(
     image_zero_level = sp.ndimage.maximum_filter(image, size=3)
 
     # downscale to speed up the rest of the computation:
-    downscaled_image = sp.ndimage.interpolation.zoom(image_zero_level, zoom=1 / downscale, order=0)
+    downscaled_image = sp.ndimage.zoom(image_zero_level, zoom=1 / downscale, order=0)
 
     # find min values:
     image_zero_level = sp.ndimage.minimum_filter(downscaled_image, size=max(1, size // downscale))
@@ -88,7 +88,7 @@ def dehaze(
 
         # get image max level after:
         downscaled_image_after = sp.ndimage.maximum_filter(image, size=3)
-        downscaled_image_after = sp.ndimage.interpolation.zoom(downscaled_image_after, zoom=1 / downscale, order=0)
+        downscaled_image_after = sp.ndimage.zoom(downscaled_image_after, zoom=1 / downscale, order=0)
         image_max_level_after = sp.ndimage.maximum_filter(downscaled_image_after, size=max(1, size // downscale))
         image_max_level_after = sp.ndimage.gaussian_filter(image_max_level_after, sigma=max(1, size // downscale))
 

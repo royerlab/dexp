@@ -155,6 +155,10 @@ def dataset_stabilize(
     dataset: Input dataset
     output_path: Output path for Zarr storage
     channels: selected channels
+    model_output_path: str
+        Path to store computed stabilization model for reproducibility.
+    model_input_path: Optional[str] = None,
+        Path of previously computed stabilization model.
     reference_channel: use this channel to compute the stabilization model and apply to every channel.
     slicing: selected array slicing
     zarr_store: type of store, can be 'dir', 'ndir', or 'zip'
