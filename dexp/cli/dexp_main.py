@@ -9,6 +9,7 @@ from dexp.cli.dexp_commands.deconv import deconv
 from dexp.cli.dexp_commands.deskew import deskew
 from dexp.cli.dexp_commands.extract_psf import extract_psf
 from dexp.cli.dexp_commands.fastcopy import fastcopy
+from dexp.cli.dexp_commands.fromraw import fromraw
 from dexp.cli.dexp_commands.fuse import fuse
 from dexp.cli.dexp_commands.histogram import histogram
 from dexp.cli.dexp_commands.info import info
@@ -66,6 +67,7 @@ cli.add_command(tiff)
 cli.add_command(view)
 cli.add_command(serve)
 cli.add_command(extract_psf)
+cli.add_command(fromraw)
 
 cli.add_command(deskew)
 cli.add_command(fuse)
