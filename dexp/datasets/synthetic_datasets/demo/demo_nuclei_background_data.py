@@ -19,7 +19,7 @@ def demo_nuclei_background_data_cupy():
 def demo_nuclei_background_data(length_xy=320):
     with timeit("generate data"):
         image_gt, background, image = generate_nuclei_background_data(
-            add_noise=True, length_xy=length_xy, length_z_factor=4
+            add_noise=True, length_xy=length_xy, length_z_factor=1
         )
 
     from napari import Viewer, gui_qt

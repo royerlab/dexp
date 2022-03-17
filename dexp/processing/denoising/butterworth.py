@@ -11,7 +11,7 @@ from dexp.utils.backends import Backend, CupyBackend
 
 def calibrate_denoise_butterworth(
     image,
-    isotropic: bool = False,
+    mode: str = 'xy-z',
     axes: Optional[Tuple[int, ...]] = None,
     max_padding: int = 32,
     min_freq: float = 0.001,
@@ -33,14 +33,11 @@ def calibrate_denoise_butterworth(
     image: ArrayLike
         Image to calibrate Sobolev denoiser for.
 
-    isotropic: bool
-        When True, the filtering is isotropic
-        i.e. all frequency cutoffs are the same along all axis,
-        but when false, the frequency cutoffs are different for different axis.
-        Anisotropic filtering is usefull for example for 3D microscopy images
-        that have a different resolution along z than along x and y, or for nD+t
-        images that have a very different correlation structure along time than
-        along space.
+    mode: str
+        Possible modes are: 'isotropic' for isotropic meaning only one
+        frequency cut-off is calibrated for all axes , 'xy-z' for 3D stacks where
+        the cut-off frequency for the x and y axes is the same but different for
+        the z axis, and 'full' for which all frequency cut-offs are different.
 
     axes: Optional[Tuple[int,...]]
         Axes over which to apply low-pass filtering.
@@ -111,7 +108,7 @@ def calibrate_denoise_butterworth(
         'axes': axes,
     }
 
-    if isotropic:
+    if mode == 'isotropic':
         # Partial function:
         _denoise_butterworth = partial(
             denoise_butterworth, **(other_fixed_parameters)
@@ -119,7 +116,25 @@ def calibrate_denoise_butterworth(
 
         # Parameters to test when calibrating the denoising algorithm
         parameter_ranges = {'freq_cutoff': freq_cutoff_range, 'order': order_range}
-    else:
+
+    elif mode == 'xy-z' and image.ndim == 3:
+        # Partial function with parameter impedance match:
+        def _denoise_butterworth(*args, **kwargs):
+            freq_cutoff_xy = kwargs.pop('freq_cutoff_xy')
+            freq_cutoff_z = kwargs.pop('freq_cutoff_z')
+            _freq_cutoff = (freq_cutoff_xy, freq_cutoff_xy, freq_cutoff_z)
+            return denoise_butterworth(
+                *args,
+                freq_cutoff=_freq_cutoff,
+                **(kwargs | other_fixed_parameters),
+            )
+
+        # Parameters to test when calibrating the denoising algorithm
+        parameter_ranges = {'freq_cutoff_xy': freq_cutoff_range,
+                            'freq_cutoff_z': freq_cutoff_range,
+                            'order': order_range}
+
+    elif mode == 'full':
         # Partial function with parameter impedance match:
         def _denoise_butterworth(*args, **kwargs):
             _freq_cutoff = tuple(
@@ -136,6 +151,9 @@ def calibrate_denoise_butterworth(
             f'freq_cutoff_{i}': freq_cutoff_range for i in range(image.ndim)
         } | {'order': order_range}
 
+    else:
+        raise ValueError(f"Unsupported denoising mode: {mode}")
+
     # Calibrate denoiser
     best_parameters = (
             calibrate_denoiser(
@@ -148,11 +166,17 @@ def calibrate_denoise_butterworth(
             | other_fixed_parameters
     )
 
-    if not isotropic:
+    if mode == 'full':
         # We need to adjust a bit the type of parameters passed to the denoising function:
         freq_cutoff = tuple(
             best_parameters.pop(f'freq_cutoff_{i}') for i in range(image.ndim)
         )
+        best_parameters |= {'freq_cutoff': freq_cutoff}
+    elif mode == 'xy-z':
+        # We need to adjust a bit the type of parameters passed to the denoising function:
+        freq_cutoff_xy = best_parameters.pop('freq_cutoff_xy')
+        freq_cutoff_z = best_parameters.pop('freq_cutoff_z')
+        freq_cutoff = (freq_cutoff_xy, freq_cutoff_xy, freq_cutoff_z)
         best_parameters |= {'freq_cutoff': freq_cutoff}
 
     # Memory needed:
@@ -190,8 +214,8 @@ def denoise_butterworth(
     axes: Optional[Tuple[int,...]]
         Axes over which to apply lowpass filtering.
 
-    freq_cutoff: float
-        Cutoff frequency, must be within [0, 1]
+    freq_cutoff: Union[float, Sequence[float]]
+        Single or sequence cutoff frequency, must be within [0, 1]
 
     order: float
         Filter order, typically an integer above 1.

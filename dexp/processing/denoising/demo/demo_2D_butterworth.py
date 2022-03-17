@@ -5,6 +5,8 @@ from dexp.processing.denoising.butterworth import calibrate_denoise_butterworth
 from dexp.processing.denoising.metrics import psnr, ssim
 from dexp.processing.denoising.noise import add_noise
 from dexp.utils.backends import NumpyBackend, CupyBackend, Backend
+from skimage import data
+from skimage.color import rgb2gray
 
 
 def demo_butterworth_numpy():
@@ -30,8 +32,7 @@ def _demo_butterworth(display=True):
     Arbol.enable_output = True
     Arbol.set_log_max_depth(5)
 
-    from skimage import data
-    from skimage.color import rgb2gray
+
 
     image = data.astronaut()
     image = rgb2gray(image)
