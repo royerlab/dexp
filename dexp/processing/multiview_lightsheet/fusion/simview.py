@@ -17,7 +17,7 @@ from dexp.processing.registration.translation_nd import register_translation_nd
 from dexp.processing.registration.translation_nd_proj import (
     register_translation_proj_nd,
 )
-from dexp.processing.remove_beads.beadsremover import remove_beads
+from dexp.processing.remove_beads import remove_beads_by_threshold
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
 from dexp.utils import xpArray
@@ -88,10 +88,14 @@ class SimViewFusion(BaseFusion):
             f"Moving C{camera}L{lightsheet} and to backend storage and converting to {self._internal_dtype} ..."
         ):
             view = Backend.to_backend(view, dtype=self._internal_dtype, force_copy=False)
-        
+
+        if self._zero_level != 0:
+            view = xp.clip(view, self._zero_level, None)
+            view -= self._zero_level
+
         if self._remove_beads:
             with asection(f"Removing beads of C{camera}L{lightsheet}"):
-                view = remove_beads(view)
+                view = remove_beads_by_threshold(view)
 
         if self._clip_too_high > 0:
             with asection(f"Clipping intensities above {self._clip_too_high} for C{camera}L{lightsheet}"):
@@ -139,7 +143,7 @@ class SimViewFusion(BaseFusion):
                 view0, view1, ratio = equalise_intensity(
                     view0,
                     view1,
-                    zero_level=self._zero_level,
+                    zero_level=0,  # already removed when pre-processing single view
                     correction_ratio=self._equalisation_ratios[camera],
                     copy=False,
                 )

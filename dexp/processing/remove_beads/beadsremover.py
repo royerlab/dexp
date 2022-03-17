@@ -1,12 +1,12 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from arbol import aprint
 from numpy.typing import ArrayLike
+from scipy.signal._signaltools import _centered
 
 from dexp.utils import xpArray
 from dexp.utils.backends import Backend
-from dexp.processing.morphology import area_opening
 
 
 class Bead:
@@ -152,17 +152,57 @@ class BeadsRemover:
         return array
 
 
-def remove_beads(image: xpArray, area_threshold: float = 1e2) -> xpArray:
-    from cucim.skimage.filters import threshold_otsu
+def remove_beads_by_threshold(
+    image: xpArray, psf_size: Union[int, Tuple[int]] = 35, window: int = 15, k: float = 0.05
+) -> xpArray:
+    """
+    This functions estimates beads by a local threshold and
+    replace them with the minimum value of their respective region
+
+    Parameters
+    ----------
+    image : xpArray
+        Input image, validated with raw data
+    psf_size : Union[int, Tuple[int]], optional
+        Estimated PSF size for removal after detection, by default 35
+    window : int, optional
+        Local threshold window, by default 15
+    k : float, optional
+        Local threshold std deviation parameter, by default 0.05
+        Reference: https://scikit-image.org/docs/dev/api/skimage.filters.html#skimage.filters.threshold_sauvola
+
+    Returns
+    -------
+    xpArray
+        Input image without beads
+    """
+    from cucim.skimage.filters import threshold_sauvola
 
     sp = Backend.get_sp_module(image)
+    xp = Backend.get_xp_module(image)
 
-    filtered = sp.ndimage.morphology.grey_closing(image, size=3)
-    
-    opened = area_opening(filtered, area_threshold=area_threshold, sampling=4)
-    threshold = threshold_otsu(opened)
+    shape = image.shape
+    sampling = 4
 
-    image = image.copy()
-    image[opened < threshold] = 0
+    # downsample and remove noise from image
+    small_image = sp.ndimage.zoom(image, zoom=1 / sampling, order=1)
+    small_image = sp.ndimage.convolve(small_image, xp.ones((3,) * image.ndim))
 
-    return image
+    # apply threshold and upsample
+    threshold = threshold_sauvola(small_image, window, k)
+    threshold = sp.ndimage.zoom(threshold, zoom=sampling, order=1)
+    threshold = _centered(threshold, shape)
+
+    # detect beads
+    detection = image > threshold
+    detection = sp.ndimage.minimum_filter(detection, 2)  # erosion
+
+    # dilate and fill regions
+    detection = sp.ndimage.maximum_filter(detection, psf_size)  # dilation
+
+    # replacing mask with minimum
+    min_image = sp.ndimage.minimum_filter(image, psf_size)
+    output = image.copy()
+    output[detection] = min_image[detection]
+
+    return output
