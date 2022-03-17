@@ -48,9 +48,16 @@ pip install dexp[color,cuda112]
 pip install napari[pyqt5]
 ```
 
+If you are having problems with the cuda/cuda-toolkit the best is to use conda to install the correct version of the cudatoolkit:
+```
+conda install -c conda-forge cudatoolkit==11.2.2
+```
+You can check [here](https://anaconda.org/conda-forge/cudatoolkit/files) for the best matching version.
+
 Notes:
+- You might get some error messages recommending you install missing libraries such as CUDNN, CuTensor, nccl, etc... These nmessages poften come with instruction son what to do.
 - Adjust your driver version (here 11.2) to your card(s) and drivers.
-- Windows users should call `conda install -c conda-forge pyopencl` before running the last step.
+- Windows users should call `conda install -c conda-forge pyopencl` before running the second to last step.
 
 ### Leveraging extra CUDA libraries for faster processing:
 
