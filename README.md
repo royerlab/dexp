@@ -75,7 +75,7 @@ conda env remove --name dexp
 conda create -y --name dexp python=3.9
 conda activate dexp
 conda install -y -c conda-forge cupy cudatoolkit=11.2
-conda install -y -c conda-forge cupy cudnn cutensor nccl
+conda install -y -c conda-forge cudnn cutensor nccl
 pip install dexp[color]
 pip install napari[pyqt5]
 ```
