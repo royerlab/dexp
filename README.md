@@ -22,7 +22,7 @@ Once these prerequisites are satified, you can install **dexp**.
 
 To installs **dexp** with GPU support (CUDA 11.2), colored console output, and [napari](https://napari.org/) support do:
 ```
-pip install dexp[color, cuda112, napari]
+pip install dexp[color,cuda112,napari]
 ```
 Other available CUDA versions (from [CuPy](https://cupy.dev/)) are: cuda111, cuda110, cuda102, cuda101, cuda100. We recommend using the most recent CUDA version that your system supports, and avoiding versions below 10.0
 
@@ -48,9 +48,16 @@ pip install dexp[color,cuda112]
 pip install napari[pyqt5]
 ```
 
+If you are having problems with the cuda/cuda-toolkit the best is to use conda to install the correct version of the cudatoolkit:
+```
+conda install -c conda-forge cudatoolkit==11.2.2
+```
+You can check [here](https://anaconda.org/conda-forge/cudatoolkit/files) for the best matching version.
+
 Notes:
+- You might get some error messages recommending you install missing libraries such as CUDNN, CuTensor, nccl, etc... These messages often come with instructions on what to do.
 - Adjust your driver version (here 11.2) to your card(s) and drivers.
-- Windows users should call `conda install -c conda-forge pyopencl` before running the last step.
+- Windows users should call `conda install -c conda-forge pyopencl` before running the second to last step.
 
 ### Leveraging extra CUDA libraries for faster processing:
 
@@ -75,7 +82,7 @@ conda env remove --name dexp
 conda create -y --name dexp python=3.9
 conda activate dexp
 conda install -y -c conda-forge cupy cudatoolkit=11.2
-conda install -y -c conda-forge cupy cudnn cutensor nccl
+conda install -y -c conda-forge cudnn cutensor nccl
 pip install dexp[color]
 pip install napari[pyqt5]
 ```

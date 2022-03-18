@@ -126,7 +126,12 @@ def _demo_stabilize(
         )
         input_dataset.write_array(channel="channel", array=Backend.to_numpy(shifted))
 
-        dataset_stabilize(dataset=input_dataset, output_path=output_path, channels=["channel"])
+        dataset_stabilize(
+            dataset=input_dataset,
+            output_path=output_path,
+            model_output_path=join(tmpdir, "model.json"),
+            channels=["channel"],
+        )
 
         output_dataset = ZDataset(path=output_path, mode="r", store="dir")
 

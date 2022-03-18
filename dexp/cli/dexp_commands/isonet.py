@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import _default_clevel, _default_codec, _default_store
+from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC, DEFAULT_STORE
 from dexp.cli.parsing import _get_output_path, _parse_slicing
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.isonet import dataset_isonet
@@ -21,15 +21,15 @@ from dexp.datasets.operations.isonet import dataset_isonet
     default=None,
     help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
 )  #
-@click.option("--store", "-st", default=_default_store, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
+@click.option("--store", "-st", default=DEFAULT_STORE, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
 @click.option(
     "--codec",
     "-z",
-    default=_default_codec,
+    default=DEFAULT_CODEC,
     help="compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ",
     show_default=True,
 )  #
-@click.option("--clevel", "-l", type=int, default=_default_clevel, help="Compression level", show_default=True)
+@click.option("--clevel", "-l", type=int, default=DEFAULT_CLEVEL, help="Compression level", show_default=True)
 @click.option(
     "--overwrite", "-w", is_flag=True, help="to force overwrite of target", show_default=True
 )  # , help='dataset slice'

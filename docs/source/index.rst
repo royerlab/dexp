@@ -27,6 +27,4 @@ DEXP
 .. toctree::
    :caption: API
 
-   Introduction <api/introduction.rst>
-   Processing <api/processing>
-   Volume Render <api/volume_render>
+   API <api/api.rst>

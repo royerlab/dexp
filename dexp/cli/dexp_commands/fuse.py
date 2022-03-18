@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import _default_clevel, _default_codec, _default_store
+from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC, DEFAULT_STORE
 from dexp.cli.parsing import (
     _get_output_path,
     _parse_channels,
@@ -27,14 +27,14 @@ from dexp.datasets.operations.fuse import dataset_fuse
     default=None,
     help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
 )  #
-@click.option("--store", "-st", default=_default_store, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
+@click.option("--store", "-st", default=DEFAULT_STORE, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
 @click.option(
     "--codec",
     "-z",
-    default=_default_codec,
+    default=DEFAULT_CODEC,
     help="compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ",
 )
-@click.option("--clevel", "-l", type=int, default=_default_clevel, help="Compression level", show_default=True)
+@click.option("--clevel", "-l", type=int, default=DEFAULT_CLEVEL, help="Compression level", show_default=True)
 @click.option(
     "--overwrite", "-w", is_flag=True, help="to force overwrite of target", show_default=True
 )  # , help='dataset slice'
@@ -187,6 +187,13 @@ from dexp.datasets.operations.fuse import dataset_fuse
 @click.option(
     "--white-top-hat-sampling", "-wths", default=4, type=int, help="Down sampling size to compute the area opening"
 )
+@click.option(
+    "--remove-beads",
+    "-rb",
+    is_flag=True,
+    default=False,
+    help="Use this flag to remove beads before equalizing and fusing",
+)
 @click.option("--check", "-ck", default=True, help="Checking integrity of written file.", show_default=True)  #
 def fuse(
     input_paths,
@@ -219,6 +226,7 @@ def fuse(
     pad,
     white_top_hat_size,
     white_top_hat_sampling,
+    remove_beads,
     check,
 ):
     """Fuses the views of a multi-view light-sheet microscope dataset (available: simview and mvsols)"""
@@ -267,6 +275,7 @@ def fuse(
             pad=pad,
             white_top_hat_size=white_top_hat_size,
             white_top_hat_sampling=white_top_hat_sampling,
+            remove_beads=remove_beads,
             check=check,
         )
 

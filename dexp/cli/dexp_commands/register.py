@@ -97,6 +97,13 @@ from dexp.datasets.operations.register import dataset_register
 @click.option(
     "--white-top-hat-sampling", "-wths", default=4, type=int, help="Down sampling size to compute the area opening"
 )
+@click.option(
+    "--remove-beads",
+    "-rb",
+    is_flag=True,
+    default=False,
+    help="Use this flag to remove beads before equalizing and fusing",
+)
 def register(
     input_paths,
     out_model_path,
@@ -113,6 +120,7 @@ def register(
     max_proj,
     white_top_hat_size,
     white_top_hat_sampling,
+    remove_beads,
     devices,
 ):
     """
@@ -143,6 +151,7 @@ def register(
             registration_edge_filter=edge_filter,
             white_top_hat_size=white_top_hat_size,
             white_top_hat_sampling=white_top_hat_sampling,
+            remove_beads=remove_beads,
             max_proj=max_proj,
             devices=devices,
         )

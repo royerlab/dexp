@@ -15,17 +15,25 @@ from dexp.utils.backends.backend import Backend
 class CupyBackend(Backend):
     """
     CupyBackend
+
+    Methods
+    -------
+    close:
+        Releases resources allocated by backend.
     """
 
     @staticmethod
     def num_devices():
-        import GPUtil
+        try:
+            import GPUtil
 
-        return len(GPUtil.getGPUs())
+            return len(GPUtil.getGPUs())
+        except:  # noqa: E722
+            return 0
 
     @staticmethod
     def available_devices(order="first", maxLoad=math.inf, maxMemory=math.inf):
-        """
+        """Returns a list of available devices.
 
         Parameters
         ----------
@@ -43,17 +51,20 @@ class CupyBackend(Backend):
         """
         # Set CUDA_DEVICE_ORDER so the IDs assigned by CUDA match those from nvidia-smi
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        import GPUtil
+        try:
+            import GPUtil
 
-        return GPUtil.getAvailable(
-            order=order,
-            limit=math.inf,
-            maxLoad=maxLoad,
-            maxMemory=maxMemory,
-            includeNan=False,
-            excludeID=[],
-            excludeUUID=[],
-        )
+            return GPUtil.getAvailable(
+                order=order,
+                limit=math.inf,
+                maxLoad=maxLoad,
+                maxMemory=maxMemory,
+                includeNan=False,
+                excludeID=[],
+                excludeUUID=[],
+            )
+        except:  # noqa: E722
+            return []
 
     device_locks = tuple(threading.Lock() for _ in range(num_devices.__func__()))
 

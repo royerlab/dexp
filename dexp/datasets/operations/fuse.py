@@ -47,6 +47,7 @@ def dataset_fuse(
     pad,
     white_top_hat_size,
     white_top_hat_sampling,
+    remove_beads,
     stop_at_exception=True,
 ):
 
@@ -111,6 +112,7 @@ def dataset_fuse(
                             dark_denoise_size=9,
                             white_top_hat_size=white_top_hat_size,
                             white_top_hat_sampling=white_top_hat_sampling,
+                            remove_beads=remove_beads,
                             butterworth_filter_cutoff=1,
                             flip_camera1=True,
                             pad=pad,

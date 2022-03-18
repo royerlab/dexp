@@ -3,13 +3,12 @@ import re
 from fnmatch import fnmatch
 from os import listdir
 from os.path import exists, join
-from typing import Any, Sequence, Tuple
+from typing import Any, List, Sequence, Tuple
 
-import numpy
+import numpy as np
 from arbol.arbol import aprint
 from cachey import Cache
 from dask import array, delayed
-from numpy import uint16
 
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.io.compress_array import decompress_array
@@ -65,14 +64,16 @@ class CCDataset(BaseDataset):
         lines = [re.split(r"\t+", line) for line in lines]
 
         self._time_points[channel] = []
+        self._times_sec[channel] = []
+        self._shapes[channel] = []
 
         for line in lines:
             time_point = int(line[0])
             time_sec = float(line[1])
             shape = eval("(" + line[2] + ")")[::-1]
 
-            self._times_sec[(channel, time_point)] = time_sec
-            self._shapes[(channel, time_point)] = shape
+            self._times_sec[channel].append(time_sec)
+            self._shapes[channel].append(shape)
 
             if channel in self._channel_shape:
                 existing_shape = self._channel_shape[channel]
@@ -109,13 +110,13 @@ class CCDataset(BaseDataset):
             if file_name.endswith(".raw"):
                 aprint(f"Accessing file: {file_name}")
 
-                dt = numpy.dtype(uint16)
+                dt = np.dtype(np.uint16)
                 dt = dt.newbyteorder("L")
 
-                array = numpy.fromfile(file_name, dtype=dt)
+                array = np.fromfile(file_name, dtype=dt)
 
             elif file_name.endswith(".blc"):
-                array = numpy.empty(shape=shape, dtype=dtype)
+                array = np.empty(shape=shape, dtype=dtype)
                 with open(file_name, "rb") as binary_file:
                     # Read the whole file at once
                     data = binary_file.read()
@@ -129,7 +130,7 @@ class CCDataset(BaseDataset):
 
         except FileNotFoundError:
             aprint(f"Could not find file: {file_name} for array of shape: {shape}")
-            return numpy.zeros(shape, dtype=uint16)
+            return np.zeros(shape, dtype=np.uint16)
 
     def _get_slice_array_for_stack_file_and_z(self, file_name, shape, z):
 
@@ -137,13 +138,13 @@ class CCDataset(BaseDataset):
             if file_name.endswith(".raw"):
                 aprint(f"Accessing file: {file_name} at z={z}")
 
-                length = shape[1] * shape[2] * numpy.dtype(uint16).itemsize
+                length = shape[1] * shape[2] * np.dtype(np.uint16).itemsize
                 offset = z * length
 
-                dt = numpy.dtype(uint16)
+                dt = np.dtype(np.uint16)
                 dt = dt.newbyteorder("L")
 
-                array = numpy.fromfile(file_name, offset=offset, count=length, dtype=dt)
+                array = np.fromfile(file_name, offset=offset, count=length, dtype=dt)
             elif file_name.endswith(".blc"):
                 raise NotImplementedError("This type of access is not yet supported")
 
@@ -152,23 +153,23 @@ class CCDataset(BaseDataset):
 
         except FileNotFoundError:
             aprint(f"Could  not find file: {file_name} for array of shape: {shape} at z={z}")
-            return numpy.zeros(shape[1:], dtype=uint16)
+            return np.zeros(shape[1:], dtype=np.uint16)
 
     def close(self):
         # Nothing to do...
         pass
 
-    def channels(self):
+    def channels(self) -> List[str]:
         return list(self._channels)
 
     def shape(self, channel: str, time_point: int = 0) -> Sequence[int]:
-        if (channel, time_point) in self._shapes:
-            return (self._nb_time_points[channel],) + self._shapes[(channel, time_point)]
-        else:
+        try:
+            return (self._nb_time_points[channel],) + self._shapes[channel][time_point]
+        except (IndexError, KeyError):
             return ()
 
     def dtype(self, channel: str):
-        return numpy.uint16
+        return np.uint16
 
     def info(self, channel: str = None) -> str:
         if channel:
@@ -196,7 +197,7 @@ class CCDataset(BaseDataset):
 
         # Construct a small Dask array for every lazy value:
         arrays = [
-            array.from_delayed(lazy_stack, dtype=uint16, shape=self._channel_shape[channel])
+            array.from_delayed(lazy_stack, dtype=np.uint16, shape=self._channel_shape[channel])
             for lazy_stack in lazy_stacks
         ]
 
@@ -207,7 +208,7 @@ class CCDataset(BaseDataset):
     def get_stack(self, channel, time_point, per_z_slice=True, wrap_with_dask: bool = False):
 
         file_name = self._get_stack_file_name(channel, time_point)
-        shape = self._shapes[(channel, time_point)]
+        shape = self._shapes[channel][time_point]
 
         if per_z_slice and not self._is_compressed:
 
@@ -218,12 +219,12 @@ class CCDataset(BaseDataset):
             # Lazily load each stack for each time point:
             lazy_stacks = [lazy_get_slice_array_for_stack_file_and_z(file_name, shape, z) for z in range(0, shape[0])]
 
-            arrays = [array.from_delayed(lazy_stack, dtype=uint16, shape=shape[1:]) for lazy_stack in lazy_stacks]
+            arrays = [array.from_delayed(lazy_stack, dtype=np.uint16, shape=shape[1:]) for lazy_stack in lazy_stacks]
 
             stack = array.stack(arrays, axis=0)
 
         else:
-            stack = self._get_array_for_stack_file(file_name, shape=shape, dtype=uint16)
+            stack = self._get_array_for_stack_file(file_name, shape=shape, dtype=np.uint16)
 
         return stack
 
@@ -233,10 +234,10 @@ class CCDataset(BaseDataset):
     def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = True) -> Any:
         return None
 
-    def write_array(self, channel: str, array: numpy.ndarray):
+    def write_array(self, channel: str, array: np.ndarray):
         raise NotImplementedError("Not implemented!")
 
-    def write_stack(self, channel: str, time_point: int, stack: numpy.ndarray):
+    def write_stack(self, channel: str, time_point: int, stack: np.ndarray):
         raise NotImplementedError("Not implemented!")
 
     def check_integrity(self, channels: Sequence[str]) -> bool:
@@ -250,3 +251,6 @@ class CCDataset(BaseDataset):
                     return True
 
         return False
+
+    def time_sec(self, channel: str) -> np.ndarray:
+        return np.asarray(self._times_sec[channel])

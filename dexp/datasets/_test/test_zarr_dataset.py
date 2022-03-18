@@ -34,11 +34,11 @@ def test_zarr_dataset_livecycle():
         assert "second" in zdataset.channels()
 
         assert zdataset.shape("first") == (10, 100, 100, 100)
-        assert zdataset.chunks("first") == (1, 50, 50, 50)
+        assert zdataset.chunk_shape("first") == (1, 50, 50, 50)
         assert zdataset.dtype("first") == "f4"
 
         assert zdataset.shape("second") == (17, 10, 20, 30)
-        assert zdataset.chunks("second") == (1, 5, 1, 6)
+        assert zdataset.chunk_shape("second") == (1, 5, 1, 6)
         assert zdataset.dtype("second") == "f4"
 
         assert not zdataset.check_integrity()

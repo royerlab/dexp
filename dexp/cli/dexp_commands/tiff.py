@@ -1,7 +1,7 @@
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import _default_workers_backend
+from dexp.cli.defaults import DEFAULT_WORKERS_BACKEND
 from dexp.cli.parsing import _get_output_path, _parse_channels, _parse_slicing
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.tiff import dataset_tiff
@@ -42,7 +42,7 @@ from dexp.datasets.operations.tiff import dataset_tiff
     "--workersbackend",
     "-wkb",
     type=str,
-    default=_default_workers_backend,
+    default=DEFAULT_WORKERS_BACKEND,
     help="What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ",
     show_default=True,
 )
