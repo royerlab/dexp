@@ -2,10 +2,10 @@ import click
 from arbol.arbol import aprint, asection
 
 from dexp.cli.defaults import (
-    _default_clevel,
-    _default_codec,
-    _default_store,
-    _default_workers_backend,
+    DEFAULT_CLEVEL,
+    DEFAULT_CODEC,
+    DEFAULT_STORE,
+    DEFAULT_WORKERS_BACKEND,
 )
 from dexp.cli.parsing import (
     _get_output_path,
@@ -32,14 +32,14 @@ from dexp.datasets.operations.deskew import dataset_deskew
     default=None,
     help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
 )  #
-@click.option("--store", "-st", default=_default_store, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
+@click.option("--store", "-st", default=DEFAULT_STORE, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
 @click.option(
     "--codec",
     "-z",
-    default=_default_codec,
+    default=DEFAULT_CODEC,
     help="compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ",
 )
-@click.option("--clevel", "-l", type=int, default=_default_clevel, help="Compression level", show_default=True)
+@click.option("--clevel", "-l", type=int, default=DEFAULT_CLEVEL, help="Compression level", show_default=True)
 @click.option(
     "--overwrite", "-w", is_flag=True, help="to force overwrite of target", show_default=True
 )  # , help='dataset slice'
@@ -93,7 +93,7 @@ from dexp.datasets.operations.deskew import dataset_deskew
     "--workersbackend",
     "-wkb",
     type=str,
-    default=_default_workers_backend,
+    default=DEFAULT_WORKERS_BACKEND,
     help="What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ",
     show_default=True,
 )  #

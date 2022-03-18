@@ -1,4 +1,4 @@
-_default_store = "dir"
-_default_clevel = 3
-_default_codec = "zstd"
-_default_workers_backend = "threading"
+DEFAULT_STORE = "dir"
+DEFAULT_CLEVEL = 3
+DEFAULT_CODEC = "zstd"
+DEFAULT_WORKERS_BACKEND = "threading"

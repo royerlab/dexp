@@ -4,7 +4,7 @@ import shutil
 import sys
 from os.path import exists, isdir, isfile, join
 from pathlib import Path
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import dask
 import numpy
@@ -13,6 +13,7 @@ from arbol.arbol import aprint, asection
 from ome_zarr.format import CurrentFormat
 from zarr import Blosc, CopyError, Group, convenience, open_group
 
+from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.datasets.ome_dataset import default_omero_metadata
 from dexp.datasets.stack_iterator import StackIterator
@@ -21,7 +22,17 @@ from dexp.utils.config import config_blosc
 
 
 class ZDataset(BaseDataset):
-    def __init__(self, path: str, mode: str = "r", store: str = None, parent: Optional[BaseDataset] = None):
+    def __init__(
+        self,
+        path: str,
+        mode: str = "r",
+        store: str = None,
+        *,
+        codec: str = DEFAULT_CODEC,
+        clevel: int = DEFAULT_CLEVEL,
+        chunks: Optional[Sequence[int]] = None,
+        parent: Optional[BaseDataset] = None,
+    ):
         """Instantiates a Zarr dataset (and opens it)
 
         Parameters
@@ -46,8 +57,12 @@ class ZDataset(BaseDataset):
         self._path = path
         self._store = None
         self._root_group = None
-        self._arrays = {}
+        self._arrays: Dict[str, zarr.Array] = {}
         self._projections = {}
+
+        self._codec = codec
+        self._clevel = clevel
+        self._chunks = chunks
 
         # Open remote store:
         if "http" in path:
@@ -170,6 +185,9 @@ class ZDataset(BaseDataset):
         else:
             return groups[0]
 
+    def chunk_shape(self, channel: str) -> Sequence[int]:
+        return self._arrays[channel].chunks
+
     @staticmethod
     def _default_chunks(shape: Tuple[int], dtype: Union[str, numpy.dtype], max_size: int = 2147483647) -> Tuple[int]:
         if not isinstance(dtype, numpy.dtype):
@@ -210,9 +228,6 @@ class ZDataset(BaseDataset):
 
     def shape(self, channel: str) -> Sequence[int]:
         return self._arrays[channel].shape
-
-    def chunks(self, channel: str) -> Sequence[int]:
-        return self._arrays[channel].chunks
 
     def dtype(self, channel: str):
         return self.get_array(channel).dtype
@@ -348,10 +363,10 @@ class ZDataset(BaseDataset):
         name: str,
         shape: Tuple[int, ...],
         dtype: numpy.dtype,
-        chunks: Sequence[int] = None,
+        chunks: Optional[Sequence[int]] = None,
         enable_projections: bool = True,
-        codec: str = "zstd",
-        clevel: int = 3,
+        codec: Optional[str] = None,
+        clevel: Optional[int] = None,
         value: Optional[Any] = None,
     ) -> Any:
         """Adds a channel to this dataset
@@ -376,7 +391,16 @@ class ZDataset(BaseDataset):
             raise ValueError("Channel already exist!")
 
         if chunks is None:
-            chunks = self._default_chunks(shape, dtype)
+            if self._chunks is None:
+                chunks = self._default_chunks(shape, dtype)
+            else:
+                chunks = self._chunks
+
+        if clevel is None:
+            clevel = self._clevel
+
+        if codec is None:
+            codec = self._codec
 
         aprint(f"chunks={chunks}")
 

@@ -1,6 +1,6 @@
 import click
 
-from dexp.cli.defaults import _default_workers_backend
+from dexp.cli.defaults import DEFAULT_WORKERS_BACKEND
 from dexp.video.overlay import add_overlays_image_sequence
 
 
@@ -100,7 +100,7 @@ from dexp.video.overlay import add_overlays_image_sequence
     "--workersbackend",
     "-wkb",
     type=str,
-    default=_default_workers_backend,
+    default=DEFAULT_WORKERS_BACKEND,
     help="What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ",
     show_default=True,
 )  #
