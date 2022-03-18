@@ -35,17 +35,15 @@ def _demo_representative_crop(fast_mode: bool = True, display: bool = True):
 
     with asection(f"Computing crop for image of shape: {image.shape}"):
         crop_size = 16000
-        crop = representative_crop(
-            image, crop_size=crop_size, fast_mode=fast_mode, display_crop=False
-        )
+        crop = representative_crop(image, crop_size=crop_size, fast_mode=fast_mode, display_crop=False)
 
     if display:
         import napari
 
         with napari.gui_qt():
             viewer = napari.Viewer()
-            viewer.add_image(image, name='image')
-            viewer.add_image(crop, name='crop')
+            viewer.add_image(image, name="image")
+            viewer.add_image(crop, name="crop")
 
     assert crop.size <= int(crop_size * 1.05)
 
@@ -53,5 +51,3 @@ def _demo_representative_crop(fast_mode: bool = True, display: bool = True):
 if __name__ == "__main__":
     demo_rep_crop_cupy()
     demo_rep_crop_numpy()
-
-

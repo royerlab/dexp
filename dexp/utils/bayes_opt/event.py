@@ -1,7 +1,7 @@
 class Events:
-    OPTIMIZATION_START = 'optimization:start'
-    OPTIMIZATION_STEP = 'optimization:step'
-    OPTIMIZATION_END = 'optimization:end'
+    OPTIMIZATION_START = "optimization:start"
+    OPTIMIZATION_STEP = "optimization:step"
+    OPTIMIZATION_END = "optimization:end"
 
 
 DEFAULT_EVENTS = [

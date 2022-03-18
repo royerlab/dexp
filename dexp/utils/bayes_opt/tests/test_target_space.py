@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 from dexp.utils.bayes_opt.target_space import TargetSpace
 
 
@@ -8,21 +9,21 @@ def target_func(**kwargs):
     return sum(kwargs.values())
 
 
-PBOUNDS = {'p1': (0, 1), 'p2': (1, 100)}
+PBOUNDS = {"p1": (0, 1), "p2": (1, 100)}
 
 
 def test_keys_and_bounds_in_same_order():
     pbounds = {
-        'p1': (0, 1),
-        'p3': (0, 3),
-        'p2': (0, 2),
-        'p4': (0, 4),
+        "p1": (0, 1),
+        "p3": (0, 3),
+        "p2": (0, 2),
+        "p4": (0, 4),
     }
     space = TargetSpace(target_func, pbounds)
 
     assert space.dim == len(pbounds)
     assert space.empty
-    assert space.keys == ["p1", "p2",  "p3",  "p4"]
+    assert space.keys == ["p1", "p2", "p3", "p4"]
     assert all(space.bounds[:, 0] == np.array([0, 0, 0, 0]))
     assert all(space.bounds[:, 1] == np.array([1, 2, 3, 4]))
 
@@ -124,10 +125,10 @@ def test_probe():
 
 def test_random_sample():
     pbounds = {
-        'p1': (0, 1),
-        'p3': (0, 3),
-        'p2': (0, 2),
-        'p4': (0, 4),
+        "p1": (0, 1),
+        "p3": (0, 3),
+        "p2": (0, 2),
+        "p4": (0, 4),
     }
     space = TargetSpace(target_func, pbounds, random_state=8)
 
@@ -159,10 +160,10 @@ def test_res():
     space.probe(params={"p1": 1, "p2": 6})
 
     expected_res = [
-        {"params":  {"p1": 1, "p2": 2}, "target": 3},
-        {"params":  {"p1": 5, "p2": 4}, "target": 9},
-        {"params":  {"p1": 2, "p2": 3}, "target": 5},
-        {"params":  {"p1": 1, "p2": 6}, "target": 7},
+        {"params": {"p1": 1, "p2": 2}, "target": 3},
+        {"params": {"p1": 5, "p2": 4}, "target": 9},
+        {"params": {"p1": 2, "p2": 3}, "target": 5},
+        {"params": {"p1": 1, "p2": 6}, "target": 7},
     ]
     assert len(space.res()) == 4
     assert space.res() == expected_res
@@ -170,10 +171,10 @@ def test_res():
 
 def test_set_bounds():
     pbounds = {
-        'p1': (0, 1),
-        'p3': (0, 3),
-        'p2': (0, 2),
-        'p4': (0, 4),
+        "p1": (0, 1),
+        "p3": (0, 3),
+        "p2": (0, 2),
+        "p4": (0, 4),
     }
     space = TargetSpace(target_func, pbounds)
 
@@ -188,7 +189,7 @@ def test_set_bounds():
     assert all(space.bounds[:, 1] == np.array([1, 8, 3, 4]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     r"""
     CommandLine:
         python tests/test_target_space.py

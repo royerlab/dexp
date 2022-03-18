@@ -1,5 +1,5 @@
 from dexp.processing.denoising.demo.demo_2D_butterworth import _demo_butterworth
-from dexp.utils.backends import NumpyBackend, CupyBackend
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_butterworth_numpy():
@@ -14,6 +14,6 @@ def test_butterworth_cupy():
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
+
 def _test_butterworth():
     assert _demo_butterworth(display=False) >= 0.608 - 0.03
-

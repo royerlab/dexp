@@ -1,7 +1,5 @@
-
-
 from dexp.processing.denoising.demo.demo_2D_gaussian import _demo_gaussian
-from dexp.utils.backends import NumpyBackend, CupyBackend
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_gaussian_numpy():
@@ -16,6 +14,6 @@ def test_gaussian_cupy():
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
+
 def _test_gaussian():
     assert _demo_gaussian(display=False) >= 0.600 - 0.02
-

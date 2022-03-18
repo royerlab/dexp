@@ -1,6 +1,6 @@
 # flake8: noqa
 from dexp.processing.crop.demo.demo_rep_crop import _demo_representative_crop
-from dexp.utils.backends import NumpyBackend, CupyBackend
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_representative_crop_numpy():

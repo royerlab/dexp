@@ -1,13 +1,14 @@
 import numpy as np
-from .util import ensure_rng
+
+from dexp.utils.bayes_opt.util import ensure_rng
 
 
 def _hashable(x):
-    """ ensure that an point is hashable by a python dict """
+    """ensure that an point is hashable by a python dict"""
     return tuple(map(float, x))
 
 
-class TargetSpace(object):
+class TargetSpace:
     """
     Holds the param-space coordinates (X) and target values (Y)
     Allows for constant-time appends while ensuring no duplicates are added
@@ -22,6 +23,7 @@ class TargetSpace(object):
     >>> y = space.register_point(x)
     >>> assert self.max_point()['max_val'] == y
     """
+
     def __init__(self, target_func, pbounds, random_state=None):
         """
         Parameters
@@ -44,10 +46,7 @@ class TargetSpace(object):
         # Get the name of the parameters
         self._keys = sorted(pbounds)
         # Create an array with parameters bounds
-        self._bounds = np.array(
-            [item[1] for item in sorted(pbounds.items(), key=lambda x: x[0])],
-            dtype=np.float
-        )
+        self._bounds = np.array([item[1] for item in sorted(pbounds.items(), key=lambda x: x[0])], dtype=np.float)
 
         # preallocated memory for X and Y points
         self._params = np.empty(shape=(0, self.dim))
@@ -92,8 +91,7 @@ class TargetSpace(object):
             assert set(params) == set(self.keys)
         except AssertionError:
             raise ValueError(
-                "Parameters' keys ({}) do ".format(sorted(params)) +
-                "not match the expected set of keys ({}).".format(self.keys)
+                f"Parameters' keys ({sorted(params)}) do " + f"not match the expected set of keys ({self.keys})."
             )
         return np.asarray([params[key] for key in self.keys])
 
@@ -102,8 +100,8 @@ class TargetSpace(object):
             assert len(x) == len(self.keys)
         except AssertionError:
             raise ValueError(
-                "Size of array ({}) is different than the ".format(len(x)) +
-                "expected number of parameters ({}).".format(len(self.keys))
+                f"Size of array ({len(x)}) is different than the "
+                + f"expected number of parameters ({len(self.keys)})."
             )
         return dict(zip(self.keys, x))
 
@@ -118,8 +116,8 @@ class TargetSpace(object):
             assert x.size == self.dim
         except AssertionError:
             raise ValueError(
-                "Size of array ({}) is different than the ".format(len(x)) +
-                "expected number of parameters ({}).".format(len(self.keys))
+                f"Size of array ({len(x)}) is different than the "
+                + f"expected number of parameters ({len(self.keys)})."
             )
         return x
 
@@ -158,7 +156,7 @@ class TargetSpace(object):
         """
         x = self._as_array(params)
         if x in self:
-            raise KeyError('Data point {} is not unique'.format(x))
+            raise KeyError(f"Data point {x} is not unique")
 
         # Insert data into unique dictionary
         self._cache[_hashable(x.ravel())] = target
@@ -220,12 +218,7 @@ class TargetSpace(object):
     def max(self):
         """Get maximum target value found and corresponding parametes."""
         try:
-            res = {
-                'target': self.target.max(),
-                'params': dict(
-                    zip(self.keys, self.params[self.target.argmax()])
-                )
-            }
+            res = {"target": self.target.max(), "params": dict(zip(self.keys, self.params[self.target.argmax()]))}
         except ValueError:
             res = {}
         return res
@@ -234,10 +227,7 @@ class TargetSpace(object):
         """Get all target values found and corresponding parametes."""
         params = [dict(zip(self.keys, p)) for p in self.params]
 
-        return [
-            {"target": target, "params": param}
-            for target, param in zip(self.target, params)
-        ]
+        return [{"target": target, "params": param} for target, param in zip(self.target, params)]
 
     def set_bounds(self, new_bounds):
         """

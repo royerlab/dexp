@@ -1,5 +1,3 @@
-from arbol import aprint
-
 from dexp.utils.backends import Backend
 
 
@@ -8,16 +6,17 @@ def mean_squared_error(image_a, image_b):
     xp = Backend.get_xp_module(image_a)
     return xp.mean((image_a - image_b) ** 2)
 
+
 def mean_absolute_error(image_a, image_b):
     # Backend:
     xp = Backend.get_xp_module(image_a)
     return xp.mean(xp.absolute(image_a - image_b))
 
+
 def lhalf_error(image_a, image_b):
     # Backend:
     xp = Backend.get_xp_module(image_a)
     return xp.mean(xp.absolute(image_a - image_b) ** 0.5) ** 2
-
 
 
 def psnr(image_true, image_test):
@@ -103,19 +102,17 @@ def ssim(image_a, image_b, win_size=None):
     image_b = Backend.to_backend(image_b, dtype=xp.float32)
 
     if win_size is None:
-        win_size = 7   # backwards compatibility
+        win_size = 7  # backwards compatibility
 
     if not (win_size % 2 == 1):
-        raise ValueError('Window size must be odd.')
-
-    ndim = image_a.ndim
+        raise ValueError("Window size must be odd.")
 
     # Constants:
     K1 = 0.01
     K2 = 0.03
 
     filter_func = sp.ndimage.uniform_filter
-    filter_args = {'size': win_size}
+    filter_args = {"size": win_size}
 
     # filter has already normalized by NP
     cov_norm = 1.0  # population covariance to match Wang et. al. 2004
@@ -136,10 +133,7 @@ def ssim(image_a, image_b, win_size=None):
     C1 = (K1 * R) ** 2
     C2 = (K2 * R) ** 2
 
-    A1, A2, B1, B2 = ((2 * ux * uy + C1,
-                       2 * vxy + C2,
-                       ux ** 2 + uy ** 2 + C1,
-                       vx + vy + C2))
+    A1, A2, B1, B2 = (2 * ux * uy + C1, 2 * vxy + C2, ux ** 2 + uy ** 2 + C1, vx + vy + C2)
     D = B1 * B2
     S = (A1 * A2) / D
 
@@ -151,7 +145,8 @@ def ssim(image_a, image_b, win_size=None):
 
     return mssim
 
-def _crop(ar, crop_width, copy=False, order='K'):
+
+def _crop(ar, crop_width, copy=False, order="K"):
     """Crop array `ar` by `crop_width` along each dimension.
 
     Parameters
@@ -183,7 +178,6 @@ def _crop(ar, crop_width, copy=False, order='K'):
 
     # Backend:
     xp = Backend.get_xp_module()
-    sp = Backend.get_sp_module()
 
     ar = xp.array(ar, copy=False)
 
@@ -211,8 +205,7 @@ def _crop(ar, crop_width, copy=False, order='K'):
             "a single pair, or a single integer"
         )
 
-    slices = tuple(slice(a, ar.shape[i] - b)
-                   for i, (a, b) in enumerate(crops))
+    slices = tuple(slice(a, ar.shape[i] - b) for i, (a, b) in enumerate(crops))
     if copy:
         cropped = xp.array(ar[slices], order=order, copy=True)
     else:

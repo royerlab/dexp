@@ -1,4 +1,5 @@
 import pytest
+
 from dexp.utils.bayes_opt.bayesian_optimization import Queue
 
 
@@ -40,8 +41,7 @@ def test_queue():
     assert len(queue) == 0
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     r"""
     CommandLine:
         python tests/test_observer.py

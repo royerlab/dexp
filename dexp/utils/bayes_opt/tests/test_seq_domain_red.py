@@ -1,5 +1,7 @@
-from dexp.utils.bayes_opt import SequentialDomainReductionTransformer
-from dexp.utils.bayes_opt import BayesianOptimization
+from dexp.utils.bayes_opt import (
+    BayesianOptimization,
+    SequentialDomainReductionTransformer,
+)
 
 
 def black_box_function(x, y):
@@ -9,11 +11,10 @@ def black_box_function(x, y):
     purposes think of the internals of this function, i.e.: the process
     which generates its output values, as unknown.
     """
-    return -x ** 2 - (y - 1) ** 2 + 1
+    return -(x ** 2) - (y - 1) ** 2 + 1
 
 
 def test_bound_x_maximize():
-
     class Tracker:
         def __init__(self):
             self.start_count = 0
@@ -33,7 +34,7 @@ def test_bound_x_maximize():
             self.__init__()
 
     bounds_transformer = SequentialDomainReductionTransformer()
-    pbounds = {'x': (-10, 10), 'y': (-10, 10)}
+    pbounds = {"x": (-10, 10), "y": (-10, 10)}
     n_iter = 10
 
     standard_optimizer = BayesianOptimization(
@@ -49,11 +50,7 @@ def test_bound_x_maximize():
     )
 
     mutated_optimizer = BayesianOptimization(
-        f=black_box_function,
-        pbounds=pbounds,
-        verbose=2,
-        random_state=1,
-        bounds_transformer=bounds_transformer
+        f=black_box_function, pbounds=pbounds, verbose=2, random_state=1, bounds_transformer=bounds_transformer
     )
 
     mutated_optimizer.maximize(
@@ -62,5 +59,4 @@ def test_bound_x_maximize():
     )
 
     assert len(standard_optimizer.space) == len(mutated_optimizer.space)
-    assert not (standard_optimizer._space.bounds ==
-                mutated_optimizer._space.bounds).any()
+    assert not (standard_optimizer._space.bounds == mutated_optimizer._space.bounds).any()

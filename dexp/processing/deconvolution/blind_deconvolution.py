@@ -35,9 +35,6 @@ def blind_deconvolution(
     n_zernikes: int = 15,
     display: bool = False,
 ) -> xpArray:
-    from pyotf.phaseretrieval import PhaseRetrievalResult, retrieve_phase
-    from pyotf.utils import prep_data_for_PR
-
     # Local imports to
     from pyotf.phaseretrieval import PhaseRetrievalResult, retrieve_phase
     from pyotf.utils import prep_data_for_PR

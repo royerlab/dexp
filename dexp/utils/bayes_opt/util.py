@@ -1,7 +1,8 @@
 import warnings
+
 import numpy as np
-from scipy.stats import norm
 from scipy.optimize import minimize
+from scipy.stats import norm
 
 
 def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
@@ -41,21 +42,18 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
     """
 
     # Warm up with random points
-    x_tries = random_state.uniform(bounds[:, 0], bounds[:, 1],
-                                   size=(n_warmup, bounds.shape[0]))
+    x_tries = random_state.uniform(bounds[:, 0], bounds[:, 1], size=(n_warmup, bounds.shape[0]))
     ys = ac(x_tries, gp=gp, y_max=y_max)
     x_max = x_tries[ys.argmax()]
     max_acq = ys.max()
 
     # Explore the parameter space more throughly
-    x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1],
-                                   size=(n_iter, bounds.shape[0]))
+    x_seeds = random_state.uniform(bounds[:, 0], bounds[:, 1], size=(n_iter, bounds.shape[0]))
     for x_try in x_seeds:
         # Find the minimum of minus the acquisition function
-        res = minimize(lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max),
-                       x_try.reshape(1, -1),
-                       bounds=bounds,
-                       method="L-BFGS-B")
+        res = minimize(
+            lambda x: -ac(x.reshape(1, -1), gp=gp, y_max=y_max), x_try.reshape(1, -1), bounds=bounds, method="L-BFGS-B"
+        )
 
         # See if success
         if not res.success:
@@ -71,7 +69,7 @@ def acq_max(ac, gp, y_max, bounds, random_state, n_warmup=10000, n_iter=10):
     return np.clip(x_max, bounds[:, 0], bounds[:, 1])
 
 
-class UtilityFunction(object):
+class UtilityFunction:
     """
     An object to compute the acquisition functions.
     """
@@ -83,13 +81,15 @@ class UtilityFunction(object):
         self._kappa_decay_delay = kappa_decay_delay
 
         self.xi = xi
-        
+
         self._iters_counter = 0
 
-        if kind not in ['ucb', 'ei', 'poi']:
-            err = "The utility function " \
-                  "{} has not been implemented, " \
-                  "please choose one of ucb, ei, or poi.".format(kind)
+        if kind not in ["ucb", "ei", "poi"]:
+            err = (
+                "The utility function "
+                "{} has not been implemented, "
+                "please choose one of ucb, ei, or poi.".format(kind)
+            )
             raise NotImplementedError(err)
         else:
             self.kind = kind
@@ -101,11 +101,11 @@ class UtilityFunction(object):
             self.kappa *= self._kappa_decay
 
     def utility(self, x, gp, y_max):
-        if self.kind == 'ucb':
+        if self.kind == "ucb":
             return self._ucb(x, gp, self.kappa)
-        if self.kind == 'ei':
+        if self.kind == "ei":
             return self._ei(x, gp, y_max, self.xi)
-        if self.kind == 'poi':
+        if self.kind == "poi":
             return self._poi(x, gp, y_max, self.xi)
 
     @staticmethod
@@ -121,8 +121,8 @@ class UtilityFunction(object):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
-  
-        a = (mean - y_max - xi)
+
+        a = mean - y_max - xi
         z = a / std
         return a * norm.cdf(z) + std * norm.pdf(z)
 
@@ -132,21 +132,19 @@ class UtilityFunction(object):
             warnings.simplefilter("ignore")
             mean, std = gp.predict(x, return_std=True)
 
-        z = (mean - y_max - xi)/std
+        z = (mean - y_max - xi) / std
         return norm.cdf(z)
 
 
 def load_logs(optimizer, logs):
-    """Load previous ...
-
-    """
+    """Load previous ..."""
     import json
 
     if isinstance(logs, str):
         logs = [logs]
 
     for log in logs:
-        with open(log, "r") as j:
+        with open(log) as j:
             while True:
                 try:
                     iteration = next(j)
@@ -183,16 +181,16 @@ def ensure_rng(random_state=None):
 class Colours:
     """Print in nice colours."""
 
-    BLUE = '\033[94m'
-    BOLD = '\033[1m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    END = '\033[0m'
-    GREEN = '\033[92m'
-    PURPLE = '\033[95m'
-    RED = '\033[91m'
-    UNDERLINE = '\033[4m'
-    YELLOW = '\033[93m'
+    BLUE = "\033[94m"
+    BOLD = "\033[1m"
+    CYAN = "\033[96m"
+    DARKCYAN = "\033[36m"
+    END = "\033[0m"
+    GREEN = "\033[92m"
+    PURPLE = "\033[95m"
+    RED = "\033[91m"
+    UNDERLINE = "\033[4m"
+    YELLOW = "\033[93m"
 
     @classmethod
     def _wrap_colour(cls, s, colour):

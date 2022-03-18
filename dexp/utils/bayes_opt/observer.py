@@ -2,7 +2,8 @@
 observers...
 """
 from datetime import datetime
-from .event import Events
+
+from dexp.utils.bayes_opt.event import Events
 
 
 class Observer:
@@ -10,7 +11,7 @@ class Observer:
         raise NotImplementedError
 
 
-class _Tracker(object):
+class _Tracker:
     def __init__(self):
         self._iterations = 0
 
@@ -25,8 +26,7 @@ class _Tracker(object):
             self._iterations += 1
 
             current_max = instance.max
-            if (self._previous_max is None or
-                current_max["target"] > self._previous_max):
+            if self._previous_max is None or current_max["target"] > self._previous_max:
                 self._previous_max = current_max["target"]
                 self._previous_max_params = current_max["params"]
 
@@ -41,8 +41,4 @@ class _Tracker(object):
         time_delta = now - self._previous_time
 
         self._previous_time = now
-        return (
-            now.strftime("%Y-%m-%d %H:%M:%S"),
-            time_elapsed.total_seconds(),
-            time_delta.total_seconds()
-        )
+        return (now.strftime("%Y-%m-%d %H:%M:%S"), time_elapsed.total_seconds(), time_delta.total_seconds())

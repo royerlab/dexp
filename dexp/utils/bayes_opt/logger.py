@@ -1,10 +1,9 @@
-from __future__ import print_function
-import os
 import json
+import os
 
-from .observer import _Tracker
-from .event import Events
-from .util import Colours
+from dexp.utils.bayes_opt.event import Events
+from dexp.utils.bayes_opt.observer import _Tracker
+from dexp.utils.bayes_opt.util import Colours
 
 
 def _get_default_logger(verbose):
@@ -18,7 +17,7 @@ class ScreenLogger(_Tracker):
     def __init__(self, verbose=2):
         self._verbose = verbose
         self._header_length = None
-        super(ScreenLogger, self).__init__()
+        super().__init__()
 
     @property
     def verbose(self):
@@ -30,10 +29,10 @@ class ScreenLogger(_Tracker):
 
     def _format_number(self, x):
         if isinstance(x, int):
-                s = "{x:< {s}}".format(
-                    x=x,
-                    s=self._default_cell_size,
-                )
+            s = "{x:< {s}}".format(
+                x=x,
+                s=self._default_cell_size,
+            )
         else:
             s = "{x:< {s}.{p}}".format(
                 x=x,
@@ -43,18 +42,15 @@ class ScreenLogger(_Tracker):
 
         if len(s) > self._default_cell_size:
             if "." in s:
-                return s[:self._default_cell_size]
+                return s[: self._default_cell_size]
             else:
-                return s[:self._default_cell_size - 3] + "..."
+                return s[: self._default_cell_size - 3] + "..."
         return s
 
     def _format_key(self, key):
-        s = "{key:^{s}}".format(
-            key=key,
-            s=self._default_cell_size
-        )
+        s = "{key:^{s}}".format(key=key, s=self._default_cell_size)
         if len(s) > self._default_cell_size:
-            return s[:self._default_cell_size - 3] + "..."
+            return s[: self._default_cell_size - 3] + "..."
         return s
 
     def _step(self, instance, colour=Colours.black):
@@ -111,7 +107,7 @@ class JSONLogger(_Tracker):
                 os.remove(self._path)
             except OSError:
                 pass
-        super(JSONLogger, self).__init__()
+        super().__init__()
 
     def update(self, event, instance):
         if event == Events.OPTIMIZATION_STEP:

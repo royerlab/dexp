@@ -1,12 +1,12 @@
 import warnings
 
-from .target_space import TargetSpace
-from .event import Events, DEFAULT_EVENTS
-from .logger import _get_default_logger
-from .util import UtilityFunction, acq_max, ensure_rng
-
-from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import Matern
+
+from dexp.utils.bayes_opt.event import DEFAULT_EVENTS, Events
+from dexp.utils.bayes_opt.logger import _get_default_logger
+from dexp.utils.bayes_opt.target_space import TargetSpace
+from dexp.utils.bayes_opt.util import UtilityFunction, acq_max, ensure_rng
 
 
 class Queue:
@@ -35,12 +35,13 @@ class Queue:
         self._queue.append(obj)
 
 
-class Observable(object):
+class Observable:
     """
 
     Inspired/Taken from
         https://www.protechtraining.com/blog/post/879#simple-observer
     """
+
     def __init__(self, events):
         # maps event names to subscribers
         # str -> dict
@@ -51,7 +52,7 @@ class Observable(object):
 
     def subscribe(self, event, subscriber, callback=None):
         if callback is None:
-            callback = getattr(subscriber, 'update')
+            callback = getattr(subscriber, "update")
         self.get_subscribers(event)[subscriber] = callback
 
     def unsubscribe(self, event, subscriber):
@@ -101,8 +102,8 @@ class BayesianOptimization(Observable):
     set_bounds()
         Allows changing the lower and upper searching bounds
     """
-    def __init__(self, f, pbounds, random_state=None, verbose=2,
-                 bounds_transformer=None):
+
+    def __init__(self, f, pbounds, random_state=None, verbose=2, bounds_transformer=None):
         self._random_state = ensure_rng(random_state)
 
         # Data structure containing the function to be optimized, the bounds of
@@ -126,10 +127,9 @@ class BayesianOptimization(Observable):
             try:
                 self._bounds_transformer.initialize(self._space)
             except (AttributeError, TypeError):
-                raise TypeError('The transformer must be an instance of '
-                                'DomainTransformer')
+                raise TypeError("The transformer must be an instance of " "DomainTransformer")
 
-        super(BayesianOptimization, self).__init__(events=DEFAULT_EVENTS)
+        super().__init__(events=DEFAULT_EVENTS)
 
     @property
     def space(self):
@@ -184,7 +184,7 @@ class BayesianOptimization(Observable):
             gp=self._gp,
             y_max=self._space.target.max(),
             bounds=self._space.bounds,
-            random_state=self._random_state
+            random_state=self._random_state,
         )
 
         return self._space.array_to_params(suggestion)
@@ -204,15 +204,9 @@ class BayesianOptimization(Observable):
             self.subscribe(Events.OPTIMIZATION_STEP, _logger)
             self.subscribe(Events.OPTIMIZATION_END, _logger)
 
-    def maximize(self,
-                 init_points=5,
-                 n_iter=25,
-                 acq='ucb',
-                 kappa=2.576,
-                 kappa_decay=1,
-                 kappa_decay_delay=0,
-                 xi=0.0,
-                 **gp_params):
+    def maximize(
+        self, init_points=5, n_iter=25, acq="ucb", kappa=2.576, kappa_decay=1, kappa_decay_delay=0, xi=0.0, **gp_params
+    ):
         """
         Probes the target space to find the parameters that yield the maximum
         value for the given function.
@@ -254,11 +248,9 @@ class BayesianOptimization(Observable):
         self._prime_queue(init_points)
         self.set_gp_params(**gp_params)
 
-        util = UtilityFunction(kind=acq,
-                               kappa=kappa,
-                               xi=xi,
-                               kappa_decay=kappa_decay,
-                               kappa_decay_delay=kappa_decay_delay)
+        util = UtilityFunction(
+            kind=acq, kappa=kappa, xi=xi, kappa_decay=kappa_decay, kappa_decay_delay=kappa_decay_delay
+        )
         iteration = 0
         while not self._queue.empty or iteration < n_iter:
             try:
@@ -271,8 +263,7 @@ class BayesianOptimization(Observable):
             self.probe(x_probe, lazy=False)
 
             if self._bounds_transformer:
-                self.set_bounds(
-                    self._bounds_transformer.transform(self._space))
+                self.set_bounds(self._bounds_transformer.transform(self._space))
 
         self.dispatch(Events.OPTIMIZATION_END)
 

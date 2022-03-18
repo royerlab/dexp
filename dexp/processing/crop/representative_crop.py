@@ -10,7 +10,7 @@ from dexp.utils.backends import Backend
 
 def representative_crop(
     image,
-    mode: str = 'sobelmin',
+    mode: str = "sobelmin",
     crop_size: Optional[int] = None,
     min_length: int = 16,
     smoothing_size: int = 1.0,
@@ -77,7 +77,6 @@ def representative_crop(
 
     # Backend:
     xp = Backend.get_xp_module(image)
-    sp = Backend.get_sp_module(image)
 
     # Start time:
     start_time = time.time()
@@ -112,9 +111,7 @@ def representative_crop(
     translation_range = tuple(s - cs for s, cs in zip(image.shape, cropped_shape))
 
     # grid for translations:
-    translation_indices = tuple(
-        max(1, int(2 * r / cs)) for r, cs in zip(translation_range, cropped_shape)
-    )
+    translation_indices = tuple(max(1, int(2 * r / cs)) for r, cs in zip(translation_range, cropped_shape))
 
     # min and max for crop value normalisation:
     image_min = None
@@ -134,22 +131,14 @@ def representative_crop(
         for index in range(fast_mode_num_crops):
 
             # translation:
-            translation = tuple(
-                (randrange(0, s - cs) if cs != s else 0)
-                for s, cs in zip(image.shape, cropped_shape)
-            )
+            translation = tuple((randrange(0, s - cs) if cs != s else 0) for s, cs in zip(image.shape, cropped_shape))
 
             # function to get crop slice:
             def _crop_slice(translation, cropped_shape, downscale: int = 1):
-                return tuple(
-                    slice(t, t + s, downscale)
-                    for t, s in zip(translation, cropped_shape)
-                )
+                return tuple(slice(t, t + s, downscale) for t, s in zip(translation, cropped_shape))
 
             # slice object for cropping:
-            crop_slice = _crop_slice(
-                translation, cropped_shape, 2 if image.size > 1e8 else 1
-            )
+            crop_slice = _crop_slice(translation, cropped_shape, 2 if image.size > 1e8 else 1)
 
             # extract crop:
             crop = image[crop_slice]
@@ -184,9 +173,7 @@ def representative_crop(
             translation = tuple(int(i * cs / 2) for i, cs in zip(index, cropped_shape))
 
             # slice object for cropping:
-            crop_slice = tuple(
-                slice(t, t + s) for t, s in zip(translation, cropped_shape)
-            )
+            crop_slice = tuple(slice(t, t + s) for t, s in zip(translation, cropped_shape))
 
             # extract crop:
             crop = image[crop_slice]
@@ -218,9 +205,9 @@ def representative_crop(
 
         with napari.gui_qt():
             viewer = napari.Viewer()
-            viewer.add_image(image, name='image')
-            viewer.add_image(best_crop, name='best_crop')
-            viewer.add_image(smoothed_best_crop, name='smoothed_best_crop')
+            viewer.add_image(image, name="image")
+            viewer.add_image(best_crop, name="best_crop")
+            viewer.add_image(smoothed_best_crop, name="smoothed_best_crop")
 
     if return_slice:
         return best_crop, best_slice
@@ -247,13 +234,13 @@ def evaluate_crop(crop, image_min, image_max, mode, smoothing_size):
     smoothed_crop -= image_min
     smoothed_crop /= image_max
     # compute score:
-    if mode == 'contrast':
+    if mode == "contrast":
         score = xp.std(smoothed_crop)
-    elif mode == 'sobel':
+    elif mode == "sobel":
         score = xp.std(_sobel_magnitude(smoothed_crop))
-    elif mode == 'sobelmin':
+    elif mode == "sobelmin":
         score = xp.std(_sobel_minimum(smoothed_crop))
-    elif mode == 'laplace':
+    elif mode == "laplace":
         score = xp.std(sp.ndimage.laplace(smoothed_crop))
     else:
         raise ValueError(f"Unknown mode: {mode}")

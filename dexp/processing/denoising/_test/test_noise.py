@@ -1,6 +1,6 @@
 # flake8: noqa
 from dexp.processing.denoising.demo.demo_noise import _demo_noise
-from dexp.utils.backends import NumpyBackend, CupyBackend
+from dexp.utils.backends import CupyBackend, NumpyBackend
 
 
 def test_noise_numpy():

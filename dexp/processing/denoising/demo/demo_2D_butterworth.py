@@ -1,12 +1,12 @@
 # flake8: noqa
 from arbol import Arbol
+from skimage import data
+from skimage.color import rgb2gray
 
 from dexp.processing.denoising.butterworth import calibrate_denoise_butterworth
 from dexp.processing.denoising.metrics import psnr, ssim
 from dexp.processing.denoising.noise import add_noise
-from dexp.utils.backends import NumpyBackend, CupyBackend, Backend
-from skimage import data
-from skimage.color import rgb2gray
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 
 
 def demo_butterworth_numpy():
@@ -32,8 +32,6 @@ def _demo_butterworth(display=True):
     Arbol.enable_output = True
     Arbol.set_log_max_depth(5)
 
-
-
     image = data.astronaut()
     image = rgb2gray(image)
     image = Backend.to_backend(image)
@@ -55,10 +53,11 @@ def _demo_butterworth(display=True):
 
     if display:
         import napari
+
         viewer = napari.Viewer()
-        viewer.add_image(Backend.to_numpy(image), name='image')
-        viewer.add_image(Backend.to_numpy(noisy), name='noisy')
-        viewer.add_image(Backend.to_numpy(denoised), name='denoised')
+        viewer.add_image(Backend.to_numpy(image), name="image")
+        viewer.add_image(Backend.to_numpy(noisy), name="noisy")
+        viewer.add_image(Backend.to_numpy(denoised), name="denoised")
         napari.run()
 
     return ssim_denoised

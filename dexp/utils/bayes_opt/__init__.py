@@ -1,7 +1,7 @@
-from .bayesian_optimization import BayesianOptimization, Events
-from .domain_reduction import SequentialDomainReductionTransformer
-from .util import UtilityFunction
-from .logger import ScreenLogger, JSONLogger
+from dexp.utils.bayes_opt.bayesian_optimization import BayesianOptimization, Events
+from dexp.utils.bayes_opt.domain_reduction import SequentialDomainReductionTransformer
+from dexp.utils.bayes_opt.logger import JSONLogger, ScreenLogger
+from dexp.utils.bayes_opt.util import UtilityFunction
 
 __all__ = [
     "BayesianOptimization",

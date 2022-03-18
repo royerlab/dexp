@@ -1,12 +1,11 @@
 from dexp.utils.bayes_opt.bayesian_optimization import Observable
-from dexp.utils.bayes_opt.observer import _Tracker
 from dexp.utils.bayes_opt.event import Events
-
+from dexp.utils.bayes_opt.observer import _Tracker
 
 EVENTS = ["a", "b", "c"]
 
 
-class SimpleObserver():
+class SimpleObserver:
     def __init__(self):
         self.counter = 0
 
@@ -19,13 +18,13 @@ def test_get_subscribers():
     observable = Observable(events=EVENTS)
     observable.subscribe("a", observer)
 
-    assert observer in observable.get_subscribers('a')
-    assert observer not in observable.get_subscribers('b')
-    assert observer not in observable.get_subscribers('c')
+    assert observer in observable.get_subscribers("a")
+    assert observer not in observable.get_subscribers("b")
+    assert observer not in observable.get_subscribers("c")
 
-    assert len(observable.get_subscribers('a')) == 1
-    assert len(observable.get_subscribers('b')) == 0
-    assert len(observable.get_subscribers('c')) == 0
+    assert len(observable.get_subscribers("a")) == 1
+    assert len(observable.get_subscribers("b")) == 0
+    assert len(observable.get_subscribers("c")) == 0
 
 
 def test_unsubscribe():
@@ -35,8 +34,8 @@ def test_unsubscribe():
     observable.subscribe("a", observer)
     observable.unsubscribe("a", observer)
 
-    assert observer not in observable.get_subscribers('a')
-    assert len(observable.get_subscribers('a')) == 0
+    assert observer not in observable.get_subscribers("a")
+    assert len(observable.get_subscribers("a")) == 0
 
 
 def test_dispatch():
@@ -50,17 +49,17 @@ def test_dispatch():
     assert observer_a.counter == 0
     assert observer_b.counter == 0
 
-    observable.dispatch('b')
+    observable.dispatch("b")
     assert observer_a.counter == 0
     assert observer_b.counter == 1
 
-    observable.dispatch('a')
-    observable.dispatch('b')
+    observable.dispatch("a")
+    observable.dispatch("b")
     assert observer_a.counter == 1
     assert observer_b.counter == 2
 
-    observable.dispatch('a')
-    observable.dispatch('c')
+    observable.dispatch("a")
+    observable.dispatch("c")
     assert observer_a.counter == 2
     assert observer_a.counter == 2
 
@@ -112,10 +111,11 @@ def test_tracker():
     assert previous_time < tracker._previous_time
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     r"""
     CommandLine:
         python tests/test_observer.py
     """
     import pytest
+
     pytest.main([__file__])

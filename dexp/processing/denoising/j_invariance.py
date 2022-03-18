@@ -1,30 +1,29 @@
 import itertools
 import math
 from functools import partial
-from typing import Callable, List, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 import numpy
 from arbol import aprint, asection
 from scipy.optimize import minimize, shgo
 
-from dexp.utils.bayes_opt import BayesianOptimization, \
-    SequentialDomainReductionTransformer
-
 from dexp.processing.denoising.metrics import mean_squared_error
 from dexp.utils import xpArray
 from dexp.utils.backends import Backend
-
-
+from dexp.utils.bayes_opt import (
+    BayesianOptimization,
+    SequentialDomainReductionTransformer,
+)
 
 
 def calibrate_denoiser(
     image: xpArray,
     denoise_function: Callable,
-    denoise_parameters: dict[List[Union[float, int]]],
+    denoise_parameters: Dict[str, List[Union[float, int]]],
     mode: str = "bayesian",
     max_evaluations: int = 4096,
     stride: int = 4,
-    loss_function: Callable=mean_squared_error,
+    loss_function: Callable = mean_squared_error,
     # _structural_loss, mean_squared_error, mean_absolute_error #
     display_images: bool = False,
     **other_fixed_parameters,
@@ -98,8 +97,6 @@ def calibrate_denoiser(
     return best_parameters | other_fixed_parameters
 
 
-
-
 def _j_invariant_loss(
     image: xpArray,
     denoise_function: Callable,
@@ -121,11 +118,7 @@ def _j_invariant_loss(
     return loss
 
 
-def _invariant_denoise(
-        image: xpArray,
-        denoise_function: Callable,
-        mask: xpArray,
-        denoiser_kwargs=None):
+def _invariant_denoise(image: xpArray, denoise_function: Callable, mask: xpArray, denoiser_kwargs=None):
 
     # Backend:
     xp = Backend.get_xp_module(image)
@@ -154,27 +147,22 @@ def _interpolate_image(image: xpArray):
     conv_filter.ravel()[conv_filter.size // 2] = 0
     conv_filter /= conv_filter.sum()
 
-    interpolation = sp.ndimage.convolve(image, conv_filter, mode='mirror')
+    interpolation = sp.ndimage.convolve(image, conv_filter, mode="mirror")
 
     return interpolation
 
 
-def _generate_mask(image: xpArray,
-                   stride: int = 4):
+def _generate_mask(image: xpArray, stride: int = 4):
 
     # Generate slice for mask:
     spatialdims = image.ndim
     n_masks = stride ** spatialdims
-    mask = _generate_grid_slice(
-        image.shape[:spatialdims], offset=n_masks // 2, stride=stride
-    )
+    mask = _generate_grid_slice(image.shape[:spatialdims], offset=n_masks // 2, stride=stride)
 
     return mask
 
 
-def _generate_grid_slice(shape: tuple[int,...],
-                         offset: int,
-                         stride: int = 3):
+def _generate_grid_slice(shape: Tuple[int, ...], offset: int, stride: int = 3):
     phases = numpy.unravel_index(offset, (stride,) * len(shape))
     mask = tuple(slice(p, None, stride) for p in phases)
     return mask
@@ -186,7 +174,7 @@ def _mid_point(numerical_parameters_bounds):
     return mid_point
 
 
-def _product_from_dict(dictionary: dict[List[Union[float, int]]]):
+def _product_from_dict(dictionary: Dict[str, List[Union[float, int]]]):
     """Utility function to convert parameter ranges to parameter combinations.
 
     Converts a dict of lists into a list of dicts whose values consist of the
@@ -289,16 +277,13 @@ def _calibrate_denoiser_search(
         return -float(loss)
 
     if mode == "bruteforce":
-        with asection(
-            f"Searching by brute-force for the best denoising parameters among: {denoise_parameters}"
-        ):
+        with asection(f"Searching by brute-force for the best denoising parameters among: {denoise_parameters}"):
 
             num_rounds = 4
             best_loss = -math.inf
             for round in range(num_rounds):
                 # expand ranges:
-                expanded_denoise_parameters = {n: numpy.arange(*r) for (n, r) in
-                                      denoise_parameters.items()}
+                expanded_denoise_parameters = {n: numpy.arange(*r) for (n, r) in denoise_parameters.items()}
                 # Generate all possible combinations:
                 cartesian_product_of_parameters = list(_product_from_dict(expanded_denoise_parameters))
                 for denoiser_kwargs in cartesian_product_of_parameters:
@@ -308,15 +293,14 @@ def _calibrate_denoiser_search(
                             best_loss = loss
                             best_parameters = denoiser_kwargs
 
-    if mode == "l-bfgs-b" :
-        with asection(
-            f"Searching by 'Limited-memory BFGS' the best denoising parameters among: {denoise_parameters}"
-        ):
+    if mode == "l-bfgs-b":
+        with asection(f"Searching by 'Limited-memory BFGS' the best denoising parameters among: {denoise_parameters}"):
+
             def callback(x):
                 print(x)
 
-            x0 = tuple((0.5*(v[1]-v[0]) for (n, v) in denoise_parameters.items()))
-            bounds = list([v[0:2] for (n, v) in denoise_parameters.items()])
+            x0 = tuple(0.5 * (v[1] - v[0]) for (n, v) in denoise_parameters.items())
+            bounds = list(v[0:2] for (n, v) in denoise_parameters.items())
 
             # Impedance mismatch:
             def __function(*_denoiser_kwargs):
@@ -324,26 +308,23 @@ def _calibrate_denoiser_search(
                 value = -_function(**param_dict)
                 return value
 
-            result = minimize(fun=__function,
-                           x0=x0,
-                           method='L-BFGS-B',
-                           bounds=bounds,
-                           options={'maxfun':max_evaluations,
-                                    'eps': 1e-2,
-                                    'ftol': 1e-9,
-                                    'gtol': 1e-9})
+            result = minimize(
+                fun=__function,
+                x0=x0,
+                method="L-BFGS-B",
+                bounds=bounds,
+                options={"maxfun": max_evaluations, "eps": 1e-2, "ftol": 1e-9, "gtol": 1e-9},
+            )
             aprint(result)
-            best_parameters = dict({n: v for (n, v) in  zip(parameter_names, result.x)})
+            best_parameters = dict({n: v for (n, v) in zip(parameter_names, result.x)})
 
     if mode == "shgo":
         with asection(
-            f"Searching by 'simplicial homology global optimization' (SHGO) the best denoising parameters among: {denoise_parameters}"
+            "Searching by 'simplicial homology global optimization' (SHGO)"
+            f"the best denoising parameters among: {denoise_parameters}"
         ):
-            def callback(x):
-                print(x)
-
-            x0 = tuple((0.5*(v[1]-v[0]) for (n, v) in denoise_parameters.items()))
-            bounds = list([v[0:2] for (n, v) in denoise_parameters.items()])
+            x0 = tuple(0.5 * (v[1] - v[0]) for v in denoise_parameters.values())
+            bounds = list(v[0:2] for v in denoise_parameters.values())
 
             # Impedance mismatch:
             def __function(*_denoiser_kwargs):
@@ -351,27 +332,19 @@ def _calibrate_denoiser_search(
                 value = -_function(**param_dict)
                 return value
 
-            result = shgo(__function,
-                          bounds,
-                          sampling_method='sobol',
-                          options={'maxev': max_evaluations}
-                          )
+            result = shgo(__function, bounds, sampling_method="sobol", options={"maxev": max_evaluations})
             aprint(result)
-            best_parameters = dict({n: v for (n, v) in  zip(parameter_names, result.x)})
-
+            best_parameters = dict({n: v for (n, v) in zip(parameter_names, result.x)})
 
     elif mode == "bayesian":
 
         # Bounded region of parameter space
         # expand ranges:
-        denoise_parameters = {n: r[0:2] for (n, r) in
-                              denoise_parameters.items()}
+        denoise_parameters = {n: r[0:2] for (n, r) in denoise_parameters.items()}
 
         num_dim = len(denoise_parameters)
 
-        bounds_transformer = SequentialDomainReductionTransformer(gamma_osc=0.7,
-                                                                  gamma_pan=1.0,
-                                                                  eta=0.95)
+        bounds_transformer = SequentialDomainReductionTransformer(gamma_osc=0.7, gamma_pan=1.0, eta=0.95)
 
         optimizer = BayesianOptimization(
             f=_function,
@@ -379,28 +352,26 @@ def _calibrate_denoiser_search(
             verbose=2,
             # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
-            bounds_transformer=bounds_transformer
+            bounds_transformer=bounds_transformer,
         )
 
         optimizer.maximize(
-            init_points=3**num_dim,
+            init_points=3 ** num_dim,
             n_iter=max_evaluations,
-           # acq='ei',
+            # acq='ei',
             kappa=0.9,
             kappa_decay=0.95,
-            kappa_decay_delay=num_dim
+            kappa_decay_delay=num_dim,
         )
 
-        best_parameters = optimizer.max['params']
+        best_parameters = optimizer.max["params"]
 
     if display_images:
         import napari
+
         viewer = napari.Viewer()
-        viewer.add_image(Backend.to_numpy(image), name='image')
-        viewer.add_image(numpy.stack([Backend.to_numpy(i) for i in denoised_images]), name='denoised')
+        viewer.add_image(Backend.to_numpy(image), name="image")
+        viewer.add_image(numpy.stack([Backend.to_numpy(i) for i in denoised_images]), name="denoised")
         napari.run()
 
     return best_parameters
-
-
-

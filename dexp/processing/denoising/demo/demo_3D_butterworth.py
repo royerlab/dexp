@@ -5,7 +5,7 @@ from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
 from dexp.processing.denoising.butterworth import calibrate_denoise_butterworth
 from dexp.processing.denoising.metrics import psnr, ssim
 from dexp.processing.denoising.noise import add_noise
-from dexp.utils.backends import NumpyBackend, CupyBackend, Backend
+from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
 from dexp.utils.timeit import timeit
 
 
@@ -33,16 +33,14 @@ def _demo_butterworth(display=True):
     Arbol.set_log_max_depth(5)
 
     with timeit("generate data"):
-        image_gt, background, image = generate_nuclei_background_data(
-            add_noise=True, length_xy=320, length_z_factor=1
-        )
+        image_gt, background, image = generate_nuclei_background_data(add_noise=True, length_xy=320, length_z_factor=1)
 
     image = Backend.to_backend(image, dtype=xp.float32)
     image /= image.max()
 
     noisy = add_noise(image)
 
-    function, parameters = calibrate_denoise_butterworth(noisy, mode='xy-z')
+    function, parameters = calibrate_denoise_butterworth(noisy, mode="xy-z")
     denoised = function(noisy, **parameters)
 
     image = xp.clip(image, 0, 1)
@@ -57,10 +55,11 @@ def _demo_butterworth(display=True):
 
     if display:
         import napari
+
         viewer = napari.Viewer()
-        viewer.add_image(Backend.to_numpy(image), name='image')
-        viewer.add_image(Backend.to_numpy(noisy), name='noisy')
-        viewer.add_image(Backend.to_numpy(denoised), name='denoised')
+        viewer.add_image(Backend.to_numpy(image), name="image")
+        viewer.add_image(Backend.to_numpy(noisy), name="noisy")
+        viewer.add_image(Backend.to_numpy(denoised), name="denoised")
         napari.run()
 
     return ssim_denoised
