@@ -11,7 +11,7 @@ from dexp.utils.backends import Backend, CupyBackend
 
 def calibrate_denoise_butterworth(
     image,
-    mode: str = 'xy-z',
+    mode: str = 'full',
     axes: Optional[Tuple[int, ...]] = None,
     max_padding: int = 32,
     min_freq: float = 0.001,

@@ -37,11 +37,12 @@ def _demo_butterworth(display=True):
             add_noise=True, length_xy=320, length_z_factor=1
         )
 
-    image = Backend.to_backend(image)
+    image = Backend.to_backend(image, dtype=xp.float32)
+    image /= image.max()
 
     noisy = add_noise(image)
 
-    function, parameters, memreq = calibrate_denoise_butterworth(noisy)
+    function, parameters, memreq = calibrate_denoise_butterworth(noisy, mode='xy-z')
     denoised = function(noisy, **parameters)
 
     image = xp.clip(image, 0, 1)
