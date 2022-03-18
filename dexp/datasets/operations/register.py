@@ -32,6 +32,7 @@ def dataset_register(
     max_proj,
     white_top_hat_size,
     white_top_hat_sampling,
+    remove_beads,
     devices,
     stop_at_exception=True,
 ):
@@ -76,6 +77,7 @@ def dataset_register(
                         butterworth_filter_cutoff=0.0,
                         white_top_hat_size=white_top_hat_size,
                         white_top_hat_sampling=white_top_hat_sampling,
+                        remove_beads=remove_beads,
                         flip_camera1=True,
                     )
 

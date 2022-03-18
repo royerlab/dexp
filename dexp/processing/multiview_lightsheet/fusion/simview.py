@@ -17,6 +17,7 @@ from dexp.processing.registration.translation_nd import register_translation_nd
 from dexp.processing.registration.translation_nd_proj import (
     register_translation_proj_nd,
 )
+from dexp.processing.remove_beads import remove_beads_by_threshold
 from dexp.processing.restoration.clean_dark_regions import clean_dark_regions
 from dexp.processing.restoration.dehazing import dehaze
 from dexp.utils import xpArray
@@ -42,6 +43,7 @@ class SimViewFusion(BaseFusion):
         dark_denoise_size: int,
         white_top_hat_size: int,
         white_top_hat_sampling: int,
+        remove_beads: bool,
         butterworth_filter_cutoff: float,
         flip_camera1: bool,
         internal_dtype: numpy.dtype = numpy.float16,
@@ -77,6 +79,7 @@ class SimViewFusion(BaseFusion):
         self._fusion_bias_strength_d = fusion_bias_strength_d
         self._flip_camera1 = flip_camera1
         self._pad = pad
+        self._remove_beads = remove_beads
 
     def _preprocess_single_view(self, view: xpArray, camera: int, lightsheet: int, flip: bool) -> xpArray:
         xp = Backend.get_xp_module()
@@ -86,8 +89,16 @@ class SimViewFusion(BaseFusion):
         ):
             view = Backend.to_backend(view, dtype=self._internal_dtype, force_copy=False)
 
+        if self._zero_level != 0:
+            view = xp.clip(view, self._zero_level, None)
+            view -= self._zero_level
+
+        if self._remove_beads:
+            with asection(f"Removing beads of C{camera}L{lightsheet}"):
+                view = remove_beads_by_threshold(view)
+
         if self._clip_too_high > 0:
-            with asection(f"Clipping intensities above {self._clip_too_high} for C{camera}L0"):
+            with asection(f"Clipping intensities above {self._clip_too_high} for C{camera}L{lightsheet}"):
                 xp.clip(view, a_min=0, a_max=self._clip_too_high, out=view)
 
         if self._dehaze_size > 0 and self._dehaze_before_fusion:
@@ -110,8 +121,7 @@ class SimViewFusion(BaseFusion):
         sp = Backend.get_sp_module()
 
         # removing salt and pepper noise (morphological opening)
-        filtered = sp.ndimage.minimum_filter(view, size=3)
-        filtered = sp.ndimage.maximum_filter(filtered, size=3).astype(numpy.float32)
+        filtered = sp.ndimage.morphology.grey_opening(view, size=3).astype(numpy.float32)
 
         # estimating background
         background = area_opening(filtered, self._white_top_hat_size, self._white_top_hat_sampling)
@@ -133,7 +143,7 @@ class SimViewFusion(BaseFusion):
                 view0, view1, ratio = equalise_intensity(
                     view0,
                     view1,
-                    zero_level=self._zero_level,
+                    zero_level=0,  # already removed when pre-processing single view
                     correction_ratio=self._equalisation_ratios[camera],
                     copy=False,
                 )
