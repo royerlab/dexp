@@ -1,5 +1,6 @@
 numpydoc==1.1.0
 sphinx==4.4.0
+markupsafe==2.0.1  # https://github.com/pallets/markupsafe/issues/284
 furo==2022.1.2
 sphinx-click==3.0.2
 sphinx-copybutton==0.3.1

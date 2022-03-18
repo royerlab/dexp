@@ -11,6 +11,11 @@ from dexp.utils.backends.backend import Backend
 class NumpyBackend(Backend):
     """
     NumpyBackend
+
+    Methods
+    -------
+    close:
+        Releases resources allocated by backend.
     """
 
     def __init__(self, *args, **kwargs):

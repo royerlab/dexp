@@ -11,6 +11,11 @@ from dexp.utils import xpArray
 class Backend(ABC):
     """
     Some description.
+
+    Methods
+    -------
+    close:
+        Releases resources allocated by backend.
     """
 
     def __init__(self):
