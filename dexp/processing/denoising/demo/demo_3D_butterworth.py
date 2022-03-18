@@ -42,7 +42,7 @@ def _demo_butterworth(display=True):
 
     noisy = add_noise(image)
 
-    function, parameters, memreq = calibrate_denoise_butterworth(noisy, mode='xy-z')
+    function, parameters = calibrate_denoise_butterworth(noisy, mode='xy-z')
     denoised = function(noisy, **parameters)
 
     image = xp.clip(image, 0, 1)

@@ -40,7 +40,7 @@ def _demo_gaussian( display=True):
 
     noisy = add_noise(image)
 
-    function, parameters, memreq = calibrate_denoise_gaussian(noisy)
+    function, parameters = calibrate_denoise_gaussian(noisy)
     denoised = function(noisy, **parameters)
 
     image = xp.clip(image, 0, 1)

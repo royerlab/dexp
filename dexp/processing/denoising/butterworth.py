@@ -179,10 +179,7 @@ def calibrate_denoise_butterworth(
         freq_cutoff = (freq_cutoff_xy, freq_cutoff_xy, freq_cutoff_z)
         best_parameters |= {'freq_cutoff': freq_cutoff}
 
-    # Memory needed:
-    memory_needed = 6 * image.nbytes  # complex numbers and more
-
-    return denoise_butterworth, best_parameters, memory_needed
+    return denoise_butterworth, best_parameters
 
 
 def denoise_butterworth(
