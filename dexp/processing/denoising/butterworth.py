@@ -5,7 +5,7 @@ from numba import jit
 
 from dexp.processing.crop.representative_crop import representative_crop
 from dexp.processing.denoising.j_invariance import calibrate_denoiser
-from dexp.utils import xpArray
+from dexp.utils import dict_or, xpArray
 from dexp.utils.backends import Backend, CupyBackend
 
 
@@ -110,14 +110,14 @@ def calibrate_denoise_butterworth(
     )  # numpy.arange(min_order, max_order, (max_order-min_order)/num_order)
 
     # Combine fixed parameters:
-    other_fixed_parameters = other_fixed_parameters | {
-        "max_padding": max_padding,
-        "axes": axes,
-    }
+    other_fixed_parameters = dict_or(
+        other_fixed_parameters,
+        {"max_padding": max_padding, "axes": axes},
+    )
 
     if mode == "isotropic":
         # Partial function:
-        _denoise_butterworth = partial(denoise_butterworth, **(other_fixed_parameters))
+        _denoise_butterworth = partial(denoise_butterworth, **other_fixed_parameters)
 
         # Parameters to test when calibrating the denoising algorithm
         parameter_ranges = {"freq_cutoff": freq_cutoff_range, "order": order_range}
@@ -131,7 +131,7 @@ def calibrate_denoise_butterworth(
             return denoise_butterworth(
                 *args,
                 freq_cutoff=_freq_cutoff,
-                **(kwargs | other_fixed_parameters),
+                **dict_or(kwargs, other_fixed_parameters),
             )
 
         # Parameters to test when calibrating the denoising algorithm
@@ -148,37 +148,38 @@ def calibrate_denoise_butterworth(
             return denoise_butterworth(
                 *args,
                 freq_cutoff=_freq_cutoff,
-                **(kwargs | other_fixed_parameters),
+                **dict_or(kwargs, other_fixed_parameters),
             )
 
         # Parameters to test when calibrating the denoising algorithm
-        parameter_ranges = {f"freq_cutoff_{i}": freq_cutoff_range for i in range(image.ndim)} | {"order": order_range}
+        parameter_ranges = {f"freq_cutoff_{i}": freq_cutoff_range for i in range(image.ndim)}
+        parameter_ranges["order"] = order_range
 
     else:
         raise ValueError(f"Unsupported denoising mode: {mode}")
 
     # Calibrate denoiser
-    best_parameters = (
+    best_parameters = dict_or(
         calibrate_denoiser(
             crop,
             _denoise_butterworth,
             denoise_parameters=parameter_ranges,
-            mode="l-bfgs-b",  # ,"shgo"
+            mode="lbfgs",  # ,"shgo"
             display_images=display_images,
-        )
-        | other_fixed_parameters
+        ),
+        other_fixed_parameters,
     )
 
     if mode == "full":
         # We need to adjust a bit the type of parameters passed to the denoising function:
         freq_cutoff = tuple(best_parameters.pop(f"freq_cutoff_{i}") for i in range(image.ndim))
-        best_parameters |= {"freq_cutoff": freq_cutoff}
+        best_parameters = dict_or(best_parameters, {"freq_cutoff": freq_cutoff})
     elif mode == "xy-z":
         # We need to adjust a bit the type of parameters passed to the denoising function:
         freq_cutoff_xy = best_parameters.pop("freq_cutoff_xy")
         freq_cutoff_z = best_parameters.pop("freq_cutoff_z")
         freq_cutoff = (freq_cutoff_xy, freq_cutoff_xy, freq_cutoff_z)
-        best_parameters |= {"freq_cutoff": freq_cutoff}
+        best_parameters = dict_or(best_parameters, {"freq_cutoff": freq_cutoff})
 
     return denoise_butterworth, best_parameters
 

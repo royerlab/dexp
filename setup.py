@@ -54,7 +54,6 @@ REQUIRED = [
     "blosc",
     "seaborn",
     "ome-zarr",
-    "bayesian-optimization",
 ]
 
 # What packages are optional?

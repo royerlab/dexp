@@ -37,7 +37,7 @@ def _demo_noise(display=True):
 
     image = numpy.clip(image, 0, 1)
     noisy = numpy.clip(noisy, 0, 1)
-    psnr_noisy = psnr(image, noisy)
+    psnr_noisy = psnr(image.astype(noisy.dtype), noisy)
     ssim_noisy = ssim(image, noisy)
     print("         noisy   :", psnr_noisy, ssim_noisy)
 

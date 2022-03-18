@@ -8,19 +8,15 @@ from arbol import aprint, asection
 from scipy.optimize import minimize, shgo
 
 from dexp.processing.denoising.metrics import mean_squared_error
-from dexp.utils import xpArray
+from dexp.utils import dict_or, xpArray
 from dexp.utils.backends import Backend
-from dexp.utils.bayes_opt import (
-    BayesianOptimization,
-    SequentialDomainReductionTransformer,
-)
 
 
 def calibrate_denoiser(
     image: xpArray,
     denoise_function: Callable,
     denoise_parameters: Dict[str, List[Union[float, int]]],
-    mode: str = "bayesian",
+    mode: str = "lbfgs",
     max_evaluations: int = 4096,
     stride: int = 4,
     loss_function: Callable = mean_squared_error,
@@ -50,7 +46,7 @@ def calibrate_denoiser(
         Values are either: (i) a list of possible values (categorical parameter),
         or (ii) a tuple of floats defining the bounds of that numerical parameter.
     mode : str
-        Optimisation mode. Can be: 'bruteforce' or 'bayesian'.
+        Optimisation mode. Can be: 'bruteforce', 'lbfgs' or 'shgo'.
     max_evaluations: int
         Maximum number of function evaluations during optimisation.
     stride: int
@@ -94,7 +90,7 @@ def calibrate_denoiser(
 
     aprint(f"Best parameters are: {best_parameters}")
 
-    return best_parameters | other_fixed_parameters
+    return dict_or(best_parameters, other_fixed_parameters)
 
 
 def _j_invariant_loss(
@@ -199,7 +195,7 @@ def _product_from_dict(dictionary: Dict[str, List[Union[float, int]]]):
 def _calibrate_denoiser_search(
     image: xpArray,
     denoise_function: Callable,
-    denoise_parameters: dict[List[Union[float, int]]],
+    denoise_parameters: Dict[str, List[Union[float, int]]],
     mode: str,
     max_evaluations: int,
     stride=4,
@@ -217,7 +213,7 @@ def _calibrate_denoiser_search(
     denoise_parameters : dict of list
         Ranges of parameters for `denoise_function` to be calibrated over.
     mode : str
-        Optimisation mode. Can be: bruteforce or bayesian
+        Optimisation mode. Can be: "bruteforce", "lbfgs" or "shgo".
     max_evaluations: int
         Maximum number of function evaluations during optimisation.
     stride : int, optional
@@ -293,7 +289,7 @@ def _calibrate_denoiser_search(
                             best_loss = loss
                             best_parameters = denoiser_kwargs
 
-    if mode == "l-bfgs-b":
+    if mode == "lbfgs":
         with asection(f"Searching by 'Limited-memory BFGS' the best denoising parameters among: {denoise_parameters}"):
 
             def callback(x):
@@ -318,7 +314,7 @@ def _calibrate_denoiser_search(
             aprint(result)
             best_parameters = dict({n: v for (n, v) in zip(parameter_names, result.x)})
 
-    if mode == "shgo":
+    elif mode == "shgo":
         with asection(
             "Searching by 'simplicial homology global optimization' (SHGO)"
             f"the best denoising parameters among: {denoise_parameters}"
@@ -335,36 +331,6 @@ def _calibrate_denoiser_search(
             result = shgo(__function, bounds, sampling_method="sobol", options={"maxev": max_evaluations})
             aprint(result)
             best_parameters = dict({n: v for (n, v) in zip(parameter_names, result.x)})
-
-    elif mode == "bayesian":
-
-        # Bounded region of parameter space
-        # expand ranges:
-        denoise_parameters = {n: r[0:2] for (n, r) in denoise_parameters.items()}
-
-        num_dim = len(denoise_parameters)
-
-        bounds_transformer = SequentialDomainReductionTransformer(gamma_osc=0.7, gamma_pan=1.0, eta=0.95)
-
-        optimizer = BayesianOptimization(
-            f=_function,
-            pbounds=denoise_parameters,
-            verbose=2,
-            # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
-            random_state=1,
-            bounds_transformer=bounds_transformer,
-        )
-
-        optimizer.maximize(
-            init_points=3 ** num_dim,
-            n_iter=max_evaluations,
-            # acq='ei',
-            kappa=0.9,
-            kappa_decay=0.95,
-            kappa_decay_delay=num_dim,
-        )
-
-        best_parameters = optimizer.max["params"]
 
     if display_images:
         import napari
