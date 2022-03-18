@@ -153,7 +153,7 @@ class BeadsRemover:
 
 
 def remove_beads_by_threshold(
-    image: xpArray, psf_size: Union[int, Tuple[int]] = 35, window: int = 15, k: float = 0.01
+    image: xpArray, psf_size: Union[int, Tuple[int]] = 35, window: int = 7, k: float = 0.01
 ) -> xpArray:
     """
     This functions estimates beads by a local threshold and
