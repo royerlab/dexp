@@ -2,8 +2,6 @@ from typing import Callable, Dict, Optional
 
 import numpy as np
 from numpy.typing import ArrayLike
-from pyotf.phaseretrieval import PhaseRetrievalResult, retrieve_phase
-from pyotf.utils import prep_data_for_PR
 from scipy.optimize import minimize
 from toolz import curry
 
@@ -37,6 +35,8 @@ def blind_deconvolution(
     n_zernikes: int = 15,
     display: bool = False,
 ) -> xpArray:
+    from pyotf.phaseretrieval import PhaseRetrievalResult, retrieve_phase
+    from pyotf.utils import prep_data_for_PR
 
     if display:
         import napari
