@@ -1,46 +1,47 @@
 # flake8: noqa
-
 from arbol import Arbol
 
-from skimage import data
-from skimage.color import rgb2gray
-
-from dexp.processing.denoising.gaussian import calibrate_denoise_gaussian
+from dexp.datasets.synthetic_datasets import generate_nuclei_background_data
+from dexp.processing.denoising.butterworth import calibrate_denoise_butterworth
 from dexp.processing.denoising.metrics import psnr, ssim
 from dexp.processing.denoising.noise import add_noise
 from dexp.utils.backends import NumpyBackend, CupyBackend, Backend
+from dexp.utils.timeit import timeit
 
 
-def demo_gaussian_numpy():
+def demo_butterworth_numpy():
     with NumpyBackend():
-        _demo_gaussian()
+        _demo_butterworth()
 
 
-def demo_gaussian_cupy():
+def demo_butterworth_cupy():
     try:
         with CupyBackend():
-            _demo_gaussian()
+            _demo_butterworth()
     except ModuleNotFoundError:
         print("Cupy module not found! Test passes nevertheless!")
 
-def _demo_gaussian( display=True):
+
+def _demo_butterworth(display=True):
     """
     Demo for self-supervised denoising using camera image with synthetic noise
     """
-
     # Backend:
     xp = Backend.get_xp_module()
 
     Arbol.enable_output = True
     Arbol.set_log_max_depth(5)
 
-    image = data.astronaut()
-    image = rgb2gray(image)
+    with timeit("generate data"):
+        image_gt, background, image = generate_nuclei_background_data(
+            add_noise=True, length_xy=320, length_z_factor=1
+        )
+
     image = Backend.to_backend(image)
 
     noisy = add_noise(image)
 
-    function, parameters, memreq = calibrate_denoise_gaussian(noisy)
+    function, parameters, memreq = calibrate_denoise_butterworth(noisy)
     denoised = function(noisy, **parameters)
 
     image = xp.clip(image, 0, 1)
@@ -50,8 +51,8 @@ def _demo_gaussian( display=True):
     ssim_noisy = ssim(image, noisy)
     psnr_denoised = psnr(image, denoised)
     ssim_denoised = ssim(image, denoised)
-    print("         noisy   :", psnr_noisy, ssim_noisy)
-    print("gaussian denoised:", psnr_denoised, ssim_denoised)
+    print("        noisy   :", psnr_noisy, ssim_noisy)
+    print("lowpass denoised:", psnr_denoised, ssim_denoised)
 
     if display:
         import napari
@@ -65,5 +66,5 @@ def _demo_gaussian( display=True):
 
 
 if __name__ == "__main__":
-    demo_gaussian_cupy()
-    demo_gaussian_numpy()
+    demo_butterworth_cupy()
+    demo_butterworth_numpy()

@@ -53,7 +53,8 @@ REQUIRED = [
     "cairocffi",
     "blosc",
     "seaborn",
-    "ome-zarr"
+    "ome-zarr",
+    "bayesian-optimization"
 ]
 
 # What packages are optional?
