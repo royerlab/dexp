@@ -35,7 +35,7 @@ def _demo_representative_crop(fast_mode: bool = True, display: bool = True):
 
     with asection(f"Computing crop for image of shape: {image.shape}"):
         crop_size = 16000
-        crop = representative_crop(image, crop_size=crop_size, fast_mode=fast_mode, display_crop=False)
+        crop = representative_crop(image, crop_size=crop_size, fast_mode=fast_mode, display=False)
 
     if display:
         import napari

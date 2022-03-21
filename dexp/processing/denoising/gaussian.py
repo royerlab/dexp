@@ -13,7 +13,7 @@ def calibrate_denoise_gaussian(
     num_sigma: int = 100,
     max_num_truncate: int = 4,
     crop_size_in_voxels: Optional[int] = 128000,
-    display_images: bool = False,
+    display: bool = False,
     **other_fixed_parameters,
 ):
     """
@@ -81,7 +81,7 @@ def calibrate_denoise_gaussian(
             crop,
             _denoise_gaussian,
             denoise_parameters=parameter_ranges,
-            display_images=display_images,
+            display=display,
         ),
         other_fixed_parameters,
     )

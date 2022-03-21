@@ -16,12 +16,12 @@ def calibrate_denoiser(
     image: xpArray,
     denoise_function: Callable,
     denoise_parameters: Dict[str, List[Union[float, int]]],
-    mode: str = "lbfgs",
+    mode: str = "shgo+lbfgs",
     max_evaluations: int = 4096,
     stride: int = 4,
     loss_function: Callable = mean_squared_error,
     # _structural_loss, mean_squared_error, mean_absolute_error #
-    display_images: bool = False,
+    display: bool = False,
     **other_fixed_parameters,
 ):
     """
@@ -85,7 +85,7 @@ def calibrate_denoiser(
             max_evaluations=max_evaluations,
             stride=stride,
             loss_function=loss_function,
-            display_images=display_images,
+            display_images=display,
         )
 
     aprint(f"Best parameters are: {best_parameters}")
@@ -267,12 +267,14 @@ def _calibrate_denoiser_search(
         loss = Backend.to_numpy(loss)
 
         if display_images and not (math.isnan(loss) or math.isinf(loss)):
-            denoised = denoise_function(image, **denoiser_kwargs)
+            denoised = denoise_function(image, **_denoiser_kwargs)
             denoised_images.append(denoised)
 
         return -float(loss)
 
-    if mode == "bruteforce":
+    best_parameters = None
+
+    if "bruteforce" in mode:
         with asection(f"Searching by brute-force for the best denoising parameters among: {denoise_parameters}"):
 
             num_rounds = 4
@@ -289,14 +291,37 @@ def _calibrate_denoiser_search(
                             best_loss = loss
                             best_parameters = denoiser_kwargs
 
-    if mode == "lbfgs":
+    if "shgo" in mode:
+        with asection(
+            "Searching by 'simplicial homology global optimization' (SHGO)"
+            f"the best denoising parameters among: {denoise_parameters}"
+        ):
+            if best_parameters is None:
+                x0 = tuple(0.5 * (v[1] - v[0]) for v in denoise_parameters.values())
+            else:
+                x0 = tuple(best_parameters[k] for k in denoise_parameters.keys())
+
+            bounds = list(v[0:2] for v in denoise_parameters.values())
+
+            # Impedance mismatch:
+            def __function(*_denoiser_kwargs):
+                param_dict = {n: v for (n, v) in zip(parameter_names, tuple(_denoiser_kwargs[0]))}
+                value = -_function(**param_dict)
+                return value
+
+            result = shgo(__function, bounds, sampling_method="sobol", options={"maxev": max_evaluations})
+            aprint(result)
+            best_parameters = dict({n: v for (n, v) in zip(parameter_names, result.x)})
+
+    if "lbfgs" in mode:
         with asection(f"Searching by 'Limited-memory BFGS' the best denoising parameters among: {denoise_parameters}"):
 
-            def callback(x):
-                print(x)
+            if best_parameters is None:
+                x0 = tuple(0.5 * (v[1] - v[0]) for v in denoise_parameters.values())
+            else:
+                x0 = tuple(best_parameters[k] for k in denoise_parameters.keys())
 
-            x0 = tuple(0.5 * (v[1] - v[0]) for (n, v) in denoise_parameters.items())
-            bounds = list(v[0:2] for (n, v) in denoise_parameters.items())
+            bounds = list(v[0:2] for v in denoise_parameters.values())
 
             # Impedance mismatch:
             def __function(*_denoiser_kwargs):
@@ -309,26 +334,8 @@ def _calibrate_denoiser_search(
                 x0=x0,
                 method="L-BFGS-B",
                 bounds=bounds,
-                options={"maxfun": max_evaluations, "eps": 1e-2, "ftol": 1e-9, "gtol": 1e-9},
+                options=dict(maxfun=max_evaluations, eps=1e-2, ftol=1e-9, gtol=1e-9),
             )
-            aprint(result)
-            best_parameters = dict({n: v for (n, v) in zip(parameter_names, result.x)})
-
-    elif mode == "shgo":
-        with asection(
-            "Searching by 'simplicial homology global optimization' (SHGO)"
-            f"the best denoising parameters among: {denoise_parameters}"
-        ):
-            x0 = tuple(0.5 * (v[1] - v[0]) for v in denoise_parameters.values())
-            bounds = list(v[0:2] for v in denoise_parameters.values())
-
-            # Impedance mismatch:
-            def __function(*_denoiser_kwargs):
-                param_dict = {n: v for (n, v) in zip(parameter_names, tuple(_denoiser_kwargs[0]))}
-                value = -_function(**param_dict)
-                return value
-
-            result = shgo(__function, bounds, sampling_method="sobol", options={"maxev": max_evaluations})
             aprint(result)
             best_parameters = dict({n: v for (n, v) in zip(parameter_names, result.x)})
 

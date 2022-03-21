@@ -1,7 +1,7 @@
 from functools import partial
 from typing import Optional, Sequence, Tuple, Union
 
-from numba import jit
+import numpy as np
 
 from dexp.processing.crop.representative_crop import representative_crop
 from dexp.processing.denoising.j_invariance import calibrate_denoiser
@@ -20,8 +20,8 @@ def calibrate_denoise_butterworth(
     min_order: float = 0.5,
     max_order: float = 6.0,
     num_order: int = 32,
-    crop_size_in_voxels: Optional[int] = 1280000,
-    display_images: bool = False,
+    crop_size_in_voxels: Optional[int] = 256 ** 3,
+    display: bool = False,
     **other_fixed_parameters,
 ):
     """
@@ -95,7 +95,7 @@ def calibrate_denoise_butterworth(
     image = image.astype(dtype=xp.float32, copy=False)
 
     # obtain representative crop, to speed things up...
-    crop = representative_crop(image, crop_size=crop_size_in_voxels)
+    crop = representative_crop(image, crop_size=crop_size_in_voxels, display=False)
 
     # ranges:
     freq_cutoff_range = (
@@ -164,8 +164,8 @@ def calibrate_denoise_butterworth(
             crop,
             _denoise_butterworth,
             denoise_parameters=parameter_ranges,
-            mode="lbfgs",  # ,"shgo"
-            display_images=display_images,
+            mode="shgo+lbfgs",  # ,"shgo"
+            display=display,
         ),
         other_fixed_parameters,
     )
@@ -180,6 +180,12 @@ def calibrate_denoise_butterworth(
         freq_cutoff_z = best_parameters.pop("freq_cutoff_z")
         freq_cutoff = (freq_cutoff_xy, freq_cutoff_xy, freq_cutoff_z)
         best_parameters = dict_or(best_parameters, {"freq_cutoff": freq_cutoff})
+
+    if isinstance(Backend.current(), CupyBackend):
+        # Free plane cache to avoid running out of memory
+        from cupy.fft.config import get_plan_cache
+
+        get_plan_cache().clear()
 
     return denoise_butterworth, best_parameters
 
@@ -229,13 +235,8 @@ def denoise_butterworth(
     Denoised image
 
     """
-
-    # Backend:
-    xp = Backend.get_xp_module(image)
-    sp = Backend.get_sp_module(image)
-
     # Convert image to float if needed:
-    image = image.astype(dtype=xp.float32, copy=False)
+    image = image.astype(dtype=np.float32, copy=False)
 
     # Normalise freq_cutoff argument to tuple:
     if type(freq_cutoff) is not tuple:
@@ -255,33 +256,25 @@ def denoise_butterworth(
     )
 
     # pad image:
-    image = xp.pad(image, pad_width=pad_width, mode="reflect")
+    image = np.pad(image, pad_width=pad_width, mode="reflect")
 
     # Move to frequency space:
-    image_f = _fftn(axes, image, sp)
+    image_f = np.fft.fftn(image, axes=axes)
 
     # Center frequencies:
-    image_f = sp.fft.fftshift(image_f, axes=axes)
+    image_f = np.fft.fftshift(image_f, axes=axes)
 
     # Compute squared distance image:
     f = _compute_distance_image(freq_cutoff, image, selected_axes)
 
-    # Chose filter implementation:
-    if isinstance(Backend.current(), CupyBackend):
-        import cupy
-
-        filter = cupy.vectorize(_filter)
-    else:
-        filter = jit(nopython=True, parallel=True)(_filter)
-
     # Apply filter:
-    image_f = filter(image_f, f, order)
+    image_f = _butterworth_filter(image_f, f, order)
 
     # Shift back:
-    image_f = sp.fft.ifftshift(image_f, axes=axes)
+    image_f = np.fft.ifftshift(image_f, axes=axes)
 
     # Back in real space:
-    denoised = xp.real(_ifftn(axes, image_f, sp))
+    denoised = np.real(np.fft.ifftn(image_f, axes=axes))
 
     # Crop to remove padding:
     denoised = denoised[tuple(slice(u, -v) for u, v in pad_width)]
@@ -289,23 +282,7 @@ def denoise_butterworth(
     return denoised
 
 
-def _ifftn(axes, image_f, sp):
-    try:
-        return sp.fft.ifftn(image_f, axes=axes, workers=-1)
-    except TypeError:
-        # Some backends do not support the workers argument:
-        return sp.fft.ifftn(image_f, axes=axes)
-
-
-def _fftn(axes, image, sp):
-    try:
-        return sp.fft.fftn(image, axes=axes, workers=-1)
-    except TypeError:
-        # Some backends do not support the workers argument:
-        return sp.fft.fftn(image, axes=axes)
-
-
-def _compute_distance_image(freq_cutoff, image, selected_axes):
+def _compute_distance_image(freq_cutoff: float, image: xpArray, selected_axes: Sequence[int]) -> xpArray:
 
     # Backend:
     xp = Backend.get_xp_module(image)
@@ -314,14 +291,13 @@ def _compute_distance_image(freq_cutoff, image, selected_axes):
     axis_grid = tuple((xp.linspace(-1, 1, s) if sa else xp.zeros((s,))) for sa, s in zip(selected_axes, image.shape))
     for fc, x in zip(freq_cutoff, xp.meshgrid(*axis_grid, indexing="ij")):
         f += (x / fc) ** 2
+
     return f
 
 
-def _apw(freq_cutoff, max_padding):
+def _apw(freq_cutoff: int, max_padding: int) -> int:
     return min(max_padding, max(1, int(1.0 / (1e-10 + freq_cutoff))))
 
 
-def _filter(image_f, f, order):
-
-    image_f *= (1 + f ** order) ** (-0.5)
-    return image_f
+def _butterworth_filter(image_f: xpArray, f: xpArray, order: float) -> xpArray:
+    return image_f * (1 + f ** order) ** (-0.5)

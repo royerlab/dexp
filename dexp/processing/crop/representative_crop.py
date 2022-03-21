@@ -10,7 +10,7 @@ from dexp.utils.backends import Backend
 
 def representative_crop(
     image,
-    mode: str = "sobelmin",
+    mode: str = "sobel",
     crop_size: Optional[int] = None,
     min_length: int = 16,
     smoothing_size: int = 1.0,
@@ -18,9 +18,9 @@ def representative_crop(
     favour_odd_lengths: bool = False,
     fast_mode: bool = False,
     fast_mode_num_crops: int = 1500,
-    max_time_in_seconds: float = 1,
+    max_time_in_seconds: float = 10,
     return_slice: bool = False,
-    display_crop: bool = False,
+    display: bool = False,
 ):
     """Extract a representative crop from the image. Searches for the crop of given
     (approximate) size with highest score. The score is simply the sum of sobel
@@ -66,7 +66,7 @@ def representative_crop(
     return_slice : bool
         If True the slice is returned too:
 
-    display_crop: bool
+    display: bool
         Displays crop, for debugging purposes...
 
     Returns
@@ -77,9 +77,6 @@ def representative_crop(
 
     # Backend:
     xp = Backend.get_xp_module(image)
-
-    # Start time:
-    start_time = time.time()
 
     # Number of voxels in image:
     num_voxels = image.size
@@ -122,6 +119,9 @@ def representative_crop(
     best_slice = None
     best_crop = None
 
+    # Start time:
+    start_time = time.time()
+
     if fast_mode and image.size > 1e6:
 
         # We make sure that the number of crops is not too large given
@@ -159,9 +159,6 @@ def representative_crop(
                 best_score = score
                 best_slice = crop_slice
 
-                # We make sure to have the full and original crop!
-                best_crop = image[best_slice]
-
             if time.time() > start_time + max_time_in_seconds:
                 aprint("Interrupting crop search because of timeout!")
                 break
@@ -191,23 +188,26 @@ def representative_crop(
                 best_score = score
                 best_slice = crop_slice
 
-                # We make sure to have the full and original crop!
-                best_crop = image[best_slice]
-
             if time.time() > start_time + max_time_in_seconds:
                 aprint("Interrupting crop search because of timeout!")
                 break
 
-    if display_crop:
+    # We make sure to have the full and original crop!
+    best_crop = image[best_slice]
+
+    if display:
         smoothed_best_crop = _smoothing(best_crop, size=smoothing_size)
 
         import napari
 
-        with napari.gui_qt():
-            viewer = napari.Viewer()
-            viewer.add_image(image, name="image")
-            viewer.add_image(best_crop, name="best_crop")
-            viewer.add_image(smoothed_best_crop, name="smoothed_best_crop")
+        backend = Backend.current()
+
+        viewer = napari.Viewer()
+        viewer.add_image(backend.to_numpy(image), name="image")
+        viewer.add_image(backend.to_numpy(best_crop), name="best_crop")
+        viewer.add_image(backend.to_numpy(smoothed_best_crop), name="smoothed_best_crop")
+
+        napari.run()
 
     if return_slice:
         return best_crop, best_slice
