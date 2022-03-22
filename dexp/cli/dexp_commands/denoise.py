@@ -6,6 +6,7 @@ from dexp.cli.parsing import (
     _get_output_path,
     _parse_channels,
     _parse_chunks,
+    _parse_devices,
     _parse_slicing,
 )
 from dexp.datasets.open_dataset import glob_datasets
@@ -35,6 +36,9 @@ from dexp.datasets.zarr_dataset import ZDataset
 )
 @click.option("--clevel", "-l", type=int, default=DEFAULT_CLEVEL, help="Compression level", show_default=True)
 @click.option("--overwrite", "-w", is_flag=True, help="Forces overwrite of target", show_default=True)
+@click.option(
+    "--devices", "-d", type=str, default="0", help="Sets the CUDA devices id, e.g. 0,1,2 or ‘all’", show_default=True
+)
 def denoise(
     input_paths,
     output_path,
@@ -46,12 +50,16 @@ def denoise(
     codec,
     clevel,
     overwrite,
+    devices,
 ):
-    """TODO"""
+    """Denoises input image using butterworth filter, parameters are estimated automatically
+    using noise2self j-invariant cross-validation loss.
+    """
 
     input_dataset, input_paths = glob_datasets(input_paths)
     channels = _parse_channels(input_dataset, channels)
     slicing = _parse_slicing(slicing)
+    devices = _parse_devices(devices)
 
     if slicing is not None:
         input_dataset.set_slicing(slicing)
@@ -74,6 +82,7 @@ def denoise(
             output_dataset,
             channels=channels,
             tilesize=tilesize,
+            devices=devices,
         )
 
     input_dataset.close()
