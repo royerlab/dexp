@@ -153,7 +153,7 @@ class BeadsRemover:
 
 
 def remove_beads_by_threshold(
-    image: xpArray, psf_size: Union[int, Tuple[int]] = 35, window: int = 15, k: float = 0.05
+    image: xpArray, psf_size: Union[int, Tuple[int]] = 35, window: int = 7, k: float = 0.01
 ) -> xpArray:
     """
     This functions estimates beads by a local threshold and
@@ -176,7 +176,7 @@ def remove_beads_by_threshold(
     xpArray
         Input image without beads
     """
-    from cucim.skimage.filters import threshold_sauvola
+    from cucim.skimage.filters import threshold_niblack
 
     sp = Backend.get_sp_module(image)
     xp = Backend.get_xp_module(image)
@@ -189,7 +189,7 @@ def remove_beads_by_threshold(
     small_image = sp.ndimage.convolve(small_image, xp.ones((3,) * image.ndim))
 
     # apply threshold and upsample
-    threshold = threshold_sauvola(small_image, window, k)
+    threshold = threshold_niblack(small_image, window, k)
     threshold = sp.ndimage.zoom(threshold, zoom=sampling, order=1)
     threshold = _centered(threshold, shape)
 

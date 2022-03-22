@@ -237,7 +237,10 @@ def dataset_fuse(
         lazy_computations.append(process(i, params))
 
     if len(devices) > 1:
-        first_model, dest_dataset = params.compute()[1:]
+        if equalise_mode == "all":
+            first_model, dest_dataset = params[1:]  # not a dask operation
+        else:
+            first_model, dest_dataset = params.compute()[1:]
         models = [first_model] + [output[1] for output in dask.compute(*lazy_computations)]
     else:
         models = [params[1]] + [output[1] for output in lazy_computations]
