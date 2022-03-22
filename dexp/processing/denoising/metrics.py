@@ -4,7 +4,7 @@ from dexp.utils.backends import Backend
 def mean_squared_error(image_a, image_b):
     # Backend:
     xp = Backend.get_xp_module(image_a)
-    return xp.mean((image_a - image_b) ** 2)
+    return xp.mean(xp.square(image_a - image_b))
 
 
 def mean_absolute_error(image_a, image_b):
@@ -16,7 +16,7 @@ def mean_absolute_error(image_a, image_b):
 def lhalf_error(image_a, image_b):
     # Backend:
     xp = Backend.get_xp_module(image_a)
-    return xp.mean(xp.absolute(image_a - image_b) ** 0.5) ** 2
+    return xp.square(xp.mean(xp.sqrt(xp.absolute(image_a - image_b))))
 
 
 def psnr(image_true, image_test):

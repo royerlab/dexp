@@ -23,7 +23,7 @@ from dexp.datasets.zarr_dataset import ZDataset
     default=None,
     help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
 )
-@click.option("--tilesize", "-ts", type=int, default=512, help="Tile size for tiled computation", show_default=True)
+@click.option("--tilesize", "-ts", type=int, default=320, help="Tile size for tiled computation", show_default=True)
 @click.option("--store", "-st", default=DEFAULT_STORE, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
 @click.option("--chunks", "-chk", default=None, help="Dataset chunks dimensions, e.g. (1, 126, 512, 512).")
 @click.option(
