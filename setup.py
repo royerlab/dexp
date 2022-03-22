@@ -61,6 +61,12 @@ EXTRAS = {
     "source": [
         f"cupy=={CUPY_VERSION}",
     ],
+    "cuda114": [
+        f"cupy-cuda114=={CUPY_VERSION}",
+    ],
+    "cuda113": [
+        f"cupy-cuda113=={CUPY_VERSION}",
+    ],
     "cuda112": [
         f"cupy-cuda112=={CUPY_VERSION}",
     ],

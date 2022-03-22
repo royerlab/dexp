@@ -1,5 +1,6 @@
-import numpy
 import warnings
+
+import numpy
 from arbol import aprint
 
 from dexp.utils import xpArray

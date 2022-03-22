@@ -6,6 +6,7 @@ from dexp.cli.dexp_commands.check import check
 from dexp.cli.dexp_commands.copy import copy
 from dexp.cli.dexp_commands.crop import crop
 from dexp.cli.dexp_commands.deconv import deconv
+from dexp.cli.dexp_commands.denoise import denoise
 from dexp.cli.dexp_commands.deskew import deskew
 from dexp.cli.dexp_commands.extract_psf import extract_psf
 from dexp.cli.dexp_commands.fastcopy import fastcopy
@@ -74,6 +75,7 @@ cli.add_command(fuse)
 cli.add_command(register)
 cli.add_command(stabilize)
 cli.add_command(deconv)
+cli.add_command(denoise)
 cli.add_command(isonet)
 cli.add_command(histogram)
 

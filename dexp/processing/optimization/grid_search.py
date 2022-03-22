@@ -12,7 +12,7 @@ def j_invariant_grid_search(
     image: xpArray,
     function: Callable,
     loss_fun: Callable[[xpArray, xpArray], float],
-    grid=Dict[str, ArrayLike],
+    grid: Dict[str, ArrayLike],
     proportion_mask: float = 0.01,
     median_window: int = 3,
     display: bool = False,

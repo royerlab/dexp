@@ -24,7 +24,7 @@ from dexp.utils.config import config_blosc
 class ZDataset(BaseDataset):
     def __init__(
         self,
-        path: str,
+        path: Union[str, Path],
         mode: str = "r",
         store: str = None,
         *,
@@ -53,6 +53,9 @@ class ZDataset(BaseDataset):
         config_blosc()
 
         super().__init__(dask_backed=False)
+
+        if not isinstance(path, str):
+            path = str(path)
 
         self._path = path
         self._store = None
