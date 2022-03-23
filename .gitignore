@@ -111,3 +111,7 @@ venv.bak/
 
 # macos
 .DS_Store
+
+# dask files
+*.lock
+*.dirlock

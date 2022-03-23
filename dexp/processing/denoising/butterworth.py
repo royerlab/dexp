@@ -8,6 +8,17 @@ from dexp.processing.crop.representative_crop import representative_crop
 from dexp.processing.denoising.j_invariance import calibrate_denoiser
 from dexp.utils import dict_or, xpArray
 from dexp.utils.backends import Backend, CupyBackend
+from dexp.utils.backends.cupy_backend import is_cupy_available
+
+try:
+    import cupyx
+
+    rsqrt = cupyx.rsqrt
+
+except ImportError:
+
+    def rsqrt(x: xpArray) -> xpArray:
+        return 1 / np.sqrt(x)
 
 
 def calibrate_denoise_butterworth(
@@ -352,4 +363,15 @@ def _setup_butterworth_denoiser(
 
 
 def _butterworth_filter(image_f: xpArray, f: xpArray, order: float) -> xpArray:
-    return image_f / np.sqrt(1 + f ** order)
+    if isinstance(image_f, np.ndarray):
+        return image_f / np.sqrt(1 + f ** order)
+    else:
+        # Faster operation if cupy array is used
+        return image_f * rsqrt(1 + f ** order)
+
+
+# "Compiles" to cupy if available
+if is_cupy_available():
+    import cupy
+
+    _butterworth_filter = cupy.fuse(_butterworth_filter)
