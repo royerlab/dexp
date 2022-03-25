@@ -93,8 +93,10 @@ EXTRAS = {
         "napari[all]",
     ],
     "optional": [
+        "edt",
         "higra",
         "pyotf",
+        "pyift",
         "tensorstore",
     ],
     "gpu": [
