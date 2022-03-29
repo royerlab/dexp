@@ -17,6 +17,7 @@ from dexp.cli.dexp_commands.info import info
 from dexp.cli.dexp_commands.isonet import isonet
 from dexp.cli.dexp_commands.projrender import projrender
 from dexp.cli.dexp_commands.register import register
+from dexp.cli.dexp_commands.segment import segment
 from dexp.cli.dexp_commands.serve import serve
 from dexp.cli.dexp_commands.speedtest import speedtest
 from dexp.cli.dexp_commands.stabilize import stabilize
@@ -78,6 +79,7 @@ cli.add_command(deconv)
 cli.add_command(denoise)
 cli.add_command(isonet)
 cli.add_command(histogram)
+cli.add_command(segment)
 
 cli.add_command(speedtest)
 

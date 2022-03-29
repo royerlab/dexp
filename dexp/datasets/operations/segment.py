@@ -44,17 +44,23 @@ def _process(
 
             with asection("Detecting cells ..."):
                 detection = wth > threshold_otsu(wth)
+                del wth
                 detection = morph.closing(detection, morph.ball(np.sqrt(2)))
                 detection = morph.remove_small_objects(detection, min_size=minimum_area)
+                count = detection.sum()
+                aprint(f"Number of detected cell-pixels {count} proportion {detection.sum() / detection.size}.")
 
-            if use_edt:
-                basins = bkd.to_backend(edt(bkd.to_numpy(detection), anisotropy=(z_scale, 1, 1)))
-            else:
-                basins = filtered / np.quantile(filtered, 0.999)
+            with asection("Computing watershed basins ..."):
+                if use_edt:
+                    basins = bkd.to_backend(edt(bkd.to_numpy(detection), anisotropy=(z_scale, 1, 1)))
+                else:
+                    basins = filtered / np.quantile(filtered, 0.999)
 
-            basins = basins.max() - basins
-            basins = bkd.to_numpy(basins)
-            detection = bkd.to_numpy(detection)
+                del filtered
+
+                basins = basins.max() - basins
+                basins = bkd.to_numpy(basins)
+                detection = bkd.to_numpy(detection)
 
             with asection("Segmenting ..."):
                 _, labels = watershed_from_minima(
@@ -64,6 +70,7 @@ def _process(
                     compactness=0 if use_edt else compactness,
                     scales=None if use_edt else (z_scale, 1, 1),
                 )
+                del basins, detection
                 labels = labels.astype(np.int32)
 
             with asection("Relabeling ..."):
@@ -82,6 +89,8 @@ def _process(
         )
         df["time_point"] = time_point
         df["channel"] = channel
+
+    aprint(df.describe())
 
     return df
 
