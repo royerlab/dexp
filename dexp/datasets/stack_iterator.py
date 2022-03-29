@@ -10,12 +10,21 @@ class StackIterator:
     def __init__(self, array: zarr.Array, slicing: Optional[slice]):
 
         self._out_shape, self._volume_slicing, self._time_points = slice_from_shape(array.shape, slicing)
+        self._slicing = slicing
 
         self._array = array
 
     @property
     def shape(self) -> Tuple[int]:
         return self._out_shape
+
+    @property
+    def dtype(self) -> np.dtype:
+        return self._array.dtype
+
+    @property
+    def slicing(self) -> Tuple[slice]:
+        return self._slicing
 
     def __len__(self) -> int:
         return len(self._time_points)

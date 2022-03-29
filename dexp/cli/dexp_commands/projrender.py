@@ -5,8 +5,8 @@ from dexp.cli.defaults import DEFAULT_WORKERS_BACKEND
 from dexp.cli.parsing import (
     _get_output_path,
     _parse_channels,
-    _parse_devices,
     _parse_slicing,
+    parse_devices,
 )
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.projrender import dataset_projection_rendering
@@ -206,7 +206,7 @@ def projrender(
     input_dataset, input_paths = glob_datasets(input_paths)
     channels = _parse_channels(input_dataset, channels)
     slicing = _parse_slicing(slicing)
-    devices = _parse_devices(devices)
+    devices = parse_devices(devices)
 
     output_path = _get_output_path(input_paths[0], output_path, f"_{mode}_projection")
 

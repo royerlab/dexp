@@ -6,8 +6,8 @@ from dexp.cli.parsing import (
     _get_output_path,
     _parse_channels,
     _parse_chunks,
-    _parse_devices,
     _parse_slicing,
+    parse_devices,
 )
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.denoise import dataset_denoise
@@ -59,7 +59,7 @@ def denoise(
     input_dataset, input_paths = glob_datasets(input_paths)
     channels = _parse_channels(input_dataset, channels)
     slicing = _parse_slicing(slicing)
-    devices = _parse_devices(devices)
+    devices = parse_devices(devices)
 
     if slicing is not None:
         input_dataset.set_slicing(slicing)
