@@ -10,8 +10,8 @@ from dexp.cli.defaults import (
 from dexp.cli.parsing import (
     _get_output_path,
     _parse_channels,
-    _parse_devices,
     _parse_slicing,
+    parse_devices,
 )
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.deskew import dataset_deskew
@@ -130,7 +130,7 @@ def deskew(
 
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
-    devices = _parse_devices(devices)
+    devices = parse_devices(devices)
 
     if flips is None:
         flips = (False,) * len(channels)

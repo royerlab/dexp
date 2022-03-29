@@ -5,8 +5,8 @@ from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC, DEFAULT_STORE
 from dexp.cli.parsing import (
     _get_output_path,
     _parse_channels,
-    _parse_devices,
     _parse_slicing,
+    parse_devices,
 )
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.fuse import dataset_fuse
@@ -236,7 +236,7 @@ def fuse(
 
     slicing = _parse_slicing(slicing)
     channels = _parse_channels(input_dataset, channels)
-    devices = _parse_devices(devices)
+    devices = parse_devices(devices)
 
     with asection(
         f"Fusing dataset: {input_paths}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "
