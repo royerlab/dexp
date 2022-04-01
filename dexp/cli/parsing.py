@@ -1,7 +1,12 @@
-from typing import Optional, Sequence, Tuple, Union
+from typing import Callable, Optional, Sequence, Tuple, Union
 
+import click
 from arbol import aprint
 from numpy import s_
+
+from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC, DEFAULT_STORE
+from dexp.datasets import ZDataset
+from dexp.datasets.open_dataset import glob_datasets
 
 
 def _get_output_path(input_path, output_path, postfix=""):
@@ -47,7 +52,7 @@ def _parse_channels(input_dataset, channels):
     aprint(f"Selected channel(s)  : '{channels}'")
     return channels
 
-  
+
 def parse_devices(devices: str) -> Union[str, Sequence[int]]:
     aprint(f"Requested devices    :  '{'--All--' if 'all' in devices else devices}' ")
 
@@ -69,3 +74,137 @@ def _parse_chunks(chunks: Optional[str]) -> Optional[Tuple[int]]:
     if chunks is not None:
         chunks = eval(chunks)
     return chunks
+
+
+def devices_callback(ctx: click.Context, opt: click.Option, value: str) -> Sequence[int]:
+    return parse_devices(value)
+
+
+def devices_option() -> Callable:
+    def decorator(f: Callable) -> Callable:
+        return click.option(
+            "--devices",
+            "-d",
+            type=str,
+            default="all",
+            help="Sets the CUDA devices id, e.g. 0,1,2 or ‘all’",
+            show_default=True,
+            callback=devices_callback,
+        )(f)
+
+    return decorator
+
+
+def slicing_callback(ctx: click.Context, opt: click.Option, value: str) -> None:
+    slicing = _parse_slicing(value)
+    if slicing is not None:
+        ctx.params["input_dataset"].set_slicing(slicing)
+    opt.expose_value = False
+
+
+def slicing_option() -> Callable:
+    def decorator(f: Callable) -> Callable:
+        return click.option(
+            "--slicing",
+            "-s",
+            default=None,
+            help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
+            callback=slicing_callback,
+        )(f)
+
+    return decorator
+
+
+def channels_callback(ctx: click.Context, opt: click.Option, value: str) -> Sequence[str]:
+    return _parse_channels(ctx.params["input_dataset"], value)
+
+
+def channels_option() -> Callable:
+    def decorator(f: Callable) -> Callable:
+        return click.option(
+            "--channels", "-c", default=None, help="list of channels, all channels when ommited.", is_eager=True
+        )(f)
+
+    return decorator
+
+
+def input_dataset_callback(ctx: click.Context, arg: click.Argument, value: str) -> str:
+    ctx.params["input_dataset"], _ = glob_datasets(value)
+    arg.expose_value = False
+
+
+def input_dataset_argument() -> Callable:
+    def decorator(f: Callable) -> Callable:
+        return click.argument("input-paths", nargs=-1, callback=input_dataset_callback, is_eager=True)(f)
+
+    return decorator
+
+
+def output_dataset_callback(ctx: click.Context, opt: click.Option, value: str) -> None:
+    mode = "w" if ctx.params["overwrite"] else "w-"
+    ctx.params["output_dataset"] = ZDataset(
+        value,
+        mode=mode,
+        store=ctx.params["store"],
+        codec=ctx.params["codec"],
+        clevel=ctx.params["clevel"],
+        chunks=_parse_chunks(ctx.params["chunks"]),
+        parent=ctx.params["input_dataset"],
+    )
+    # removing used parameters
+    opt.expose_value = False
+    for key in ["overwrite", "store", "codec", "clevel", "chunks"]:
+        del ctx.params[key]
+
+
+def output_dataset_options() -> Callable:
+
+    click_options = [
+        click.option(
+            "--output-path", "-o", default=None, help="Dataset output path.", callback=output_dataset_callback
+        ),
+        click.option(
+            "--overwrite",
+            "-w",
+            is_flag=True,
+            help="Forces overwrite of target",
+            show_default=True,
+            default=False,
+            is_eager=True,
+        ),
+        click.option(
+            "--store",
+            "-st",
+            default=DEFAULT_STORE,
+            help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’",
+            show_default=True,
+            is_eager=True,
+        ),
+        click.option(
+            "--chunks", "-chk", default=None, help="Dataset chunks dimensions, e.g. (1, 126, 512, 512).", is_eager=True
+        ),
+        click.option(
+            "--codec",
+            "-z",
+            default=DEFAULT_CODEC,
+            help="Compression codec: zstd for ’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ",
+            show_default=True,
+            is_eager=True,
+        ),
+        click.option(
+            "--clevel",
+            "-l",
+            type=int,
+            default=DEFAULT_CLEVEL,
+            help="Compression level",
+            show_default=True,
+            is_eager=True,
+        ),
+    ]
+
+    def decorator(f: Callable) -> Callable:
+        for opt in click_options:
+            f = opt(f)
+        return f
+
+    return decorator

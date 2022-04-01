@@ -1,20 +1,13 @@
 import click
 
-from dexp.cli.parsing import _parse_channels, _parse_slicing
-from dexp.datasets.open_dataset import glob_datasets
+from dexp.cli.parsing import channels_option, input_dataset_argument
 from dexp.datasets.operations.histogram import dataset_histogram
 
 
 @click.command()
-@click.argument("input-paths", nargs=-1)
+@input_dataset_argument()
+@channels_option()
 @click.option("--output-directory", "-o", default="histogram", show_default=True, type=str)
-@click.option("--channels", "-c", default=None, help="list of channels, all channels when ommited.")
-@click.option(
-    "--slicing",
-    "-s",
-    default=None,
-    help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
-)
 @click.option("--device", "-d", type=int, default=0, show_default=True)
 @click.option(
     "--minimum-count",
@@ -32,15 +25,8 @@ from dexp.datasets.operations.histogram import dataset_histogram
     type=float,
     help="Maximum count to clip histogram and improve visualization.",
 )
-def histogram(input_paths, output_directory, channels, slicing, device, minimum_count, maximum_count):
-
-    input_dataset, input_paths = glob_datasets(input_paths)
-    channels = _parse_channels(input_dataset, channels)
-    slicing = _parse_slicing(slicing)
-
-    if slicing is not None:
-        input_dataset.set_slicing(slicing)
-
+def histogram(input_dataset, output_directory, channels, device, minimum_count, maximum_count):
+    """Computes histogram of selected channel."""
     dataset_histogram(
         dataset=input_dataset,
         output_dir=output_directory,
