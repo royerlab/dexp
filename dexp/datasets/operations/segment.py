@@ -41,6 +41,11 @@ def _process(
 
             detection = xp.zeros(detection_stacks[0].shape[1:], dtype=bool)
 
+            if use_edt:
+                basins = None
+            else:
+                basins = xp.zeros(detection_stacks[0].shape[1:], np.float32)
+
             # detects each channel individually and merge then into a single image
             for i, stacks in enumerate(detection_stacks):
                 stack = bkd.to_backend(stacks[time_point])
@@ -48,6 +53,8 @@ def _process(
                 with asection(f"Morphological filtering of channel {i} ..."):
                     filtered = morph.closing(stack, morph.ball(np.sqrt(2)))
                     wth = area_white_top_hat(filtered, area_threshold, sampling=4, axis=0)
+                    if basins is not None:  # not using EDT
+                        basins += filtered / np.quantile(filtered, 0.999)
 
                 with asection(f"Detecting cells of channel {i} ..."):
                     ch_detection = wth > threshold_otsu(wth)
@@ -59,17 +66,13 @@ def _process(
             count = detection.sum()
             aprint(f"Number of detected cell-pixels {count} proportion {detection.sum() / detection.size}.")
 
-            with asection("Computing watershed basins ..."):
-                if use_edt:
+            if basins is None:  # using EDT
+                with asection("Computing EDT for watershed basins ..."):
                     basins = bkd.to_backend(edt(bkd.to_numpy(detection), anisotropy=(z_scale, 1, 1)))
-                else:
-                    basins = filtered / np.quantile(filtered, 0.999)
 
-                del filtered
-
-                basins = basins.max() - basins
-                basins = bkd.to_numpy(basins)
-                detection = bkd.to_numpy(detection)
+            basins = basins.max() - basins
+            basins = bkd.to_numpy(basins)
+            detection = bkd.to_numpy(detection)
 
             with asection("Segmenting ..."):
                 _, labels = watershed_from_minima(
