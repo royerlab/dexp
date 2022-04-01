@@ -18,9 +18,10 @@ from dexp.utils.backends import CupyBackend
 
 @curry
 def _process(
-    stacks: StackIterator,
+    detection_stacks: Sequence[StackIterator],
+    feature_stacks: Sequence[StackIterator],
     out_dataset: ZDataset,
-    channel: str,
+    out_channel: str,
     time_point: int,
     z_scale: float,
     area_threshold: float,
@@ -35,20 +36,28 @@ def _process(
     from pyift.shortestpath import watershed_from_minima
 
     with CupyBackend() as bkd:
-        with asection(f"Segmenting channel {channel} time point {time_point}:"):
+        with asection(f"Segmenting time point {time_point}:"):
+            xp = bkd.get_xp_module()
 
-            stack = bkd.to_backend(stacks[time_point])
-            with asection("Morphological filtering ..."):
-                filtered = morph.closing(stack, morph.ball(np.sqrt(2)))
-                wth = area_white_top_hat(filtered, area_threshold, sampling=4, axis=0)
+            detection = xp.zeros(detection_stacks[0].shape[1:], dtype=bool)
 
-            with asection("Detecting cells ..."):
-                detection = wth > threshold_otsu(wth)
-                del wth
-                detection = morph.closing(detection, morph.ball(np.sqrt(2)))
-                detection = morph.remove_small_objects(detection, min_size=minimum_area)
-                count = detection.sum()
-                aprint(f"Number of detected cell-pixels {count} proportion {detection.sum() / detection.size}.")
+            # detects each channel individually and merge then into a single image
+            for i, stacks in enumerate(detection_stacks):
+                stack = bkd.to_backend(stacks[time_point])
+
+                with asection(f"Morphological filtering of channel {i} ..."):
+                    filtered = morph.closing(stack, morph.ball(np.sqrt(2)))
+                    wth = area_white_top_hat(filtered, area_threshold, sampling=4, axis=0)
+
+                with asection(f"Detecting cells of channel {i} ..."):
+                    ch_detection = wth > threshold_otsu(wth)
+                    del wth
+                    ch_detection = morph.binary_closing(ch_detection, morph.ball(np.sqrt(2)))
+                    ch_detection = morph.remove_small_objects(ch_detection, min_size=minimum_area)
+                    detection |= ch_detection
+
+            count = detection.sum()
+            aprint(f"Number of detected cell-pixels {count} proportion {detection.sum() / detection.size}.")
 
             with asection("Computing watershed basins ..."):
                 if use_edt:
@@ -77,29 +86,39 @@ def _process(
                 labels[labels < 0] = 0
                 labels, _, _ = relabel_sequential(labels)
 
-            out_dataset.write_stack(channel, time_point, labels)
+            out_dataset.write_stack(out_channel, time_point, labels)
+
+        feature_image = np.stack(
+            [stack[time_point] for stack in feature_stacks],
+            axis=-1,
+        )
 
         df = pd.DataFrame(
             regionprops_table(
                 label_image=labels,
-                intensity_image=bkd.to_numpy(stack),
+                intensity_image=feature_image,
                 cache=False,
                 properties=["label", "area", "bbox", "centroid", "intensity_max", "intensity_min", "intensity_mean"],
             )
         )
         df["time_point"] = time_point
-        df["channel"] = channel
 
     aprint(df.describe())
 
     return df
 
 
+def _validate_stacks_shapes(stacks: Sequence[StackIterator], channels: Sequence[str]) -> None:
+    if any(s.shape != stacks[0].shape for s in stacks):
+        raise ValueError(f"All stacks must have the same shape, found {[s.shape for s in stacks]} for {channels}")
+
+
 def dataset_segment(
     input_dataset: BaseDataset,
     output_dataset: ZDataset,
-    channels: Sequence[str],
-    suffix: str,
+    detection_channels: Sequence[str],
+    features_channels: Sequence[str],
+    out_channel: str,
     devices: Sequence[int],
     z_scale: float,
     area_threshold: float,
@@ -109,23 +128,31 @@ def dataset_segment(
     use_edt: bool,
 ) -> None:
 
-    _segment_func = _process(
-        z_scale=z_scale,
-        area_threshold=area_threshold,
-        minimum_area=minimum_area,
-        h_minima=h_minima,
-        compactness=compactness,
-        use_edt=use_edt,
+    detection_stacks = [input_dataset[ch] for ch in detection_channels]
+    feature_stacks = [input_dataset[ch] for ch in features_channels]
+
+    _validate_stacks_shapes(detection_stacks + feature_stacks, list(detection_channels) + list(features_channels))
+
+    output_dataset.add_channel(out_channel, detection_stacks[0].shape, dtype=np.int32, value=0)
+
+    n_time_pts = len(detection_stacks[0])
+
+    process = dask.delayed(
+        _process(
+            detection_stacks=detection_stacks,
+            feature_stacks=feature_stacks,
+            out_dataset=output_dataset,
+            z_scale=z_scale,
+            area_threshold=area_threshold,
+            minimum_area=minimum_area,
+            h_minima=h_minima,
+            compactness=compactness,
+            use_edt=use_edt,
+            out_channel=out_channel,
+        )
     )
 
-    lazy_computations = []
-
-    for ch in channels:
-        stacks = input_dataset[ch]
-        out_ch = ch + suffix
-        output_dataset.add_channel(out_ch, stacks.shape, dtype=np.int32, value=0)
-        process = dask.delayed(_segment_func(stacks=stacks, out_dataset=output_dataset, channel=out_ch))
-        lazy_computations += [process(time_point=t) for t in range(len(stacks))]
+    lazy_computations = [process(time_point=t) for t in range(n_time_pts)]
 
     cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
     client = Client(cluster)
@@ -134,5 +161,7 @@ def dataset_segment(
     df_path = output_dataset._path.replace(".zarr", ".csv")
     df = pd.concat(dask.compute(*lazy_computations))
     df.to_csv(df_path, index=False)
+
+    output_dataset.append_metadata({"features": features_channels})
 
     output_dataset.check_integrity()

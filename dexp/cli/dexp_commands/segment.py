@@ -17,14 +17,15 @@ from dexp.datasets.zarr_dataset import ZDataset
 @click.command()
 @click.argument("input_paths", nargs=-1)  # ,  help='input path'
 @click.option("--output_path", "-o", default=None)  # , help='output path'
-@click.option("--channels", "-c", default=None, help="list of channels, all channels when ommited.")
-@click.option("--suffix", "-su", default="", help="suffix to append to results channels name.")
+@click.option("--detection-channels", "-dc", default=None, help="list of channels used to detect cells.")
+@click.option("--features-channels", "-fc", default=None, help="list of channels for cell features extraction.")
 @click.option(
     "--slicing",
     "-s",
     default=None,
     help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
 )
+@click.option("--out-channel", "-oc", default="Segments", help="Output channel name.", show_default=True)
 @click.option("--store", "-st", default=DEFAULT_STORE, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
 @click.option("--chunks", "-chk", default=None, help="Dataset chunks dimensions, e.g. (1, 126, 512, 512).")
 @click.option(
@@ -76,7 +77,8 @@ def segment(
     """Detects and segment cells using their intensity, returning a table with some properties"""
 
     input_dataset, input_paths = glob_datasets(input_paths)
-    channels = _parse_channels(input_dataset, kwargs.pop("channels"))
+    features_channels = _parse_channels(input_dataset, kwargs.pop("features_channels"))
+    detection_channels = _parse_channels(input_dataset, kwargs.pop("detection_channels"))
     slicing = _parse_slicing(kwargs.pop("slicing"))
     devices = _parse_devices(kwargs.pop("devices"))
 
@@ -95,11 +97,15 @@ def segment(
         parent=input_dataset,
     )
 
-    with asection(f"Denoising: {input_paths} to {output_path} for channels {channels}"):
+    with asection(
+        f"Segmenting {input_paths} with {detection_channels} and extracting features"
+        f"of {features_channels}, results saved to to {output_path}"
+    ):
         dataset_segment(
             input_dataset,
             output_dataset,
-            channels=channels,
+            features_channels=features_channels,
+            detection_channels=detection_channels,
             devices=devices,
             **kwargs,
         )
