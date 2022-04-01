@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from arbol import asection
 
-from dexp.cli.parsing import _parse_devices
+from dexp.cli.parsing import parse_devices
 from dexp.datasets import ZDataset
 from dexp.datasets.operations.denoise import dataset_denoise
 from dexp.utils.backends.cupy_backend import is_cupy_available
@@ -37,7 +37,7 @@ def test_dataset_denoise(dexp_nuclei_background_data, tmp_path: Path, display_te
         out_ds = ZDataset(output_path, mode="w")
 
     with asection("Executing command `dexp denoise ...`"):
-        dataset_denoise(in_ds, out_ds, channels=[channel], tilesize=320, devices=_parse_devices("all"))
+        dataset_denoise(in_ds, out_ds, channels=[channel], tilesize=320, devices=parse_devices("all"))
 
     if display_test:
         import napari

@@ -6,8 +6,8 @@ from dexp.cli.parsing import (
     _get_output_path,
     _parse_channels,
     _parse_chunks,
-    _parse_devices,
     _parse_slicing,
+    parse_devices,
 )
 from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.segment import dataset_segment
@@ -87,7 +87,7 @@ def segment(
     features_channels = _parse_channels(input_dataset, kwargs.pop("features_channels"))
     detection_channels = _parse_channels(input_dataset, kwargs.pop("detection_channels"))
     slicing = _parse_slicing(kwargs.pop("slicing"))
-    devices = _parse_devices(kwargs.pop("devices"))
+    devices = parse_devices(kwargs.pop("devices"))
 
     if slicing is not None:
         input_dataset.set_slicing(slicing)

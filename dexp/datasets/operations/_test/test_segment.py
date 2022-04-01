@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from arbol import asection
 
-from dexp.cli.parsing import _parse_devices
+from dexp.cli.parsing import parse_devices
 from dexp.datasets import ZDataset
 from dexp.datasets.operations.segment import dataset_segment
 from dexp.utils.backends.backend import Backend
@@ -59,7 +59,7 @@ def test_dataset_segment(dexp_nuclei_background_data, tmp_path: Path, display_te
             detection_channels=channels,
             features_channels=channels,
             out_channel=out_channel,
-            devices=_parse_devices("all"),
+            devices=parse_devices("all"),
             z_scale=z_scale,
             area_threshold=1e2,
             minimum_area=50,
