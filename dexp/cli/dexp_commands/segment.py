@@ -44,7 +44,7 @@ from dexp.datasets.zarr_dataset import ZDataset
 @click.option(
     "--area-threshold",
     "-a",
-    type=float,
+    type=click.FloatRange(min=0),
     default=1e4,
     help="Parameter for cell detection, a smaller values will detect fewer segments.",
 )
@@ -59,9 +59,16 @@ from dexp.datasets.zarr_dataset import ZDataset
 @click.option(
     "--compactness",
     "-cmp",
-    type=float,
+    type=click.FloatRange(min=0.0),
     default=0,
     help="Cell compactness (convexity) penalization, it penalizes non-convex shapes.",
+)
+@click.option(
+    "--gamma",
+    "-g",
+    type=click.FloatRange(min=0.0),
+    default=1.0,
+    help="Gamma parameter to equalize (exponent) the image intensities.",
 )
 @click.option(
     "--use-edt",

@@ -25,6 +25,7 @@ def test_dataset_segment(dexp_nuclei_background_data, tmp_path: Path, display_te
     _, _, image = dexp_nuclei_background_data
 
     n_time_pts = 3
+    z_scale = 4
     channels = [f"channels_{i}" for i in range(n_time_pts)]
     out_channel = "Segments"
     input_path = tmp_path / "in_ds.zarr"
@@ -51,8 +52,6 @@ def test_dataset_segment(dexp_nuclei_background_data, tmp_path: Path, display_te
 
         out_ds = ZDataset(output_path, mode="w")
 
-    z_scale = 4
-
     with asection("Executing command `dexp segment ...`"):
         dataset_segment(
             in_ds,
@@ -66,6 +65,7 @@ def test_dataset_segment(dexp_nuclei_background_data, tmp_path: Path, display_te
             minimum_area=50,
             h_minima=1,
             compactness=0,
+            gamma=1,
             use_edt=True,
         )
 

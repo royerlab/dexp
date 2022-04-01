@@ -28,6 +28,7 @@ def _process(
     minimum_area: float,
     h_minima: float,
     compactness: float,
+    gamma: float,
     use_edt: bool,
 ) -> pd.DataFrame:
     from cucim.skimage import morphology as morph
@@ -52,9 +53,14 @@ def _process(
 
                 with asection(f"Morphological filtering of channel {i} ..."):
                     filtered = morph.closing(stack, morph.ball(np.sqrt(2)))
+                    if not np.isclose(gamma, 1.0):
+                        # the results are the same when applying the power before and after morph closing
+                        filtered = np.power(filtered.astype(np.float32), gamma)
                     wth = area_white_top_hat(filtered, area_threshold, sampling=4, axis=0)
                     if basins is not None:  # not using EDT
                         basins += filtered / np.quantile(filtered, 0.999)
+
+                    del filtered
 
                 with asection(f"Detecting cells of channel {i} ..."):
                     ch_detection = wth > threshold_otsu(wth)
@@ -129,6 +135,7 @@ def dataset_segment(
     h_minima: float,
     compactness: float,
     use_edt: bool,
+    gamma: float,
 ) -> None:
 
     detection_stacks = [input_dataset[ch] for ch in detection_channels]
@@ -150,6 +157,7 @@ def dataset_segment(
             minimum_area=minimum_area,
             h_minima=h_minima,
             compactness=compactness,
+            gamma=gamma,
             use_edt=use_edt,
             out_channel=out_channel,
         )
