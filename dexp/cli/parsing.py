@@ -122,7 +122,12 @@ def channels_callback(ctx: click.Context, opt: click.Option, value: str) -> Sequ
 def channels_option() -> Callable:
     def decorator(f: Callable) -> Callable:
         return click.option(
-            "--channels", "-c", default=None, help="list of channels, all channels when ommited.", is_eager=True
+            "--channels",
+            "-c",
+            default=None,
+            help="list of channels, all channels when ommited.",
+            is_eager=True,
+            callback=channels_callback,
         )(f)
 
     return decorator
