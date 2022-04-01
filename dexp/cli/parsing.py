@@ -47,7 +47,7 @@ def _parse_channels(input_dataset, channels):
     aprint(f"Selected channel(s)  : '{channels}'")
     return channels
 
-
+  
 def parse_devices(devices: str) -> Union[str, Sequence[int]]:
     aprint(f"Requested devices    :  '{'--All--' if 'all' in devices else devices}' ")
 
