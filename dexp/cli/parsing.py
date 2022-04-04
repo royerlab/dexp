@@ -1,3 +1,4 @@
+import warnings
 from typing import Callable, Optional, Sequence, Tuple, Union
 
 import click
@@ -134,8 +135,12 @@ def channels_option() -> Callable:
 
 
 def input_dataset_callback(ctx: click.Context, arg: click.Argument, value: str) -> str:
-    ctx.params["input_dataset"], _ = glob_datasets(value)
-    arg.expose_value = False
+    try:
+        ctx.params["input_dataset"], _ = glob_datasets(value)
+        arg.expose_value = False
+
+    except ValueError as e:
+        warnings.warn(str(e))
 
 
 def input_dataset_argument() -> Callable:
