@@ -1,3 +1,4 @@
+import re
 from typing import Optional, Tuple
 
 import numpy as np
@@ -20,7 +21,11 @@ class StackIterator:
 
     @property
     def dtype(self) -> np.dtype:
-        return self._array.dtype
+        dtype = self._array.dtype
+        if not isinstance(dtype, np.dtype):
+            # converting tensorstore dtype
+            dtype = np.dtype(re.findall(r"[a-z0-9]+(?=\"\))", str(dtype))[0])
+        return dtype
 
     @property
     def slicing(self) -> Tuple[slice]:

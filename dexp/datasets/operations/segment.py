@@ -169,7 +169,7 @@ def dataset_segment(
     client = Client(cluster)
     aprint("Dask client", client)
 
-    df_path = output_dataset._path.replace(".zarr", ".csv")
+    df_path = output_dataset.path.replace(".zarr", ".csv")
     df = pd.concat(dask.compute(*lazy_computations))
     df.to_csv(df_path, index=False)
 

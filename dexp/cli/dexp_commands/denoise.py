@@ -32,7 +32,7 @@ def denoise(
     """Denoises input image using butterworth filter, parameters are estimated automatically
     using noise2self j-invariant cross-validation loss.
     """
-    with asection(f"Denoising data to {output_dataset._path} for channels {channels}"):
+    with asection(f"Denoising data to {output_dataset.path} for channels {channels}"):
         dataset_denoise(
             input_dataset,
             output_dataset,

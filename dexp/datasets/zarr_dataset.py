@@ -52,12 +52,8 @@ class ZDataset(BaseDataset):
         """
         config_blosc()
 
-        super().__init__(dask_backed=False)
+        super().__init__(dask_backed=False, path=path)
 
-        if not isinstance(path, str):
-            path = str(path)
-
-        self._path = path
         self._store = None
         self._root_group = None
         self._arrays: Dict[str, zarr.Array] = {}
@@ -68,78 +64,82 @@ class ZDataset(BaseDataset):
         self._chunks = chunks
 
         # Open remote store:
-        if "http" in path:
-            aprint(f"Opening a remote store at: {path}")
+        if "http" in self._path:
+            aprint(f"Opening a remote store at: {self._path}")
             from fsspec import get_mapper
 
-            self.store = get_mapper(path)
+            self.store = get_mapper(self._path)
             self._root_group = zarr.open(self.store, mode=mode)
             self._initialise_existing()
             return
 
         # Correct path to adhere to convention:
         if "a" in mode or "w" in mode:
-            if path.endswith(".zarr.zip") or store == "zip":
-                path = path + ".zip" if path.endswith(".zarr") else path
-                path = path if path.endswith(".zarr.zip") else path + ".zarr.zip"
-            elif path.endswith(".nested.zarr") or path.endswith(".nested.zarr/") or store == "ndir":
-                path = path if path.endswith(".nested.zarr") else path + ".nested.zarr"
-            elif path.endswith(".zarr") or path.endswith(".zarr/") or store == "dir":
-                path = path if path.endswith(".zarr") else path + ".zarr"
+            if self._path.endswith(".zarr.zip") or store == "zip":
+                self._path = self._path + ".zip" if self._path.endswith(".zarr") else self._path
+                self._path = self._path if self._path.endswith(".zarr.zip") else self._path + ".zarr.zip"
+            elif self._path.endswith(".nested.zarr") or self._path.endswith(".nested.zarr/") or store == "ndir":
+                self._path = self._path if self._path.endswith(".nested.zarr") else self._path + ".nested.zarr"
+            elif self._path.endswith(".zarr") or self._path.endswith(".zarr/") or store == "dir":
+                self._path = self._path if self._path.endswith(".zarr") else self._path + ".zarr"
 
         # if exists and overwrite then delete!
-        if exists(path) and mode == "w-":
-            raise ValueError(f"Storage '{path}' already exists, add option '-w' to force overwrite!")
-        elif exists(path) and mode == "w":
-            aprint(f"Deleting '{path}' for overwrite!")
-            if isdir(path):
+        if exists(self._path) and mode == "w-":
+            raise ValueError(f"Storage '{self._path}' already exists, add option '-w' to force overwrite!")
+        elif exists(self._path) and mode == "w":
+            aprint(f"Deleting '{self._path}' for overwrite!")
+            if isdir(self._path):
                 # This is a very dangerous operation, let's double check that the folder really holds a zarr dataset:
-                _zgroup_file = join(path, ".zgroup")
-                _zarray_file = join(path, ".zarray")
+                _zgroup_file = join(self._path, ".zgroup")
+                _zarray_file = join(self._path, ".zarray")
                 # We check that either of these two hiddwn files are present, and if '.zarr' is part of the name:
-                if (".zarr" in path) and (exists(_zgroup_file) or exists(_zarray_file)):
-                    shutil.rmtree(path, ignore_errors=True)
+                if (".zarr" in self._path) and (exists(_zgroup_file) or exists(_zarray_file)):
+                    shutil.rmtree(self._path, ignore_errors=True)
                 else:
                     raise ValueError(
                         "Specified path does not seem to be a zarr dataset, deletion for overwrite"
                         "not performed out of abundance of caution, check path!"
                     )
 
-            elif isfile(path):
-                os.remove(path)
+            elif isfile(self._path):
+                os.remove(self._path)
 
-        if exists(path):
-            aprint(f"Opening existing Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
-            if isfile(path) and (path.endswith(".zarr.zip") or store == "zip"):
+        if exists(self._path):
+            aprint(f"Opening existing Zarr: '{self._path}' with read/write mode: '{mode}' and store type: '{store}'")
+            if isfile(self._path) and (self._path.endswith(".zarr.zip") or store == "zip"):
                 aprint("Opening as ZIP store")
-                self._store = zarr.storage.ZipStore(path)
-            elif isdir(path) and (path.endswith(".nested.zarr") or path.endswith(".nested.zarr/") or store == "ndir"):
+                self._store = zarr.storage.ZipStore(self._path)
+            elif isdir(self._path) and (
+                self._path.endswith(".nested.zarr") or self._path.endswith(".nested.zarr/") or store == "ndir"
+            ):
                 aprint("Opening as Nested Directory store")
-                self._store = zarr.storage.NestedDirectoryStore(path)
-            elif isdir(path) and (path.endswith(".zarr") or path.endswith(".zarr/") or store == "dir"):
+                self._store = zarr.storage.NestedDirectoryStore(self._path)
+            elif isdir(self._path) and (
+                self._path.endswith(".zarr") or self._path.endswith(".zarr/") or store == "dir"
+            ):
                 aprint("Opening as Directory store")
-                self._store = zarr.storage.DirectoryStore(path)
+                self._store = zarr.storage.DirectoryStore(self._path)
 
             aprint(f"Opening with mode: {mode}")
             self._root_group = open_group(self._store, mode=mode)
             self._initialise_existing()
         elif "a" in mode or "w" in mode:
-            aprint(f"Creating Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
+            aprint(f"Creating Zarr storage: '{self._path}' with read/write mode: '{mode}' and store type: '{store}'")
             if store is None:
                 store = "dir"
             try:
-                if path.endswith(".zarr.zip") or store == "zip":
+                if self._path.endswith(".zarr.zip") or store == "zip":
                     aprint("Opening as ZIP store")
-                    self._store = zarr.storage.ZipStore(path)
-                elif path.endswith(".nested.zarr") or path.endswith(".nested.zarr/") or store == "ndir":
+                    self._store = zarr.storage.ZipStore(self._path)
+                elif self._path.endswith(".nested.zarr") or self._path.endswith(".nested.zarr/") or store == "ndir":
                     aprint("Opening as Nested Directory store")
-                    self._store = zarr.storage.NestedDirectoryStore(path)
-                elif path.endswith(".zarr") or path.endswith(".zarr/") or store == "dir":
+                    self._store = zarr.storage.NestedDirectoryStore(self._path)
+                elif self._path.endswith(".zarr") or self._path.endswith(".zarr/") or store == "dir":
                     aprint("Opening as Directory store")
-                    self._store = zarr.storage.DirectoryStore(path)
+                    self._store = zarr.storage.DirectoryStore(self._path)
                 else:
                     aprint(
-                        f"Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr` or "
+                        f"Cannot open {self._path}, needs to be a zarr directory (directory that ends with `.zarr` or "
                         + "`.nested.zarr` for nested folders), or a zipped zarr file (file that ends with `.zarr.zip`)"
                     )
 
@@ -148,10 +148,10 @@ class ZDataset(BaseDataset):
             except Exception:
                 raise ValueError(
                     "Problem: can't create target file/directory, most likely the target dataset "
-                    + f"already exists or path incorrect: {path}"
+                    + f"already exists or path incorrect: {self._path}"
                 )
         else:
-            raise ValueError(f"Invalid read/write mode or invalid path: {path} (check path!)")
+            raise ValueError(f"Invalid read/write mode or invalid path: {self._path} (check path!)")
 
         # updating metadata
         if parent is not None:

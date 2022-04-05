@@ -70,8 +70,8 @@ from dexp.datasets.operations.segment import dataset_segment
 )
 def segment(**kwargs):
     with asection(
-        f"Segmenting {kwargs['input_dataset']._path} with {kwargs['detection_channels']} and extracting features"
-        f"of {kwargs['features_channels']}, results saved to to {kwargs['output_dataset']._path}"
+        f"Segmenting {kwargs['input_dataset'].path} with {kwargs['detection_channels']} and extracting features"
+        f"of {kwargs['features_channels']}, results saved to to {kwargs['output_dataset'].path}"
     ):
         dataset_segment(
             **kwargs,
