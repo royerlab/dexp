@@ -75,18 +75,18 @@ def _demo_copy(length_xy=96, zoom=1, n=16, display=True):
         with asection("Copy..."):
             # output_folder:
             output_path = join(tmpdir, "copy.zarr")
+            dataset.set_slicing((slice(0, 4),))
+            copied_dataset = ZDataset(path=output_path, mode="w")
 
             # Do actual copy:
             dataset_copy(
-                dataset=dataset,
-                dest_path=output_path,
+                input_dataset=dataset,
+                output_dataset=copied_dataset,
                 channels=("channel",),
-                slicing=(slice(0, 4), ...),
                 workers=4,
                 workersbackend="threading",
             )
 
-            copied_dataset = ZDataset(path=output_path, mode="a")
             copied_array = copied_dataset.get_array("channel")
 
             assert copied_array.shape[0] == 4

@@ -3,24 +3,18 @@ import os
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.parsing import _get_output_path
+from dexp.cli.parsing import _get_output_path, workers_option
 from dexp.utils.robocopy import robocopy
 
 
 @click.command()
-@click.argument("input_path", nargs=1)  # ,  help='input path'
-@click.option("--output_path", "-o")  # , help='output path'
-@click.option(
-    "--workers",
-    "-wk",
-    default=8,
-    help="Number of worker threads to spawn. Negative numbers n correspond to: number_of _cores / |n| ",
-    show_default=True,
-)  #
+@click.argument("input_path", nargs=1, type=click.Path(exists=True))
+@click.option("--output_path", "-o")
+@workers_option()
 @click.option(
     "--large_files", "-lf", is_flag=True, help="Set to true to speed up large file transfer", show_default=True
 )
-def fastcopy(input_path, output_path, workers, large_files):
+def fastcopy(input_path: str, output_path: str, workers: int, large_files: bool) -> None:
     """Copies a dataset fast, with no processing, just moves the data as fast as possible. For each operating system it uses the best method."""
 
     output_path = _get_output_path(input_path, output_path, "_copy")

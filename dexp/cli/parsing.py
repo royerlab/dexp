@@ -73,7 +73,7 @@ def parse_devices(devices: str) -> Union[str, Sequence[int]]:
 
 def _parse_chunks(chunks: Optional[str]) -> Optional[Tuple[int]]:
     if chunks is not None:
-        chunks = eval(chunks)
+        chunks = (int(c) for c in chunks.split(","))
     return chunks
 
 
@@ -91,6 +91,19 @@ def devices_option() -> Callable:
             help="Sets the CUDA devices id, e.g. 0,1,2 or ‘all’",
             show_default=True,
             callback=devices_callback,
+        )(f)
+
+    return decorator
+
+
+def workers_option() -> Callable:
+    def decorator(f: Callable) -> Callable:
+        return click.option(
+            "--workers",
+            "-wk",
+            default=-4,
+            help="Number of worker threads to spawn. Negative numbers n correspond to: number_of _cores / |n| ",
+            show_default=True,
         )(f)
 
     return decorator
@@ -116,7 +129,7 @@ def slicing_option() -> Callable:
     return decorator
 
 
-def channels_callback(ctx: click.Context, opt: click.Option, value: str) -> Sequence[str]:
+def channels_callback(ctx: click.Context, opt: click.Option, value: Optional[str]) -> Sequence[str]:
     return _parse_channels(ctx.params["input_dataset"], value)
 
 
@@ -127,11 +140,15 @@ def channels_option() -> Callable:
             "-c",
             default=None,
             help="list of channels, all channels when ommited.",
-            is_eager=True,
             callback=channels_callback,
         )(f)
 
     return decorator
+
+
+def optional_channels_callback(ctx: click.Context, opt: click.Option, value: Optional[str]) -> Sequence[str]:
+    """Parses optional channels name, returns `input_dataset` channels if nothing is provided."""
+    return ctx.params["input_dataset"].channels() if value is None else value.split(",")
 
 
 def input_dataset_callback(ctx: click.Context, arg: click.Argument, value: str) -> str:
@@ -197,7 +214,7 @@ def output_dataset_options() -> Callable:
             "--codec",
             "-z",
             default=DEFAULT_CODEC,
-            help="Compression codec: zstd for ’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ",
+            help="Compression codec: ‘zstd‘, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’",
             show_default=True,
             is_eager=True,
         ),
