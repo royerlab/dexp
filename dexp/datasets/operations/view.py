@@ -19,6 +19,7 @@ def dataset_view(
     projections_only: bool,
     volume_only: bool,
     rescale_time: bool,
+    quiet: bool,
 ):
 
     import napari
@@ -123,4 +124,5 @@ def dataset_view(
             attr.remove("visible")
             link_layers(layers, attr)
 
-    napari.run()
+    if not quiet:
+        napari.run()

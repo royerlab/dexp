@@ -52,7 +52,10 @@ from dexp.datasets.operations.view_remote import dataset_view_remote
     "--projectionsonly", "-po", is_flag=True, help="To view only the projections, if present.", show_default=True
 )
 @click.option("--volumeonly", "-vo", is_flag=True, help="To view only the volumetric data.", show_default=True)
-def view(input_paths, channels, slicing, aspect, rescale_time, clim, colormap, windowsize, projectionsonly, volumeonly):
+@click.option("--quiet", "-q", is_flag=True, default=False, help="Quiet mode. Doesn't display GUI.")
+def view(
+    input_paths, channels, slicing, aspect, rescale_time, clim, colormap, windowsize, projectionsonly, volumeonly, quiet
+):
     """Views dataset using napari (napari.org)"""
 
     slicing = _parse_slicing(slicing)
@@ -93,6 +96,7 @@ def view(input_paths, channels, slicing, aspect, rescale_time, clim, colormap, w
                 projections_only=projectionsonly,
                 volume_only=volumeonly,
                 rescale_time=rescale_time,
+                quiet=quiet,
             )
             input_dataset.close()
             aprint("Done!")

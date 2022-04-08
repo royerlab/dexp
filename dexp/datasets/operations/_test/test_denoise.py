@@ -6,7 +6,7 @@ from arbol import asection
 from dexp.cli.parsing import parse_devices
 from dexp.datasets import ZDataset
 from dexp.datasets.operations.denoise import dataset_denoise
-from dexp.utils.backends.cupy_backend import is_cupy_available
+from dexp.utils.testing.testing import cupy_only
 
 
 @pytest.mark.parametrize(
@@ -14,11 +14,8 @@ from dexp.utils.backends.cupy_backend import is_cupy_available
     [dict(add_noise=True)],
     indirect=True,
 )
+@cupy_only
 def test_dataset_denoise(dexp_nuclei_background_data, tmp_path: Path, display_test: bool):
-
-    if not is_cupy_available():
-        pytest.skip(f"Cupy not found. Skipping {test_dataset_denoise.__name__} gpu test.")
-
     # Load
     _, _, image = dexp_nuclei_background_data
 
@@ -54,6 +51,8 @@ def test_dataset_denoise(dexp_nuclei_background_data, tmp_path: Path, display_te
 
 
 if __name__ == "__main__":
+    from dexp.utils.testing import test_as_demo
+
     # the same as executing from the CLI
     # pytest <file name> -s --display True
-    pytest.main([__file__, "-s", "--display", "True"])
+    test_as_demo(__file__)

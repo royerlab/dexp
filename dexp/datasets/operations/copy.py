@@ -21,9 +21,8 @@ def _process(
 ) -> None:
     try:
         aprint(f"Processing time point: {i} ...")
-        tp_array = in_array[i]
+        tp_array = np.asarray(in_array[i])
         if zerolevel != 0:
-            tp_array = np.array(tp_array)
             tp_array = np.clip(tp_array, a_min=zerolevel, a_max=None, out=tp_array)
             tp_array -= zerolevel
         output_dataset.write_stack(channel=channel, time_point=i, stack_array=tp_array)

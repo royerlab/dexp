@@ -9,8 +9,6 @@ try:
 except ImportError:
     xpArray = numpy.ndarray
 
-from dexp.utils.backends.cupy_backend import is_cupy_available
-
 
 def dict_or(lhs: Dict, rhs: Dict) -> Dict:
     """

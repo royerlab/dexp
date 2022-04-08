@@ -1,6 +1,6 @@
 import pytest
 
-from dexp.utils.testing.testing import execute_both_backends
+from dexp.utils.testing.testing import cupy_only, execute_both_backends
 
 
 def test_as_demo(file: str) -> None:

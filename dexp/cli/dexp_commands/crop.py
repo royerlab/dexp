@@ -43,6 +43,7 @@ def crop(
     reference_channel: str,
     workers: int,
 ):
+    """Automatically crops the dataset given a reference channel."""
     reference_channel = reference_channel[0]
 
     with asection(

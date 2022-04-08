@@ -53,9 +53,6 @@ def generate_nuclei_background_data(
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = xp.float32
 
-    if type(Backend.current()) is NumpyBackend:
-        dtype = numpy.float32
-
     with asection("generate blob images"):
         image_gt = binary_blobs(
             length=length_xy,

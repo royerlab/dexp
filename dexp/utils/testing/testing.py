@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends.cupy_backend import is_cupy_available
 
 
 def _maybe_to_backend(backend: Backend, obj: Any) -> Any:
@@ -73,3 +74,10 @@ def execute_both_backends(func: Callable) -> Callable:
                 func(*args, **kwargs)
 
     return _add_cuda_signature(wrapper)
+
+
+def cupy_only(func: Callable) -> Callable:
+    """Helper function to skip test function is cupy is not found."""
+    if not is_cupy_available():
+        pytest.skip(f"Cupy not found. Skipping {func.__name__} gpu test.")
+    return func

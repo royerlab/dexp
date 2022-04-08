@@ -167,8 +167,12 @@ def input_dataset_argument() -> Callable:
     return decorator
 
 
-def output_dataset_callback(ctx: click.Context, opt: click.Option, value: str) -> None:
+def output_dataset_callback(ctx: click.Context, opt: click.Option, value: Optional[str]) -> None:
     mode = "w" if ctx.params["overwrite"] else "w-"
+    if value is None:
+        # new name with suffix if value is None
+        value = _get_output_path(ctx.params["input_dataset"].path, None, "." + ctx.command.name)
+
     ctx.params["output_dataset"] = ZDataset(
         value,
         mode=mode,

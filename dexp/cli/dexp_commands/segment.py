@@ -69,6 +69,7 @@ from dexp.datasets.operations.segment import dataset_segment
     help="Use Euclidean Distance Transform (EDT) or image intensity for segmentation.",
 )
 def segment(**kwargs):
+    """Segment cells of a combination of multiple detection channels and extract features of each segment from the feature channels."""
     with asection(
         f"Segmenting {kwargs['input_dataset'].path} with {kwargs['detection_channels']} and extracting features"
         f"of {kwargs['features_channels']}, results saved to to {kwargs['output_dataset'].path}"
