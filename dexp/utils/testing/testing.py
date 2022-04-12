@@ -78,6 +78,4 @@ def execute_both_backends(func: Callable) -> Callable:
 
 def cupy_only(func: Callable) -> Callable:
     """Helper function to skip test function is cupy is not found."""
-    if not is_cupy_available():
-        pytest.skip(f"Cupy not found. Skipping {func.__name__} gpu test.")
-    return func
+    return pytest.mark.skipif(not is_cupy_available(), reason=f"Cupy not found. Skipping {func.__name__} gpu test.")
