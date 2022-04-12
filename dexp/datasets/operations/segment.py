@@ -18,7 +18,7 @@ from dexp.utils.backends import CupyBackend
 
 def intensity_sum(mask: np.ndarray, intensities: np.ndarray) -> float:
     """Sums the intensity inside the mask"""
-    return intensities[mask].sum(axis=tuple(range(mask.ndim)), dtype=float)
+    return intensities[mask].sum(axis=0, dtype=float)
 
 
 @curry
