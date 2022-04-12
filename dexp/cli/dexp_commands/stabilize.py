@@ -1,44 +1,33 @@
+from typing import Optional, Sequence
+
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import (
-    DEFAULT_CLEVEL,
-    DEFAULT_CODEC,
-    DEFAULT_STORE,
-    DEFAULT_WORKERS_BACKEND,
+from dexp.cli.defaults import DEFAULT_WORKERS_BACKEND
+from dexp.cli.parsing import (
+    channels_option,
+    device_option,
+    input_dataset_argument,
+    output_dataset_options,
+    workers_option,
 )
-from dexp.cli.parsing import _get_output_path, _parse_channels, _parse_slicing
-from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.stabilize import dataset_stabilize
+from dexp.datasets.zarr_dataset import ZDataset
 
 
 @click.command()
-@click.argument("input_paths", nargs=-1)  # ,  help='input path'
-@click.option("--output_path", "-o")  # , help='output path'
-@click.option("--channels", "-c", default=None, help="List of channels, all channels when omitted.")
+@input_dataset_argument()
+@output_dataset_options()
+@channels_option()
 @click.option(
     "--reference-channel", "-rc", default=None, help="Reference channel for single stabilization model computation."
 )
-@click.option(
-    "--slicing",
-    "-s",
-    default=None,
-    help="Dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
-)
-@click.option("--store", "-st", default=DEFAULT_STORE, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
-@click.option(
-    "--codec",
-    "-z",
-    default=DEFAULT_CODEC,
-    help="Compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ",
-    show_default=True,
-)
-@click.option("--clevel", "-l", type=int, default=DEFAULT_CLEVEL, help="Compression level", show_default=True)
-@click.option("--overwrite", "-w", is_flag=True, help="Forces overwrite of target", show_default=True)
+@workers_option()
+@device_option()
 @click.option(
     "--maxrange",
     "-mr",
-    type=int,
+    type=click.IntRange(min=1),
     default=7,
     help="Maximal distance, in time points, between pairs of images to registrate.",
     show_default=True,
@@ -46,22 +35,23 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
 @click.option(
     "--minconfidence",
     "-mc",
-    type=float,
+    type=click.FloatRange(min=0, max=1),
     default=0.5,
     help="Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.",
     show_default=True,
-)  #
+)
 @click.option(
     "--com/--no-com",
     type=bool,
     default=False,
+    is_flag=True,
     help="Enable center of mass fallback when standard registration fails.",
     show_default=True,
 )
 @click.option(
     "--quantile",
     "-q",
-    type=float,
+    type=click.FloatRange(min=0, max=1),
     default=0.5,
     help="Quantile to cut-off background in center-of-mass calculation.",
     show_default=True,
@@ -110,6 +100,7 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
     "-ef",
     type=bool,
     default=False,
+    is_flag=True,
     help="Applies sobel edge filter to input images.",
     show_default=True,
 )
@@ -146,77 +137,50 @@ from dexp.datasets.operations.stabilize import dataset_stabilize
     help="Output path for computed registration model",
 )
 @click.option(
-    "--workers",
-    "-k",
-    type=int,
-    default=-4,
-    help="Number of worker threads to spawn. Negative numbers n correspond to: number_of _cores / |n|. Be careful, starting two many workers is know to cause trouble (unfortunately unclear why!).",
-    show_default=True,
-)
-@click.option(
     "--workersbackend",
     "-wkb",
     type=str,
     default=DEFAULT_WORKERS_BACKEND,
     help="What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ",
     show_default=True,
-)  #
+)
 @click.option("--device", "-d", type=int, default=0, help="Sets the CUDA devices id, e.g. 0,1,2", show_default=True)  #
-@click.option("--check", "-ck", default=True, help="Checking integrity of written file.", show_default=True)  #
 def stabilize(
-    input_paths,
-    output_path,
-    channels,
-    reference_channel,
-    slicing,
-    store,
-    codec,
-    clevel,
-    overwrite,
-    maxrange,
-    minconfidence,
-    com,
-    quantile,
-    tolerance,
-    ordererror,
-    orderreg,
-    alphareg,
-    pcsigma,
-    dsigma,
-    logcomp,
-    edgefilter,
-    detrend,
-    maxproj,
-    model_input_path,
-    model_output_path,
-    workers,
-    workersbackend,
-    device,
-    check,
+    input_dataset: ZDataset,
+    output_dataset: ZDataset,
+    channels: Sequence[str],
+    reference_channel: Optional[str],
+    maxrange: int,
+    minconfidence: float,
+    com: bool,
+    quantile: float,
+    tolerance: float,
+    ordererror: float,
+    orderreg: float,
+    alphareg: float,
+    pcsigma: float,
+    dsigma: float,
+    logcomp: bool,
+    edgefilter: bool,
+    detrend: bool,
+    maxproj: bool,
+    model_input_path: str,
+    model_output_path: str,
+    workers: int,
+    workersbackend: str,
+    device: int,
 ):
     """Stabilises dataset against translations across time."""
-
-    input_dataset, input_paths = glob_datasets(input_paths)
-    output_path = _get_output_path(input_paths[0], output_path, "_stabilized")
-
-    slicing = _parse_slicing(slicing)
-    channels = _parse_channels(input_dataset, channels)
-
     with asection(
-        f"Stabilizing dataset(s): {input_paths}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "
+        f"Stabilizing dataset(s): {input_dataset.path}, saving it at: {output_dataset.path}, for channels: {channels}"
     ):
         dataset_stabilize(
             input_dataset,
-            output_path,
+            output_dataset,
             channels=channels,
             model_output_path=model_output_path,
             model_input_path=model_input_path,
             reference_channel=reference_channel,
-            slicing=slicing,
-            zarr_store=store,
-            compression_codec=codec,
-            compression_level=clevel,
-            overwrite=overwrite,
             max_range=maxrange,
             min_confidence=minconfidence,
             enable_com=com,
@@ -234,9 +198,8 @@ def stabilize(
             workers=workers,
             workers_backend=workersbackend,
             device=device,
-            check=check,
-            debug_output="stabilization",
         )
 
         input_dataset.close()
+        output_dataset.close()
         aprint("Done!")

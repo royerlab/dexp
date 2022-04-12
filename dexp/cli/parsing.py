@@ -81,7 +81,7 @@ def devices_callback(ctx: click.Context, opt: click.Option, value: str) -> Seque
     return parse_devices(value)
 
 
-def devices_option() -> Callable:
+def multi_devices_option() -> Callable:
     def decorator(f: Callable) -> Callable:
         return click.option(
             "--devices",
@@ -91,6 +91,20 @@ def devices_option() -> Callable:
             help="Sets the CUDA devices id, e.g. 0,1,2 or ‘all’",
             show_default=True,
             callback=devices_callback,
+        )(f)
+
+    return decorator
+
+
+def device_option() -> Callable:
+    def decorator(f: Callable) -> Callable:
+        return click.option(
+            "--device",
+            "-d",
+            type=int,
+            default=0,
+            show_default=True,
+            help="Selects the CUDA device by id, starting from 0.",
         )(f)
 
     return decorator

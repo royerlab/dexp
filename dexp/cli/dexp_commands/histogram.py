@@ -1,14 +1,14 @@
 import click
 
-from dexp.cli.parsing import channels_option, input_dataset_argument
+from dexp.cli.parsing import channels_option, device_option, input_dataset_argument
 from dexp.datasets.operations.histogram import dataset_histogram
 
 
 @click.command()
 @input_dataset_argument()
 @channels_option()
+@device_option()
 @click.option("--output-directory", "-o", default="histogram", show_default=True, type=str)
-@click.option("--device", "-d", type=int, default=0, show_default=True)
 @click.option(
     "--minimum-count",
     "-m",

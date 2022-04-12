@@ -5,8 +5,8 @@ from arbol import asection
 
 from dexp.cli.parsing import (
     channels_option,
-    devices_option,
     input_dataset_argument,
+    multi_devices_option,
     output_dataset_options,
     slicing_option,
 )
@@ -19,7 +19,7 @@ from dexp.datasets.zarr_dataset import ZDataset
 @input_dataset_argument()
 @output_dataset_options()
 @channels_option()
-@devices_option()
+@multi_devices_option()
 @slicing_option()
 @click.option("--tilesize", "-ts", type=int, default=320, help="Tile size for tiled computation", show_default=True)
 def denoise(

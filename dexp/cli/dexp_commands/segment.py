@@ -3,8 +3,8 @@ from arbol import asection
 
 from dexp.cli.parsing import (
     channels_callback,
-    devices_option,
     input_dataset_argument,
+    multi_devices_option,
     output_dataset_options,
     slicing_option,
 )
@@ -14,7 +14,7 @@ from dexp.datasets.operations.segment import dataset_segment
 @click.command()
 @input_dataset_argument()
 @output_dataset_options()
-@devices_option()
+@multi_devices_option()
 @slicing_option()
 @click.option(
     "--detection-channels",

@@ -120,6 +120,7 @@ def _demo_stabilize(
         input_path = join(tmpdir, "input.zarr")
         output_path = join(tmpdir, "output.zarr")
         input_dataset = ZDataset(path=input_path, mode="w", store="dir")
+        output_dataset = ZDataset(path=output_path, mode="w")
 
         zarr_input_array = input_dataset.add_channel(
             name="channel", shape=shifted.shape, chunks=(1, 50, 50, 50), dtype=shifted.dtype, codec="zstd", clevel=3
@@ -127,13 +128,11 @@ def _demo_stabilize(
         input_dataset.write_array(channel="channel", array=Backend.to_numpy(shifted))
 
         dataset_stabilize(
-            dataset=input_dataset,
-            output_path=output_path,
+            input_dataset=input_dataset,
+            output_dataset=output_dataset,
             model_output_path=join(tmpdir, "model.json"),
             channels=["channel"],
         )
-
-        output_dataset = ZDataset(path=output_path, mode="r", store="dir")
 
         zarr_output_array = numpy.asarray(output_dataset.get_array("channel"))
 
@@ -158,38 +157,38 @@ def _demo_stabilize(
         assert error < error_null
 
         if display:
-            from napari import Viewer, gui_qt
+            import napari
 
-            with gui_qt():
+            def _c(array):
+                return Backend.to_numpy(array)
 
-                def _c(array):
-                    return Backend.to_numpy(array)
+            viewer = napari.Viewer(ndisplay=2)
+            viewer.add_image(_c(image), name="image", colormap="bop orange", blending="additive", visible=True)
+            viewer.add_image(_c(shifted), name="shifted", colormap="bop purple", blending="additive", visible=True)
+            viewer.add_image(
+                _c(zarr_input_array),
+                name="zarr_input_array",
+                colormap="bop purple",
+                blending="additive",
+                visible=True,
+            )
+            viewer.add_image(
+                _c(zarr_output_array),
+                name="zarr_output_array",
+                colormap="bop blue",
+                blending="additive",
+                visible=True,
+            )
+            viewer.add_image(
+                _c(stabilised_seq_ll),
+                name="stabilised_seq_ll",
+                colormap="bop blue",
+                blending="additive",
+                visible=True,
+            )
+            viewer.grid.enabled = True
 
-                viewer = Viewer(ndisplay=2)
-                viewer.add_image(_c(image), name="image", colormap="bop orange", blending="additive", visible=True)
-                viewer.add_image(_c(shifted), name="shifted", colormap="bop purple", blending="additive", visible=True)
-                viewer.add_image(
-                    _c(zarr_input_array),
-                    name="zarr_input_array",
-                    colormap="bop purple",
-                    blending="additive",
-                    visible=True,
-                )
-                viewer.add_image(
-                    _c(zarr_output_array),
-                    name="zarr_output_array",
-                    colormap="bop blue",
-                    blending="additive",
-                    visible=True,
-                )
-                viewer.add_image(
-                    _c(stabilised_seq_ll),
-                    name="stabilised_seq_ll",
-                    colormap="bop blue",
-                    blending="additive",
-                    visible=True,
-                )
-                viewer.grid.enabled = True
+            napari.run()
 
 
 if __name__ == "__main__":

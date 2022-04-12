@@ -29,20 +29,15 @@ def test_cli_commands_nuclei_dataset(command: Sequence[str], dexp_zarr_path: str
     assert subprocess.run(["dexp"] + command + [dexp_zarr_path]).returncode == 0
 
 
-# FIXME: solver given raising err
-# @pytest.mark.parametrize(
-#     "dexp_zarr_path",
-#     [dict(dataset_type="nuclei", n_time_pts=10, dtype="uint16")],
-#     indirect=True,
-# )
-# @pytest.mark.parametrize(
-#     "command", [
-#         ["stabilize", "-mr", "2", "-nmp"]
-#     ]
-# )
-# @cupy_only
-# def test_cli_commands_long_nuclei_dataset(command: Sequence[str], dexp_zarr_path: str) -> None:
-#     assert subprocess.run(["dexp"] + command + [dexp_zarr_path]).returncode == 0
+@pytest.mark.parametrize(
+    "dexp_zarr_path",
+    [dict(dataset_type="nuclei", n_time_pts=10, dtype="uint16")],
+    indirect=True,
+)
+@pytest.mark.parametrize("command", [["stabilize", "-mr", "2", "-wk", "2"]])
+@cupy_only
+def test_cli_commands_long_nuclei_dataset(command: Sequence[str], dexp_zarr_path: str) -> None:
+    assert subprocess.run(["dexp"] + command + [dexp_zarr_path]).returncode == 0
 
 
 @pytest.mark.parametrize(

@@ -49,7 +49,7 @@ def copy(
     """Copies a dataset, channels can be selected, cropping can be performed, compression can be changed, ..."""
 
     with asection(
-        f"Copying from: {input_dataset.path} to {output_dataset.path} for channels: {channels}, slicing: {input_dataset._slicing} "
+        f"Copying from: {input_dataset.path} to {output_dataset.path} for channels: {channels}, slicing: {input_dataset.slicing} "
     ):
         dataset_copy(
             input_dataset=input_dataset,

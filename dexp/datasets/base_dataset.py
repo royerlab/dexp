@@ -113,6 +113,10 @@ class BaseDataset(ABC):
     def set_slicing(self, slicing: slice) -> None:
         self._slicing = slicing
 
+    @property
+    def slicing(self) -> slice:
+        return self._slicing
+
     def __getitem__(self, channel: str) -> StackIterator:
         return StackIterator(self.get_array(channel), self._slicing)
 
