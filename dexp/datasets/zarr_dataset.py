@@ -15,10 +15,22 @@ from zarr import Blosc, CopyError, Group, convenience, open_group
 
 from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC
 from dexp.datasets.base_dataset import BaseDataset
-from dexp.datasets.ome_dataset import default_omero_metadata
+from dexp.datasets.ome_dataset import create_coord_transform, default_omero_metadata
 from dexp.datasets.stack_iterator import StackIterator
-from dexp.utils.backends import Backend
+from dexp.utils.backends import Backend, BestBackend
 from dexp.utils.config import config_blosc
+
+try:
+    from cucim import __version__ as sk_version
+    from cucim.skimage.transform import downscale_local_mean
+
+    DOWNSCALE_METHOD = "cucim.skimage.transform.downscale_local_mean"
+
+except ImportError:
+    from skimage import __version__ as sk_version
+    from skimage.transform import downscale_local_mean
+
+    DOWNSCALE_METHOD = "skimage.transform.downscale_local_mean"
 
 
 class ZDataset(BaseDataset):
@@ -593,9 +605,7 @@ class ZDataset(BaseDataset):
         }
         return max(initialized)
 
-    def to_ome_zarr(self, path: str, chunks: Optional[Sequence[int]] = None, force_dtype: Optional[int] = None):
-        # TODO add multiscale support
-
+    def to_ome_zarr(self, path: str, force_dtype: Optional[int] = None, n_scales: int = 3) -> None:
         ch = self.channels()[0]
         dexp_shape = self.shape(ch)
 
@@ -615,25 +625,56 @@ class ZDataset(BaseDataset):
                     "could not convert to ome-zarr."
                 )
 
-        if chunks is None:
-            chunks = (1,) + self._default_chunks(dexp_shape, dtype=dtype)
-
-        if len(chunks) != 5:
-            raise ValueError(f"Chunks must be 5-dimensional. Found {chunks}.")
-
         ome_zarr_shape = (dexp_shape[0], len(self.channels()), *dexp_shape[1:])
 
         group = zarr.group(zarr.NestedDirectoryStore(path))
-        ome_array = group.create_dataset("0", shape=ome_zarr_shape, dtype=dtype, chunks=chunks)
 
-        for t in range(self.nb_timepoints(ch)):
-            aprint(f"Converting time point {t} ...", end="\r")
-            for c, channel in enumerate(self.channels()):
-                ome_array[t, c] = self.get_stack(channel, t)
-        aprint("")
+        arrays = []
+        datasets = []
+        for i in range(n_scales):
+            factor = 2 ** i
+            array_path = f"{i}"
+            shape = ome_zarr_shape[:2] + tuple(int(s / factor + 0.5) for s in ome_zarr_shape[2:])
+            chunks = self._default_chunks(shape, dtype)
+            ome_array = group.create_dataset(array_path, shape=shape, dtype=dtype, chunks=chunks)
+            arrays.append(ome_array)
+            datasets.append(
+                {
+                    "path": array_path,
+                    "coordinateTransformations": create_coord_transform(self.get_resolution(), factor),
+                }
+            )
 
-        group.attrs["multiscales"] = [{"version": CurrentFormat().version, "datasets": [{"path": "0"}]}]
+        with BestBackend() as bkd:
+            for t in range(self.nb_timepoints(ch)):
+                aprint(f"Converting time point {t} ...", end="\r")
+                for c, channel in enumerate(self.channels()):
+                    stack = self.get_stack(channel, t)
+                    arrays[0][t, c] = stack
+                    stack = bkd.to_backend(stack)
+                    for i in range(1, n_scales):
+                        factors = (2 ** i,) * stack.ndim
+                        arrays[i][t, c] = bkd.to_numpy(downscale_local_mean(stack, factors))
+        aprint("Done conversion to OME zarr")
 
+        group.attrs["multiscales"] = [
+            {
+                "version": CurrentFormat().version,
+                "datasets": datasets,
+                "axes": [
+                    {"name": "t", "type": "time"},
+                    {"name": "c", "type": "channel"},
+                    {"name": "z", "type": "space", "unit": "micrometer"},
+                    {"name": "y", "type": "space", "unit": "micrometer"},
+                    {"name": "x", "type": "space", "unit": "micrometer"},
+                ],
+                "type": "local_mean",
+                "metadata": {
+                    "method": DOWNSCALE_METHOD,
+                    "version": sk_version,
+                },
+            }
+        ]
         group.attrs["omero"] = default_omero_metadata(self._path, self.channels(), dtype)
 
     def __getitem__(self, channel: str) -> StackIterator:
