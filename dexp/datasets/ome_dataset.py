@@ -27,7 +27,7 @@ def default_omero_metadata(name: str, channels: Sequence[str], dtype: np.dtype) 
 
 
 def create_coord_transform(scales: List[float], factor: float = 1) -> List:
-    scales = tuple(scales[:2]) + tuple(np.asarray(scales[2:]) * factor)
+    scales = tuple(scales[0], 1.0) + tuple(np.asarray(scales[1:]) * factor)
     return [
         {
             "type": "scale",
