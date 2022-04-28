@@ -319,7 +319,7 @@ class ZDataset(BaseDataset):
 
     def get_array(
         self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False, wrap_with_tensorstore: bool = False
-    ):
+    ) -> Union[zarr.Array, Any]:
         assert (wrap_with_dask != wrap_with_tensorstore) or not wrap_with_dask
         array = self._arrays[channel]
         if wrap_with_dask:
@@ -332,11 +332,19 @@ class ZDataset(BaseDataset):
         stack_array = self.get_array(channel, per_z_slice=per_z_slice, wrap_with_dask=wrap_with_dask)[time_point]
         return stack_array
 
-    def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
+    def get_projection_array(
+        self, channel: str, axis: int, wrap_with_dask: bool = False, wrap_with_tensorstore: bool = False
+    ) -> Optional[Union[zarr.Array, Any]]:
+        assert (wrap_with_dask != wrap_with_tensorstore) or not wrap_with_dask
         array = self._projections.get(self._projection_name(channel, axis))
         if array is None:
-            return
-        return dask.array.from_array(array, chunks=array.chunks) if wrap_with_dask else array
+            return None
+
+        if wrap_with_dask:
+            return dask.array.from_array(array, chunks=array.chunks)
+        elif wrap_with_tensorstore:
+            return self._load_tensorstore(array)
+        return array
 
     def _projection_name(self, channel: str, axis: int):
         return f"{channel}_projection_{axis}"

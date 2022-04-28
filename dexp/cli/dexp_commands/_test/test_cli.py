@@ -21,7 +21,7 @@ from dexp.utils.testing import cupy_only
         ["histogram", "-c", "image", "-m", "0"],
         ["tiff"],
         ["segment", "-dc", "image"],
-        ["view", "-q"],
+        ["view", "-q", "-d", "2"],
     ],
 )
 @cupy_only

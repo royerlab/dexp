@@ -1,6 +1,7 @@
+import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Sequence, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import numpy
 
@@ -123,3 +124,7 @@ class BaseDataset(ABC):
     @property
     def path(self) -> str:
         return self._path
+
+    def get_resolution(self, channel: Optional[str] = None) -> List[float]:
+        warnings.warn("`get_resolution` not implemented, returning list of 1.0 as default.")
+        return [1] * len(self.shape(channel))
