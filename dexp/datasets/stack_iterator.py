@@ -1,4 +1,3 @@
-import re
 from typing import Optional, Tuple
 
 import numpy as np
@@ -24,7 +23,7 @@ class StackIterator:
         dtype = self._array.dtype
         if not isinstance(dtype, np.dtype):
             # converting tensorstore dtype
-            dtype = np.dtype(re.findall(r"[a-z0-9]+(?=\"\))", str(dtype))[0])
+            dtype = dtype.numpy_dtype
         return dtype
 
     @property

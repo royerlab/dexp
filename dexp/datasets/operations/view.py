@@ -29,9 +29,15 @@ def dataset_view(
         link_layers,
     )
 
-    viewer = napari.Viewer(title=f"DEXP | viewing with napari: {name} ", ndisplay=2)
+    if quiet:
+        from napari.components.viewer_model import ViewerModel
+
+        viewer = ViewerModel()
+    else:
+        viewer = napari.Viewer(title=f"DEXP | viewing with napari: {name} ", ndisplay=2)
+        viewer.window.resize(windowsize + 256, windowsize)
+
     viewer.grid.enabled = True
-    viewer.window.resize(windowsize + 256, windowsize)
 
     scale_array = np.asarray((1, scale, scale, scale))
 

@@ -97,7 +97,7 @@ EXTRAS = {
         "higra",
         "pyotf",
         "pyift",
-        "tensorstore",
+        "tensorstore<=0.1.16",  # dask-distributed worker fails due to pickling error after this version
     ],
     "gpu": [
         "gputools",
