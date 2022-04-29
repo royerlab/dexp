@@ -1,6 +1,6 @@
 import random
 import tempfile
-from os.path import exists, join
+from pathlib import Path
 
 from arbol import aprint, asection
 from tifffile import imread
@@ -62,27 +62,29 @@ def _demo_tiff(length_xy=96, zoom=1, n=16, display=True):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         aprint("created temporary directory", tmpdir)
+        tmpdir = Path(tmpdir)
 
         with asection("Prepare dataset..."):
-            input_path = join(tmpdir, "dataset.zarr")
+            input_path = tmpdir / "dataset.zarr"
             dataset = ZDataset(path=input_path, mode="w", store="dir")
 
             dataset.add_channel(name="channel", shape=images.shape, chunks=(1, 64, 64, 64), dtype=images.dtype)
 
             dataset.write_array(channel="channel", array=Backend.to_numpy(images))
+            dataset.set_slicing((slice(0, 4), ...))
 
             source_array = dataset.get_array("channel")
 
         with asection("Export to tiff..."):
             # output_folder:
-            output_path = join(tmpdir, "file")
+            output_path = tmpdir / "file"
 
             # Do actual tiff export:
-            dataset_tiff(dataset=dataset, dest_path=output_path, channels=("channel",), slicing=(slice(0, 4), ...))
+            dataset_tiff(dataset=dataset, dest_path=output_path, channels=("channel",))
 
-            output_file = output_path + ".tiff"
+            output_file = Path(str(output_path) + ".tiff")
 
-            assert exists(output_file)
+            assert output_file.exists()
 
             tiff_image = imread(output_file)
 
@@ -112,16 +114,14 @@ def _demo_tiff(length_xy=96, zoom=1, n=16, display=True):
 
         with asection("Export to tiff, one file per timepoint..."):
             # output_folder:
-            output_path = join(tmpdir, "projection")
+            output_path = tmpdir / "projection"
 
             # Do actual tiff export:
-            dataset_tiff(
-                dataset=dataset, dest_path=output_path, channels=("channel",), slicing=(slice(0, 4), ...), project=0
-            )
+            dataset_tiff(dataset=dataset, dest_path=output_path, channels=("channel",), project=0)
 
-            output_file = output_path + ".tiff"
+            output_file = Path(str(output_path) + ".tiff")
 
-            assert exists(output_file)
+            assert output_file.exists()
 
             tiff_image = imread(output_file)
 

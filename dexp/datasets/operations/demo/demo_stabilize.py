@@ -2,9 +2,8 @@ import random
 import tempfile
 from os.path import join
 
-import numpy
+import numpy as np
 from arbol import aprint, asection
-from pytest import approx
 
 from dexp.datasets import ZDataset
 from dexp.datasets.operations.stabilize import dataset_stabilize
@@ -134,7 +133,7 @@ def _demo_stabilize(
             channels=["channel"],
         )
 
-        zarr_output_array = numpy.asarray(output_dataset.get_array("channel"))
+        zarr_output_array = np.asarray(output_dataset.get_array("channel"))
 
         # stabilise with lower level API:
         model = image_stabilisation_proj(shifted, axis=0, projection_type="max")
@@ -145,16 +144,15 @@ def _demo_stabilize(
 
         aprint(f"stabilised_seq_ll.shape={stabilised_seq_ll.shape}")
         aprint(f"zarr_output_array.shape={zarr_output_array.shape}")
-        assert approx(stabilised_seq_ll.shape[1], zarr_output_array.shape[1], abs=10)
-        assert approx(stabilised_seq_ll.shape[2], zarr_output_array.shape[2], abs=10)
-        assert approx(stabilised_seq_ll.shape[3], zarr_output_array.shape[3], abs=10)
-        error = numpy.mean(numpy.abs(stabilised_seq_ll[:, 0:64, 0:64, 0:64] - zarr_output_array[:, 0:64, 0:64, 0:64]))
-        error_null = numpy.mean(
-            numpy.abs(stabilised_seq_ll[:, 0:64, 0:64, 0:64] - Backend.to_numpy(shifted)[:, 0:64, 0:64, 0:64])
+        np.testing.assert_allclose(stabilised_seq_ll.shape[1], zarr_output_array.shape[1], atol=10)
+        np.testing.assert_allclose(stabilised_seq_ll.shape[2], zarr_output_array.shape[2], atol=10)
+        np.testing.assert_allclose(stabilised_seq_ll.shape[3], zarr_output_array.shape[3], atol=10)
+        error = np.mean(np.abs(stabilised_seq_ll[:, 0:64, 0:64, 0:64] - zarr_output_array[:, 0:64, 0:64, 0:64]))
+        error_null = np.mean(
+            np.abs(stabilised_seq_ll[:, 0:64, 0:64, 0:64] - Backend.to_numpy(shifted)[:, 0:64, 0:64, 0:64])
         )
         aprint(f"error={error} versus error_null={error_null}")
-        assert error < 20
-        assert error < error_null
+        assert error < error_null * 0.75
 
         if display:
             import napari

@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 from tifffile import imsave
 
 
@@ -17,18 +17,20 @@ def tiff_save(file, img, axes="ZYX", compress=0, **imsave_kwargs):
     """
 
     # convert to imagej-compatible data type
+    img = np.asarray(img)
+
     t = img.dtype
     if "float" in t.name:
-        t_new = numpy.float32
+        t_new = np.float32
     elif "uint" in t.name:
-        t_new = numpy.uint16 if t.itemsize >= 2 else numpy.uint8
+        t_new = np.uint16 if t.itemsize >= 2 else np.uint8
     elif "int" in t.name:
-        t_new = numpy.int16
+        t_new = np.int16
     else:
         t_new = t
     img = img.astype(t_new, copy=False)
     if t != t_new:
-        print(f"Converting data type from '{t}' to ImageJ-compatible '{numpy.dtype(t_new)}'.")
+        print(f"Converting data type from '{t}' to ImageJ-compatible '{np.dtype(t_new)}'.")
 
     imsave_kwargs["imagej"] = True
     imsave(file, img, **imsave_kwargs, compress=compress, metadata={"axes": axes})  # ,
