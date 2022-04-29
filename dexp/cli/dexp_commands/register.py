@@ -1,32 +1,30 @@
+from typing import Sequence
+
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.parsing import _parse_channels, _parse_slicing, parse_devices
-from dexp.datasets.open_dataset import glob_datasets
+from dexp.cli.parsing import (
+    channels_option,
+    input_dataset_argument,
+    multi_devices_option,
+    slicing_option,
+)
+from dexp.datasets import BaseDataset
 from dexp.datasets.operations.register import dataset_register
 
 
 @click.command()
-@click.argument("input_paths", nargs=-1, required=True)
+@input_dataset_argument()
+@slicing_option()
+@channels_option()
+@multi_devices_option()
 @click.option("--out-model-path", "-o", default="registration_models.txt", show_default=True)
-@click.option(
-    "--channels",
-    "-c",
-    default=None,
-    help="list of channels for the view in standard order for the microscope type (C0L0, C0L1, C1L0, C1L1,...)",
-)
-@click.option(
-    "--slicing",
-    "-s",
-    default=None,
-    help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
-)
 @click.option(
     "--microscope",
     "-m",
-    type=str,
+    type=click.Choice(("simview", "mvsols")),
     default="simview",
-    help="Microscope objective to use for computing psf, can be: simview or mvsols",
+    help="Microscope used to acquire the data, this selects the fusion algorithm.",
     show_default=True,
 )
 @click.option(
@@ -52,7 +50,9 @@ from dexp.datasets.operations.register import dataset_register
     help="Clips voxel values above the given value, if zero no clipping is done",
     show_default=True,
 )
-@click.option("--fusion", "-f", type=str, default="tg", help="Fusion mode, can be: ‘tg’ or ‘dct’.  ", show_default=True)
+@click.option(
+    "--fusion", "-f", type=click.Choice(("tg", "dct", "dft")), default="tg", help="Fusion method.", show_default=True
+)
 @click.option(
     "--fusion_bias_strength",
     "-fbs",
@@ -85,9 +85,6 @@ from dexp.datasets.operations.register import dataset_register
     show_default=True,
 )
 @click.option(
-    "--devices", "-d", type=str, default="0", help="Sets the CUDA devices id, e.g. 0,1,2 or ‘all’", show_default=True
-)
-@click.option(
     "--white-top-hat-size",
     "-wth",
     default=0,
@@ -105,34 +102,28 @@ from dexp.datasets.operations.register import dataset_register
     help="Use this flag to remove beads before equalizing and fusing",
 )
 def register(
-    input_paths,
-    out_model_path,
-    channels,
-    slicing,
-    microscope,
-    equalise,
-    zero_level,
-    clip_high,
-    fusion,
-    fusion_bias_strength,
-    dehaze_size,
-    edge_filter,
-    max_proj,
-    white_top_hat_size,
-    white_top_hat_sampling,
-    remove_beads,
-    devices,
-):
+    input_dataset: BaseDataset,
+    out_model_path: str,
+    channels: Sequence[str],
+    microscope: str,
+    equalise: bool,
+    zero_level: int,
+    clip_high: int,
+    fusion: str,
+    fusion_bias_strength: float,
+    dehaze_size: int,
+    edge_filter: bool,
+    max_proj: bool,
+    white_top_hat_size: float,
+    white_top_hat_sampling: int,
+    remove_beads: bool,
+    devices: Sequence[int],
+) -> None:
     """
     Computes registration model for fusing.
     """
-    input_dataset, input_paths = glob_datasets(input_paths)
-    slicing = _parse_slicing(slicing)
-    channels = _parse_channels(input_dataset, channels)
-    devices = parse_devices(devices)
-
     with asection(
-        f"Fusing dataset: {input_paths}, saving it at: {out_model_path}, for channels: {channels}, slicing: {slicing} "
+        f"Computing fusion model of dataset: {input_dataset.path}, saving it at: {out_model_path}, for channels: {channels}"
     ):
         aprint(f"Microscope type: {microscope}, fusion type: {fusion}")
         aprint(f"Devices used: {devices}")
@@ -140,7 +131,6 @@ def register(
             dataset=input_dataset,
             model_path=out_model_path,
             channels=channels,
-            slicing=slicing,
             microscope=microscope,
             equalise=equalise,
             zero_level=zero_level,
@@ -155,3 +145,5 @@ def register(
             max_proj=max_proj,
             devices=devices,
         )
+
+    input_dataset.close()
