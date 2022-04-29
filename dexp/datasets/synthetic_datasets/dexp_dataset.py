@@ -47,4 +47,6 @@ def generate_dexp_zarr_dataset(path: str, dataset_type: str, n_time_pts: int = 2
             # adding a small shift to each time point
             ds.write_stack(name, t, image)
 
+    ds.check_integrity()
+
     return ds

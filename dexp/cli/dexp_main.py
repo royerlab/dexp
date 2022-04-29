@@ -18,7 +18,6 @@ from dexp.cli.dexp_commands.isonet import isonet
 from dexp.cli.dexp_commands.projrender import projrender
 from dexp.cli.dexp_commands.register import register
 from dexp.cli.dexp_commands.segment import segment
-from dexp.cli.dexp_commands.serve import serve
 from dexp.cli.dexp_commands.speedtest import speedtest
 from dexp.cli.dexp_commands.stabilize import stabilize
 from dexp.cli.dexp_commands.tiff import tiff
@@ -67,7 +66,6 @@ cli.add_command(fastcopy)
 cli.add_command(add)
 cli.add_command(tiff)
 cli.add_command(view)
-cli.add_command(serve)
 cli.add_command(extract_psf)
 cli.add_command(fromraw)
 
