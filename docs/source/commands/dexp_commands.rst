@@ -48,11 +48,6 @@ DEXP Commands
    :nested: full
 
 
-.. click:: dexp.cli.dexp_commands.serve:serve
-   :prog: serve
-   :nested: full
-
-
 .. click:: dexp.cli.dexp_commands.speedtest:speedtest
    :prog: speedtest
    :nested: full
