@@ -36,7 +36,6 @@ def dataset_histogram(
                 for i, stack in tqdm(enumerate(dataset[channel]), f"Computing Histogram of {channel}"):
                     stack = bkd.to_backend(stack)
                     hist = np.bincount(stack.flatten())
-                    print(hist)
 
                     if minimum_count > 1:
                         (non_zero,) = np.nonzero(hist < minimum_count)
@@ -46,7 +45,6 @@ def dataset_histogram(
                         hist = np.clip(hist, a_min=None, a_max=int(maximum_count))
 
                     hist = bkd.to_numpy(hist)
-                    print(hist)
 
                     np.save(data_dir / f"{channel}_{i}.npy", hist)
                     histograms.append(hist)
@@ -54,7 +52,6 @@ def dataset_histogram(
                 max_length = max(len(h) for h in histograms)
                 max_count = max(h.max() for h in histograms)
                 hist_2d = np.zeros((len(histograms), max_length), dtype=int)
-                print(max_count)
 
                 for i, hist in enumerate(histograms):
                     hist_2d[i, : len(hist)] += hist

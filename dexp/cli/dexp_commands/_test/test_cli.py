@@ -18,6 +18,7 @@ from dexp.utils.testing import cupy_only
         ["check"],
         ["copy", "-wk", "2", "-s", "[:,:,40:240,40:240]"],
         ["denoise", "-c", "image"],
+        ["generic", "-f", "gaussian_filter", "-pkg", "cupyx.scipy.ndimage", "-ts", "100", "-a", "sigma=1,2,2"],
         ["histogram", "-c", "image", "-m", "0"],
         ["tiff", "--split", "-wk", "2"],
         ["tiff", "-p", "0", "-wk", "2"],

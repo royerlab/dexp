@@ -12,6 +12,7 @@ from dexp.cli.dexp_commands.extract_psf import extract_psf
 from dexp.cli.dexp_commands.fastcopy import fastcopy
 from dexp.cli.dexp_commands.fromraw import fromraw
 from dexp.cli.dexp_commands.fuse import fuse
+from dexp.cli.dexp_commands.generic import generic
 from dexp.cli.dexp_commands.histogram import histogram
 from dexp.cli.dexp_commands.info import info
 from dexp.cli.dexp_commands.isonet import isonet
@@ -71,6 +72,7 @@ cli.add_command(fromraw)
 
 cli.add_command(deskew)
 cli.add_command(fuse)
+cli.add_command(generic)
 cli.add_command(register)
 cli.add_command(stabilize)
 cli.add_command(deconv)
