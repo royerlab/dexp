@@ -3,7 +3,7 @@ from typing import Sequence, Tuple
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.parsing import channels_option, input_dataset_argument
+from dexp.cli.parsing import channels_callback, channels_option, input_dataset_argument
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.datasets.joined_dataset import JoinedDataset
 from dexp.datasets.operations.view import dataset_view
@@ -45,6 +45,14 @@ from dexp.datasets.operations.view import dataset_view
 )
 @click.option("--volumeonly", "-vo", is_flag=True, help="To view only the volumetric data.", show_default=True)
 @click.option("--quiet", "-q", is_flag=True, default=False, help="Quiet mode. Doesn't display GUI.")
+@click.option(
+    "--labels",
+    "-l",
+    type=str,
+    default=None,
+    help="Channels to be displayed as labels layer",
+    callback=channels_callback,
+)
 def view(
     input_dataset: BaseDataset,
     channels: Sequence[str],
@@ -55,6 +63,7 @@ def view(
     projectionsonly: bool,
     volumeonly: bool,
     quiet: bool,
+    labels: Sequence[str],
 ):
     """Views dataset using napari (napari.org)"""
 
@@ -74,6 +83,7 @@ def view(
             projections_only=projectionsonly,
             volume_only=volumeonly,
             quiet=quiet,
+            labels=labels,
         )
 
         input_dataset.close()

@@ -7,12 +7,12 @@ from arbol import aprint, asection
 from dask.distributed import Client
 from dask_cuda import LocalCUDACluster
 from skimage.measure import regionprops_table
-from skimage.segmentation import relabel_sequential
 from toolz import curry
 
 from dexp.datasets import BaseDataset, ZDataset
 from dexp.datasets.stack_iterator import StackIterator
 from dexp.processing.morphology import area_white_top_hat
+from dexp.processing.segmentation import roi_watershed_from_minima
 from dexp.utils.backends import CupyBackend
 
 
@@ -34,7 +34,6 @@ def _process(
     from cucim.skimage import morphology as morph
     from cucim.skimage.filters import threshold_otsu
     from edt import edt
-    from pyift.shortestpath import watershed_from_minima
 
     with CupyBackend() as bkd:
         with asection(f"Segmenting time point {time_point}:"):
@@ -81,7 +80,7 @@ def _process(
             detection = bkd.to_numpy(detection)
 
             with asection("Segmenting ..."):
-                _, labels = watershed_from_minima(
+                labels = roi_watershed_from_minima(
                     image=basins,
                     mask=detection,
                     H_minima=h_minima,
@@ -90,10 +89,6 @@ def _process(
                 )
                 del basins, detection
                 labels = labels.astype(np.int32)
-
-            with asection("Relabeling ..."):
-                labels[labels < 0] = 0
-                labels, _, _ = relabel_sequential(labels)
 
             out_dataset.write_stack(out_channel, time_point, labels)
 
