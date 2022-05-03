@@ -1,6 +1,7 @@
 import inspect
 from importlib import import_module
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable, Optional, Sequence, Union, Any
+import ast
 
 import click
 from arbol import aprint, asection
@@ -28,8 +29,10 @@ def _parse_function(func_name: str, pkg_import: str, args: Sequence[str]) -> Cal
 
     pkg = import_module(pkg_import)
     if not hasattr(pkg, func_name):
+        functions = inspect.getmembers(pkg, inspect.isfunction)
+        functions = [f[0] for f in functions]
         raise ValueError(
-            f"Could not find function {func_name} in {pkg_import}\n. Available attributes {inspect.getmembers(pkg, inspect.isfunction)}"
+            f"Could not find function {func_name} in {pkg_import}\n. Available functions {functions}"
         )
 
     func = getattr(pkg, func_name)
@@ -37,6 +40,9 @@ def _parse_function(func_name: str, pkg_import: str, args: Sequence[str]) -> Cal
     for key in kwargs:
         if key not in sig.parameters:
             raise ValueError(f"Function {func.__name__} doesn't support keyword {key}")
+
+    kwargs = {k: ast.literal_eval(v) for k, v in kwargs.items()}
+
 
     func = curry(func, **kwargs)
     return func

@@ -23,7 +23,7 @@ def _process(
 ) -> None:
 
     with CupyBackend() as bkd:
-        with asection(f"Applying {func.__name__} at time point {time_point}"):
+        with asection(f"Applying {func.__name__} for channel {channel} at time point {time_point}"):
             stack = bkd.to_backend(stacks[time_point])
             stack = func(stack)
             out_dataset.write_stack(channel, time_point, bkd.to_numpy(stack))
@@ -56,6 +56,6 @@ def dataset_generic(
     aprint("Dask client", client)
 
     # Compute everything
-    dask.persist(*lazy_computations)
+    dask.compute(*lazy_computations)
 
     output_dataset.check_integrity()
