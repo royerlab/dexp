@@ -17,7 +17,7 @@ from dexp.datasets import ZDataset
 @channels_option()
 @click.option("--output-path", "-o", required=True)
 @click.option(
-    "--rename-channel",
+    "--rename-channels",
     "-rc",
     default=None,
     help="You can rename channels: e.g. if channels are ‘channel1,anotherc’ then ‘gfp,rfp’ would rename the ‘channel1’ channel to ‘gfp’, and ‘anotherc’ to ‘rfp’ ",
@@ -32,7 +32,7 @@ def add(
     input_dataset: ZDataset,
     output_path: str,
     channels: Sequence[str],
-    rename_channels: str,
+    rename_channels: Sequence[str],
     store: str,
     overwrite: bool,
     projection: bool,
