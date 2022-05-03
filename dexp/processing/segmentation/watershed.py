@@ -34,7 +34,7 @@ def roi_watershed_from_minima(image: np.ndarray, mask: np.ndarray, **kwargs) -> 
         )
         lb[lb < 0] = 0  # non-masked regions are -1
         lb, _, _ = relabel_sequential(lb, offset=offset)
-        offset += lb.max() + 1
+        offset = lb.max() + 1
         labels[slicing] = lb
 
     return labels
