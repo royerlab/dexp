@@ -38,6 +38,7 @@ from dexp.datasets.operations.segment import dataset_segment
     type=click.FloatRange(min=0),
     default=1e4,
     help="Parameter for cell detection, a smaller values will detect fewer segments.",
+    show_default=True,
 )
 @click.option("--minimum-area", "-m", type=float, default=500, help="Minimum area (sum of pixels) per segment.")
 @click.option(
@@ -46,6 +47,7 @@ from dexp.datasets.operations.segment import dataset_segment
     type=float,
     default=1,
     help="Parameter to adjust the number of segments, smaller results in more segments.",
+    show_default=True,
 )
 @click.option(
     "--compactness",
@@ -53,6 +55,7 @@ from dexp.datasets.operations.segment import dataset_segment
     type=click.FloatRange(min=0.0),
     default=0,
     help="Cell compactness (convexity) penalization, it penalizes non-convex shapes.",
+    show_default=True,
 )
 @click.option(
     "--gamma",
@@ -60,6 +63,7 @@ from dexp.datasets.operations.segment import dataset_segment
     type=click.FloatRange(min=0.0),
     default=1.0,
     help="Gamma parameter to equalize (exponent) the image intensities.",
+    show_default=True,
 )
 @click.option(
     "--use-edt",
@@ -67,6 +71,7 @@ from dexp.datasets.operations.segment import dataset_segment
     is_flag=True,
     default=True,
     help="Use Euclidean Distance Transform (EDT) or image intensity for segmentation.",
+    show_default=True,
 )
 def segment(**kwargs):
     """Segment cells of a combination of multiple detection channels and extract features of each segment from the feature channels."""

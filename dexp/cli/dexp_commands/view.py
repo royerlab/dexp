@@ -3,7 +3,11 @@ from typing import Sequence, Tuple
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.parsing import channels_callback, channels_option, input_dataset_argument
+from dexp.cli.parsing import (
+    channels_option,
+    empty_channels_callback,
+    input_dataset_argument,
+)
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.datasets.joined_dataset import JoinedDataset
 from dexp.datasets.operations.view import dataset_view
@@ -51,7 +55,7 @@ from dexp.datasets.operations.view import dataset_view
     type=str,
     default=None,
     help="Channels to be displayed as labels layer",
-    callback=channels_callback,
+    callback=empty_channels_callback,
 )
 def view(
     input_dataset: BaseDataset,

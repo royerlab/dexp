@@ -64,8 +64,12 @@ def _process(
                 with asection(f"Detecting cells of channel {i} ..."):
                     ch_detection = wth > threshold_otsu(wth)
                     del wth
-                    ch_detection = morph.binary_closing(ch_detection, morph.ball(np.sqrt(2)))
-                    ch_detection = morph.remove_small_objects(ch_detection, min_size=minimum_area)
+
+                    # removing small white/black elements
+                    ch_detection = morph.binary_opening(ch_detection, morph.ball(2))
+                    ch_detection = morph.binary_closing(ch_detection, morph.ball(2))
+
+                    # ch_detection = morph.remove_small_objects(ch_detection, min_size=minimum_area)
                     detection |= ch_detection
 
             count = detection.sum()
