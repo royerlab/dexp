@@ -9,6 +9,7 @@ from dexp.cli.parsing import (
     multi_devices_option,
     output_dataset_options,
     slicing_option,
+    tilesize_option,
 )
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.datasets.operations.denoise import dataset_denoise
@@ -21,7 +22,7 @@ from dexp.datasets.zarr_dataset import ZDataset
 @channels_option()
 @multi_devices_option()
 @slicing_option()
-@click.option("--tilesize", "-ts", type=int, default=320, help="Tile size for tiled computation", show_default=True)
+@tilesize_option()
 def denoise(
     input_dataset: BaseDataset,
     output_dataset: ZDataset,

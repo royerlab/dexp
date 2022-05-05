@@ -16,6 +16,11 @@ from dexp.processing.segmentation import roi_watershed_from_minima
 from dexp.utils.backends import CupyBackend
 
 
+def intensity_sum(mask: np.ndarray, intensities: np.ndarray) -> float:
+    """Sums the intensity inside the mask"""
+    return intensities[mask].sum(axis=0, dtype=float)
+
+
 @curry
 def _process(
     detection_stacks: Sequence[StackIterator],
@@ -55,9 +60,11 @@ def _process(
                     if not np.isclose(gamma, 1.0):
                         # the results are the same when applying the power before and after morph closing
                         filtered = np.power(filtered.astype(np.float32), gamma)
-                    wth = area_white_top_hat(filtered, area_threshold, sampling=4, axis=0)
+
                     if basins is not None:  # not using EDT
                         basins += filtered / np.quantile(filtered, 0.999)
+
+                    wth = area_white_top_hat(filtered, area_threshold, sampling=4, axis=0)
 
                     del filtered
 
@@ -107,6 +114,7 @@ def _process(
                 intensity_image=feature_image,
                 cache=False,
                 properties=["label", "area", "bbox", "centroid", "intensity_max", "intensity_min", "intensity_mean"],
+                extra_properties=(intensity_sum,),
             )
         )
         df["time_point"] = time_point
