@@ -1,4 +1,4 @@
-from typing import Dict, Sequence
+from typing import Dict, List, Sequence
 
 import numpy as np
 from ome_zarr.format import CurrentFormat
@@ -24,3 +24,13 @@ def default_omero_metadata(name: str, channels: Sequence[str], dtype: np.dtype) 
             for ch in channels
         ],
     }
+
+
+def create_coord_transform(scales: List[float], factor: float = 1) -> List:
+    scales = (scales[0], 1.0) + tuple(np.asarray(scales[1:]) * factor)
+    return [
+        {
+            "type": "scale",
+            "scale": scales,
+        }
+    ]
