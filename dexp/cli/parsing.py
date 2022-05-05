@@ -165,7 +165,7 @@ def optional_channels_callback(ctx: click.Context, opt: click.Option, value: Opt
     return ctx.params["input_dataset"].channels() if value is None else value.split(",")
 
 
-def input_dataset_callback(ctx: click.Context, arg: click.Argument, value: str) -> str:
+def input_dataset_callback(ctx: click.Context, arg: click.Argument, value: Sequence[str]) -> None:
     try:
         ctx.params["input_dataset"], _ = glob_datasets(value)
         arg.expose_value = False
@@ -251,5 +251,14 @@ def output_dataset_options() -> Callable:
         for opt in click_options:
             f = opt(f)
         return f
+
+    return decorator
+
+
+def tilesize_option(default: Optional[int] = 320) -> Callable:
+    def decorator(f: Callable) -> Callable:
+        return click.option(
+            "--tilesize", "-ts", type=int, default=default, help="Tile size for tiled computation", show_default=True
+        )(f)
 
     return decorator
