@@ -8,6 +8,7 @@ from numpy import s_
 from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC, DEFAULT_STORE
 from dexp.datasets import ZDataset
 from dexp.datasets.open_dataset import glob_datasets
+from dexp.utils import overwrite2mode
 
 
 def _get_output_path(input_path, output_path, postfix=""):
@@ -182,7 +183,7 @@ def input_dataset_argument() -> Callable:
 
 
 def output_dataset_callback(ctx: click.Context, opt: click.Option, value: Optional[str]) -> None:
-    mode = "w" if ctx.params["overwrite"] else "w-"
+    mode = overwrite2mode(ctx.params.pop("overwrite"))
     if value is None:
         # new name with suffix if value is None
         value = _get_output_path(ctx.params["input_dataset"].path, None, "." + ctx.command.name)
@@ -190,16 +191,14 @@ def output_dataset_callback(ctx: click.Context, opt: click.Option, value: Option
     ctx.params["output_dataset"] = ZDataset(
         value,
         mode=mode,
-        store=ctx.params["store"],
-        codec=ctx.params["codec"],
-        clevel=ctx.params["clevel"],
-        chunks=_parse_chunks(ctx.params["chunks"]),
+        store=ctx.params.pop("store"),
+        codec=ctx.params.pop("codec"),
+        clevel=ctx.params.pop("clevel"),
+        chunks=_parse_chunks(ctx.params.pop("chunks")),
         parent=ctx.params["input_dataset"],
     )
     # removing used parameters
     opt.expose_value = False
-    for key in ["overwrite", "store", "codec", "clevel", "chunks"]:
-        del ctx.params[key]
 
 
 def output_dataset_options() -> Callable:

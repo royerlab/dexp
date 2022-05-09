@@ -16,7 +16,7 @@ def representative_crop(
     smoothing_size: int = 1.0,
     equal_sides: bool = False,
     favour_odd_lengths: bool = False,
-    fast_mode: bool = False,
+    fast_mode: bool = True,
     fast_mode_num_crops: int = 1500,
     max_time_in_seconds: float = 10,
     return_slice: bool = False,
@@ -191,6 +191,9 @@ def representative_crop(
             if time.time() > start_time + max_time_in_seconds:
                 aprint("Interrupting crop search because of timeout!")
                 break
+
+    if best_slice is None:
+        raise RuntimeError("Could not find representative crop.")
 
     # We make sure to have the full and original crop!
     best_crop = image[best_slice]

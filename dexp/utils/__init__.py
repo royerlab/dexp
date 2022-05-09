@@ -21,3 +21,8 @@ def dict_or(lhs: Dict, rhs: Dict) -> Dict:
             lhs[k] = v
 
     return lhs
+
+
+def overwrite2mode(overwrite: bool) -> str:
+    """Returns writing mode from overwrite flag"""
+    return "w" if overwrite else "w-"
