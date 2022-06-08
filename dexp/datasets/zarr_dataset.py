@@ -569,7 +569,7 @@ class ZDataset(BaseDataset):
         """
         Gets channel translation.
         """
-        axes = ("tz", "ty", "tx")
+        axes = ("tt", "tz", "ty", "tx")
         metadata = self.get_metadata()
         if channel is None:
             translation = [metadata.get(axis, 0) for axis in axes]
