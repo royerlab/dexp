@@ -4,6 +4,7 @@ import dask
 import numpy as np
 from arbol import aprint
 from dask.array import reshape
+from toolz import curry
 
 from dexp.datasets import ZDataset
 from dexp.datasets.base_dataset import BaseDataset
@@ -20,6 +21,7 @@ def dataset_view(
     projections_only: bool,
     volume_only: bool,
     quiet: bool,
+    labels: Sequence[str],
 ):
 
     import napari
@@ -45,12 +47,32 @@ def dataset_view(
         aprint(f"Channel '{channel}' shape: {input_dataset.shape(channel)}")
         aprint(input_dataset.info(channel))
 
+        # setting up downsample and layer type
+        if channel in labels:
+            downsample = curry(ts.downsample, method="stride")
+
+            def add_layer(data, **kwargs):
+                return viewer.add_labels(data, **kwargs)
+
+        else:
+            downsample = curry(ts.downsample, method="mean")
+
+            def add_layer(data, **kwargs):
+                return viewer.add_image(
+                    data,
+                    contrast_limits=contrast_limits,
+                    blending="additive",
+                    colormap=colormap,
+                    rendering="attenuated_mip",
+                    **kwargs,
+                )
+
         resolution = np.asarray(input_dataset.get_resolution(channel))
 
         if isinstance(input_dataset, ZDataset):
             array = input_dataset.get_array(channel, wrap_with_tensorstore=True)
             if scale != 1:
-                array = ts.downsample(array, scale_array, "mean")
+                array = downsample(array, scale_array)
                 resolution *= scale_array
         else:
             array = input_dataset.get_array(channel, wrap_with_dask=True)
@@ -67,13 +89,9 @@ def dataset_view(
                 else:
                     array = dask.array.flip(array, -1)
 
-            layer = viewer.add_image(
+            layer = add_layer(
                 array,
                 name=channel,
-                contrast_limits=contrast_limits,
-                blending="additive",
-                colormap=colormap,
-                rendering="attenuated_mip",
                 scale=resolution,
             )
             layers.append(layer)
@@ -110,7 +128,7 @@ def dataset_view(
                         proj_array = proj_array[:, np.newaxis]  # appending dummy dim
 
                         if scale != 1:
-                            proj_array = ts.downsample(proj_array, scale_array, "mean")
+                            proj_array = downsample(proj_array, scale_array)
 
                     else:
                         if axis == 1:
@@ -132,18 +150,15 @@ def dataset_view(
                         else:
                             array = dask.array.flip(array, -1)
 
-                    proj_layer = viewer.add_image(
+                    proj_layer = add_layer(
                         proj_array,
                         name=f"{channel}_proj_{axis}",
-                        contrast_limits=contrast_limits,
-                        blending="additive",
-                        colormap=colormap,
                         scale=resolution,
                     )
                     layers.append(proj_layer)
 
         except KeyError:
-            aprint("Warning: can't find projections!")
+            aprint("Warning: couldn't find projections!")
 
         if layers:
             attr = _get_common_evented_attributes(layers)
