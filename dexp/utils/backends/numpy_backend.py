@@ -1,4 +1,6 @@
-from typing import Any
+import importlib
+import types
+from typing import Any, Optional
 
 import numpy
 import scipy
@@ -62,24 +64,17 @@ class NumpyBackend(Backend):
         else:
             return array
 
-    def _get_xp_module(self, array: xpArray = None) -> Any:
+    def _get_xp_module(self, array: Optional[xpArray] = None) -> types.ModuleType:
         if array is None:
             return numpy
-        else:
-            try:
-                import cupy
+        return super()._get_xp_module(array)
 
-                return cupy.get_array_module(array)
-            except ModuleNotFoundError:
-                return numpy
-
-    def _get_sp_module(self, array: xpArray = None) -> Any:
+    def _get_sp_module(self, array: Optional[xpArray] = None) -> types.ModuleType:
         if array is None:
             return scipy
-        else:
-            try:
-                import cupyx
+        return super()._get_sp_module(array)
 
-                return cupyx.scipy.get_array_module(array)
-            except ModuleNotFoundError:
-                return scipy
+    def _get_skimage_submodule(self, submodule: str, array: Optional[xpArray] = None) -> types.ModuleType:
+        if array is None:
+            return importlib.import_module(f"skimage.{submodule}")
+        return super()._get_skimage_submodule(submodule, array)

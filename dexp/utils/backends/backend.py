@@ -1,7 +1,8 @@
+import importlib
 import threading
 import types
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 import numpy
 
@@ -70,12 +71,16 @@ class Backend(ABC):
         return Backend.current()._to_backend(array, dtype=dtype, force_copy=force_copy)
 
     @staticmethod
-    def get_xp_module(array: xpArray = None) -> Any:
+    def get_xp_module(array: Optional[xpArray] = None) -> types.ModuleType:
         return Backend.current()._get_xp_module(array)
 
     @staticmethod
-    def get_sp_module(array: xpArray = None) -> Any:
+    def get_sp_module(array: Optional[xpArray] = None) -> types.ModuleType:
         return Backend.current()._get_sp_module(array)
+
+    @staticmethod
+    def get_skimage_submodule(submodule: str, array: Optional[xpArray] = None) -> types.ModuleType:
+        return Backend.current()._get_skimage_submodule(submodule, array)
 
     def __enter__(self):
         if not hasattr(Backend._local, "backend_stack"):
@@ -129,8 +134,7 @@ class Backend(ABC):
         """
         raise NotImplementedError("Method not implemented!")
 
-    @abstractmethod
-    def _get_xp_module(self, array: xpArray = None) -> types.ModuleType:
+    def _get_xp_module(self, array: xpArray) -> types.ModuleType:
         """Returns the numpy-like module for a given array
 
         Parameters
@@ -142,10 +146,14 @@ class Backend(ABC):
         -------
         numpy-like module
         """
-        raise NotImplementedError("Method not implemented!")
+        try:
+            import cupy
 
-    @abstractmethod
-    def _get_sp_module(self, array: xpArray = None) -> types.ModuleType:
+            return cupy.get_array_module(array)
+        except ModuleNotFoundError:
+            return numpy
+
+    def _get_sp_module(self, array: xpArray) -> types.ModuleType:
         """Returns the scipy-like module for a given array
 
         Parameters
@@ -156,7 +164,38 @@ class Backend(ABC):
         -------
         scipy-like module
         """
-        raise NotImplementedError("Method not implemented!")
+        try:
+            import cupyx
+
+            return cupyx.scipy.get_array_module(array)
+        except ModuleNotFoundError:
+            import scipy
+
+            return scipy
+
+    def _get_skimage_submodule(self, submodule: str, array: xpArray) -> types.ModuleType:
+        """Returns the skimage-like module for a given array (skimage or cucim)
+
+        Parameters
+        ----------
+        array : xpArray, optional
+            Reference array
+        Returns
+        -------
+        types.ModuleType
+            skimage-like module
+        """
+
+        # avoiding try-catch
+        try:
+            import cupy
+
+            if isinstance(array, cupy.ndarray):
+                return importlib.import_module(f"cucim.skimage.{submodule}")
+        except ModuleNotFoundError:
+            return importlib.import_module(f"skimage.{submodule}")
+
+        return importlib.import_module(f"skimage.{submodule}")
 
     def synchronise(self) -> None:
         pass

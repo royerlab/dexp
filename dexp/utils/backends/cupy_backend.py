@@ -1,8 +1,10 @@
 import gc
+import importlib
 import math
 import os
 import threading
-from typing import Any
+import types
+from typing import Any, Optional
 
 import numpy
 from arbol import aprint
@@ -255,25 +257,24 @@ class CupyBackend(Backend):
             with self.cupy_device:
                 return cupy.asarray(array, dtype=dtype)
 
-    def _get_xp_module(self, array: xpArray = None) -> Any:
+    def _get_xp_module(self, array: Optional[xpArray] = None) -> types.ModuleType:
         if array is None:
             import cupy
 
             return cupy
-        else:
-            import cupy
+        return super()._get_xp_module(array)
 
-            return cupy.get_array_module(array)
-
-    def _get_sp_module(self, array: xpArray = None) -> Any:
+    def _get_sp_module(self, array: Optional[xpArray] = None) -> types.ModuleType:
         if array is None:
             import cupyx
 
             return cupyx.scipy
-        else:
-            import cupyx
+        return super()._get_sp_module(array)
 
-            return cupyx.scipy.get_array_module(array)
+    def _get_skimage_submodule(self, submodule: str, array: Optional[xpArray] = None) -> types.ModuleType:
+        if array is None:
+            return importlib.import_module(f"cucim.skimage.{submodule}")
+        return super()._get_skimage_submodule(submodule, array)
 
 
 def is_cupy_available() -> bool:
