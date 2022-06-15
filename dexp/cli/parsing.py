@@ -272,7 +272,7 @@ def tilesize_option(default: Optional[int] = 320) -> Callable:
     return decorator
 
 
-def args_option() -> None:
+def args_option() -> Callable:
     def decorator(f: Callable) -> Callable:
         return click.option(
             "--args",
@@ -282,6 +282,15 @@ def args_option() -> None:
             multiple=True,
             default=list(),
             help="Function arguments, it must be used multiple times for multiple arguments. Example: -a sigma=1,2,3 -a pad=constant",
+        )(f)
+
+    return decorator
+
+
+def verbose_option() -> Callable:
+    def decorator(f: Callable) -> Callable:
+        return click.option(
+            "--verbose", "-v", type=bool, is_flag=True, default=False, help="Flag to display intermediated results."
         )(f)
 
     return decorator
