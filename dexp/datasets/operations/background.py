@@ -5,7 +5,7 @@ import numpy as np
 from arbol import aprint, asection, section
 from dask.distributed import Client
 from dask_cuda import LocalCUDACluster
-from toolz import curry
+from toolz import curry, reduce
 
 from dexp.datasets import BaseDataset, ZDataset
 from dexp.datasets.stack_iterator import StackIterator
@@ -36,7 +36,7 @@ def _process(
         with asection(f"Removing background of channels {time_pts.keys()} at time points {time_pts.values()}."):
             # computes reference mask (or not)
             if merge_channels:
-                reference = foreground_mask_func(np.add.reduce(stacks.values()))
+                reference = foreground_mask_func(reduce(np.add, stacks.values()))
             elif reference_channel is not None:
                 reference = foreground_mask_func(stacks[reference_channel])
             else:
