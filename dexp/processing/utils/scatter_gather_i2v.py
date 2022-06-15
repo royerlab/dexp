@@ -9,8 +9,8 @@ from dexp.utils.backends import Backend
 
 
 def scatter_gather_i2v(
-    function: Callable,
     images: Union[xpArray, Tuple[xpArray]],
+    function: Callable,
     tiles: Union[int, Tuple[int, ...]],
     margins: Optional[Union[int, Tuple[int, ...]]] = None,
     to_numpy: bool = True,
@@ -24,9 +24,9 @@ def scatter_gather_i2v(
 
     Parameters
     ----------
+    images : sequence of images (can be any backend, numpy)
     function : n-ary function. Must accept one or more arrays -- of same shape
         --- and return a _tuple_ of arrays as result.
-    images : sequence of images (can be any backend, numpy)
     tiles : tiles to cut input image into, can be a single integer or a tuple of integers.
     margins : margins to add to each tile, can be a single integer or a tuple of integers.
     to_numpy : should the result be a numpy array? Very usefull when the compute backend

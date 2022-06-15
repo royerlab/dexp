@@ -16,6 +16,7 @@ from dexp.utils.testing import cupy_only
     [
         ["info"],
         ["check"],
+        ["background", "-c", "image", "-a", "binary_area_threshold=500"],
         ["copy", "-wk", "2", "-s", "[:,:,40:240,40:240]"],
         ["denoise", "-c", "image"],
         ["generic", "-f", "gaussian_filter", "-pkg", "cupyx.scipy.ndimage", "-ts", "100", "-a", "sigma=1,2,2"],

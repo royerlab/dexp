@@ -9,8 +9,8 @@ from dexp.utils.backends import Backend
 
 
 def scatter_gather_i2i(
-    function: Callable,
     image: xpArray,
+    function: Callable,
     tiles: Union[int, Tuple[int, ...]],
     margins: Optional[Union[int, Tuple[int, ...]]] = None,
     normalise: bool = False,
@@ -28,8 +28,8 @@ def scatter_gather_i2i(
 
     Parameters
     ----------
-    function : unary function
     image : input image (can be any backend, numpy )
+    function : unary function
     tiles : tile sizes to cut input image into, can be a single integer or a tuple of integers.
     margins : margins to add to each tile, can be a single integer or a tuple of integers.
         if None, no margins are added.

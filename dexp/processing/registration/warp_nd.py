@@ -53,7 +53,7 @@ def register_warp_nd(
         shift, confidence = model.get_shift_and_confidence()
         return xp.asarray(shift), xp.asarray(confidence)
 
-    vector_field, confidence = scatter_gather_i2v(f, (image_a, image_b), tiles=chunks, margins=margins)
+    vector_field, confidence = scatter_gather_i2v((image_a, image_b), f, tiles=chunks, margins=margins)
 
     model = WarpRegistrationModel(vector_field=vector_field, confidence=confidence, force_numpy=force_numpy)
 
