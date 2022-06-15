@@ -20,7 +20,7 @@ def test_scatter_gather_i2v(ndim=3, length_xy=128, splits=4):
 
     with timeit("scatter_gather(f)"):
         chunks = (length_xy // splits,) * ndim
-        result1, result2 = scatter_gather_i2v(f, (image1, image2), tiles=chunks, margins=8)
+        result1, result2 = scatter_gather_i2v((image1, image2), f, tiles=chunks, margins=8)
 
     assert result1.ndim == ndim + 1
     assert result2.ndim == ndim + 1
