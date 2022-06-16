@@ -17,6 +17,7 @@ def yang_deskew(
     camera_orientation: int = 0,
     num_split: int = 4,
     internal_dtype=None,
+    padding: None = None,
 ):
     """'Yang' Deskewing as done in Yang et al. 2019 ( https://www.biorxiv.org/content/10.1101/2020.09.22.309229v2 )
 
@@ -33,6 +34,7 @@ def yang_deskew(
         as a number of 90 deg rotations to be performed per 2D image in stack.
     num_split : number of splits to break down the data into pieces (along y, axis=2) to fit into the memory of GPU
     internal_dtype : internal dtype to perform computation
+    padding : dummy argument for compatibility
 
     Returns
     -------

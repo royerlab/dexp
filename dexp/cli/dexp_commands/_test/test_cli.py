@@ -59,3 +59,17 @@ def test_cli_commands_long_nuclei_dataset(command: Sequence[str], dexp_zarr_path
 @cupy_only
 def test_cli_commands_fusion_dataset(command: Sequence[str], dexp_zarr_path: str) -> None:
     assert subprocess.run(["dexp"] + command + [dexp_zarr_path]).returncode == 0
+
+
+@pytest.mark.parametrize(
+    "dexp_zarr_path",
+    [dict(dataset_type="nuclei-skewed", dtype="uint16")],
+    indirect=True,
+)
+@pytest.mark.parametrize(
+    "command",
+    [["deskew", "-c", "image", "-xx", "1", "-zz", "1", "-a", "45"]],
+)
+@cupy_only
+def test_cli_commands_skewed_dataset(command: Sequence[str], dexp_zarr_path: str) -> None:
+    assert subprocess.run(["dexp"] + command + [dexp_zarr_path]).returncode == 0

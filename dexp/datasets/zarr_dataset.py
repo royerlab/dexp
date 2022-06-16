@@ -689,3 +689,7 @@ class ZDataset(BaseDataset):
 
     def __getitem__(self, channel: str) -> StackIterator:
         return StackIterator(self.get_array(channel, wrap_with_tensorstore=True), self._slicing)
+
+    def __contains__(self, channel: str) -> bool:
+        """Checks if channels exists, valid for when using multiple process."""
+        return channel in self._root_group
