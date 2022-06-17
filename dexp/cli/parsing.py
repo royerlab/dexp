@@ -1,5 +1,7 @@
+import ast
+import inspect
 import warnings
-from typing import Callable, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import click
 from arbol import aprint
@@ -166,6 +168,13 @@ def optional_channels_callback(ctx: click.Context, opt: click.Option, value: Opt
     return ctx.params["input_dataset"].channels() if value is None else value.split(",")
 
 
+def empty_channels_callback(ctx: click.Context, opt: click.Option, value: Optional[str]) -> Sequence[str]:
+    """Returns empty list if no channels are provided."""
+    if value is None:
+        return []
+    return _parse_channels(ctx.params["input_dataset"], value)
+
+
 def input_dataset_callback(ctx: click.Context, arg: click.Argument, value: Sequence[str]) -> None:
     try:
         ctx.params["input_dataset"], _ = glob_datasets(value)
@@ -261,3 +270,107 @@ def tilesize_option(default: Optional[int] = 320) -> Callable:
         )(f)
 
     return decorator
+
+
+def args_option() -> None:
+    def decorator(f: Callable) -> Callable:
+        return click.option(
+            "--args",
+            "-a",
+            type=str,
+            required=False,
+            multiple=True,
+            default=list(),
+            help="Function arguments, it must be used multiple times for multiple arguments. Example: -a sigma=1,2,3 -a pad=constant",
+        )(f)
+
+    return decorator
+
+
+class KwargsCommand(click.Command):
+    def format_epilog(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
+        """Writes the epilog into the formatter if it exists."""
+        if self.epilog:
+            formatter.write_paragraph()
+            with formatter.indentation():
+                formatter.write(self.epilog)
+
+
+def parse_args_to_kwargs(args: Sequence[str], sep: str = "=") -> Dict[str, Any]:
+    """Parses list of strings with keys and values to a dictionary,
+        given a separator to split the key and values.
+
+    Parameters
+    ----------
+    args : Sequence[str]
+        List of strings of key/values, for example ["sigma=1,2,3", "pad=constant"]
+    sep : str, optional
+        key-value separator, by default "="
+
+    Returns
+    -------
+    Dict[str, Any]
+        Dictionary of key word arguments.
+    """
+    args = [arg.split(sep) for arg in args]
+    assert all(len(arg) == 2 for arg in args)
+
+    kwargs = dict(args)
+    kwargs = {k: ast.literal_eval(v) for k, v in kwargs.items()}
+
+    aprint(f"Using key word arguments {kwargs}")
+
+    return kwargs
+
+
+def validate_function_kwargs(func: Callable, kwargs: Dict[str, Any]) -> None:
+    """Checks if key-word arguments are valid arguments to the provided function.
+
+    Parameters
+    ----------
+    func : Callable
+        Reference function.
+    kwargs : Dict[str, Any]
+        Key-word arguments as dict.
+
+    Raises
+    ------
+    ValueError
+        If any key isn't an argument of the given function.
+    """
+    sig = inspect.signature(func)
+    for key in kwargs:
+        if key not in sig.parameters:
+            raise ValueError(f"Function {func.__name__} doesn't support keyword {key}")
+
+
+def func_args_to_str(func: Callable, ignore: Sequence[str] = []) -> str:
+    """Parses functions arguments to string format for click.Command.epilog
+
+    Usage example:
+    @click.command(
+        cls=KwargsCommand,
+        epilog=func_args_to_str(<your function>, <ignored arguments>),
+    )
+    def func(args: Sequence[str]):
+        pass
+
+    Parameters
+    ----------
+    func : Callable
+        Function to extract arguments and default values
+    ignore : Sequence[str], optional
+        Arguments to ignore, by default []
+
+    Returns
+    -------
+    str
+        String for click.command(epilog)
+    """
+    sig = inspect.signature(func)
+    text = "Known key-word arguments:\n"
+    for k, v in sig.parameters.items():
+        if k not in ignore:
+            text += f"  -a, --args {k}={v.default}\n"
+
+    return text

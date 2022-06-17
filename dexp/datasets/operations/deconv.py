@@ -192,8 +192,8 @@ def dataset_deconv(
                         ):
                             aprint(f"Number of iterations: {num_iterations}, back_projection:{back_projection}, ")
                             tp_array = scatter_gather_i2i(
-                                deconv,
                                 tp_array,
+                                deconv,
                                 tiles=tilesize,
                                 margins=margins,
                                 normalise=normalize,
