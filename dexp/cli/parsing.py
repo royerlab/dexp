@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 import click
 from arbol import aprint
 from numpy import s_
+from toolz import curry
 
 from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC, DEFAULT_STORE
 from dexp.datasets import ZDataset
@@ -211,20 +212,11 @@ def output_dataset_callback(ctx: click.Context, opt: click.Option, value: Option
 
 
 def output_dataset_options() -> Callable:
-
     click_options = [
         click.option(
             "--output-path", "-o", default=None, help="Dataset output path.", callback=output_dataset_callback
         ),
-        click.option(
-            "--overwrite",
-            "-w",
-            is_flag=True,
-            help="Forces overwrite of target",
-            show_default=True,
-            default=False,
-            is_eager=True,
-        ),
+        overwrite_option(),
         click.option(
             "--store",
             "-st",
@@ -259,6 +251,21 @@ def output_dataset_options() -> Callable:
         for opt in click_options:
             f = opt(f)
         return f
+
+    return decorator
+
+
+def overwrite_option() -> Callable:
+    def decorator(f: Callable) -> Callable:
+        return click.option(
+            "--overwrite",
+            "-w",
+            is_flag=True,
+            help="Forces overwrite of output",
+            show_default=True,
+            default=False,
+            is_eager=True,
+        )(f)
 
     return decorator
 
@@ -383,3 +390,40 @@ def func_args_to_str(func: Callable, ignore: Sequence[str] = []) -> str:
             text += f"  -a, --args {k}={v.default}\n"
 
     return text
+
+
+@curry
+def tuple_callback(
+    ctx: click.Context,
+    opt: click.Option,
+    value: str,
+    dtype: Callable = int,
+    length: Optional[int] = None,
+) -> Optional[Tuple[Any]]:
+    """Parses string to tuple given dtype and optional length.
+       Returns None if None is supplied.
+
+    Parameters
+    ----------
+    ctx : click.Context
+        CLI context, not used.
+    opt : click.Option
+        CLI option, not used.
+    value : str
+        Input value.
+    dtype : Callable, optional
+        Data type for type casting, by default int
+    length : Optional[int], optional
+        Optional length for length checking, by default None
+
+    Returns
+    -------
+    Tuple[Any]
+        Tuple of given dtype and length (optional).
+    """
+    if value is None:
+        return None
+    tup = tuple(dtype(s) for s in value.split(","))
+    if length is not None and length != len(tup):
+        raise ValueError(f"Expected tuple of length {length}, got input {tup}")
+    return tup

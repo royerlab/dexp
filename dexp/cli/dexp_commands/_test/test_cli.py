@@ -22,9 +22,10 @@ from dexp.utils.testing import cupy_only
         ["extract-psf", "-pt", "100", "-c", "image"],
         ["generic", "-f", "gaussian_filter", "-pkg", "cupyx.scipy.ndimage", "-ts", "100", "-a", "sigma=1,2,2"],
         ["histogram", "-c", "image", "-m", "0"],
+        ["projrender", "-c", "image", "-lt", "test projrender", "-lsi", "0.5"],
+        ["segment", "-dc", "image"],
         ["tiff", "--split", "-wk", "2"],
         ["tiff", "-p", "0", "-wk", "2"],
-        ["segment", "-dc", "image"],
         ["view", "-q", "-d", "2"],
     ],
 )
