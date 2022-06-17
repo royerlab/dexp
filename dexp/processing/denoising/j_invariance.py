@@ -114,7 +114,7 @@ def _generate_mask(image: xpArray, stride: int = 4):
 
     # Generate slice for mask:
     spatialdims = image.ndim
-    n_masks = stride ** spatialdims
+    n_masks = stride**spatialdims
     phases = np.unravel_index(n_masks // 2, (stride,) * len(image.shape[:spatialdims]))
     mask = tuple(slice(p, None, stride) for p in phases)
 

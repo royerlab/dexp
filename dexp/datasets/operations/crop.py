@@ -17,14 +17,14 @@ from dexp.utils.misc import compute_num_workers
 
 
 def _estimate_crop(array: ArrayLike, quantile: float) -> Sequence[Tuple[int]]:
-    window_size = 31
+    window_size = 15
     step = 4
     shape = array.shape
     with BestBackend():
         xp = Backend.get_xp_module()
         array = Backend.to_backend(array[::step, ::step, ::step], dtype=xp.float16)
         array = xp.clip(array - xp.mean(array), 0, None)  # removing background noise
-        kernel = xp.ones((window_size, window_size, window_size)) / (window_size ** 3)
+        kernel = xp.ones((window_size, window_size, window_size)) / (window_size**3)
         kernel = kernel.astype(xp.float16)
         array = fft_convolve(array, kernel, in_place=True)
         lower = xp.quantile(array, quantile)

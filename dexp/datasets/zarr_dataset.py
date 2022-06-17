@@ -641,7 +641,7 @@ class ZDataset(BaseDataset):
         arrays = []
         datasets = []
         for i in range(n_scales):
-            factor = 2 ** i
+            factor = 2**i
             array_path = f"{i}"
             shape = ome_zarr_shape[:2] + tuple(int(m.ceil(s / factor)) for s in ome_zarr_shape[2:])
             chunks = (1,) + self._default_chunks(shape, dtype)
@@ -662,7 +662,7 @@ class ZDataset(BaseDataset):
                     arrays[0][t, c] = stack
                     stack = bkd.to_backend(stack)
                     for i in range(1, n_scales):
-                        factors = (2 ** i,) * stack.ndim
+                        factors = (2**i,) * stack.ndim
                         arrays[i][t, c] = bkd.to_numpy(downscale_local_mean(stack, factors))
 
         aprint("Done conversion to OME zarr")

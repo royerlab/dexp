@@ -133,7 +133,7 @@ def ssim(image_a, image_b, win_size=None):
     C1 = (K1 * R) ** 2
     C2 = (K2 * R) ** 2
 
-    A1, A2, B1, B2 = (2 * ux * uy + C1, 2 * vxy + C2, ux ** 2 + uy ** 2 + C1, vx + vy + C2)
+    A1, A2, B1, B2 = (2 * ux * uy + C1, 2 * vxy + C2, ux**2 + uy**2 + C1, vx + vy + C2)
     D = B1 * B2
     S = (A1 * A2) / D
 

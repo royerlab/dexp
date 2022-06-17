@@ -355,7 +355,7 @@ def msols_fuse_1C2L(
         sigma = illumination_correction_sigma
         length = C1Lx.shape[1]
         correction = xp.linspace(-length // 2, length // 2, num=length)
-        correction = xp.exp(-(correction ** 2) / (2 * sigma * sigma))
+        correction = xp.exp(-(correction**2) / (2 * sigma * sigma))
         correction = 1.0 / correction
         correction = correction.astype(dtype=internal_dtype)
         C1Lx *= correction[xp.newaxis, :, xp.newaxis]

@@ -26,7 +26,7 @@ def do_test(array_dc, array_uc, min_num_chunks=0):
 
 
 def test_compress_small_array():
-    array_uc = numpy.linspace(0, 1024, 2 ** 15).astype(numpy.uint16)
+    array_uc = numpy.linspace(0, 1024, 2**15).astype(numpy.uint16)
     array_dc = numpy.empty_like(array_uc)
     do_test(array_dc, array_uc)
 
