@@ -38,11 +38,6 @@ DEXP Commands
    :nested: full
 
 
-.. click:: dexp.cli.dexp_commands.isonet:isonet
-   :prog: isonet
-   :nested: full
-
-
 .. click:: dexp.cli.dexp_commands.projrender:projrender
    :prog: projrender
    :nested: full

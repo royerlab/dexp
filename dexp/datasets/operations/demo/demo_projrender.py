@@ -1,7 +1,6 @@
-import os
 import random
 import tempfile
-from os.path import join
+from pathlib import Path
 
 from arbol import aprint, asection
 from dask.array.image import imread
@@ -61,9 +60,10 @@ def _demo_projrender(length_xy=96, zoom=1, n=64, display=True):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         aprint("created temporary directory", tmpdir)
+        tmpdir = Path(tmpdir)
 
         with asection("Prepare dataset..."):
-            input_path = join(tmpdir, "dataset.zarr")
+            input_path = tmpdir / "dataset.zarr"
             dataset = ZDataset(path=input_path, mode="w", store="dir")
 
             dataset.add_channel(name="channel", shape=images.shape, chunks=(1, 64, 64, 64), dtype=images.dtype)
@@ -72,16 +72,21 @@ def _demo_projrender(length_xy=96, zoom=1, n=64, display=True):
 
         with asection("Project..."):
             # output_folder:
-            output_path = join(tmpdir, "projections")
+            output_path = tmpdir / "projections"
 
             # Do actual projection:
             dataset_projection_rendering(
-                input_dataset=dataset, channels=("channel",), output_path=output_path, legendsize=0.05
+                input_dataset=dataset,
+                channels=("channel",),
+                output_path=output_path,
+                legend_size=0.05,
+                devices=[0],
+                overwrite=True,
             )
 
         # load images into a dask array:
-        filename_pattern = os.path.join(output_path, "frame_*.png")
-        images = imread(filename_pattern)
+        filename_pattern = output_path / "frame_*.png"
+        images = imread(str(filename_pattern))
 
         if display:
             from napari import Viewer, gui_qt

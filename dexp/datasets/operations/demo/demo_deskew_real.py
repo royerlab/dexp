@@ -1,7 +1,8 @@
 import tempfile
-from os.path import join
+from pathlib import Path
 
 from arbol import aprint, asection
+from toolz import curry
 
 from dexp.datasets import ZDataset
 from dexp.datasets.operations.deskew import dataset_deskew
@@ -20,37 +21,54 @@ def demo_deskew_numpy():
 def demo_deskew_cupy():
     try:
         with CupyBackend():
-            _demo_deskew(length=128, zoom=4)
+            _demo_deskew()
             return True
     except ModuleNotFoundError:
         aprint("Cupy module not found! demo ignored")
         return False
 
 
-def _demo_deskew(length=96, zoom=1, shift=1, display=True):
+def _demo_deskew(display=True):
     xp = Backend.get_xp_module()
 
     with asection("Deskew..."):
         with tempfile.TemporaryDirectory() as tmpdir:
             aprint("created temporary directory", tmpdir)
+            tmpdir = Path(tmpdir)
 
             # Open input dataset:
             dataset = ZDataset(path=input_path, mode="r")
+            dataset.set_slicing((slice(0, 1),))
 
             # Input array:
             input_array = dataset.get_array("v0c0")
+            angle = 45
+
+            deskew_func = curry(
+                dataset_deskew,
+                input_dataset=dataset,
+                channels=("v0c0",),
+                dx=1,
+                dz=1,
+                angle=angle,
+                flips=(True,),
+                camera_orientation=0,
+                depth_axis=0,
+                lateral_axis=1,
+                padding=True,
+                devices=[
+                    0,
+                ],
+            )
 
             with asection("Deskew yang..."):
                 # output path:
-                output_path = join(tmpdir, "deskewed_yang.zarr")
+                output_path = tmpdir / "deskewed_yang.zarr"
+                output_dataset = ZDataset(path=input_path, mode="w", parent=dataset)
 
                 # deskew:
-                dataset_deskew(
-                    dataset=dataset,
-                    dest_path=output_path,
-                    channels=("v0c0",),
-                    flips=(True,),
-                    slicing=(slice(0, 1),),
+                deskew_func(
+                    output_dataset=output_dataset,
                     mode="yang",
                 )
 
@@ -62,17 +80,13 @@ def _demo_deskew(length=96, zoom=1, shift=1, display=True):
 
             with asection("Deskew classic..."):
                 # output path:
-                output_path = join(tmpdir, "deskewed_classic.zarr")
+                output_path = tmpdir / "deskewed_classic.zarr"
+                output_dataset = ZDataset(path=input_path, mode="w", parent=dataset)
 
                 # deskew:
-                dataset_deskew(
-                    dataset=dataset,
-                    dest_path=output_path,
-                    channels=("v0c0",),
-                    flips=(True,),
-                    slicing=(slice(0, 1),),
+                deskew_func(
+                    output_dataset=output_dataset,
                     mode="classic",
-                    padding=True,
                 )
 
                 # read result

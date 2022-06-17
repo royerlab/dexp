@@ -16,7 +16,6 @@ from dexp.cli.dexp_commands.fuse import fuse
 from dexp.cli.dexp_commands.generic import generic
 from dexp.cli.dexp_commands.histogram import histogram
 from dexp.cli.dexp_commands.info import info
-from dexp.cli.dexp_commands.isonet import isonet
 from dexp.cli.dexp_commands.projrender import projrender
 from dexp.cli.dexp_commands.register import register
 from dexp.cli.dexp_commands.segment import segment
@@ -75,7 +74,6 @@ cli.add_command(fuse)
 cli.add_command(generic)
 cli.add_command(histogram)
 cli.add_command(info)
-cli.add_command(isonet)
 cli.add_command(projrender)
 cli.add_command(register)
 cli.add_command(segment)

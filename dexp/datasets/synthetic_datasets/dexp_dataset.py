@@ -3,6 +3,8 @@ from dexp.datasets.synthetic_datasets.nuclei_background_data import (
     generate_nuclei_background_data,
 )
 from dexp.datasets.zarr_dataset import ZDataset
+from dexp.processing.deskew import skew
+from dexp.utils.backends import BestBackend
 
 
 def generate_dexp_zarr_dataset(path: str, dataset_type: str, n_time_pts: int = 2, **kwargs) -> ZDataset:
@@ -24,7 +26,7 @@ def generate_dexp_zarr_dataset(path: str, dataset_type: str, n_time_pts: int = 2
     ZDataset
         Generated dataset object
     """
-    DS_TYPES = ("fusion", "nuclei")
+    DS_TYPES = ("fusion", "nuclei", "nuclei-skewed")
     if dataset_type not in DS_TYPES:
         raise ValueError(f"`dataset_type` must be {DS_TYPES}, found {dataset_type}")
 
@@ -34,10 +36,16 @@ def generate_dexp_zarr_dataset(path: str, dataset_type: str, n_time_pts: int = 2
         names = ["ground-truth", "low-quality", "blend-a", "blend-b", "image-C0L0", "image-C1L0"]
         images = generate_fusion_test_data(**kwargs)
 
-    elif dataset_type == "nuclei":
+    elif dataset_type.startswith("nuclei"):
         names = ["ground-truth", "background", "image"]
         images = generate_nuclei_background_data(**kwargs)
 
+        if dataset_type.endswith("skewed"):
+            # skewing only the `image` channel
+            with BestBackend() as bkd:
+                xp = bkd.get_xp_module()
+                skewed = bkd.to_numpy(skew(bkd.to_backend(images[-1]), xp.ones((5,) * images[-1].ndim), 1, 45, 1))
+                images = images[:-1] + (skewed,)
     else:
         raise NotImplementedError
 
