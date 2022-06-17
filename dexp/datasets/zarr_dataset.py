@@ -323,7 +323,7 @@ class ZDataset(BaseDataset):
             "driver": "zarr",
             "kvstore": {
                 "driver": "file",
-                "path": self._path,
+                "path": str(Path(self.path).resolve()),
             },
             "path": array.path,
             "metadata": metadata,
