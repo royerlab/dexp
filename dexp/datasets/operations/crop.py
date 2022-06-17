@@ -62,7 +62,7 @@ def compute_crop_slicing(array: zarr.Array, time_points: Sequence[int], quantile
 def _process(i: int, array: StackIterator, output_dataset: ZDataset, channel: str):
     try:
         aprint(f"Processing time point: {i} ...")
-        output_dataset.write_stack(channel=channel, time_point=i, stack_array=array[i])
+        output_dataset.write_stack(channel=channel, time_point=i, stack_array=np.asarray(array[i]))
     except Exception as error:
         aprint(error)
         aprint(f"Error occurred while copying time point {i} !")
