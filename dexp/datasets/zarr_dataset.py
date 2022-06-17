@@ -5,14 +5,14 @@ import shutil
 import sys
 from os.path import exists, isdir, isfile, join
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import dask
 import numpy
 import zarr
 from arbol.arbol import aprint, asection
 from ome_zarr.format import CurrentFormat
-from zarr import Blosc, CopyError, Group, convenience, open_group
+from zarr import Blosc, CopyError, convenience, open_group
 
 from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC
 from dexp.datasets.base_dataset import BaseDataset
@@ -69,8 +69,6 @@ class ZDataset(BaseDataset):
 
         self._store = None
         self._root_group = None
-        self._arrays: Dict[str, zarr.Array] = {}
-        self._projections = {}
 
         self._codec = codec
         self._clevel = clevel
@@ -83,7 +81,6 @@ class ZDataset(BaseDataset):
 
             self.store = get_mapper(self._path)
             self._root_group = zarr.open(self.store, mode=mode)
-            self._initialise_existing()
             return
 
         # Correct path to adhere to convention:
@@ -135,7 +132,7 @@ class ZDataset(BaseDataset):
 
             aprint(f"Opening with mode: {mode}")
             self._root_group = open_group(self._store, mode=mode)
-            self._initialise_existing()
+
         elif "a" in mode or "w" in mode:
             aprint(f"Creating Zarr storage: '{self._path}' with read/write mode: '{mode}' and store type: '{store}'")
             if store is None:
@@ -175,34 +172,8 @@ class ZDataset(BaseDataset):
         if mode in ("a", "w", "w-"):
             self.append_cli_history(parent if isinstance(parent, ZDataset) else None)
 
-    def _initialise_existing(self):
-        self._channels = [channel for channel, _ in self._root_group.groups()]
-
-        aprint("Exploring Zarr hierarchy...")
-        for channel, channel_group in self._root_group.groups():
-            aprint(f"Found channel: {channel}")
-
-            channel_items = channel_group.items()
-
-            for item_name, array in channel_items:
-                aprint(f"Found array: {item_name}")
-
-                if item_name == channel or item_name == "fused":
-                    # print(f'Opening array at {path}:{channel}/{item_name} ')
-                    self._arrays[channel] = array
-                    # self._arrays[channel] = from_zarr(path, component=f"{channel}/{item_name}")
-                elif (item_name.startswith(channel) or item_name.startswith("fused")) and "_projection_" in item_name:
-                    self._projections[item_name] = array
-
-    def _get_group_for_channel(self, channel: str) -> Union[None, Sequence[Group]]:
-        groups = [g for c, g in self._root_group.groups() if c == channel]
-        if len(groups) == 0:
-            return None
-        else:
-            return groups[0]
-
     def chunk_shape(self, channel: str) -> Sequence[int]:
-        return self._arrays[channel].chunks
+        return self.get_array(channel).chunks
 
     @staticmethod
     def _default_chunks(shape: Tuple[int], dtype: Union[str, numpy.dtype], max_size: int = 2147483647) -> Tuple[int]:
@@ -237,13 +208,13 @@ class ZDataset(BaseDataset):
                 return True
 
     def channels(self) -> Sequence[str]:
-        return list(self._arrays.keys())
+        return list(self._root_group.keys())
 
     def nb_timepoints(self, channel: str) -> int:
         return self.get_array(channel).shape[0]
 
     def shape(self, channel: str) -> Sequence[int]:
-        return self._arrays[channel].shape
+        return self.get_array(channel).shape
 
     def dtype(self, channel: str):
         return self.get_array(channel).dtype
@@ -255,7 +226,7 @@ class ZDataset(BaseDataset):
                 f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}"
             )
             info_str += ".\n"
-            info_str += str(self._arrays[channel].info)
+            info_str += str(self.get_array(channel).info)
             return info_str
         else:
             info_str += f"Dataset at location: {self._path} \n"
@@ -264,9 +235,9 @@ class ZDataset(BaseDataset):
             info_str += str(self._root_group.tree())
             info_str += ".\n\n"
             info_str += "Arrays: \n"
-            for name, array in self._arrays.items():
+            for name in self.channels():
                 info_str += "  │ \n"
-                info_str += "  └──" + name + ":\n" + str(array.info) + "\n\n"
+                info_str += "  └──" + name + ":\n" + str(self.get_array(name).info) + "\n\n"
                 info_str += ".\n\n"
 
         info_str += ".\n\n"
@@ -323,7 +294,7 @@ class ZDataset(BaseDataset):
             "driver": "zarr",
             "kvstore": {
                 "driver": "file",
-                "path": self._path,
+                "path": self.path,
             },
             "path": array.path,
             "metadata": metadata,
@@ -334,7 +305,7 @@ class ZDataset(BaseDataset):
         self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False, wrap_with_tensorstore: bool = False
     ) -> Union[zarr.Array, Any]:
         assert (wrap_with_dask != wrap_with_tensorstore) or not wrap_with_dask
-        array = self._arrays[channel]
+        array = self._root_group[channel].get(channel)
         if wrap_with_dask:
             return dask.array.from_array(array, chunks=array.chunks)
         elif wrap_with_tensorstore:
@@ -349,7 +320,7 @@ class ZDataset(BaseDataset):
         self, channel: str, axis: int, wrap_with_dask: bool = False, wrap_with_tensorstore: bool = False
     ) -> Optional[Union[zarr.Array, Any]]:
         assert (wrap_with_dask != wrap_with_tensorstore) or not wrap_with_dask
-        array = self._projections.get(self._projection_name(channel, axis))
+        array = self._root_group[channel].get(self._projection_name(channel, axis))
         if array is None:
             return None
 
@@ -449,8 +420,6 @@ class ZDataset(BaseDataset):
             fill_value=fill_value,
         )
 
-        self._arrays[name] = array
-
         if enable_projections:
             ndim = len(shape) - 1
             for axis in range(ndim):
@@ -463,7 +432,7 @@ class ZDataset(BaseDataset):
                 # chunking along time must be 1 to allow parallelism, but no chunking for each projection (not needed!)
                 proj_chunks = (1,) + (None,) * (len(chunks) - 2)
 
-                proj_array = channel_group.full(
+                channel_group.full(
                     name=proj_name,
                     shape=proj_shape,
                     dtype=dtype,
@@ -472,7 +441,6 @@ class ZDataset(BaseDataset):
                     compressor=compressor,
                     fill_value=fill_value,
                 )
-                self._projections[proj_name] = proj_array
 
         return array
 
@@ -508,7 +476,7 @@ class ZDataset(BaseDataset):
         for channel, new_name in zip(channels, rename):
             try:
                 array = self.get_array(channel, per_z_slice=False, wrap_with_dask=False)
-                source_group = self._get_group_for_channel(channel)
+                source_group = self._root_group[channel]
                 source_arrays = source_group.items()
 
                 aprint(f"Creating group for channel {channel} of new name {new_name}.")
@@ -689,3 +657,7 @@ class ZDataset(BaseDataset):
 
     def __getitem__(self, channel: str) -> StackIterator:
         return StackIterator(self.get_array(channel, wrap_with_tensorstore=True), self._slicing)
+
+    def __contains__(self, channel: str) -> bool:
+        """Checks if channels exists, valid for when using multiple process."""
+        return channel in self._root_group
