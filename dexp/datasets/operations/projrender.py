@@ -68,7 +68,7 @@ def dataset_projection_rendering(
 
         lazy_computations += [process(time_point=t) for t in range(len(stacks))]
 
-    if len(devices) == 0 or not is_cupy_available():
+    if len(devices) > 0 and is_cupy_available():
         from dask_cuda import LocalCUDACluster
 
         cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
