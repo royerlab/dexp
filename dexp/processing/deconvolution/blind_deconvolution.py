@@ -32,7 +32,8 @@ def blind_deconvolution(
     deconv_fun: Callable[[xpArray, xpArray], xpArray],
     microscope_params: Dict,
     n_iterations: int,
-    n_zernikes: int = 15,
+    n_zernikes: int = 10,
+    update_tol: float = 1e-10,
     display: bool = False,
 ) -> xpArray:
     # Local imports to
@@ -47,12 +48,15 @@ def blind_deconvolution(
     backend = Backend.current()
 
     image = backend.to_backend(image)
+    assert 0 <= image.min() and image.max() <= 1.0, "Image must be between 0.0 and 1.0"
 
+    # Regress starting PSF given zernike coef
     psf = prep_data_for_PR(observed_psf)
     phase_retriv: PhaseRetrievalResult = retrieve_phase(psf, params=microscope_params)
     phase_retriv.fit_to_zernikes(n_zernikes)
 
     def get_psf(coefs: Optional[ArrayLike] = None) -> ArrayLike:
+        """Computes PSF given coefs or use starting psf"""
         if coefs is not None:
             phase_retriv.zd_result.pcoefs = coefs[: len(coefs) // 2]
             phase_retriv.zd_result.mcoefs = coefs[len(coefs) // 2 :]
@@ -81,12 +85,14 @@ def blind_deconvolution(
         coefs = opt_res.x
         psf = get_psf(coefs)
 
-        # FIXME
-        print(np.square(old_coefs - coefs).mean())
-
         if display:
-            viewer.add_image(backend.to_numpy(deconv), name=f"Deconv i={i}")
-            viewer.add_image(psf, name=f"Est. PSF i={i}")
+            viewer.add_image(backend.to_numpy(deconv), name=f"Deconv i={i}", blending="additive")
+            viewer.add_image(psf, name=f"Est. PSF i={i}", blending="additive")
+
+        lsq_update = np.square(old_coefs - coefs).mean()
+        print(f"Coefs. least square difference: {lsq_update}")
+        if lsq_update < update_tol:
+            break
 
     if display:
         napari.run()
