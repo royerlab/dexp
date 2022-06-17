@@ -3,6 +3,7 @@ from typing import Callable, Sequence
 
 import dask
 import imageio
+import numpy as np
 from arbol.arbol import aprint, asection
 from dask.distributed import Client
 from toolz import curry
@@ -24,7 +25,7 @@ def _process(time_point: int, stacks: StackIterator, outpath: Path, project_func
         if overwrite or not filename.exists():
 
             with asection("Loading stack..."):
-                stack = stacks[time_point]
+                stack = np.asarray(stacks[time_point])
 
             with BestBackend() as bkd:
                 with asection(f"Projecting image of shape: {stack.shape} "):
