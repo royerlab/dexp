@@ -97,7 +97,7 @@ EXTRAS = {
         "higra",
         "pyotf",
         "pyift",
-        "tensorstore",
+        "tensorstore==0.1.16",
     ],
     "gpu": [
         "gputools",
