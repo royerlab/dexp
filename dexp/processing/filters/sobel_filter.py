@@ -77,7 +77,7 @@ def sobel_filter(
 
     for i in range(ndim):
         sobel_one_axis = xp.absolute(sp.ndimage.sobel(image, axis=i))
-        sobel_image += sobel_one_axis ** exponent
+        sobel_image += sobel_one_axis**exponent
 
     if exponent == 1:
         pass

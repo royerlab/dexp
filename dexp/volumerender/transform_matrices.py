@@ -22,7 +22,7 @@ def mat4_scale(x=1.0, y=1.0, z=1.0):
 
 def mat4_rotation(w=0, x=1, y=0, z=0):
     n = np.array([x, y, z], np.float32)
-    n *= 1.0 / np.sqrt(1.0 * np.sum(n ** 2))
+    n *= 1.0 / np.sqrt(1.0 * np.sum(n**2))
     q = Quaternion(np.cos(0.5 * w), *(np.sin(0.5 * w) * n))
     return q.toRotation4()
 
@@ -105,11 +105,11 @@ def mat4_lookat(eye, center, up):
     _fwd = _center - _eye
 
     # normalize
-    _fwd *= 1.0 / np.sqrt(np.sum(_fwd ** 2))
+    _fwd *= 1.0 / np.sqrt(np.sum(_fwd**2))
 
     s = np.cross(_fwd, _up)
 
-    s *= 1.0 / np.sqrt(np.sum(s ** 2))
+    s *= 1.0 / np.sqrt(np.sum(s**2))
 
     _up = np.cross(s, _fwd)
 

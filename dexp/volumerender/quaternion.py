@@ -54,9 +54,9 @@ class Quaternion:
         a, b, c, d = self.data
         return np.array(
             [
-                [a ** 2 + b ** 2 - c ** 2 - d ** 2, 2 * (b * c - a * d), 2 * (b * d + a * c), 0],
-                [2 * (b * c + a * d), a ** 2 - b ** 2 + c ** 2 - d ** 2, 2 * (c * d - a * b), 0],
-                [2 * (b * d - a * c), 2 * (c * d + a * b), a ** 2 - b ** 2 - c ** 2 + d ** 2, 0],
+                [a**2 + b**2 - c**2 - d**2, 2 * (b * c - a * d), 2 * (b * d + a * c), 0],
+                [2 * (b * c + a * d), a**2 - b**2 + c**2 - d**2, 2 * (c * d - a * b), 0],
+                [2 * (b * d - a * c), 2 * (c * d + a * b), a**2 - b**2 - c**2 + d**2, 0],
                 [0, 0, 0, 1],
             ]
         )
@@ -65,9 +65,9 @@ class Quaternion:
         a, b, c, d = self.data
         return np.array(
             [
-                [a ** 2 + b ** 2 - c ** 2 - d ** 2, 2 * (b * c - a * d), 2 * (b * d + a * c)],
-                [2 * (b * c + a * d), a ** 2 - b ** 2 + c ** 2 - d ** 2, 2 * (c * d - a * b)],
-                [2 * (b * d - a * c), 2 * (c * d + a * b), a ** 2 - b ** 2 - c ** 2 + d ** 2],
+                [a**2 + b**2 - c**2 - d**2, 2 * (b * c - a * d), 2 * (b * d + a * c)],
+                [2 * (b * c + a * d), a**2 - b**2 + c**2 - d**2, 2 * (c * d - a * b)],
+                [2 * (b * d - a * c), 2 * (c * d + a * b), a**2 - b**2 - c**2 + d**2],
             ]
         )
 

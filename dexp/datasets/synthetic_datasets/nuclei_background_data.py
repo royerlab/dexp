@@ -85,7 +85,7 @@ def generate_nuclei_background_data(
             y = xp.linspace(-1, 1, num=ly)
             z = xp.linspace(-1, 1, num=lz)
             xx, yy, zz = numpy.meshgrid(x, y, z, sparse=True)
-            distance = xp.sqrt(xx ** 2 + yy ** 2 + zz ** 2)
+            distance = xp.sqrt(xx**2 + yy**2 + zz**2)
             mask = distance < radius
             # f = 0.5*(1 + level**3 / (1 + xp.absolute(level)**3))
 

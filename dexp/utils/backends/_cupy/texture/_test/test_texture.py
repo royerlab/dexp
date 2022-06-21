@@ -251,7 +251,7 @@ def test_basic_cupy_texture_leak():
         with CupyBackend():
             # allocate input/output arrays
             length = 512
-            tex_data = cupy.arange(length ** 3, dtype=cupy.float32).reshape(length, length, length)
+            tex_data = cupy.arange(length**3, dtype=cupy.float32).reshape(length, length, length)
 
             with asection("loop"):
                 for i in range(100):

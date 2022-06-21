@@ -61,7 +61,7 @@ def wiener_butterworth_kernel(
         cutoffs = tuple(float(xp.count_nonzero(b) / b.size) for b in pass_band)
         # cutoffs = (max(cutoffs),)*psf_f.ndim
 
-    epsilon = math.sqrt((beta ** -2) - 1)
+    epsilon = math.sqrt((beta**-2) - 1)
 
     bwk_f = butterworth_kernel(
         shape=kernel.shape,

@@ -76,7 +76,7 @@ def butterworth_kernel(
             + ((z / cz) ** 2)[:, xp.newaxis, xp.newaxis]
         )
 
-    kernel_fft = 1 / xp.sqrt(1.0 + (epsilon ** 2) * (freq ** order))
+    kernel_fft = 1 / xp.sqrt(1.0 + (epsilon**2) * (freq**order))
 
     kernel_fft = xp.squeeze(kernel_fft)
 

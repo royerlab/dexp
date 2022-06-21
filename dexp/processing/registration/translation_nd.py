@@ -126,7 +126,7 @@ def register_translation_nd(
 
     # Compute confidence:
     masked_correlation = correlation.copy()
-    mask_size = tuple(max(8, int(s ** 0.9) // 8) for s in masked_correlation.shape)
+    mask_size = tuple(max(8, int(s**0.9) // 8) for s in masked_correlation.shape)
     masked_correlation[tuple(slice(rs - s, rs + s) for rs, s in zip(rough_shift, mask_size))] = 0
     background_correlation_max = xp.max(masked_correlation)
     epsilon = 1e-6

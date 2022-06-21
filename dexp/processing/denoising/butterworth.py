@@ -32,7 +32,7 @@ def calibrate_denoise_butterworth(
     min_order: float = 0.5,
     max_order: float = 6.0,
     num_order: int = 32,
-    crop_size_in_voxels: Optional[int] = 256 ** 3,
+    crop_size_in_voxels: Optional[int] = 256**3,
     display: bool = False,
     **other_fixed_parameters,
 ):
@@ -364,10 +364,10 @@ def _setup_butterworth_denoiser(
 
 def _butterworth_filter(image_f: xpArray, f: xpArray, order: float) -> xpArray:
     if isinstance(image_f, np.ndarray):
-        return image_f / np.sqrt(1 + f ** order)
+        return image_f / np.sqrt(1 + f**order)
     else:
         # Faster operation if cupy array is used
-        return image_f * rsqrt(1 + f ** order)
+        return image_f * rsqrt(1 + f**order)
 
 
 # "Compiles" to cupy if available
