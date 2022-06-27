@@ -1,40 +1,11 @@
 import inspect
 from functools import wraps
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+from typing import Callable
 
-import numpy as np
 import pytest
 
-from dexp.utils.backends import Backend, CupyBackend, NumpyBackend
+from dexp.utils.backends import CupyBackend, NumpyBackend, dispatch_data_to_backend
 from dexp.utils.backends.cupy_backend import is_cupy_available
-
-
-def _maybe_to_backend(backend: Backend, obj: Any) -> Any:
-
-    if isinstance(obj, np.ndarray):
-        # this must be first because arrays are iterables
-        return backend.to_backend(obj)
-
-    if isinstance(obj, Dict):
-        dispatch_data_to_backend(backend, [], obj)
-        return obj
-
-    elif isinstance(obj, (List, Tuple)):
-        obj = list(obj)
-        dispatch_data_to_backend(backend, obj, {})
-        return obj
-
-    else:
-        return obj
-
-
-def dispatch_data_to_backend(backend: Backend, args: Iterable, kwargs: Dict) -> None:
-    """Function to move arrays to backend."""
-    for i, v in enumerate(args):
-        args[i] = _maybe_to_backend(backend, v)
-
-    for k, v in kwargs.items():
-        kwargs[k] = _maybe_to_backend(backend, v)
 
 
 def _add_cuda_signature(func: Callable) -> Callable:
