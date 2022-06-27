@@ -143,6 +143,13 @@ def dataset_view(
 
                         proj_array = reshape(proj_array, shape=shape)
 
+                    proj_resolution = list(resolution)
+                    proj_resolution.pop(axis + 1)
+                    proj_resolution.insert(1, 1)
+
+                    if axis == 2:
+                        proj_resolution[-2:] = reversed(proj_resolution[-2:])
+
                     # flip x for second camera:
                     if "C1" in channel:
                         if isinstance(array, ts.TensorStore):
@@ -153,7 +160,7 @@ def dataset_view(
                     proj_layer = add_layer(
                         proj_array,
                         name=f"{channel}_proj_{axis}",
-                        scale=resolution,
+                        scale=proj_resolution,
                     )
                     layers.append(proj_layer)
 
