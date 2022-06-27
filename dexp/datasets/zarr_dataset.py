@@ -18,6 +18,7 @@ from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.datasets.ome_dataset import create_coord_transform, default_omero_metadata
 from dexp.datasets.stack_iterator import StackIterator
+from dexp.utils import compress_dictionary_lists_length
 from dexp.utils.backends import Backend, BestBackend
 from dexp.utils.config import config_blosc
 
@@ -242,7 +243,8 @@ class ZDataset(BaseDataset):
 
         info_str += ".\n\n"
         info_str += "\nMetadata: \n"
-        for key, value in self.get_metadata().items():
+        metadata = compress_dictionary_lists_length(self.get_metadata(), 5)
+        for key, value in metadata.items():
             if "cli_history" not in key:
                 info_str += f"\t{key} : {value} \n"
 
