@@ -6,6 +6,7 @@ from joblib import Parallel, delayed
 from toolz import curry
 
 from dexp.datasets import BaseDataset, ZDataset
+from dexp.datasets.clearcontrol_dataset import CCDataset
 from dexp.datasets.stack_iterator import StackIterator
 from dexp.utils.misc import compute_num_workers
 
@@ -61,6 +62,10 @@ def dataset_copy(
                 n_jobs = compute_num_workers(workers, len(array))
                 parallel = Parallel(n_jobs=n_jobs, backend=workersbackend)
                 parallel(delayed(process)(i) for i in range(len(array)))
+
+        if isinstance(input_dataset, CCDataset):
+            time = input_dataset.time_sec(channel).tolist()
+            output_dataset.append_metadata({channel: dict(time=time)})
 
     # Dataset info:
     aprint(output_dataset.info())
