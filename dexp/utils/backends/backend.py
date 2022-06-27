@@ -2,9 +2,9 @@ import importlib
 import threading
 import types
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-import numpy
+import numpy as np
 
 from dexp.utils import xpArray
 
@@ -63,7 +63,7 @@ class Backend(ABC):
         Backend._local.backend_stack.append(backend)
 
     @staticmethod
-    def to_numpy(array: xpArray, dtype=None, force_copy: bool = False) -> numpy.ndarray:
+    def to_numpy(array: xpArray, dtype=None, force_copy: bool = False) -> np.ndarray:
         return Backend.current()._to_numpy(array, dtype=dtype, force_copy=force_copy)
 
     @staticmethod
@@ -106,7 +106,7 @@ class Backend(ABC):
         self.clear_memory_pool()
 
     @abstractmethod
-    def _to_numpy(self, array: xpArray, dtype=None, force_copy: bool = False) -> numpy.ndarray:
+    def _to_numpy(self, array: xpArray, dtype=None, force_copy: bool = False) -> np.ndarray:
         """Converts backend array to numpy. If array is already a numpy array it is returned unchanged.
 
         Parameters
@@ -151,7 +151,7 @@ class Backend(ABC):
 
             return cupy.get_array_module(array)
         except ModuleNotFoundError:
-            return numpy
+            return np
 
     def _get_sp_module(self, array: xpArray) -> types.ModuleType:
         """Returns the scipy-like module for a given array
@@ -199,3 +199,31 @@ class Backend(ABC):
 
     def synchronise(self) -> None:
         pass
+
+
+def _maybe_to_backend(backend: Backend, obj: Any) -> Any:
+
+    if isinstance(obj, np.ndarray):
+        # this must be first because arrays are iterables
+        return backend.to_backend(obj)
+
+    if isinstance(obj, Dict):
+        dispatch_data_to_backend(backend, [], obj)
+        return obj
+
+    elif isinstance(obj, (List, Tuple)):
+        obj = list(obj)
+        dispatch_data_to_backend(backend, obj, {})
+        return obj
+
+    else:
+        return obj
+
+
+def dispatch_data_to_backend(backend: Backend, args: Iterable, kwargs: Dict) -> None:
+    """Function to move arrays to backend INPLACE!"""
+    for i, v in enumerate(args):
+        args[i] = _maybe_to_backend(backend, v)
+
+    for k, v in kwargs.items():
+        kwargs[k] = _maybe_to_backend(backend, v)
