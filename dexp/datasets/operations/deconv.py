@@ -1,15 +1,18 @@
 import functools
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple
+from typing import Callable, List, Optional, Sequence, Tuple
 
 import dask
-import numpy
+import numpy as np
 import scipy
 from arbol.arbol import aprint, asection
 from dask.distributed import Client
 from dask_cuda import LocalCUDACluster
+from toolz import curry
 
 from dexp.datasets import BaseDataset
+from dexp.datasets.stack_iterator import StackIterator
+from dexp.datasets.zarr_dataset import ZDataset
 from dexp.optics.psf.standard_psfs import nikon16x08na, olympus20x10na
 from dexp.processing.deconvolution import (
     admm_deconvolution,
@@ -17,79 +20,29 @@ from dexp.processing.deconvolution import (
 )
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
-from dexp.utils.backends import Backend, BestBackend
-from dexp.utils.slicing import slice_from_shape
+from dexp.utils.backends import BestBackend
 
 
-def dataset_deconv(
-    dataset: BaseDataset,
-    dest_path: str,
-    channels: Sequence[str],
-    slicing,
-    store: str = "dir",
-    compression: str = "zstd",
-    compression_level: int = 3,
-    overwrite: bool = False,
-    tilesize: Optional[Tuple[int]] = None,
-    method: str = "lr",
-    num_iterations: int = 16,
-    max_correction: int = 16,
-    power: float = 1,
-    blind_spot: int = 0,
-    back_projection: Optional[str] = None,
-    wb_order: int = 5,
-    psf_objective: str = "nikon16x08na",
-    psf_na: float = 0.8,
-    psf_dxy: float = 0.485,
-    psf_dz: float = 2,
-    psf_xy_size: int = 17,
-    psf_z_size: int = 17,
-    psf_show: bool = False,
-    scaling: Optional[Tuple[float]] = None,
-    workers: int = 1,
-    workersbackend: str = "",
-    devices: Optional[List[int]] = None,
-    check: bool = True,
-    stop_at_exception: bool = True,
-):
+def get_psf(
+    psf_objective: str,
+    psf_na: float,
+    psf_dxy: float,
+    psf_dz: float,
+    psf_z_size: int,
+    psf_xy_size: int,
+    scaling: Tuple[float],
+    psf_show: bool,
+) -> np.ndarray:
 
-    from dexp.datasets import ZDataset
-
-    mode = "w" + ("" if overwrite else "-")
-    dest_dataset = ZDataset(dest_path, mode, store, parent=dataset)
-
-    # Default tile size:
-    if tilesize is None:
-        tilesize = 320  # very conservative
-
-    # Scaling default value:
-    if scaling is None:
-        scaling = (1, 1, 1)
+    # This is not ideal but difficult to avoid right now:
     sz, sy, sx = scaling
-    aprint(f"Input images will be scaled by: (sz,sy,sx)={scaling}")
 
-    # CUDA DASK cluster
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
-    aprint("Dask Client", client)
-
-    lazy_computation = []
-
-    for channel in dataset._selected_channels(channels):
-        array = dataset.get_array(channel)
-
-        aprint(f"Slicing with: {slicing}")
-        out_shape, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
-
-        out_shape = tuple(int(round(u * v)) for u, v in zip(out_shape, (1,) + scaling))
-        dtype = numpy.float16 if method == "admm" else array.dtype
-
-        # Adds destination array channel to dataset
-        dest_array = dest_dataset.add_channel(
-            name=channel, shape=out_shape, dtype=dtype, codec=compression, clevel=compression_level
-        )
-
-        # This is not ideal but difficult to avoid right now:
+    if Path(psf_objective).exists():
+        # loading pre-computed PSF
+        psf_kernel = np.load(psf_objective)
+        if sz != 1.0 or sy != 1.0 or sx != 1.0:
+            psf_kernel = scipy.ndimage.zoom(psf_kernel, zoom=(sz, sy, sx), order=1)
+    else:
         sxy = (sx + sy) / 2
 
         # PSF paraneters:
@@ -112,126 +65,183 @@ def dataset_deconv(
             psf_kernel = nikon16x08na(**psf_kwargs)
         elif psf_objective == "olympus20x10na":
             psf_kernel = olympus20x10na(**psf_kwargs)
-        elif Path(psf_objective).exists():
-            psf_kernel = numpy.load(psf_objective)
-            if sz != 1.0 or sy != 1.0 or sx != 1.0:
-                psf_kernel = scipy.ndimage.zoom(psf_kernel, zoom=(sz, sy, sx), order=1)
-            psf_z_size = psf_kernel.shape[0] + 10
-            psf_xy_size = max(psf_kernel.shape[1:]) + 10
         else:
             raise RuntimeError(f"Object/path {psf_objective} not found.")
 
-        # usefull for debugging:
-        if psf_show:
-            import napari
+    # usefull for debugging:
+    if psf_show:
+        import napari
 
-            viewer = napari.Viewer(title="DEXP | viewing PSF with napari", ndisplay=3)
-            viewer.add_image(psf_kernel)
-            napari.run()
+        viewer = napari.Viewer(title="DEXP | viewing PSF with napari", ndisplay=3)
+        viewer.add_image(psf_kernel)
+        napari.run()
 
-        margins = max(psf_xy_size, psf_z_size)
+    return psf_kernel
 
-        if method == "lr":
-            normalize = False
-            convolve = functools.partial(fft_convolve, in_place=False, mode="reflect", internal_dtype=numpy.float32)
 
-            def deconv(image):
-                min_value = image.min()
-                max_value = image.max()
+def get_deconv_func(
+    method: str,
+    psf_kernel: np.ndarray,
+    num_iterations: int,
+    max_correction: int,
+    blind_spot: int,
+    power: float,
+    wb_order: int,
+    back_projection: str,
+) -> Callable:
 
-                return lucy_richardson_deconvolution(
-                    image=image,
-                    psf=psf_kernel,
-                    num_iterations=num_iterations,
-                    max_correction=max_correction,
-                    normalise_minmax=(min_value, max_value),
-                    power=power,
-                    blind_spot=blind_spot,
-                    blind_spot_mode="median+uniform",
-                    blind_spot_axis_exclusion=(0,),
-                    wb_order=wb_order,
-                    back_projection=back_projection,
-                    convolve_method=convolve,
-                )
+    if method == "lr" or method == "wb":
+        convolve = functools.partial(fft_convolve, in_place=False, mode="reflect", internal_dtype=np.float32)
 
-        elif method == "admm":
-            normalize = True
+        def deconv(image):
+            min_value = image.min()
+            max_value = image.max()
 
-            def deconv(image):
-                out = admm_deconvolution(
-                    image,
-                    psf=psf_kernel,
-                    iterations=num_iterations,
-                    derivative=2,
-                )
-                return out
+            return lucy_richardson_deconvolution(
+                image=image,
+                psf=psf_kernel,
+                num_iterations=num_iterations,
+                max_correction=max_correction,
+                normalise_minmax=(min_value, max_value),
+                power=power,
+                blind_spot=blind_spot,
+                blind_spot_mode="median+uniform",
+                blind_spot_axis_exclusion=(0,),
+                wb_order=wb_order,
+                back_projection=back_projection,
+                convolve_method=convolve,
+            )
 
-        else:
-            raise ValueError(f"Unknown deconvolution mode: {method}")
+    elif method == "admm":
 
-        @dask.delayed
-        def process(i):
-            tp = time_points[i]
-            try:
-                with asection(f"Deconvolving time point for time point {i}/{len(time_points)}"):
-                    with asection(f"Loading channel: {channel}"):
-                        tp_array = numpy.asarray(array[tp][volume_slicing])
+        def deconv(image):
+            out = admm_deconvolution(
+                image,
+                psf=psf_kernel,
+                iterations=num_iterations,
+                derivative=2,
+            )
+            return out
 
-                    with BestBackend(exclusive=True, enable_unified_memory=True):
+    else:
+        raise ValueError(f"Unknown deconvolution mode: {method}")
 
-                        if sz != 1.0 or sy != 1.0 or sx != 1.0:
-                            with asection(f"Applying scaling {(sz, sy, sx)} to image."):
-                                sp = Backend.get_sp_module()
-                                tp_array = Backend.to_backend(tp_array)
-                                tp_array = sp.ndimage.zoom(tp_array, zoom=(sz, sy, sx), order=1)
-                                tp_array = Backend.to_numpy(tp_array)
+    return deconv
 
-                        with asection(
-                            f"Deconvolving image of shape: {tp_array.shape}, with tile size: {tilesize}, "
-                            + "margins: {margins} "
-                        ):
-                            aprint(f"Number of iterations: {num_iterations}, back_projection:{back_projection}, ")
-                            tp_array = scatter_gather_i2i(
-                                tp_array,
-                                deconv,
-                                tiles=tilesize,
-                                margins=margins,
-                                normalise=normalize,
-                                internal_dtype=dtype,
-                            )
 
-                        with asection("Moving array from backend to numpy."):
-                            tp_array = Backend.to_numpy(tp_array, dtype=dest_array.dtype, force_copy=False)
+@dask.delayed
+@curry
+def _process(
+    time_point: int,
+    stacks: StackIterator,
+    out_dataset: ZDataset,
+    channel: str,
+    deconv_func: Callable,
+    scaling: Tuple[int],
+):
 
-                    with asection(
-                        f"Saving deconvolved stack for time point {i}, shape:{tp_array.shape}, dtype:{array.dtype}"
-                    ):
-                        dest_dataset.write_stack(channel=channel, time_point=i, stack_array=tp_array)
+    with asection(f"Deconvolving time point for time point {time_point}/{len(stacks)}"):
+        with asection(f"Loading channel: {channel}"):
+            stack = np.asarray(stacks[time_point])
 
-                    aprint(f"Done processing time point: {i}/{len(time_points)} .")
+        with BestBackend() as bkd:
+            if any(s != 1.0 for s in scaling):
+                with asection(f"Applying scaling {scaling} to image."):
+                    sp = bkd.get_sp_module()
+                    stack = bkd.to_backend(stack)
+                    stack = sp.ndimage.zoom(stack, zoom=scaling, order=1)
+                    stack = bkd.to_numpy(stack)
 
-            except Exception as error:
-                aprint(error)
-                aprint(f"Error occurred while processing time point {i} !")
-                import traceback
+            with asection("Deconvolving ..."):
+                stack = deconv_func(stack)
 
-                traceback.print_exc()
+                with asection("Moving array from backend to numpy."):
+                    stack = bkd.to_numpy(stack, dtype=out_dataset.dtype(channel), force_copy=False)
 
-                if stop_at_exception:
-                    raise error
+            with asection(
+                f"Saving deconvolved stack for time point {time_point}, shape:{stack.shape}, dtype:{stack.dtype}"
+            ):
+                out_dataset.write_stack(channel=channel, time_point=time_point, stack_array=stack)
 
-        for i in range(len(time_points)):
-            lazy_computation.append(process(i))
+            aprint(f"Done processing time point: {time_point}/{len(stacks)} .")
+
+
+def dataset_deconv(
+    input_dataset: BaseDataset,
+    output_dataset: ZDataset,
+    channels: Sequence[str],
+    tilesize: int,
+    method: str,
+    num_iterations: Optional[int],
+    max_correction: int,
+    power: float,
+    blind_spot: int,
+    back_projection: Optional[str],
+    wb_order: int,
+    psf_objective: str,
+    psf_na: Optional[float],
+    psf_dxy: float,
+    psf_dz: float,
+    psf_xy_size: int,
+    psf_z_size: int,
+    psf_show: bool,
+    scaling: Tuple[float],
+    devices: List[int],
+):
+    aprint(f"Input images will be scaled by: (sz,sy,sx)={scaling}")
+
+    psf_kernel = get_psf(psf_objective, psf_na, psf_dxy, psf_dz, psf_z_size, psf_xy_size, scaling, psf_show)
+    margins = max(psf_kernel.shape[1], psf_kernel.shape[0])
+
+    deconv_func = get_deconv_func(
+        method,
+        psf_kernel,
+        num_iterations,
+        max_correction,
+        blind_spot,
+        power,
+        wb_order,
+        back_projection,
+    )
+    deconv_func = curry(
+        scatter_gather_i2i,
+        function=deconv_func,
+        tiles=tilesize,
+        margins=margins,
+        normalise=method == "admm",
+    )
+
+    lazy_computation = []
+
+    for channel in channels:
+        stacks = input_dataset[channel]
+
+        out_shape = tuple(int(round(u * v)) for u, v in zip(stacks.shape, (1,) + scaling))
+        dtype = np.float16 if method == "admm" else stacks.dtype
+
+        # Adds destination array channel to dataset
+        output_dataset.add_channel(name=channel, shape=out_shape, dtype=dtype)
+
+        process = _process(
+            stacks=stacks,
+            out_dataset=output_dataset,
+            channel=channel,
+            scaling=scaling,
+            deconv_func=deconv_func(internal_dtype=dtype),
+        )
+
+        for t in range(len(stacks)):
+            lazy_computation.append(process(time_point=t))
 
     dask.compute(*lazy_computation)
 
+    # CUDA DASK cluster
+    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
+    client = Client(cluster)
+    aprint("Dask Client", client)
+
     # Dataset info:
-    aprint(dest_dataset.info())
+    aprint(output_dataset.info())
 
     # Check dataset integrity:
-    if check:
-        dest_dataset.check_integrity()
-
-    # close destination dataset:
-    dest_dataset.close()
-    client.close()
+    output_dataset.check_integrity()
