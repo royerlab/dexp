@@ -1,6 +1,6 @@
 import random
 import tempfile
-from os.path import join
+from pathlib import Path
 
 from arbol import aprint, asection
 
@@ -59,26 +59,52 @@ def _demo_deconv(length_xy=96, zoom=1, n=8, display=True):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         aprint("created temporary directory", tmpdir)
+        tmpdir = Path(tmpdir)
 
         with asection("Prepare dataset..."):
-            input_path = join(tmpdir, "dataset.zarr")
+            input_path = tmpdir / "dataset.zarr"
             dataset = ZDataset(path=input_path, mode="w", store="dir")
 
             dataset.add_channel(name="channel", shape=images.shape, chunks=(1, 64, 64, 64), dtype=images.dtype)
 
             dataset.write_array(channel="channel", array=Backend.to_numpy(images))
 
+            dataset.set_slicing((slice(2, 3), ...))
+
             source_array = dataset.get_array("channel")
 
         with asection("Deconvolve..."):
             # output_folder:
-            output_path = join(tmpdir, "deconv.zarr")
+            output_path = tmpdir / "deconv.zarr"
+            output_dataset = ZDataset(path=output_path, mode="w", parent=dataset)
 
             # Do deconvolution:
-            dataset_deconv(dataset=dataset, dest_path=output_path, channels=("channel",), slicing=(slice(2, 3), ...))
+            dataset_deconv(
+                input_dataset=dataset,
+                output_dataset=output_dataset,
+                channels=("channel",),
+                tilesize=320,
+                method="lr",
+                num_iterations=None,
+                max_correction=None,
+                power=1.0,
+                blind_spot=0,
+                back_projection="tpsf",
+                wb_order=5,
+                psf_objective="nikon16x08na",
+                psf_na=None,
+                psf_dxy=0.485,
+                psf_dz=4 * 0.485,
+                psf_xy_size=31,
+                psf_z_size=31,
+                scaling=(1, 1, 1),
+                devices=[0],
+                psf_show=False,
+            )
 
-            deconv_dataset = ZDataset(path=output_path, mode="a")
-            deconv_array = deconv_dataset.get_array("channel")
+            output_dataset.close()
+
+            deconv_array = output_dataset.get_array("channel")
 
             assert deconv_array.shape[0] == 1
             assert deconv_array.shape[1:] == source_array.shape[1:]
@@ -94,6 +120,7 @@ def _demo_deconv(length_xy=96, zoom=1, n=8, display=True):
             viewer.add_image(_c(source_array), name="source_array")
             viewer.add_image(_c(deconv_array), name="deconv_array")
             viewer.grid.enabled = True
+            viewer.dims.set_point(0, 0)
             napari.run()
 
 

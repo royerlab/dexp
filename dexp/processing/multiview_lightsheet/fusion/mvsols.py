@@ -166,7 +166,7 @@ def msols_fuse_1C2L(
         raise ValueError("The two views must have same dtype!")
 
     if C0L0.shape != C0L1.shape:
-        raise ValueError("The two views must have same shapes!")
+        raise ValueError(f"The two views must have same shapes! Found {C0L0.shape} and {C0L1.shape}")
 
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32

@@ -9,7 +9,7 @@
 ### Prerequisites:
 
 **dexp** works on OSX and Windows, but it is recomended to use the latest version of Ubuntu.
-We recommend a machine with a top-of-the-line NVIDIA graphics card (min 12G to be confortable).
+We recommend a machine with NVIDIA graphics card with at least 12G.
 
 First, make sure to have a [working python installation](https://github.com/royerlab/dexp/wiki/Installing-Python).
 Second, make sure to have a compatible and functional [CUDA installation](https://github.com/royerlab/dexp/wiki/Installing-CUDA)
@@ -20,15 +20,14 @@ Once these prerequisites are satified, you can install **dexp**.
 
 **dexp** can simply be installed with:
 
-To installs **dexp** with GPU support (CUDA 11.2), colored console output, and [napari](https://napari.org/) support do:
-```
-pip install dexp[color,cuda112,napari]
-```
-Other available CUDA versions (from [CuPy](https://cupy.dev/)) are: cuda111, cuda110, cuda102, cuda101, cuda100. We recommend using the most recent CUDA version that your system supports, and avoiding versions below 10.0
-
-If instead you do not wish to add CUDA support, you can instead do:
 ```
 pip install dexp
+```
+
+To installs **dexp** with GPU support, the optional features and colored console output:
+```
+conda install cupy
+pip install dexp[optional,colored]
 ```
 
 **For OSX users:** Before installating dexp, you will first need to install cairo:
@@ -36,16 +35,16 @@ pip install dexp
 brew install cairo
 ```
 
-### Quick environment setup and installation:
+### Quick conda environment setup and installation:
 
-The following commands delete any existing dexp environment, recreate it, and install **dexp** with support for CUDA 11.2:
+The following commands delete any existing dexp environment, recreate it, install **dexp** with CUDA support and [napari](https://napari.org/):
 ```
 conda deactivate
 conda env remove --name dexp
 conda create -y --name dexp python=3.9
 conda activate dexp
-pip install dexp[color,cuda112]
-pip install napari[pyqt5]
+conda install cupy
+pip install napari[all]
 ```
 
 If you are having problems with the cuda/cuda-toolkit the best is to use conda to install the correct version of the cudatoolkit:
@@ -65,30 +64,16 @@ If you want you **dexp** CUDA-based processing to be even faster, you can instal
 with the following command:
 
 ```
-install cudalibs 11.2
-```
-Change the CUDA version accordingly...
-This is not needed when installing cupy from conda-forge
-
-
-### Alternative instalation that pulls cupy from conda-forge:
-
-In some cases cupy installed with pip might not recognise your CUDA drivers.
-If that's the case, you can instead insall dexp with the following commands:
-
-```
-conda deactivate
-conda env remove --name dexp
-conda create -y --name dexp python=3.9
-conda activate dexp
-conda install -y -c conda-forge cupy cudatoolkit=11.2
 conda install -y -c conda-forge cudnn cutensor nccl
-pip install dexp[color]
-pip install napari[pyqt5]
 ```
 
-The commands above will install dexp on a fresh environment, with cupy, napari, cudnn cutensor and nccl.
+or
 
+```
+dexp-install cudalibs 11.2
+```
+
+Change the CUDA version accordingly.
 
 ### **dexp** Zarr dataset structure
 
