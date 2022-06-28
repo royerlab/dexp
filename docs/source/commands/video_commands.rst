@@ -3,6 +3,11 @@ Video Commands
 ==============
 
 
+.. contents::
+   :local:
+   :class: this-will-duplicate-information-and-it-is-still-useful-here
+
+
 .. click:: dexp.cli.video_commands.blend:blend
    :prog: blend
    :nested: full

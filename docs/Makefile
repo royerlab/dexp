@@ -20,7 +20,7 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
-	-rm -rf ${SRCDIR}/_autosummary/*
+	-rm -rf ${SRCDIR}/api/_autosummary/*
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
