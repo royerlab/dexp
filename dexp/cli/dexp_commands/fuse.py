@@ -1,43 +1,26 @@
+from typing import Sequence, Tuple
+
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC, DEFAULT_STORE
 from dexp.cli.parsing import (
-    _get_output_path,
-    _parse_channels,
-    _parse_slicing,
-    parse_devices,
+    channels_option,
+    input_dataset_argument,
+    multi_devices_option,
+    output_dataset_options,
+    slicing_option,
+    tuple_callback,
 )
-from dexp.datasets.open_dataset import glob_datasets
+from dexp.datasets import BaseDataset, ZDataset
 from dexp.datasets.operations.fuse import dataset_fuse
 
 
 @click.command()
-@click.argument("input_paths", nargs=-1)  # ,  help='input path'
-@click.option("--output_path", "-o")  # , help='output path'
-@click.option(
-    "--channels",
-    "-c",
-    default=None,
-    help="list of channels for the view in standard order for the microscope type (C0L0, C0L1, C1L0, C1L1,...)",
-)
-@click.option(
-    "--slicing",
-    "-s",
-    default=None,
-    help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
-)  #
-@click.option("--store", "-st", default=DEFAULT_STORE, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
-@click.option(
-    "--codec",
-    "-z",
-    default=DEFAULT_CODEC,
-    help="compression codec: ‘zstd’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ",
-)
-@click.option("--clevel", "-l", type=int, default=DEFAULT_CLEVEL, help="Compression level", show_default=True)
-@click.option(
-    "--overwrite", "-w", is_flag=True, help="to force overwrite of target", show_default=True
-)  # , help='dataset slice'
+@input_dataset_argument()
+@output_dataset_options()
+@channels_option()
+@slicing_option()
+@multi_devices_option()
 @click.option(
     "--microscope",
     "-m",
@@ -57,6 +40,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
     "--equalisemode",
     "-eqm",
     default="first",
+    type=click.Choice(["first", "all"]),
     help="Equalisation modes: compute correction ratios only for first time point: ‘first’ or for all time points: ‘all’.",
     show_default=True,
 )
@@ -67,7 +51,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
     default=0,
     help="‘zero-level’ i.e. the pixel values in the restoration (to be substracted)",
     show_default=True,
-)  #
+)
 @click.option(
     "--cliphigh",
     "-ch",
@@ -75,18 +59,24 @@ from dexp.datasets.operations.fuse import dataset_fuse
     default=0,
     help="Clips voxel values above the given value, if zero no clipping is done",
     show_default=True,
-)  #
+)
 @click.option(
-    "--fusion", "-f", type=str, default="tg", help="Fusion mode, can be: ‘tg’ or ‘dct’.  ", show_default=True
-)  #
+    "--fusion",
+    "-f",
+    type=click.Choice(["tg", "dct"]),
+    default="tg",
+    help="Fusion mode, can be: ‘tg’ or ‘dct’.",
+    show_default=True,
+)
 @click.option(
     "--fusion_bias_strength",
     "-fbs",
-    type=(float, float),
-    default=(0.5, 0.02),
+    type=str,
+    default="0.5,0.02",
     help="Fusion bias strength for illumination and detection ‘fbs_i fbs_d’, set to ‘0 0’) if fusing a cropped region",
     show_default=True,
-)  #
+    callback=tuple_callback(dtype=float, length=2),
+)
 @click.option(
     "--dehaze_size",
     "-dhs",
@@ -94,7 +84,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
     default=65,
     help="Filter size (scale) for dehazing the final regsitered and fused image to reduce effect of scattered and out-of-focus light. Set to zero to deactivate.",
     show_default=True,
-)  #
+)
 @click.option(
     "--dark-denoise-threshold",
     "-ddt",
@@ -102,27 +92,29 @@ from dexp.datasets.operations.fuse import dataset_fuse
     default=0,
     help="Threshold for denoises the dark pixels of the image -- helps increase compression ratio. Set to zero to deactivate.",
     show_default=True,
-)  #
+)
 @click.option(
     "--zpadapodise",
     "-zpa",
-    type=(int, int),
-    default=(8, 96),
+    type=str,
+    default="8,96",
     help="Pads and apodises the views along z before fusion: ‘pad apo’, where pad is a padding length, and apo is apodisation length, both in voxels. If pad=apo, no original voxel is modified and only added voxels are apodised.",
     show_default=True,
-)  #
+    callback=tuple_callback(length=2, dtype=int),
+)
 @click.option(
     "--loadreg",
     "-lr",
     is_flag=True,
     help="Turn on to load the registration parameters from a previous run",
     show_default=True,
-)  #
+)
 @click.option(
     "--model-filename",
     "-mf",
     help="Model filename to load or save registration model list",
     default="registration_models.txt",
+    type=click.Path(exists=True, dir_okay=False),
     show_default=True,
 )
 @click.option(
@@ -132,7 +124,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
     default=4,
     help="Number of iterations for warp registration (if applicable).",
     show_default=True,
-)  #
+)
 @click.option(
     "--minconfidence",
     "-mc",
@@ -140,7 +132,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
     default=0.3,
     help="Minimal confidence for registration parameters, if below that level the registration parameters for previous time points is used.",
     show_default=True,
-)  #
+)
 @click.option(
     "--maxchange",
     "-md",
@@ -148,14 +140,14 @@ from dexp.datasets.operations.fuse import dataset_fuse
     default=16,
     help="Maximal change in registration parameters, if above that level the registration parameters for previous time points is used.",
     show_default=True,
-)  #
+)
 @click.option(
     "--regedgefilter",
     "-ref",
     is_flag=True,
     help="Use this flag to apply an edge filter to help registration.",
     show_default=True,
-)  #
+)
 @click.option(
     "--maxproj/--no-maxproj",
     "-mp/-nmp",
@@ -170,10 +162,7 @@ from dexp.datasets.operations.fuse import dataset_fuse
     is_flag=True,
     help="Use this flag to indicate that the the dataset is _huge_ and that memory allocation should be optimised at the detriment of processing speed.",
     show_default=True,
-)  #
-@click.option(
-    "--devices", "-d", type=str, default="0", help="Sets the CUDA devices id, e.g. 0,1,2 or ‘all’", show_default=True
-)  #
+)
 @click.option(
     "--pad", "-p", is_flag=True, default=False, help="Use this flag to pad views according to the registration models."
 )
@@ -194,64 +183,46 @@ from dexp.datasets.operations.fuse import dataset_fuse
     default=False,
     help="Use this flag to remove beads before equalizing and fusing",
 )
-@click.option("--check", "-ck", default=True, help="Checking integrity of written file.", show_default=True)  #
 def fuse(
-    input_paths,
-    output_path,
-    channels,
-    slicing,
-    store,
-    codec,
-    clevel,
-    overwrite,
-    microscope,
-    equalise,
-    equalisemode,
-    zerolevel,
-    cliphigh,
-    fusion,
-    fusion_bias_strength,
-    dehaze_size,
-    dark_denoise_threshold,
-    zpadapodise,
-    loadreg,
-    model_filename,
-    warpregiter,
-    minconfidence,
-    maxchange,
-    regedgefilter,
-    maxproj,
-    hugedataset,
-    devices,
-    pad,
-    white_top_hat_size,
-    white_top_hat_sampling,
-    remove_beads,
-    check,
+    input_dataset: BaseDataset,
+    output_dataset: ZDataset,
+    channels: Sequence[str],
+    microscope: str,
+    equalise: bool,
+    equalisemode: str,
+    zerolevel: float,
+    cliphigh: float,
+    fusion: str,
+    fusion_bias_strength: Tuple[float, float],
+    dehaze_size: int,
+    dark_denoise_threshold: int,
+    zpadapodise: Tuple[float, float],
+    loadreg: bool,
+    model_filename: str,
+    warpregiter: int,
+    minconfidence: float,
+    maxchange: float,
+    regedgefilter: bool,
+    maxproj: bool,
+    hugedataset: bool,
+    devices: Sequence[int],
+    pad: bool,
+    white_top_hat_size: float,
+    white_top_hat_sampling: int,
+    remove_beads: bool,
 ):
     """Fuses the views of a multi-view light-sheet microscope dataset (available: simview and mvsols)"""
 
-    input_dataset, input_paths = glob_datasets(input_paths)
-    output_path = _get_output_path(input_paths[0], output_path, "_fused")
-
-    slicing = _parse_slicing(slicing)
-    channels = _parse_channels(input_dataset, channels)
-    devices = parse_devices(devices)
-
     with asection(
-        f"Fusing dataset: {input_paths}, saving it at: {output_path}, for channels: {channels}, slicing: {slicing} "
+        f"Fusing dataset: {input_dataset.path}, saving it at: {output_dataset.path},"
+        + f"for channels: {channels}, slicing: {input_dataset.slicing}"
     ):
         aprint(f"Microscope type: {microscope}, fusion type: {fusion}")
         aprint(f"Devices used: {devices}")
         dataset_fuse(
-            input_dataset,
-            output_path,
+            input_dataset=input_dataset,
+            output_dataset=output_dataset,
             channels=channels,
-            slicing=slicing,
-            store=store,
-            compression=codec,
-            compression_level=clevel,
-            overwrite=overwrite,
             microscope=microscope,
             equalise=equalise,
             equalise_mode=equalisemode,
@@ -276,8 +247,8 @@ def fuse(
             white_top_hat_size=white_top_hat_size,
             white_top_hat_sampling=white_top_hat_sampling,
             remove_beads=remove_beads,
-            check=check,
         )
 
         input_dataset.close()
+        output_dataset.close()
         aprint("Done!")

@@ -27,7 +27,7 @@ def dexp_fusion_test_data(request):
 def dexp_zarr_path(request, tmp_path_factory) -> str:
     ds_path = tmp_path_factory.mktemp("data") / "input.zarr"
     generate_dexp_zarr_dataset(ds_path, **request.param)
-    return ds_path
+    return str(ds_path)
 
 
 def pytest_addoption(parser):
