@@ -41,7 +41,7 @@ repos:
                --per-file-ignores, '__init__.py:F401 dexp/cli/*.py:E501']
 
   - repo: https://github.com/psf/black
-    rev: 21.12b0
+    rev: 22.3.0
     hooks:
       - id: black
 

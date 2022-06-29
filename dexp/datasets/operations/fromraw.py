@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from arbol import aprint, asection
 from joblib import Parallel, delayed
@@ -17,11 +19,15 @@ def _write(in_ds: CCDataset, out_ds: ZDataset, channel: str, indices: np.ndarray
 def dataset_fromraw(
     in_dataset: CCDataset,
     out_dataset: ZDataset,
-    channel_prefix: str,
+    channel_prefix: Optional[str],
     workers: int,
 ) -> None:
 
-    channels = list(filter(lambda x: x.startswith(channel_prefix), in_dataset.channels()))
+    if channel_prefix is not None:
+        channels = list(filter(lambda x: x.startswith(channel_prefix), in_dataset.channels()))
+    else:
+        channels = in_dataset.channels()
+
     aprint(f"Selected channels {channels}")
 
     argmin = channels[0]

@@ -5,19 +5,20 @@ import shutil
 import sys
 from os.path import exists, isdir, isfile, join
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import dask
 import numpy
 import zarr
 from arbol.arbol import aprint, asection
 from ome_zarr.format import CurrentFormat
-from zarr import Blosc, CopyError, Group, convenience, open_group
+from zarr import Blosc, CopyError, convenience, open_group
 
 from dexp.cli.defaults import DEFAULT_CLEVEL, DEFAULT_CODEC
 from dexp.datasets.base_dataset import BaseDataset
 from dexp.datasets.ome_dataset import create_coord_transform, default_omero_metadata
 from dexp.datasets.stack_iterator import StackIterator
+from dexp.utils import compress_dictionary_lists_length
 from dexp.utils.backends import Backend, BestBackend
 from dexp.utils.config import config_blosc
 
@@ -65,94 +66,91 @@ class ZDataset(BaseDataset):
         """
         config_blosc()
 
-        super().__init__(dask_backed=False)
+        super().__init__(dask_backed=False, path=path)
 
-        if not isinstance(path, str):
-            path = str(path)
-
-        self._path = path
         self._store = None
         self._root_group = None
-        self._arrays: Dict[str, zarr.Array] = {}
-        self._projections = {}
 
         self._codec = codec
         self._clevel = clevel
         self._chunks = chunks
 
         # Open remote store:
-        if "http" in path:
-            aprint(f"Opening a remote store at: {path}")
+        if "http" in self._path:
+            aprint(f"Opening a remote store at: {self._path}")
             from fsspec import get_mapper
 
-            self.store = get_mapper(path)
+            self.store = get_mapper(self._path)
             self._root_group = zarr.open(self.store, mode=mode)
-            self._initialise_existing()
             return
 
         # Correct path to adhere to convention:
         if "a" in mode or "w" in mode:
-            if path.endswith(".zarr.zip") or store == "zip":
-                path = path + ".zip" if path.endswith(".zarr") else path
-                path = path if path.endswith(".zarr.zip") else path + ".zarr.zip"
-            elif path.endswith(".nested.zarr") or path.endswith(".nested.zarr/") or store == "ndir":
-                path = path if path.endswith(".nested.zarr") else path + ".nested.zarr"
-            elif path.endswith(".zarr") or path.endswith(".zarr/") or store == "dir":
-                path = path if path.endswith(".zarr") else path + ".zarr"
+            if self._path.endswith(".zarr.zip") or store == "zip":
+                self._path = self._path + ".zip" if self._path.endswith(".zarr") else self._path
+                self._path = self._path if self._path.endswith(".zarr.zip") else self._path + ".zarr.zip"
+            elif self._path.endswith(".nested.zarr") or self._path.endswith(".nested.zarr/") or store == "ndir":
+                self._path = self._path if self._path.endswith(".nested.zarr") else self._path + ".nested.zarr"
+            elif self._path.endswith(".zarr") or self._path.endswith(".zarr/") or store == "dir":
+                self._path = self._path if self._path.endswith(".zarr") else self._path + ".zarr"
 
         # if exists and overwrite then delete!
-        if exists(path) and mode == "w-":
-            raise ValueError(f"Storage '{path}' already exists, add option '-w' to force overwrite!")
-        elif exists(path) and mode == "w":
-            aprint(f"Deleting '{path}' for overwrite!")
-            if isdir(path):
+        if exists(self._path) and mode == "w-":
+            raise ValueError(f"Storage '{self._path}' already exists, add option '-w' to force overwrite!")
+        elif exists(self._path) and mode == "w":
+            aprint(f"Deleting '{self._path}' for overwrite!")
+            if isdir(self._path):
                 # This is a very dangerous operation, let's double check that the folder really holds a zarr dataset:
-                _zgroup_file = join(path, ".zgroup")
-                _zarray_file = join(path, ".zarray")
+                _zgroup_file = join(self._path, ".zgroup")
+                _zarray_file = join(self._path, ".zarray")
                 # We check that either of these two hiddwn files are present, and if '.zarr' is part of the name:
-                if (".zarr" in path) and (exists(_zgroup_file) or exists(_zarray_file)):
-                    shutil.rmtree(path, ignore_errors=True)
+                if (".zarr" in self._path) and (exists(_zgroup_file) or exists(_zarray_file)):
+                    shutil.rmtree(self._path, ignore_errors=True)
                 else:
                     raise ValueError(
                         "Specified path does not seem to be a zarr dataset, deletion for overwrite"
                         "not performed out of abundance of caution, check path!"
                     )
 
-            elif isfile(path):
-                os.remove(path)
+            elif isfile(self._path):
+                os.remove(self._path)
 
-        if exists(path):
-            aprint(f"Opening existing Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
-            if isfile(path) and (path.endswith(".zarr.zip") or store == "zip"):
+        if exists(self._path):
+            aprint(f"Opening existing Zarr: '{self._path}' with read/write mode: '{mode}' and store type: '{store}'")
+            if isfile(self._path) and (self._path.endswith(".zarr.zip") or store == "zip"):
                 aprint("Opening as ZIP store")
-                self._store = zarr.storage.ZipStore(path)
-            elif isdir(path) and (path.endswith(".nested.zarr") or path.endswith(".nested.zarr/") or store == "ndir"):
+                self._store = zarr.storage.ZipStore(self._path)
+            elif isdir(self._path) and (
+                self._path.endswith(".nested.zarr") or self._path.endswith(".nested.zarr/") or store == "ndir"
+            ):
                 aprint("Opening as Nested Directory store")
-                self._store = zarr.storage.NestedDirectoryStore(path)
-            elif isdir(path) and (path.endswith(".zarr") or path.endswith(".zarr/") or store == "dir"):
+                self._store = zarr.storage.NestedDirectoryStore(self._path)
+            elif isdir(self._path) and (
+                self._path.endswith(".zarr") or self._path.endswith(".zarr/") or store == "dir"
+            ):
                 aprint("Opening as Directory store")
-                self._store = zarr.storage.DirectoryStore(path)
+                self._store = zarr.storage.DirectoryStore(self._path)
 
             aprint(f"Opening with mode: {mode}")
             self._root_group = open_group(self._store, mode=mode)
-            self._initialise_existing()
+
         elif "a" in mode or "w" in mode:
-            aprint(f"Creating Zarr storage: '{path}' with read/write mode: '{mode}' and store type: '{store}'")
+            aprint(f"Creating Zarr storage: '{self._path}' with read/write mode: '{mode}' and store type: '{store}'")
             if store is None:
                 store = "dir"
             try:
-                if path.endswith(".zarr.zip") or store == "zip":
+                if self._path.endswith(".zarr.zip") or store == "zip":
                     aprint("Opening as ZIP store")
-                    self._store = zarr.storage.ZipStore(path)
-                elif path.endswith(".nested.zarr") or path.endswith(".nested.zarr/") or store == "ndir":
+                    self._store = zarr.storage.ZipStore(self._path)
+                elif self._path.endswith(".nested.zarr") or self._path.endswith(".nested.zarr/") or store == "ndir":
                     aprint("Opening as Nested Directory store")
-                    self._store = zarr.storage.NestedDirectoryStore(path)
-                elif path.endswith(".zarr") or path.endswith(".zarr/") or store == "dir":
+                    self._store = zarr.storage.NestedDirectoryStore(self._path)
+                elif self._path.endswith(".zarr") or self._path.endswith(".zarr/") or store == "dir":
                     aprint("Opening as Directory store")
-                    self._store = zarr.storage.DirectoryStore(path)
+                    self._store = zarr.storage.DirectoryStore(self._path)
                 else:
                     aprint(
-                        f"Cannot open {path}, needs to be a zarr directory (directory that ends with `.zarr` or "
+                        f"Cannot open {self._path}, needs to be a zarr directory (directory that ends with `.zarr` or "
                         + "`.nested.zarr` for nested folders), or a zipped zarr file (file that ends with `.zarr.zip`)"
                     )
 
@@ -161,10 +159,10 @@ class ZDataset(BaseDataset):
             except Exception:
                 raise ValueError(
                     "Problem: can't create target file/directory, most likely the target dataset "
-                    + f"already exists or path incorrect: {path}"
+                    + f"already exists or path incorrect: {self._path}"
                 )
         else:
-            raise ValueError(f"Invalid read/write mode or invalid path: {path} (check path!)")
+            raise ValueError(f"Invalid read/write mode or invalid path: {self._path} (check path!)")
 
         # updating metadata
         if parent is not None:
@@ -175,34 +173,8 @@ class ZDataset(BaseDataset):
         if mode in ("a", "w", "w-"):
             self.append_cli_history(parent if isinstance(parent, ZDataset) else None)
 
-    def _initialise_existing(self):
-        self._channels = [channel for channel, _ in self._root_group.groups()]
-
-        aprint("Exploring Zarr hierarchy...")
-        for channel, channel_group in self._root_group.groups():
-            aprint(f"Found channel: {channel}")
-
-            channel_items = channel_group.items()
-
-            for item_name, array in channel_items:
-                aprint(f"Found array: {item_name}")
-
-                if item_name == channel or item_name == "fused":
-                    # print(f'Opening array at {path}:{channel}/{item_name} ')
-                    self._arrays[channel] = array
-                    # self._arrays[channel] = from_zarr(path, component=f"{channel}/{item_name}")
-                elif (item_name.startswith(channel) or item_name.startswith("fused")) and "_projection_" in item_name:
-                    self._projections[item_name] = array
-
-    def _get_group_for_channel(self, channel: str) -> Union[None, Sequence[Group]]:
-        groups = [g for c, g in self._root_group.groups() if c == channel]
-        if len(groups) == 0:
-            return None
-        else:
-            return groups[0]
-
     def chunk_shape(self, channel: str) -> Sequence[int]:
-        return self._arrays[channel].chunks
+        return self.get_array(channel).chunks
 
     @staticmethod
     def _default_chunks(shape: Tuple[int], dtype: Union[str, numpy.dtype], max_size: int = 2147483647) -> Tuple[int]:
@@ -237,13 +209,13 @@ class ZDataset(BaseDataset):
                 return True
 
     def channels(self) -> Sequence[str]:
-        return list(self._arrays.keys())
+        return list(self._root_group.keys())
 
     def nb_timepoints(self, channel: str) -> int:
         return self.get_array(channel).shape[0]
 
     def shape(self, channel: str) -> Sequence[int]:
-        return self._arrays[channel].shape
+        return self.get_array(channel).shape
 
     def dtype(self, channel: str):
         return self.get_array(channel).dtype
@@ -255,7 +227,7 @@ class ZDataset(BaseDataset):
                 f"Channel: '{channel}', nb time points: {self.shape(channel)[0]}, shape: {self.shape(channel)[1:]}"
             )
             info_str += ".\n"
-            info_str += str(self._arrays[channel].info)
+            info_str += str(self.get_array(channel).info)
             return info_str
         else:
             info_str += f"Dataset at location: {self._path} \n"
@@ -264,14 +236,15 @@ class ZDataset(BaseDataset):
             info_str += str(self._root_group.tree())
             info_str += ".\n\n"
             info_str += "Arrays: \n"
-            for name, array in self._arrays.items():
+            for name in self.channels():
                 info_str += "  │ \n"
-                info_str += "  └──" + name + ":\n" + str(array.info) + "\n\n"
+                info_str += "  └──" + name + ":\n" + str(self.get_array(name).info) + "\n\n"
                 info_str += ".\n\n"
 
         info_str += ".\n\n"
         info_str += "\nMetadata: \n"
-        for key, value in self.get_metadata().items():
+        metadata = compress_dictionary_lists_length(self.get_metadata(), 5)
+        for key, value in metadata.items():
             if "cli_history" not in key:
                 info_str += f"\t{key} : {value} \n"
 
@@ -323,7 +296,7 @@ class ZDataset(BaseDataset):
             "driver": "zarr",
             "kvstore": {
                 "driver": "file",
-                "path": self._path,
+                "path": str(Path(self.path).resolve()),
             },
             "path": array.path,
             "metadata": metadata,
@@ -332,9 +305,9 @@ class ZDataset(BaseDataset):
 
     def get_array(
         self, channel: str, per_z_slice: bool = False, wrap_with_dask: bool = False, wrap_with_tensorstore: bool = False
-    ):
+    ) -> Union[zarr.Array, Any]:
         assert (wrap_with_dask != wrap_with_tensorstore) or not wrap_with_dask
-        array = self._arrays[channel]
+        array = self._root_group[channel].get(channel)
         if wrap_with_dask:
             return dask.array.from_array(array, chunks=array.chunks)
         elif wrap_with_tensorstore:
@@ -345,11 +318,19 @@ class ZDataset(BaseDataset):
         stack_array = self.get_array(channel, per_z_slice=per_z_slice, wrap_with_dask=wrap_with_dask)[time_point]
         return stack_array
 
-    def get_projection_array(self, channel: str, axis: int, wrap_with_dask: bool = False) -> Any:
-        array = self._projections.get(self._projection_name(channel, axis))
+    def get_projection_array(
+        self, channel: str, axis: int, wrap_with_dask: bool = False, wrap_with_tensorstore: bool = False
+    ) -> Optional[Union[zarr.Array, Any]]:
+        assert (wrap_with_dask != wrap_with_tensorstore) or not wrap_with_dask
+        array = self._root_group[channel].get(self._projection_name(channel, axis))
         if array is None:
-            return
-        return dask.array.from_array(array, chunks=array.chunks) if wrap_with_dask else array
+            return None
+
+        if wrap_with_dask:
+            return dask.array.from_array(array, chunks=array.chunks)
+        elif wrap_with_tensorstore:
+            return self._load_tensorstore(array)
+        return array
 
     def _projection_name(self, channel: str, axis: int):
         return f"{channel}_projection_{axis}"
@@ -441,8 +422,6 @@ class ZDataset(BaseDataset):
             fill_value=fill_value,
         )
 
-        self._arrays[name] = array
-
         if enable_projections:
             ndim = len(shape) - 1
             for axis in range(ndim):
@@ -455,7 +434,7 @@ class ZDataset(BaseDataset):
                 # chunking along time must be 1 to allow parallelism, but no chunking for each projection (not needed!)
                 proj_chunks = (1,) + (None,) * (len(chunks) - 2)
 
-                proj_array = channel_group.full(
+                channel_group.full(
                     name=proj_name,
                     shape=proj_shape,
                     dtype=dtype,
@@ -464,7 +443,6 @@ class ZDataset(BaseDataset):
                     compressor=compressor,
                     fill_value=fill_value,
                 )
-                self._projections[proj_name] = proj_array
 
         return array
 
@@ -500,7 +478,7 @@ class ZDataset(BaseDataset):
         for channel, new_name in zip(channels, rename):
             try:
                 array = self.get_array(channel, per_z_slice=False, wrap_with_dask=False)
-                source_group = self._get_group_for_channel(channel)
+                source_group = self._root_group[channel]
                 source_arrays = source_group.items()
 
                 aprint(f"Creating group for channel {channel} of new name {new_name}.")
@@ -561,7 +539,7 @@ class ZDataset(BaseDataset):
         """
         Gets channel translation.
         """
-        axes = ("tz", "ty", "tx")
+        axes = ("tt", "tz", "ty", "tx")
         metadata = self.get_metadata()
         if channel is None:
             translation = [metadata.get(axis, 0) for axis in axes]
@@ -633,7 +611,7 @@ class ZDataset(BaseDataset):
         arrays = []
         datasets = []
         for i in range(n_scales):
-            factor = 2 ** i
+            factor = 2**i
             array_path = f"{i}"
             shape = ome_zarr_shape[:2] + tuple(int(m.ceil(s / factor)) for s in ome_zarr_shape[2:])
             chunks = (1,) + self._default_chunks(shape, dtype)
@@ -654,7 +632,7 @@ class ZDataset(BaseDataset):
                     arrays[0][t, c] = stack
                     stack = bkd.to_backend(stack)
                     for i in range(1, n_scales):
-                        factors = (2 ** i,) * stack.ndim
+                        factors = (2**i,) * stack.ndim
                         arrays[i][t, c] = bkd.to_numpy(downscale_local_mean(stack, factors))
 
         aprint("Done conversion to OME zarr")
@@ -681,3 +659,7 @@ class ZDataset(BaseDataset):
 
     def __getitem__(self, channel: str) -> StackIterator:
         return StackIterator(self.get_array(channel, wrap_with_tensorstore=True), self._slicing)
+
+    def __contains__(self, channel: str) -> bool:
+        """Checks if channels exists, valid for when using multiple process."""
+        return channel in self._root_group

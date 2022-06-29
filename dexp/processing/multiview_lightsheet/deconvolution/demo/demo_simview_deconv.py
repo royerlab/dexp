@@ -78,7 +78,7 @@ def simview_deconv():
             return lucy_richardson_deconvolution(image=_image, num_iterations=10, **parameters)
 
         view_dehazed_deconvolved = scatter_gather_i2i(
-            f, view_dehazed, tiles=320, margins=psf_size, clip=False, to_numpy=True
+            view_dehazed, f, tiles=320, margins=psf_size, clip=False, to_numpy=True
         )
 
     with timeit("lucy_richardson_deconvolution_wb"):
@@ -87,7 +87,7 @@ def simview_deconv():
             return lucy_richardson_deconvolution(image=_image, num_iterations=3, **parameters, **parameters_wb)
 
         view_dehazed_deconvolved_wb = scatter_gather_i2i(
-            f, view_dehazed, tiles=320, margins=psf_size, clip=False, to_numpy=True
+            view_dehazed, f, tiles=320, margins=psf_size, clip=False, to_numpy=True
         )
 
     with gui_qt():

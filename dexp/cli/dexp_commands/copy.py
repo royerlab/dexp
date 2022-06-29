@@ -1,43 +1,27 @@
+from typing import Sequence
+
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import (
-    DEFAULT_CLEVEL,
-    DEFAULT_CODEC,
-    DEFAULT_STORE,
-    DEFAULT_WORKERS_BACKEND,
-)
+from dexp.cli.defaults import DEFAULT_WORKERS_BACKEND
 from dexp.cli.parsing import (
-    _get_output_path,
-    _parse_channels,
-    _parse_chunks,
-    _parse_slicing,
+    channels_option,
+    input_dataset_argument,
+    output_dataset_options,
+    slicing_option,
+    workers_option,
 )
-from dexp.datasets.open_dataset import glob_datasets
+from dexp.datasets.base_dataset import BaseDataset
 from dexp.datasets.operations.copy import dataset_copy
+from dexp.datasets.zarr_dataset import ZDataset
 
 
 @click.command()
-@click.argument("input_paths", nargs=-1)  # ,  help='input path'
-@click.option("--output_path", "-o")  # , help='output path'
-@click.option("--channels", "-c", default=None, help="List of channels, all channels when ommited.")
-@click.option(
-    "--slicing",
-    "-s",
-    default=None,
-    help="Dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z) ",
-)
-@click.option("--store", "-st", default=DEFAULT_STORE, help="Zarr store: ‘dir’, ‘ndir’, or ‘zip’", show_default=True)
-@click.option("--chunks", "-chk", default=None, help="Dataset chunks dimensions, e.g. (1, 126, 512, 512).")
-@click.option(
-    "--codec",
-    "-z",
-    default=DEFAULT_CODEC,
-    help="Compression codec: zstd for ’, ‘blosclz’, ‘lz4’, ‘lz4hc’, ‘zlib’ or ‘snappy’ ",
-    show_default=True,
-)
-@click.option("--clevel", "-l", type=int, default=DEFAULT_CLEVEL, help="Compression level", show_default=True)
-@click.option("--overwrite", "-w", is_flag=True, help="Forces overwrite of target", show_default=True)
+@input_dataset_argument()
+@output_dataset_options()
+@channels_option()
+@slicing_option()
+@workers_option()
 @click.option(
     "--zerolevel",
     "-zl",
@@ -45,14 +29,7 @@ from dexp.datasets.operations.copy import dataset_copy
     default=0,
     help="‘zero-level’ i.e. the pixel values in the restoration (to be substracted)",
     show_default=True,
-)  #
-@click.option(
-    "--workers",
-    "-wk",
-    default=-4,
-    help="Number of worker threads to spawn. Negative numbers n correspond to: number_of _cores / |n| ",
-    show_default=True,
-)  #
+)
 @click.option(
     "--workersbackend",
     "-wkb",
@@ -60,46 +37,27 @@ from dexp.datasets.operations.copy import dataset_copy
     default=DEFAULT_WORKERS_BACKEND,
     help="What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ",
     show_default=True,
-)  #
-@click.option("--check", "-ck", default=True, help="Checking integrity of written file.", show_default=True)  #
+)
 def copy(
-    input_paths,
-    output_path,
-    channels,
-    slicing,
-    store,
-    chunks,
-    codec,
-    clevel,
-    overwrite,
-    zerolevel,
-    workers,
-    workersbackend,
-    check,
+    input_dataset: BaseDataset,
+    output_dataset: ZDataset,
+    channels: Sequence[str],
+    zerolevel: int,
+    workers: int,
+    workersbackend: str,
 ):
     """Copies a dataset, channels can be selected, cropping can be performed, compression can be changed, ..."""
 
-    input_dataset, input_paths = glob_datasets(input_paths)
-    output_path = _get_output_path(input_paths[0], output_path, "_copy")
-    slicing = _parse_slicing(slicing)
-    channels = _parse_channels(input_dataset, channels)
-    chunks = _parse_chunks(chunks)
-
-    with asection(f"Copying from: {input_paths} to {output_path} for channels: {channels}, slicing: {slicing} "):
+    with asection(
+        f"Copying from: {input_dataset.path} to {output_dataset.path} for channels: {channels}, slicing: {input_dataset.slicing} "
+    ):
         dataset_copy(
-            input_dataset,
-            output_path,
+            input_dataset=input_dataset,
+            output_dataset=output_dataset,
             channels=channels,
-            slicing=slicing,
-            store=store,
-            chunks=chunks,
-            compression=codec,
-            compression_level=clevel,
-            overwrite=overwrite,
             zerolevel=zerolevel,
             workers=workers,
             workersbackend=workersbackend,
-            check=check,
         )
 
         input_dataset.close()

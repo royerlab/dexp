@@ -20,7 +20,11 @@ class StackIterator:
 
     @property
     def dtype(self) -> np.dtype:
-        return self._array.dtype
+        dtype = self._array.dtype
+        if not isinstance(dtype, np.dtype):
+            # converting tensorstore dtype
+            dtype = dtype.numpy_dtype
+        return dtype
 
     @property
     def slicing(self) -> Tuple[slice]:

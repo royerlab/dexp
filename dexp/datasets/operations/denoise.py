@@ -11,6 +11,7 @@ from dexp.datasets.stack_iterator import StackIterator
 from dexp.processing.denoising import calibrate_denoise_butterworth, denoise_butterworth
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.backends import CupyBackend
+from dexp.utils.fft import clear_fft_plan_cache
 
 
 @curry
@@ -32,6 +33,7 @@ def _process(
                 denoised = scatter_gather(function=denoise_fun, image=stack)
 
             out_dataset.write_stack(channel, time_point, bkd.to_numpy(denoised))
+            clear_fft_plan_cache()
 
 
 def dataset_denoise(

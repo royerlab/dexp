@@ -78,7 +78,7 @@ def register_warp_multiscale_nd(
                 image = image_b
 
             with asection(f"register_warp_nd {i}"):
-                nb_div = 2 ** i
+                nb_div = 2**i
                 # Note: the trick below is a 'ceil division' ceil(u/v) == -(-u//v)
                 chunks = tuple(max(min_chunk, -(-s // nb_div)) for s in image_a.shape)
                 margins = tuple(max(min_margin, int(c * r)) for c, r in zip(chunks, margin_ratios))

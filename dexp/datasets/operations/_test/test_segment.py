@@ -8,7 +8,7 @@ from dexp.cli.parsing import parse_devices
 from dexp.datasets import ZDataset
 from dexp.datasets.operations.segment import dataset_segment
 from dexp.utils.backends.backend import Backend
-from dexp.utils.backends.cupy_backend import is_cupy_available
+from dexp.utils.testing import cupy_only
 
 
 @pytest.mark.parametrize(
@@ -16,11 +16,8 @@ from dexp.utils.backends.cupy_backend import is_cupy_available
     [dict(add_noise=True, length_z_factor=4)],
     indirect=True,
 )
+@cupy_only
 def test_dataset_segment(dexp_nuclei_background_data, tmp_path: Path, display_test: bool):
-
-    if not is_cupy_available():
-        pytest.skip(f"Cupy not found. Skipping {test_dataset_segment.__name__} gpu test.")
-
     # Load
     _, _, image = dexp_nuclei_background_data
 

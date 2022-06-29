@@ -1,5 +1,7 @@
+import warnings
 from abc import ABC, abstractmethod
-from typing import Any, Sequence, Tuple
+from pathlib import Path
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import numpy
 
@@ -7,10 +9,15 @@ from dexp.datasets.stack_iterator import StackIterator
 
 
 class BaseDataset(ABC):
-    def __init__(self, dask_backed=False):
+    def __init__(self, dask_backed=False, path: Union[Path, str] = ""):
         """Instanciates a Base Dataset"""
         self.dask_backed = dask_backed
         self._slicing = None
+
+        if not isinstance(path, str):
+            path = str(path)
+
+        self._path = path
 
     def _selected_channels(self, channels: Sequence[str]):
         if channels is None:
@@ -107,5 +114,17 @@ class BaseDataset(ABC):
     def set_slicing(self, slicing: slice) -> None:
         self._slicing = slicing
 
+    @property
+    def slicing(self) -> slice:
+        return self._slicing
+
     def __getitem__(self, channel: str) -> StackIterator:
         return StackIterator(self.get_array(channel), self._slicing)
+
+    @property
+    def path(self) -> str:
+        return self._path
+
+    def get_resolution(self, channel: Optional[str] = None) -> List[float]:
+        warnings.warn("`get_resolution` not implemented, returning list of 1.0 as default.")
+        return [1] * len(self.shape(channel))

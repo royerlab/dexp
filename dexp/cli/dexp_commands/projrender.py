@@ -1,40 +1,37 @@
+from pathlib import Path
+from typing import Optional, Sequence, Union
+
 import click
 from arbol.arbol import aprint, asection
 
-from dexp.cli.defaults import DEFAULT_WORKERS_BACKEND
 from dexp.cli.parsing import (
-    _get_output_path,
-    _parse_channels,
-    _parse_slicing,
-    parse_devices,
+    channels_option,
+    input_dataset_argument,
+    multi_devices_option,
+    overwrite_option,
+    slicing_option,
+    tuple_callback,
 )
-from dexp.datasets.open_dataset import glob_datasets
 from dexp.datasets.operations.projrender import dataset_projection_rendering
+from dexp.datasets.zarr_dataset import ZDataset
 
 
 @click.command()
-@click.argument("input_paths", nargs=-1)
+@input_dataset_argument()
+@slicing_option()
+@channels_option()
+@multi_devices_option()
+@overwrite_option()
 @click.option(
     "--output_path",
     "-o",
-    type=str,
-    default=None,
-    help="Output folder to store rendered PNGs. Default is: frames_<channel_name>",
+    type=click.Path(path_type=Path),
+    default=Path("frames"),
+    help="Output folder to store rendered PNGs. Default is: frames/<channel_name>",
 )
-@click.option("--channels", "-c", type=str, default=None, help="list of channels to color, all channels when ommited.")
-@click.option(
-    "--slicing",
-    "-s",
-    type=str,
-    default=None,
-    help="dataset slice (TZYX), e.g. [0:5] (first five stacks) [:,0:100] (cropping in z).",
-)
-@click.option(
-    "--overwrite", "-w", is_flag=True, help="to force overwrite of target", show_default=True
-)  # , help='dataset slice'
 @click.option(
     "--axis", "-ax", type=int, default=0, help="Sets the projection axis: 0->Z, 1->Y, 2->X ", show_default=True
-)  # , help='dataset slice'
+)
 @click.option(
     "--dir",
     "-di",
@@ -46,7 +43,7 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
 @click.option(
     "--mode",
     "-m",
-    type=str,
+    type=click.Choice(["max", "maxcolor", "colormax"]),
     default="colormax",
     help="Sets the projection mode: ‘max’: classic max projection, ‘colormax’: color max projection, i.e. color codes for depth, ‘maxcolor’ same as colormax but first does depth-coding by color and then max projects (acheives some level of transparency). ",
     show_default=True,
@@ -57,6 +54,7 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
     type=str,
     default=None,
     help="Sets the contrast limits, i.e. -cl 0,1000 sets the contrast limits to [0,1000]",
+    callback=tuple_callback(dtype=float, length=2),
 )
 @click.option(
     "--attenuation",
@@ -65,7 +63,7 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
     default=0.1,
     help="Sets the projection attenuation coefficient, should be within [0, 1] ideally close to 0. Larger values mean more attenuation.",
     show_default=True,
-)  # , help='dataset slice'
+)
 @click.option(
     "--gamma",
     "-g",
@@ -73,7 +71,7 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
     default=1.0,
     help="Sets the gamma coefficient pre-applied to the raw voxel values (before projection or any subsequent processing).",
     show_default=True,
-)  # , help='dataset slice'
+)
 @click.option(
     "--dlim",
     "-dl",
@@ -81,7 +79,8 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
     default=None,
     help="Sets the depth limits. Depth limits. For example, a value of (0.1, 0.7) means that the colormap start at a normalised depth of 0.1, and ends at a normalised depth of 0.7, other values are clipped. Only used for colormax mode.",
     show_default=True,
-)  # , help='dataset slice'
+    callback=tuple_callback(dtype=float, length=2),
+)
 @click.option(
     "--colormap",
     "-cm",
@@ -106,7 +105,7 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
     show_default=True,
 )
 @click.option(
-    "--legendsize",
+    "--legend-size",
     "-lsi",
     type=float,
     default=1.0,
@@ -114,7 +113,7 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
     show_default=True,
 )
 @click.option(
-    "--legendscale",
+    "--legend-scale",
     "-lsc",
     type=float,
     default=1.0,
@@ -122,7 +121,7 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
     show_default=True,
 )
 @click.option(
-    "--legendtitle",
+    "--legend-title",
     "-lt",
     type=str,
     default="color-coded depth (voxels)",
@@ -130,15 +129,16 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
     show_default=True,
 )
 @click.option(
-    "--legendtitlecolor",
+    "--legend-title-color",
     "-ltc",
     type=str,
     default="1,1,1,1",
     help="Legend title color as a tuple of normalised floats: R, G, B, A  (values between 0 and 1).",
     show_default=True,
+    callback=tuple_callback(dtype=float, length=4),
 )
 @click.option(
-    "--legendposition",
+    "--legend-position",
     "-lp",
     type=str,
     default="bottom_left",
@@ -146,106 +146,66 @@ from dexp.datasets.operations.projrender import dataset_projection_rendering
     show_default=True,
 )
 @click.option(
-    "--legendalpha",
+    "--legend-alpha",
     "-la",
     type=float,
     default=1,
     help="Transparency for legend (1 means opaque, 0 means completely transparent)",
     show_default=True,
 )
-@click.option("--step", "-sp", type=int, default=1, help="Process every ‘step’ frames.", show_default=True)
-@click.option(
-    "--workers",
-    "-k",
-    type=int,
-    default=-1,
-    help="Number of worker threads to spawn, if -1 then num workers = num devices",
-    show_default=True,
-)  #
-@click.option(
-    "--workersbackend",
-    "-wkb",
-    type=str,
-    default=DEFAULT_WORKERS_BACKEND,
-    help="What backend to spawn workers with, can be ‘loky’ (multi-process) or ‘threading’ (multi-thread) ",
-    show_default=True,
-)  #
-@click.option(
-    "--devices", "-d", type=str, default="0", help="Sets the CUDA devices id, e.g. 0,1,2 or ‘all’", show_default=True
-)  #
 def projrender(
-    input_paths,
-    output_path,
-    channels,
-    slicing,
-    overwrite,
-    axis,
-    dir,
-    mode,
-    clim,
-    attenuation,
-    gamma,
-    dlim,
-    colormap,
-    rgbgamma,
-    transparency,
-    legendsize,
-    legendscale,
-    legendtitle,
-    legendtitlecolor,
-    legendposition,
-    legendalpha,
-    step,
-    workers,
-    workersbackend,
-    devices,
-    stop_at_exception=True,
-):
+    input_dataset: ZDataset,
+    output_path: Path,
+    channels: Sequence[str],
+    overwrite: bool,
+    axis: int,
+    dir: int,
+    mode: str,
+    clim: Optional[Sequence[float]],
+    attenuation: float,
+    gamma: float,
+    dlim: Optional[Sequence[float]],
+    colormap: str,
+    rgbgamma: float,
+    transparency: bool,
+    legend_size: float,
+    legend_scale: float,
+    legend_title: str,
+    legend_title_color: Sequence[float],
+    legend_position: Union[str, Sequence[int]],
+    legend_alpha: float,
+    devices: Sequence[int],
+) -> None:
     """Renders datatset using 2D projections."""
 
-    input_dataset, input_paths = glob_datasets(input_paths)
-    channels = _parse_channels(input_dataset, channels)
-    slicing = _parse_slicing(slicing)
-    devices = parse_devices(devices)
-
-    output_path = _get_output_path(input_paths[0], output_path, f"_{mode}_projection")
-
-    dlim = None if dlim is None else tuple(float(strvalue) for strvalue in dlim.split(","))
-    legendtitlecolor = tuple(float(v) for v in legendtitlecolor.split(","))
-
-    if "," in legendposition:
-        legendposition = tuple(float(strvalue) for strvalue in legendposition.split(","))
+    if "," in legend_position:
+        legend_position = tuple(float(strvalue) for strvalue in legend_position.split(","))
 
     with asection(
-        f"Projection rendering of: {input_paths} to {output_path} for channels: {channels}, slicing: {slicing} "
+        f"Projection rendering of: {input_dataset.path} to {output_path} for channels: {channels}, slicing: {input_dataset.slicing} "
     ):
         dataset_projection_rendering(
-            input_dataset,
-            output_path,
-            channels,
-            slicing,
-            overwrite,
-            axis,
-            dir,
-            mode,
-            clim,
-            attenuation,
-            gamma,
-            dlim,
-            colormap,
-            rgbgamma,
-            transparency,
-            legendsize,
-            legendscale,
-            legendtitle,
-            legendtitlecolor,
-            legendposition,
-            legendalpha,
-            step,
-            workers,
-            workersbackend,
-            devices,
-            stop_at_exception,
+            input_dataset=input_dataset,
+            output_path=output_path,
+            channels=channels,
+            overwrite=overwrite,
+            devices=devices,
+            axis=axis,
+            dir=dir,
+            mode=mode,
+            clim=clim,
+            attenuation=attenuation,
+            gamma=gamma,
+            dlim=dlim,
+            cmap=colormap,
+            rgb_gamma=rgbgamma,
+            transparency=transparency,
+            legend_size=legend_size,
+            legend_scale=legend_scale,
+            legend_title=legend_title,
+            legend_title_color=legend_title_color,
+            legend_position=legend_position,
+            legend_alpha=legend_alpha,
         )
 
         input_dataset.close()

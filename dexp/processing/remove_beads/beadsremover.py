@@ -123,7 +123,10 @@ class BeadsRemover:
             if np.all(np.equal(bead.shape, self.psf_size)):
                 beads.append(bead)
 
-        avg_bead = Bead.from_data(np.median(np.stack(tuple(beads)), axis=0).reshape((self.psf_size,) * array.ndim))
+        if len(beads) == 0:
+            avg_bead = np.zeros((self.psf_size,) * array.ndim)
+        else:
+            avg_bead = Bead.from_data(np.median(np.stack(tuple(beads)), axis=0).reshape((self.psf_size,) * array.ndim))
 
         # select regions that are similar to the median estimated bead
         selected_beads = []

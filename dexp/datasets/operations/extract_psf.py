@@ -1,67 +1,63 @@
-from typing import Sequence, Union
+import warnings
+from typing import Callable, Sequence
 
+import dask
 import numpy as np
 from arbol import aprint, asection
+from dask.distributed import Client
+from dask_cuda import LocalCUDACluster
+from toolz import curry
 
-from dexp.datasets import BaseDataset
+from dexp.datasets.stack_iterator import StackIterator
+from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.remove_beads import BeadsRemover
-from dexp.utils.backends import BestBackend
-from dexp.utils.slicing import slice_from_shape
+from dexp.utils.backends.best_backend import BestBackend
+
+
+@curry
+def _process(
+    time_point: int,
+    stacks: StackIterator,
+    create_beads_remover: Callable[..., BeadsRemover],
+) -> np.ndarray:
+
+    with BestBackend() as bkd:
+        beads_remover = create_beads_remover()
+        with asection(f"Removing beads from time point {time_point}."):
+            return beads_remover.detect_beads(bkd.to_backend(stacks[time_point]))
 
 
 def dataset_extract_psf(
-    dataset: BaseDataset,
+    input_dataset: ZDataset,
     dest_path: str,
     channels: Sequence[str],
-    slicing: Union[Sequence[slice], slice],
-    peak_threshold: int = 500,
-    similarity_threshold: float = 0.5,
-    psf_size: int = 35,
-    device: int = 0,
-    stop_at_exception: bool = True,
+    peak_threshold: int,
+    similarity_threshold: float,
+    psf_size: int,
+    devices: Sequence[int],
     verbose: bool = True,
 ) -> None:
     """
     Computes PSF from beads.
     Additional information at dexp.processing.remove_beads.beadremover documentation.
     """
+    warnings.warn("This command is subpar, it should be improved.")
     dest_path = dest_path.split(".")[0]
 
-    remove_beads = BeadsRemover(
-        peak_threshold=peak_threshold, similarity_threshold=similarity_threshold, psf_size=psf_size, verbose=verbose
-    )
+    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
+    client = Client(cluster)
+    aprint("Dask client", client)
 
-    for channel in dataset._selected_channels(channels):
-        array = dataset.get_array(channel)
-        _, volume_slicing, time_points = slice_from_shape(array.shape, slicing)
+    def create_beads_remover() -> BeadsRemover:
+        return BeadsRemover(
+            peak_threshold=peak_threshold, similarity_threshold=similarity_threshold, psf_size=psf_size, verbose=verbose
+        )
 
-        psfs = []
-        for i in range(len(time_points)):
-            tp = time_points[i]
-            try:
-                with asection(f"Removing beads of channel: {channel}"):
-                    with asection(f"Loading time point {i}/{len(time_points)}"):
-                        tp_array = np.asarray(array[tp][volume_slicing])
+    for ch in channels:
+        stacks = input_dataset[ch]
+        lazy_computations = [_process(t, stacks, create_beads_remover) for t in range(len(stacks))]
 
-                    with asection("Processing"):
-                        with BestBackend(exclusive=True, enable_unified_memory=True, device_id=device) as backend:
-                            tp_array = backend.to_backend(tp_array)
-                            estimated_psf = remove_beads.detect_beads(tp_array)
+        psf = np.stack(dask.compute(*lazy_computations)).mean(axis=0)
+        np.save(dest_path + ch + ".npy", psf)
 
-                aprint(f"Done extracting PSF from time point: {i}/{len(time_points)} .")
-
-            except Exception as error:
-                aprint(error)
-                aprint(f"Error occurred while processing time point {i} !")
-                import traceback
-
-                traceback.print_exc()
-
-                if stop_at_exception:
-                    raise error
-
-            psfs.append(estimated_psf)
-
-        psfs = np.stack(psfs).mean(axis=0)
-        print(psfs.shape)
-        np.save(dest_path + channel + ".npy", psfs)
+    client.close()

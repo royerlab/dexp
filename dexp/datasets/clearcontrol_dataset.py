@@ -18,11 +18,10 @@ from dexp.utils.config import config_blosc
 class CCDataset(BaseDataset):
     def __init__(self, path, cache_size=8e9):
 
-        super().__init__(dask_backed=False)
+        super().__init__(dask_backed=False, path=path)
 
         config_blosc()
 
-        self.folder = path
         self._channels = []
         self._index_files = {}
 
@@ -90,8 +89,8 @@ class CCDataset(BaseDataset):
 
     def _get_stack_file_name(self, channel, time_point):
 
-        compressed_file_name = join(self.folder, "stacks", channel, str(time_point).zfill(6) + ".blc")
-        raw_file_name = join(self.folder, "stacks", channel, str(time_point).zfill(6) + ".raw")
+        compressed_file_name = join(self._path, "stacks", channel, str(time_point).zfill(6) + ".blc")
+        raw_file_name = join(self._path, "stacks", channel, str(time_point).zfill(6) + ".raw")
 
         if self._is_compressed is None:
             if exists(compressed_file_name):

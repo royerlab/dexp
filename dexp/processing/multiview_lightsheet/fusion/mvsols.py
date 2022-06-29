@@ -166,7 +166,7 @@ def msols_fuse_1C2L(
         raise ValueError("The two views must have same dtype!")
 
     if C0L0.shape != C0L1.shape:
-        raise ValueError("The two views must have same shapes!")
+        raise ValueError(f"The two views must have same shapes! Found {C0L0.shape} and {C0L1.shape}")
 
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = numpy.float32
@@ -355,7 +355,7 @@ def msols_fuse_1C2L(
         sigma = illumination_correction_sigma
         length = C1Lx.shape[1]
         correction = xp.linspace(-length // 2, length // 2, num=length)
-        correction = xp.exp(-(correction ** 2) / (2 * sigma * sigma))
+        correction = xp.exp(-(correction**2) / (2 * sigma * sigma))
         correction = 1.0 / correction
         correction = correction.astype(dtype=internal_dtype)
         C1Lx *= correction[xp.newaxis, :, xp.newaxis]

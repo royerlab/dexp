@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Tuple
+from typing import Sequence, Tuple
 
 import numpy as np
 import zarr
@@ -6,22 +6,25 @@ from arbol.arbol import aprint, asection
 from joblib import Parallel, delayed
 from numpy.typing import ArrayLike
 from scipy import ndimage as ndi
+from toolz import curry
 
 from dexp.datasets import BaseDataset
+from dexp.datasets.stack_iterator import StackIterator
+from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.utils.backends import Backend, BestBackend
 from dexp.utils.misc import compute_num_workers
 
 
-def _estimate_crop(array: ArrayLike, quantile: float = 0.99) -> Sequence[Tuple[int]]:
-    window_size = 31
+def _estimate_crop(array: ArrayLike, quantile: float) -> Sequence[Tuple[int]]:
+    window_size = 15
     step = 4
     shape = array.shape
     with BestBackend():
         xp = Backend.get_xp_module()
         array = Backend.to_backend(array[::step, ::step, ::step], dtype=xp.float16)
         array = xp.clip(array - xp.mean(array), 0, None)  # removing background noise
-        kernel = xp.ones((window_size, window_size, window_size)) / (window_size ** 3)
+        kernel = xp.ones((window_size, window_size, window_size)) / (window_size**3)
         kernel = kernel.astype(xp.float16)
         array = fft_convolve(array, kernel, in_place=True)
         lower = xp.quantile(array, quantile)
@@ -55,82 +58,58 @@ def compute_crop_slicing(array: zarr.Array, time_points: Sequence[int], quantile
     return tuple(slice(int(l), int(u)) for l, u in zip(lower, upper))
 
 
+@curry
+def _process(i: int, array: StackIterator, output_dataset: ZDataset, channel: str):
+    try:
+        aprint(f"Processing time point: {i} ...")
+        output_dataset.write_stack(channel=channel, time_point=i, stack_array=np.asarray(array[i]))
+    except Exception as error:
+        aprint(error)
+        aprint(f"Error occurred while copying time point {i} !")
+        import traceback
+
+        traceback.print_exc()
+        raise error
+
+
 def dataset_crop(
-    dataset: BaseDataset,
-    dest_path: str,
+    input_dataset: BaseDataset,
+    output_dataset: ZDataset,
     reference_channel: str,
     channels: Sequence[str],
     quantile: float,
-    store: str = "dir",
-    chunks: Optional[Sequence[int]] = None,
-    compression: str = "zstd",
-    compression_level: int = 3,
-    overwrite: bool = False,
-    workers: int = 1,
-    check: bool = True,
-    stop_at_exception: bool = True,
+    workers: int,
 ):
-
-    # Create destination dataset:
-    from dexp.datasets import ZDataset
-
-    mode = "w" + ("" if overwrite else "-")
-    dest_dataset = ZDataset(dest_path, mode, store, parent=dataset)
-
     with asection("Estimating region of interest"):
-        nb_time_pts = dataset.nb_timepoints(reference_channel)
+        nb_time_pts = input_dataset.nb_timepoints(reference_channel)
         slicing = compute_crop_slicing(
-            dataset.get_array(reference_channel), [0, nb_time_pts // 2, nb_time_pts - 1], quantile
+            input_dataset.get_array(reference_channel), [0, nb_time_pts // 2, nb_time_pts - 1], quantile
         )
         aprint("Estimated slicing of", slicing)
-        volume_shape = tuple(s.stop - s.start for s in slicing)
         translation = {k: s.start for k, s in zip(("tz", "ty", "tx"), slicing)}
-        dest_dataset.append_metadata(translation)
+        output_dataset.append_metadata(translation)
+        input_dataset.set_slicing(slicing=(slice(None, None),) + slicing)
 
     # Process each channel:
-    for channel in dataset._selected_channels(channels):
+    for channel in input_dataset._selected_channels(channels):
         with asection(f"Cropping channel {channel}:"):
-            array = dataset.get_array(channel)
-
-            dtype = array.dtype
-            dest_dataset.add_channel(
-                name=channel,
-                shape=(len(array),) + volume_shape,
-                dtype=dtype,
-                chunks=chunks,
-                codec=compression,
-                clevel=compression_level,
-            )
-
-            def process(tp):
-                try:
-                    aprint(f"Processing time point: {tp} ...")
-                    tp_array = array[tp][slicing]
-                    dest_dataset.write_stack(channel=channel, time_point=tp, stack_array=tp_array)
-                except Exception as error:
-                    aprint(error)
-                    aprint(f"Error occurred while copying time point {tp} !")
-                    import traceback
-
-                    traceback.print_exc()
-                    if stop_at_exception:
-                        raise error
+            array = input_dataset[channel]
+            output_dataset.add_channel(name=channel, shape=array.shape, dtype=array.dtype)
+            process = _process(array=array, output_dataset=output_dataset, channel=channel)
 
             if workers == 1:
                 for i in range(len(array)):
                     process(i)
             else:
                 n_jobs = compute_num_workers(workers, len(array))
-
                 parallel = Parallel(n_jobs=n_jobs)
                 parallel(delayed(process)(i) for i in range(len(array)))
 
     # Dataset info:
-    aprint(dest_dataset.info())
+    aprint(output_dataset.info())
 
     # Check dataset integrity:
-    if check:
-        dest_dataset.check_integrity()
+    output_dataset.check_integrity()
 
     # close destination dataset:
-    dest_dataset.close()
+    output_dataset.close()

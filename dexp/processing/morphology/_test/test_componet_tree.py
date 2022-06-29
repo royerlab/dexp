@@ -26,7 +26,7 @@ def test_white_area_top_hat(dexp_nuclei_background_data, display_test: bool):
     for props in regionprops(labels):
         max_area = max(max_area, props.area)
 
-    max_area = max_area / (sampling ** 3) + 1
+    max_area = max_area / (sampling**3) + 1
 
     estimated_cells = area_white_top_hat(both, area_threshold=max_area, sampling=sampling)
 
@@ -50,6 +50,8 @@ def test_white_area_top_hat(dexp_nuclei_background_data, display_test: bool):
 
 
 if __name__ == "__main__":
+    from dexp.utils.testing import test_as_demo
+
     # the same as executing from the CLI
     # pytest <file name> -s --display True
-    pytest.main([__file__, "-s", "--display", "True"])
+    test_as_demo(__file__)

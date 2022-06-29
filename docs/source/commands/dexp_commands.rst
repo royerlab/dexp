@@ -3,6 +3,11 @@ DEXP Commands
 =============
 
 
+.. contents::
+   :local:
+   :class: this-will-duplicate-information-and-it-is-still-useful-here
+
+
 .. click:: dexp.cli.dexp_commands.add:add
    :prog: add
    :nested: full
@@ -23,6 +28,11 @@ DEXP Commands
    :nested: full
 
 
+.. click:: dexp.cli.dexp_commands.denoise:denoise
+   :prog: deskew
+   :nested: full
+
+
 .. click:: dexp.cli.dexp_commands.deskew:deskew
    :prog: deskew
    :nested: full
@@ -38,8 +48,13 @@ DEXP Commands
    :nested: full
 
 
-.. click:: dexp.cli.dexp_commands.isonet:isonet
-   :prog: isonet
+.. click:: dexp.cli.dexp_commands.generic:generic
+   :prog: info
+   :nested: full
+
+
+.. click:: dexp.cli.dexp_commands.histogram:histogram
+   :prog: info
    :nested: full
 
 
@@ -48,8 +63,8 @@ DEXP Commands
    :nested: full
 
 
-.. click:: dexp.cli.dexp_commands.serve:serve
-   :prog: serve
+.. click:: dexp.cli.dexp_commands.segment:segment
+   :prog: stabilize
    :nested: full
 
 
@@ -70,9 +85,4 @@ DEXP Commands
 
 .. click:: dexp.cli.dexp_commands.view:view
    :prog: view
-   :nested: full
-
-
-.. click:: dexp.cli.video_commands.volrender:volrender
-   :prog: volrender
    :nested: full

@@ -33,6 +33,7 @@ def blind_deconvolution(
     microscope_params: Dict,
     n_iterations: int,
     n_zernikes: int = 15,
+    psf_output_path: Optional[str] = None,
     display: bool = False,
 ) -> xpArray:
     # Local imports to
@@ -90,5 +91,8 @@ def blind_deconvolution(
 
     if display:
         napari.run()
+
+    if psf_output_path is not None:
+        np.save(psf_output_path, backend.to_numpy(psf))
 
     return deconv

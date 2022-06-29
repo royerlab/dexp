@@ -147,3 +147,7 @@ class JoinedDataset(BaseDataset):
 
     def write_array(self, channel: str, array: numpy.ndarray):
         raise NotImplementedError("Cannot write to a joined dataset!")
+
+    @property
+    def path(self) -> str:
+        return ",".join([ds.path for ds in self._dataset_list])

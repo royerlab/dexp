@@ -25,7 +25,7 @@ def test_scatter_gather_i2i(ndim=3, length_xy=128, splits=4, filter_size=7):
         result_ref = 0 * image + 17
 
     with timeit("scatter_gather(f)"):
-        result = scatter_gather_i2i(f, image, tiles=(length_xy // splits,) * ndim, margins=filter_size // 2)
+        result = scatter_gather_i2i(image, f, tiles=(length_xy // splits,) * ndim, margins=filter_size // 2)
 
     image = Backend.to_numpy(image)
     result_ref = Backend.to_numpy(result_ref)

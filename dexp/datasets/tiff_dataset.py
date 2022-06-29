@@ -10,7 +10,7 @@ from dexp.datasets.base_dataset import BaseDataset
 
 class TIFDataset(BaseDataset):
     def __init__(self, path: str):
-        super().__init__(dask_backed=False)
+        super().__init__(dask_backed=False, path=path)
         self._channel = "stack"
         self._array = imread(path)
 

@@ -2,6 +2,7 @@ import click
 from arbol.arbol import aprint, asection
 
 from dexp.cli.dexp_commands.add import add
+from dexp.cli.dexp_commands.background import background
 from dexp.cli.dexp_commands.check import check
 from dexp.cli.dexp_commands.copy import copy
 from dexp.cli.dexp_commands.crop import crop
@@ -12,13 +13,12 @@ from dexp.cli.dexp_commands.extract_psf import extract_psf
 from dexp.cli.dexp_commands.fastcopy import fastcopy
 from dexp.cli.dexp_commands.fromraw import fromraw
 from dexp.cli.dexp_commands.fuse import fuse
+from dexp.cli.dexp_commands.generic import generic
 from dexp.cli.dexp_commands.histogram import histogram
 from dexp.cli.dexp_commands.info import info
-from dexp.cli.dexp_commands.isonet import isonet
 from dexp.cli.dexp_commands.projrender import projrender
 from dexp.cli.dexp_commands.register import register
 from dexp.cli.dexp_commands.segment import segment
-from dexp.cli.dexp_commands.serve import serve
 from dexp.cli.dexp_commands.speedtest import speedtest
 from dexp.cli.dexp_commands.stabilize import stabilize
 from dexp.cli.dexp_commands.tiff import tiff
@@ -59,29 +59,26 @@ def cli():
         aprint("'cupy' module not found! ignored!")
 
 
-cli.add_command(info)
+cli.add_command(add)
+cli.add_command(background)
 cli.add_command(check)
 cli.add_command(copy)
 cli.add_command(crop)
-cli.add_command(fastcopy)
-cli.add_command(add)
-cli.add_command(tiff)
-cli.add_command(view)
-cli.add_command(serve)
-cli.add_command(extract_psf)
-cli.add_command(fromraw)
-
-cli.add_command(deskew)
-cli.add_command(fuse)
-cli.add_command(register)
-cli.add_command(stabilize)
 cli.add_command(deconv)
 cli.add_command(denoise)
-cli.add_command(isonet)
+cli.add_command(deskew)
+cli.add_command(extract_psf)
+cli.add_command(fastcopy)
+cli.add_command(fromraw)
+cli.add_command(fuse)
+cli.add_command(generic)
 cli.add_command(histogram)
-cli.add_command(segment)
-
-cli.add_command(speedtest)
-
-cli.add_command(volrender)
+cli.add_command(info)
 cli.add_command(projrender)
+cli.add_command(register)
+cli.add_command(segment)
+cli.add_command(speedtest)
+cli.add_command(stabilize)
+cli.add_command(tiff)
+cli.add_command(view)
+cli.add_command(volrender)

@@ -53,9 +53,6 @@ def generate_nuclei_background_data(
     if type(Backend.current()) is NumpyBackend:
         internal_dtype = xp.float32
 
-    if type(Backend.current()) is NumpyBackend:
-        dtype = numpy.float32
-
     with asection("generate blob images"):
         image_gt = binary_blobs(
             length=length_xy,
@@ -88,7 +85,7 @@ def generate_nuclei_background_data(
             y = xp.linspace(-1, 1, num=ly)
             z = xp.linspace(-1, 1, num=lz)
             xx, yy, zz = numpy.meshgrid(x, y, z, sparse=True)
-            distance = xp.sqrt(xx ** 2 + yy ** 2 + zz ** 2)
+            distance = xp.sqrt(xx**2 + yy**2 + zz**2)
             mask = distance < radius
             # f = 0.5*(1 + level**3 / (1 + xp.absolute(level)**3))
 

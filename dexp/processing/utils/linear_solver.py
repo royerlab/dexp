@@ -1,3 +1,4 @@
+import warnings
 from typing import Optional, Sequence, Tuple
 
 import numpy
@@ -68,9 +69,10 @@ def linsolve(
         aprint(f"Warning: optimisation finished after {result.nit} iterations!")
 
     if not result.success:
-        raise RuntimeError(
+        warnings.warn(
             f"Convergence failed: '{result.message}' after {result.nit} "
             + "iterations and {result.nfev} function evaluations."
         )
+        return Backend.to_backend(x0)
 
     return Backend.to_backend(result.x)
