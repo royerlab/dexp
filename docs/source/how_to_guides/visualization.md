@@ -7,7 +7,7 @@ Once napari is installed there are two ways you can view your dataset.
 - With our DEXP's command line, for example:
 
     ```bash
-    dexp view path_to_your_dataset.zarr --aspect 2.0
+    dexp view path_to_your_dataset.zarr
     ```
 
     Execute `dexp view --help` to see additional options.
@@ -16,7 +16,7 @@ Once napari is installed there are two ways you can view your dataset.
 
     1. Install the `napari-dexp` with
         ```bash
-        pip install napari-dexp
+        conda install napari-dexp -c conda-forge
         ```
 
     2. Open your dataset with napari as usual
