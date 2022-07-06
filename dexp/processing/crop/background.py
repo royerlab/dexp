@@ -1,5 +1,4 @@
-from scipy.signal._signaltools import _centered
-
+from dexp.processing.utils.pad import fit_to_shape
 from dexp.utils import xpArray
 from dexp.utils.backends import Backend
 
@@ -46,7 +45,7 @@ def foreground_mask(
 
     small = morph.remove_small_objects(small, binary_area_threshold)
     mask = ndi.zoom(small, (downsample,) * ndim, order=0)
-    mask = _centered(mask, array.shape)
+    mask = fit_to_shape(mask, array.shape)
 
     if display:
         import napari
