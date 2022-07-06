@@ -44,6 +44,7 @@ conda env remove --name dexp
 conda create -y --name dexp python=3.9
 conda activate dexp
 conda install cupy
+pip install dexp[optional,colored]
 pip install napari[all]
 ```
 
