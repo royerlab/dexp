@@ -76,8 +76,11 @@ def _process(
                     ch_detection = morph.binary_opening(ch_detection, morph.ball(2))
                     ch_detection = morph.binary_closing(ch_detection, morph.ball(2))
 
+                    # FIXME: it needs to be executed after labeling
                     # ch_detection = morph.remove_small_objects(ch_detection, min_size=minimum_area)
+
                     detection |= ch_detection
+                    del ch_detection
 
             count = detection.sum()
             aprint(f"Number of detected cell-pixels {count} proportion {detection.sum() / detection.size}.")
@@ -89,6 +92,7 @@ def _process(
             basins = basins.max() - basins
             basins = bkd.to_numpy(basins)
             detection = bkd.to_numpy(detection)
+            bkd.clear_memory_pool()
 
             with asection("Segmenting ..."):
                 labels = roi_watershed_from_minima(

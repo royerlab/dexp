@@ -38,7 +38,15 @@ If instead you do not wish to add CUDA support, you can instead do:
 Quick conda environment setup and installation:
 ***********************************************
 
-The following commands delete any existing dexp environment, recreate it, install **dexp** with CUDA support and `napari <https://napari.org/>`_:
+There are multiple options when using a conda environment.
+
+You can create our suggested DEXP (and some additional packages) environment by, it requires GPU:
+
+.. code-block:: bash
+
+   conda env create --name dexp --file env-linux-gpu.yaml
+
+Or create your own conda environment from scratch with the commands delete any existing dexp environment, recreate it, install **dexp** with CUDA support and `napari <https://napari.org/>`_:
 
 .. code-block:: bash
 
