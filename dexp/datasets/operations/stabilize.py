@@ -15,6 +15,7 @@ from dexp.processing.registration.model.sequence_registration_model import (
 from dexp.processing.registration.sequence import image_stabilisation
 from dexp.processing.registration.sequence_proj import image_stabilisation_proj_
 from dexp.utils.backends import BestBackend, NumpyBackend
+from dexp.utils.fft import clear_fft_plan_cache
 from dexp.utils.misc import compute_num_workers
 
 
@@ -135,6 +136,7 @@ def _process(
                 + "dtype:{array.dtype}"
             ):
                 output_dataset.write_stack(channel=channel, time_point=i, stack_array=tp_array)
+                clear_fft_plan_cache()
 
 
 def dataset_stabilize(

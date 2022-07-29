@@ -106,6 +106,7 @@ EXTRAS = {
     "dev": [
         "flake8",
         "pytest",
+        "coverage",
     ],
 }
 

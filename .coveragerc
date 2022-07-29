@@ -1,0 +1,12 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+omit =
+    */demo/*.py
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    except ImportError:
+    @(abc\.)?abstractmethod
+    raise NotImplementedError
