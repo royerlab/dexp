@@ -1,9 +1,16 @@
-import subprocess
 from typing import Sequence
 
 import pytest
 
+from dexp.cli.dexp_main import cli
 from dexp.utils.testing import cupy_only
+
+
+def _run_main(commands: Sequence[str]) -> None:
+    try:
+        cli(commands)
+    except SystemExit as exit:
+        assert exit.code == 0
 
 
 @pytest.mark.parametrize(
@@ -33,7 +40,7 @@ from dexp.utils.testing import cupy_only
 )
 @cupy_only
 def test_cli_commands_nuclei_dataset(command: Sequence[str], dexp_zarr_path: str) -> None:
-    assert subprocess.run(["dexp"] + command + [dexp_zarr_path]).returncode == 0
+    _run_main(command + [dexp_zarr_path])
 
 
 @pytest.mark.parametrize(
@@ -44,7 +51,7 @@ def test_cli_commands_nuclei_dataset(command: Sequence[str], dexp_zarr_path: str
 @pytest.mark.parametrize("command", [["stabilize", "-mr", "2", "-wk", "2"]])
 @cupy_only
 def test_cli_commands_long_nuclei_dataset(command: Sequence[str], dexp_zarr_path: str) -> None:
-    assert subprocess.run(["dexp"] + command + [dexp_zarr_path]).returncode == 0
+    _run_main(command + [dexp_zarr_path])
 
 
 @pytest.mark.parametrize(
@@ -61,7 +68,7 @@ def test_cli_commands_long_nuclei_dataset(command: Sequence[str], dexp_zarr_path
 )
 @cupy_only
 def test_cli_commands_fusion_dataset(command: Sequence[str], dexp_zarr_path: str) -> None:
-    assert subprocess.run(["dexp"] + command + [dexp_zarr_path]).returncode == 0
+    _run_main(command + [dexp_zarr_path])
 
 
 @pytest.mark.parametrize(
@@ -77,7 +84,7 @@ def test_cli_commands_fusion_dataset(command: Sequence[str], dexp_zarr_path: str
 )
 @cupy_only
 def test_cli_commands_skewed_dataset(command: Sequence[str], dexp_zarr_path: str) -> None:
-    assert subprocess.run(["dexp"] + command + [dexp_zarr_path]).returncode == 0
+    _run_main(command + [dexp_zarr_path])
 
 
 @pytest.mark.parametrize(
@@ -93,4 +100,4 @@ def test_cli_commands_skewed_dataset(command: Sequence[str], dexp_zarr_path: str
 )
 @cupy_only
 def test_cli_commands_fusion_skewed_dataset(command: Sequence[str], dexp_zarr_path: str) -> None:
-    assert subprocess.run(["dexp"] + command + [dexp_zarr_path]).returncode == 0
+    _run_main(command + [dexp_zarr_path])

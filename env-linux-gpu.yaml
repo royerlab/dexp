@@ -1,0 +1,35 @@
+name:
+    dexp
+channels:
+    - rapidsai
+    - conda-forge
+    - pytorch
+    - gurobi
+    - defaults
+dependencies:
+    - rapidsai::cucim
+    - conda-forge::cudatoolkit=11.6
+    - conda-forge::cutensor
+    - conda-forge::cudnn
+    - conda-forge::cupy
+    - conda-forge::dexp
+    - jupyterlab
+    - conda-forge::napari<0.4.16
+    - conda-forge::napari-dexp
+    - edt
+    - gurobi::gurobi
+    - conda-forge::scikit-learn
+    - pip
+    - pyift
+    - pyotf
+    - python=3.9
+    - conda-forge::pyqt
+    - pytorch::pytorch
+    - pytorch::torchvision
+    - pytorch::torchdata
+    - conda-forge::ocl-icd-system
+    - pip:
+        - ansicolors
+        - higra
+        - tensorstore==0.1.16
+        - pyqt5
