@@ -7,6 +7,5 @@ sphinx-copybutton==0.3.1
 sphinx-rtd-theme==1.0.0
 sphinx-copybutton==0.3.1
 docutils==0.16
-m2r2==0.3.2
-mistune==2.0.3
+m2r2=0.3.2
 sphinx-js
