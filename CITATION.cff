@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use DEXP, please cite it as below."
+authors:
+- family-names: "Royer"
+  given-names: "Loic"
+  orcid: "https://orcid.org/0000-0002-9991-9724"
+- family-names: "Bragantini"
+  given-names: "Jordao"
+  orcid: "https://orcid.org/0000-0001-7652-2735"
+- family-names: "Solak"
+  given-names: "Ahmet Can"
+  orcid: "https://orcid.org/0000-0002-1381-8309"
+- family-names: "Haase"
+  given-names: "Robert"
+  orcid: "https://orcid.org/0000-0001-5949-2327"
+- family-names: "Yang"
+  given-names: "Bin"
+  orcid: "https://orcid.org/0000-0001-5138-4663"
+title: "DEXP"
+version: 2022.06.29.552
+doi: 10.5281/zenodo.7039059
+date-released: 2022-08-31
+url: "https://github.com/royerlab/dexp"
