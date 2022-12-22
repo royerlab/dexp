@@ -32,7 +32,7 @@ def _save_multi_file(
                 f"Writing time point: {tp} of shape: {stack.shape}, dtype:{stack.dtype} "
                 + f"as TIFF file: '{tiff_file_path}', with compression: {clevel}"
             )
-            tiff_save(tiff_file_path, stack, compress=clevel)
+            tiff_save(tiff_file_path, stack, clevel=clevel)
             aprint(f"Done writing time point: {tp} !")
         else:
             aprint(f"File for time point (or z slice): {tp} already exists.")

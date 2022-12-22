@@ -5,8 +5,6 @@ import dask
 import numpy
 import numpy as np
 from arbol.arbol import aprint, asection
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 from toolz import curry
 
 from dexp.datasets.base_dataset import BaseDataset
@@ -18,6 +16,7 @@ from dexp.processing.registration.model.translation_registration_model import (
     TranslationRegistrationModel,
 )
 from dexp.utils.backends import BestBackend
+from dexp.utils.dask import get_dask_client
 
 
 @dask.delayed
@@ -106,8 +105,7 @@ def dataset_register(
         views=views, fuse_model=fuse_model, max_proj=max_proj, registration_edge_filter=registration_edge_filter
     )
 
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
+    client = get_dask_client(devices)
     aprint("Dask Client", client)
 
     lazy_computations = []

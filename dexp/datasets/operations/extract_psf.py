@@ -4,14 +4,13 @@ from typing import Callable, Sequence
 import dask
 import numpy as np
 from arbol import aprint, asection
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 from toolz import curry
 
 from dexp.datasets.stack_iterator import StackIterator
 from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.remove_beads import BeadsRemover
 from dexp.utils.backends.best_backend import BestBackend
+from dexp.utils.dask import get_dask_client
 
 
 @curry
@@ -44,8 +43,7 @@ def dataset_extract_psf(
     warnings.warn("This command is subpar, it should be improved.")
     dest_path = dest_path.split(".")[0]
 
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
+    client = get_dask_client(devices)
     aprint("Dask client", client)
 
     def create_beads_remover() -> BeadsRemover:

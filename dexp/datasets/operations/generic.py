@@ -2,14 +2,13 @@ from typing import Callable, Optional, Sequence, Tuple
 
 import dask
 from arbol import aprint, asection
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 from toolz import curry
 
 from dexp.datasets import BaseDataset, ZDataset
 from dexp.datasets.stack_iterator import StackIterator
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.backends import CupyBackend
+from dexp.utils.dask import get_dask_client
 
 
 @dask.delayed
@@ -51,8 +50,7 @@ def dataset_generic(
         # Stores functions to be computed
         lazy_computations += [process(time_point=t) for t in range(len(stacks))]
 
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
+    client = get_dask_client(devices)
     aprint("Dask client", client)
 
     # Compute everything

@@ -3,8 +3,6 @@ from typing import Callable, List, Optional, Sequence
 import dask
 import fasteners
 from arbol.arbol import aprint, asection
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 from toolz import curry
 
 from dexp.datasets import BaseDataset
@@ -12,6 +10,7 @@ from dexp.datasets.stack_iterator import StackIterator
 from dexp.datasets.zarr_dataset import ZDataset
 from dexp.processing.deskew import deskew_functions
 from dexp.utils.backends import BestBackend
+from dexp.utils.dask import get_dask_client
 from dexp.utils.lock import create_lock
 
 
@@ -106,8 +105,7 @@ def dataset_deskew(
         ]
 
     # setting up dask compute scheduler
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
+    client = get_dask_client(devices)
 
     aprint("Dask client", client)
     dask.compute(*lazy_computations)
