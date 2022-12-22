@@ -6,8 +6,6 @@ import dask
 import numpy as np
 import scipy
 from arbol.arbol import aprint, asection
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 from toolz import curry
 
 from dexp.datasets import BaseDataset
@@ -21,6 +19,7 @@ from dexp.processing.deconvolution import (
 from dexp.processing.filters.fft_convolve import fft_convolve
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.backends import BestBackend
+from dexp.utils.dask import get_dask_client
 
 
 def get_psf(
@@ -236,8 +235,7 @@ def dataset_deconv(
     dask.compute(*lazy_computation)
 
     # CUDA DASK cluster
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
+    client = get_dask_client(devices)
     aprint("Dask Client", client)
 
     # Dataset info:

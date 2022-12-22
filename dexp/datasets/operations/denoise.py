@@ -2,8 +2,6 @@ from typing import Callable, Sequence, Tuple
 
 import dask
 from arbol import aprint, asection
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 from toolz import curry
 
 from dexp.datasets import BaseDataset, ZDataset
@@ -11,6 +9,7 @@ from dexp.datasets.stack_iterator import StackIterator
 from dexp.processing.denoising import calibrate_denoise_butterworth, denoise_butterworth
 from dexp.processing.utils.scatter_gather_i2i import scatter_gather_i2i
 from dexp.utils.backends import CupyBackend
+from dexp.utils.dask import get_dask_client
 from dexp.utils.fft import clear_fft_plan_cache
 
 
@@ -65,8 +64,7 @@ def dataset_denoise(
         # Stores functions to be computed
         lazy_computations += [process(time_point=t) for t in range(len(stacks))]
 
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
+    client = get_dask_client(devices)
     aprint("Dask client", client)
 
     # Compute everything

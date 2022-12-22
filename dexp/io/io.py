@@ -1,8 +1,8 @@
 import numpy as np
-from tifffile import imsave
+from tifffile import imwrite
 
 
-def tiff_save(file, img, axes="ZYX", compress=0, **imsave_kwargs):
+def tiff_save(file, img, axes="ZYX", clevel=0, **imsave_kwargs):
     """Save image in ImageJ-compatible TIFF format.
 
     Parameters
@@ -33,4 +33,4 @@ def tiff_save(file, img, axes="ZYX", compress=0, **imsave_kwargs):
         print(f"Converting data type from '{t}' to ImageJ-compatible '{np.dtype(t_new)}'.")
 
     imsave_kwargs["imagej"] = True
-    imsave(file, img, **imsave_kwargs, compress=compress, metadata={"axes": axes})  # ,
+    imwrite(file, img, **imsave_kwargs, metadata={"axes": axes}, compressionargs={"clevel": clevel})

@@ -4,8 +4,6 @@ from typing import Callable, Dict, List, Optional, Sequence, Tuple
 import dask
 import numpy as np
 from arbol.arbol import aprint, asection
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 from toolz import curry
 
 from dexp.datasets import BaseDataset, ZDataset
@@ -21,6 +19,7 @@ from dexp.processing.registration.model.pairwise_registration_model import (
 )
 from dexp.utils import xpArray
 from dexp.utils.backends import Backend, BestBackend
+from dexp.utils.dask import get_dask_client
 
 
 def load_registration_models(model_list_filename: Path, n_time_pts: int) -> Sequence[PairwiseRegistrationModel]:
@@ -269,8 +268,7 @@ def dataset_fuse(
 
     output_models = [model]
 
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
+    client = get_dask_client(devices)
     aprint("Dask Client", client)
 
     lazy_computations = []

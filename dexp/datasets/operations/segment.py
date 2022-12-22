@@ -4,8 +4,6 @@ import dask
 import numpy as np
 import pandas as pd
 from arbol import aprint, asection
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 from skimage.measure import regionprops_table
 from toolz import curry
 
@@ -14,6 +12,7 @@ from dexp.datasets.stack_iterator import StackIterator
 from dexp.processing.morphology import area_white_top_hat
 from dexp.processing.segmentation import roi_watershed_from_minima
 from dexp.utils.backends import CupyBackend
+from dexp.utils.dask import get_dask_client
 
 
 def intensity_sum(mask: np.ndarray, intensities: np.ndarray) -> float:
@@ -176,8 +175,7 @@ def dataset_segment(
 
     lazy_computations = [process(time_point=t) for t in range(n_time_pts)]
 
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
+    client = get_dask_client(devices)
     aprint("Dask client", client)
 
     df_path = output_dataset.path.replace(".zarr", ".csv")

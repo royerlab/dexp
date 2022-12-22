@@ -1,6 +1,6 @@
 from typing import Callable, Union
 
-from matplotlib.cm import get_cmap
+from matplotlib import colormaps
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 
 from dexp.utils import xpArray
@@ -62,7 +62,7 @@ def _normalise_colormap(cmap):
         from colorcet import rgb_to_hex
 
         rgb_to_hex(0, 0, 0)  # this is a dummy call to prevent elimination of the colorcet import by IDEs
-        cmap = get_cmap(cmap)
+        cmap = colormaps.get_cmap(cmap)
     elif type(cmap) == LinearSegmentedColormap or type(cmap) == ListedColormap:
         # all good here...
         cmap = cmap

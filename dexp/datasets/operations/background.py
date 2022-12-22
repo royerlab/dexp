@@ -3,14 +3,13 @@ from typing import Callable, Dict, Optional, Sequence
 import dask
 import numpy as np
 from arbol import aprint, asection, section
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 from toolz import curry, reduce
 
 from dexp.datasets import BaseDataset, ZDataset
 from dexp.datasets.stack_iterator import StackIterator
 from dexp.processing.crop.background import foreground_mask
 from dexp.utils.backends.cupy_backend import CupyBackend
+from dexp.utils.dask import get_dask_client
 
 
 @dask.delayed
@@ -81,8 +80,7 @@ def dataset_background(
 
     lazy_computations = [process(time_point=t) for t in range(max_t)]
 
-    cluster = LocalCUDACluster(CUDA_VISIBLE_DEVICES=devices)
-    client = Client(cluster)
+    client = get_dask_client(devices)
     aprint("Dask client", client)
 
     # Compute everything
