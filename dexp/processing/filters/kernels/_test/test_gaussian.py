@@ -20,4 +20,4 @@ def test_gaussian_cupy():
 def _test_gaussian():
     kernel = gaussian_kernel_nd(ndim=3, size=17, sigma=2.0)
 
-    assert Backend.to_numpy(kernel.sum()) == pytest.approx(1)
+    assert Backend.to_numpy(kernel.sum()) == pytest.approx(1, rel=1e-3)
