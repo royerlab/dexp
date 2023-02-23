@@ -1,9 +1,9 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 
 
-def slice_from_shape(shape: Tuple[int], slicing: slice) -> Tuple[Tuple[int], slice, List[int]]:
+def slice_from_shape(shape: Tuple[int], slicing: Union[slice, Tuple[slice]]) -> Tuple[Tuple[int], slice, List[int]]:
     time_points = list(range(shape[0]))
     if slicing is not None:
         if isinstance(slicing, tuple):

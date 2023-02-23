@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import zarr
@@ -7,7 +7,7 @@ from dexp.utils.slicing import slice_from_shape
 
 
 class StackIterator:
-    def __init__(self, array: zarr.Array, slicing: Optional[slice]):
+    def __init__(self, array: zarr.Array, slicing: Optional[Union[slice, Tuple[slice]]]):
 
         self._out_shape, self._volume_slicing, self._time_points = slice_from_shape(array.shape, slicing)
         self._slicing = slicing

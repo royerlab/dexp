@@ -586,12 +586,14 @@ class ZDataset(BaseDataset):
 
     def to_ome_zarr(self, path: str, force_dtype: Optional[int] = None, n_scales: int = 3) -> None:
         ch = self.channels()[0]
-        dexp_shape = self.shape(ch)
+        dexp_shape = self[ch].shape
 
         dtype = force_dtype if force_dtype is not None else self.dtype(ch)
 
+        dexp_arrays = []
         for _ch in self.channels():
-            if dexp_shape != self.shape(_ch):
+            arr = self[_ch]
+            if dexp_shape != arr.shape:
                 raise ValueError(
                     f"Channels {ch} and {_ch} have different "
                     f"shapes ({dexp_shape} and {self.shape(_ch)} "
@@ -600,11 +602,12 @@ class ZDataset(BaseDataset):
             if dtype != self.dtype(_ch) and force_dtype is None:
                 raise ValueError(
                     f"Channels {ch} and {_ch} have different "
-                    f"dtypes ({dtype} and {self.dtype(_ch)} "
+                    f"dtypes ({dtype} and {self.dtype(_ch)}) "
                     "could not convert to ome-zarr."
                 )
+            dexp_arrays.append(arr)
 
-        ome_zarr_shape = (dexp_shape[0], len(self.channels()), *dexp_shape[1:])
+        ome_zarr_shape = (dexp_shape[0], len(dexp_arrays), *dexp_shape[1:])
 
         group = zarr.group(zarr.NestedDirectoryStore(path))
 
@@ -625,10 +628,10 @@ class ZDataset(BaseDataset):
             )
 
         with BestBackend() as bkd:
-            for t in range(self.nb_timepoints(ch)):
+            for t in range(dexp_shape[0]):
                 aprint(f"Converting time point {t} ...", end="\r")
-                for c, channel in enumerate(self.channels()):
-                    stack = self.get_stack(channel, t)
+                for c, arr in enumerate(dexp_arrays):
+                    stack = numpy.asarray(arr[t])
                     arrays[0][t, c] = stack
                     stack = bkd.to_backend(stack)
                     for i in range(1, n_scales):

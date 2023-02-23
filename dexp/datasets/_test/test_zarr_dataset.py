@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import numpy
+import zarr
 from arbol import aprint
 from ome_zarr.utils import info
 from skimage.data import binary_blobs
@@ -175,7 +176,7 @@ def test_zarr_parent_metadata(tmp_path: Path):
     assert child_metadata == parent_metadata
 
 
-def test_ome_zarr_convertion(tmp_path: Path):
+def test_ome_zarr_convertion(tmp_path: Path) -> None:
 
     source_path = tmp_path / "test_ome.zarr"
     zdataset = ZDataset(path=source_path, mode="w", store="dir")
@@ -187,3 +188,23 @@ def test_ome_zarr_convertion(tmp_path: Path):
     ome_zarr_path = tmp_path / "test_ome.ome.zarr"
     zdataset.to_ome_zarr(ome_zarr_path)
     aprint(list(info(ome_zarr_path, stats=True)))
+
+
+def test_sliced_ome_zarr_convertion(tmp_path: Path) -> None:
+
+    source_path = tmp_path / "test_ome.zarr"
+    zdataset = ZDataset(path=source_path, mode="w", store="dir")
+
+    slicing = (slice(2, 3),) + (slice(5, 15),) * 3
+    zdataset.add_channel(
+        name="first", shape=(5, 20, 20, 20), chunks=(1, 10, 10, 10), dtype="f4", codec="zstd", clevel=3
+    )
+    zdataset.set_slicing(slicing)
+
+    new_size = list(s.stop - s.start for s in slicing)
+    new_size.insert(1, len(zdataset.channels()))
+
+    ome_zarr_path = tmp_path / "test_ome.ome.zarr"
+    zdataset.to_ome_zarr(ome_zarr_path)
+
+    assert zarr.open(ome_zarr_path)["0"].shape == tuple(new_size)
