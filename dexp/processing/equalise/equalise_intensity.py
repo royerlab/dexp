@@ -12,7 +12,7 @@ def equalise_intensity(
     image2: xpArray,
     zero_level=90,
     quantile_low=0.01,
-    quantile_high=0.99,
+    quantile_high=0.999,
     project_axis: int = 0,
     max_voxels: int = 1e7,
     correction_ratio: float = None,
