@@ -111,11 +111,12 @@ class BaseDataset(ABC):
     def check_integrity(self, channels: Sequence[str]) -> bool:
         pass
 
-    def set_slicing(self, slicing: slice) -> None:
+    def set_slicing(self, slicing: slice) -> "BaseDataset":
         self._slicing = slicing
+        return self
 
     @property
-    def slicing(self) -> slice:
+    def slicing(self) -> Union[slice, Tuple[slice]]:
         return self._slicing
 
     def __getitem__(self, channel: str) -> StackIterator:
