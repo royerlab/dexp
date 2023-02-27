@@ -187,6 +187,10 @@ def dataset_deconv(
     scaling: Tuple[float],
     devices: List[int],
 ):
+    # CUDA DASK cluster
+    client = get_dask_client(devices)
+    aprint("Dask Client", client)
+
     aprint(f"Input images will be scaled by: (sz,sy,sx)={scaling}")
 
     psf_kernel = get_psf(psf_objective, psf_na, psf_dxy, psf_dz, psf_z_size, psf_xy_size, scaling, psf_show)
@@ -233,10 +237,6 @@ def dataset_deconv(
             lazy_computation.append(process(time_point=t))
 
     dask.compute(*lazy_computation)
-
-    # CUDA DASK cluster
-    client = get_dask_client(devices)
-    aprint("Dask Client", client)
 
     # Dataset info:
     aprint(output_dataset.info())
