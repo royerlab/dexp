@@ -210,6 +210,7 @@ def dataset_fuse(
     white_top_hat_size: float,
     white_top_hat_sampling: int,
     remove_beads: bool,
+    equalisation_ratios: Optional[Tuple[float]],
     devices: Sequence[int],
 ):
 
@@ -252,19 +253,22 @@ def dataset_fuse(
         remove_beads=remove_beads,
     )
 
+    if equalisation_ratios is not None:
+        equalisation_ratios = list(equalisation_ratios)
+
     # it creates the output dataset from the first time point output shape
-    equalisation_ratios, model = _process(
+    first_eq_ratios, model = _process(
         time_point=0,
         views=views,
         out_dataset=output_dataset,
         fusion_func=fusion_func(
             model=models[0] if loadreg else None,
-            equalisation_ratios=None,
+            equalisation_ratios=equalisation_ratios,
         ),
     )
 
-    if equalise_mode == "all":
-        equalisation_ratios = None
+    if equalise_mode == "first":
+        equalisation_ratios = first_eq_ratios
 
     output_models = [model]
 

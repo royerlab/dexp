@@ -1,4 +1,4 @@
-from typing import Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import click
 from arbol.arbol import aprint, asection
@@ -183,6 +183,13 @@ from dexp.datasets.operations.fuse import dataset_fuse
     default=False,
     help="Use this flag to remove beads before equalizing and fusing",
 )
+@click.option(
+    "--equalisation-ratios",
+    "-eqr",
+    default=None,
+    callback=tuple_callback(dtype=float),
+    help="Manually set equalisation ratios",
+)
 def fuse(
     input_dataset: BaseDataset,
     output_dataset: ZDataset,
@@ -210,6 +217,7 @@ def fuse(
     white_top_hat_size: float,
     white_top_hat_sampling: int,
     remove_beads: bool,
+    equalisation_ratios: Optional[Tuple[float]],
 ):
     """Fuses the views of a multi-view light-sheet microscope dataset (available: simview and mvsols)"""
 
@@ -247,6 +255,7 @@ def fuse(
             white_top_hat_size=white_top_hat_size,
             white_top_hat_sampling=white_top_hat_sampling,
             remove_beads=remove_beads,
+            equalisation_ratios=equalisation_ratios,
         )
 
         input_dataset.close()
