@@ -215,7 +215,7 @@ def dataset_fuse(
 ):
 
     views = {channel.split("-")[-1]: input_dataset[channel] for channel in channels}
-    n_time_pts = len(list(views.values())[0])
+    n_time_pts = min(arr.shape[0] for arr in views.values())
 
     with asection("Views:"):
         for channel, view in views.items():
