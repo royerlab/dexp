@@ -33,16 +33,16 @@ def _demo_noise(display=True):
     image = data.astronaut()
     image = rgb2gray(image)
 
-    noisy = add_noise(image)
+    noisy = add_noise(image, seed=1)
 
     image = numpy.clip(image, 0, 1)
     noisy = numpy.clip(noisy, 0, 1)
     psnr_noisy = psnr(image.astype(noisy.dtype), noisy)
-    ssim_noisy = ssim(image, noisy)
+    ssim_noisy = ssim(image, noisy, data_range=1.0)
     print("         noisy   :", psnr_noisy, ssim_noisy)
 
     assert psnr_noisy > 12 and psnr_noisy < 13
-    assert ssim_noisy > 0.28 and ssim_noisy < 0.29
+    assert ssim_noisy > 0.23 and ssim_noisy < 0.24
 
     if display:
         import napari
