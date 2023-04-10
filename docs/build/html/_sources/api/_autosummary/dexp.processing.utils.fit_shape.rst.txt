@@ -1,0 +1,29 @@
+dexp.processing.utils.fit\_shape
+================================
+
+.. automodule:: dexp.processing.utils.fit_shape
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      fit_to_shape
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

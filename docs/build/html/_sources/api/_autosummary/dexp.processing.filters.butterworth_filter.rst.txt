@@ -1,0 +1,29 @@
+dexp.processing.filters.butterworth\_filter
+===========================================
+
+.. automodule:: dexp.processing.filters.butterworth_filter
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      butterworth_filter
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

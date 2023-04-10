@@ -1,0 +1,29 @@
+dexp.processing.utils.normalise
+===============================
+
+.. automodule:: dexp.processing.utils.normalise
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Normalise
+   
+   
+
+   
+   
+   
+
+
+

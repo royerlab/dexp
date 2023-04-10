@@ -1,0 +1,47 @@
+dexp.datasets.operations
+========================
+
+.. automodule:: dexp.datasets.operations
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.datasets.operations.background
+   dexp.datasets.operations.copy
+   dexp.datasets.operations.crop
+   dexp.datasets.operations.deconv
+   dexp.datasets.operations.denoise
+   dexp.datasets.operations.deskew
+   dexp.datasets.operations.extract_psf
+   dexp.datasets.operations.fromraw
+   dexp.datasets.operations.fuse
+   dexp.datasets.operations.generic
+   dexp.datasets.operations.histogram
+   dexp.datasets.operations.projrender
+   dexp.datasets.operations.register
+   dexp.datasets.operations.segment
+   dexp.datasets.operations.stabilize
+   dexp.datasets.operations.tiff
+   dexp.datasets.operations.view
+

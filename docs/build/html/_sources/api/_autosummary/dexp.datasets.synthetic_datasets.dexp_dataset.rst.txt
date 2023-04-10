@@ -1,0 +1,29 @@
+dexp.datasets.synthetic\_datasets.dexp\_dataset
+===============================================
+
+.. automodule:: dexp.datasets.synthetic_datasets.dexp_dataset
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      generate_dexp_zarr_dataset
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

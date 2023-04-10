@@ -1,0 +1,34 @@
+dexp.processing.restoration
+===========================
+
+.. automodule:: dexp.processing.restoration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.processing.restoration.aap_correction
+   dexp.processing.restoration.clean_dark_regions
+   dexp.processing.restoration.dehazing
+   dexp.processing.restoration.lipshitz_correction
+

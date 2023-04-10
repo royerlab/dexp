@@ -1,0 +1,29 @@
+dexp.datasets.operations.projrender
+===================================
+
+.. automodule:: dexp.datasets.operations.projrender
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_projection_rendering
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

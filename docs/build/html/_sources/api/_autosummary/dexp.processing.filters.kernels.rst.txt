@@ -1,0 +1,34 @@
+dexp.processing.filters.kernels
+===============================
+
+.. automodule:: dexp.processing.filters.kernels
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.processing.filters.kernels.butterworth
+   dexp.processing.filters.kernels.gaussian
+   dexp.processing.filters.kernels.wiener
+   dexp.processing.filters.kernels.wiener_butterworth
+

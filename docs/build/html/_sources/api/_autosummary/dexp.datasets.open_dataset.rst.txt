@@ -1,0 +1,31 @@
+dexp.datasets.open\_dataset
+===========================
+
+.. automodule:: dexp.datasets.open_dataset
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      glob_datasets
+      open_dataset
+      open_joined_datasets
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

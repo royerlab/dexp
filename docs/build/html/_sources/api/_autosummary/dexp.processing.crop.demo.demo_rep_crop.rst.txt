@@ -1,0 +1,30 @@
+dexp.processing.crop.demo.demo\_rep\_crop
+=========================================
+
+.. automodule:: dexp.processing.crop.demo.demo_rep_crop
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      demo_rep_crop_cupy
+      demo_rep_crop_numpy
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+dexp.datasets.operations.stabilize
+==================================
+
+.. automodule:: dexp.datasets.operations.stabilize
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_stabilize
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

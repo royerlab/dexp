@@ -1,0 +1,49 @@
+﻿dexp.utils
+==========
+
+.. automodule:: dexp.utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      compress_dictionary_lists_length
+      dict_or
+      overwrite2mode
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.utils.backends
+   dexp.utils.config
+   dexp.utils.dask
+   dexp.utils.fft
+   dexp.utils.lock
+   dexp.utils.misc
+   dexp.utils.robocopy
+   dexp.utils.slicing
+   dexp.utils.speed_test
+   dexp.utils.testing
+   dexp.utils.timeit
+

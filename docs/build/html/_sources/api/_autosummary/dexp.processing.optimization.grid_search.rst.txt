@@ -1,0 +1,29 @@
+dexp.processing.optimization.grid\_search
+=========================================
+
+.. automodule:: dexp.processing.optimization.grid_search
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      j_invariant_grid_search
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

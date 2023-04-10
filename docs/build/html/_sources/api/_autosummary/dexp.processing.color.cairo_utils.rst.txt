@@ -1,0 +1,29 @@
+dexp.processing.color.cairo\_utils
+==================================
+
+.. automodule:: dexp.processing.color.cairo_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_array_for_cairo_surface
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

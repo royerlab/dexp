@@ -1,0 +1,35 @@
+dexp.utils.backends.backend
+===========================
+
+.. automodule:: dexp.utils.backends.backend
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dispatch_data_to_backend
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Backend
+   
+   
+
+   
+   
+   
+
+
+

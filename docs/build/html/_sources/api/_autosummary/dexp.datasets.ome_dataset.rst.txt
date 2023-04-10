@@ -1,0 +1,30 @@
+dexp.datasets.ome\_dataset
+==========================
+
+.. automodule:: dexp.datasets.ome_dataset
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      create_coord_transform
+      default_omero_metadata
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

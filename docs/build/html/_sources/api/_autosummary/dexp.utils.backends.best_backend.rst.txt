@@ -1,0 +1,29 @@
+dexp.utils.backends.best\_backend
+=================================
+
+.. automodule:: dexp.utils.backends.best_backend
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      BestBackend
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

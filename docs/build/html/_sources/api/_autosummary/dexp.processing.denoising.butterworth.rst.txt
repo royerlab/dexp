@@ -1,0 +1,31 @@
+dexp.processing.denoising.butterworth
+=====================================
+
+.. automodule:: dexp.processing.denoising.butterworth
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      calibrate_denoise_butterworth
+      denoise_butterworth
+      rsqrt
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

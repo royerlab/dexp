@@ -1,0 +1,6 @@
+dexp.processing.deconvolution.admm\_deconvolution
+=================================================
+
+.. currentmodule:: dexp.processing.deconvolution
+
+.. autofunction:: admm_deconvolution

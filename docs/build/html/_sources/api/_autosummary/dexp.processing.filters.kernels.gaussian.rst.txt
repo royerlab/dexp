@@ -1,0 +1,29 @@
+dexp.processing.filters.kernels.gaussian
+========================================
+
+.. automodule:: dexp.processing.filters.kernels.gaussian
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      gaussian_kernel_nd
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

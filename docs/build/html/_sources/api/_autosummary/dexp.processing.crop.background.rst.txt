@@ -1,0 +1,29 @@
+dexp.processing.crop.background
+===============================
+
+.. automodule:: dexp.processing.crop.background
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      foreground_mask
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,31 @@
+dexp.processing.multiview\_lightsheet.fusion.mvsols
+===================================================
+
+.. automodule:: dexp.processing.multiview_lightsheet.fusion.mvsols
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      fuse_illumination_views
+      resample_C0L0
+      resample_C0L1
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+dexp.datasets.operations.view
+=============================
+
+.. automodule:: dexp.datasets.operations.view
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_view
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

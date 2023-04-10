@@ -1,0 +1,31 @@
+dexp.datasets.operations.fuse
+=============================
+
+.. automodule:: dexp.datasets.operations.fuse
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_fuse
+      get_fusion_func
+      load_registration_models
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

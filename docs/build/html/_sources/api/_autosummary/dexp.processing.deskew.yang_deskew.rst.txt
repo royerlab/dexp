@@ -1,0 +1,6 @@
+dexp.processing.deskew.yang\_deskew
+===================================
+
+.. currentmodule:: dexp.processing.deskew
+
+.. autofunction:: yang_deskew

@@ -1,0 +1,29 @@
+dexp.datasets.synthetic\_datasets.multiview\_data
+=================================================
+
+.. automodule:: dexp.datasets.synthetic_datasets.multiview_data
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      generate_fusion_test_data
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

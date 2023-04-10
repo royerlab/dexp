@@ -1,0 +1,30 @@
+dexp.utils.testing.testing
+==========================
+
+.. automodule:: dexp.utils.testing.testing
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      cupy_only
+      execute_both_backends
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

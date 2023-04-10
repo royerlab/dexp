@@ -1,0 +1,30 @@
+dexp.processing.registration.sequence\_proj
+===========================================
+
+.. automodule:: dexp.processing.registration.sequence_proj
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      image_stabilisation_proj
+      image_stabilisation_proj_
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

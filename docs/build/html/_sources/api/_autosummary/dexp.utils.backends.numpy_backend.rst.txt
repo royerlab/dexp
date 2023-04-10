@@ -1,0 +1,29 @@
+dexp.utils.backends.numpy\_backend
+==================================
+
+.. automodule:: dexp.utils.backends.numpy_backend
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      NumpyBackend
+   
+   
+
+   
+   
+   
+
+
+

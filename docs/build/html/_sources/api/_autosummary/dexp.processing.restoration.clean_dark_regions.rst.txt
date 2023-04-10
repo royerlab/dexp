@@ -1,0 +1,29 @@
+dexp.processing.restoration.clean\_dark\_regions
+================================================
+
+.. automodule:: dexp.processing.restoration.clean_dark_regions
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      clean_dark_regions
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

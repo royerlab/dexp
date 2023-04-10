@@ -1,0 +1,30 @@
+dexp.processing.denoising.demo.demo\_2D\_gaussian
+=================================================
+
+.. automodule:: dexp.processing.denoising.demo.demo_2D_gaussian
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      demo_gaussian_cupy
+      demo_gaussian_numpy
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

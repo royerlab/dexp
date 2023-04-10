@@ -1,0 +1,6 @@
+dexp.processing.deconvolution.blind\_deconvolution
+==================================================
+
+.. currentmodule:: dexp.processing.deconvolution
+
+.. autofunction:: blind_deconvolution

@@ -1,0 +1,29 @@
+dexp.processing.color.insert
+============================
+
+.. automodule:: dexp.processing.color.insert
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      insert_color_image
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

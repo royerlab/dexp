@@ -1,0 +1,29 @@
+dexp.processing.filters.kernels.wiener
+======================================
+
+.. automodule:: dexp.processing.filters.kernels.wiener
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      wiener_kernel
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

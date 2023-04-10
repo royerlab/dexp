@@ -1,0 +1,29 @@
+dexp.processing.filters.sobel\_filter
+=====================================
+
+.. automodule:: dexp.processing.filters.sobel_filter
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      sobel_filter
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

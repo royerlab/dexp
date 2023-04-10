@@ -1,0 +1,34 @@
+dexp.utils.backends
+===================
+
+.. automodule:: dexp.utils.backends
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.utils.backends.backend
+   dexp.utils.backends.best_backend
+   dexp.utils.backends.cupy_backend
+   dexp.utils.backends.numpy_backend
+

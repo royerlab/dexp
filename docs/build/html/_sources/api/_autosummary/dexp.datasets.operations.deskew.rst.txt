@@ -1,0 +1,29 @@
+dexp.datasets.operations.deskew
+===============================
+
+.. automodule:: dexp.datasets.operations.deskew
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_deskew
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

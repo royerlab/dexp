@@ -1,0 +1,31 @@
+dexp.datasets.operations.deconv
+===============================
+
+.. automodule:: dexp.datasets.operations.deconv
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_deconv
+      get_deconv_func
+      get_psf
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

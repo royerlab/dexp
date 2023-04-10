@@ -1,0 +1,29 @@
+dexp.utils.fft
+==============
+
+.. automodule:: dexp.utils.fft
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      clear_fft_plan_cache
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

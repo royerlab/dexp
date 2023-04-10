@@ -1,0 +1,29 @@
+dexp.processing.restoration.lipshitz\_correction
+================================================
+
+.. automodule:: dexp.processing.restoration.lipshitz_correction
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      lipschitz_continuity_correction
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

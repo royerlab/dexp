@@ -1,0 +1,29 @@
+dexp.processing.utils.element\_wise\_affine
+===========================================
+
+.. automodule:: dexp.processing.utils.element_wise_affine
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      element_wise_affine
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

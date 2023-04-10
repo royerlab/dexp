@@ -1,0 +1,29 @@
+dexp.utils.speed\_test
+======================
+
+.. automodule:: dexp.utils.speed_test
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      perform_speed_test
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

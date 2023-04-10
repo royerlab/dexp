@@ -1,0 +1,29 @@
+dexp.processing.restoration.aap\_correction
+===========================================
+
+.. automodule:: dexp.processing.restoration.aap_correction
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      axis_aligned_pattern_correction
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+dexp.processing.color.scale\_bar
+================================
+
+.. automodule:: dexp.processing.color.scale_bar
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      insert_scale_bar
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

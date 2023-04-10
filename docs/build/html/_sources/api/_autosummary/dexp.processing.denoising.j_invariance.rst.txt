@@ -1,0 +1,29 @@
+dexp.processing.denoising.j\_invariance
+=======================================
+
+.. automodule:: dexp.processing.denoising.j_invariance
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      calibrate_denoiser
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

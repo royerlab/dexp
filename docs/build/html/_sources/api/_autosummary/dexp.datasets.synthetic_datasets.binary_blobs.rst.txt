@@ -1,0 +1,6 @@
+dexp.datasets.synthetic\_datasets.binary\_blobs
+===============================================
+
+.. currentmodule:: dexp.datasets.synthetic_datasets
+
+.. autofunction:: binary_blobs

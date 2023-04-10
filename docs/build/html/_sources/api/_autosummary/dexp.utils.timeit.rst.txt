@@ -1,0 +1,29 @@
+dexp.utils.timeit
+=================
+
+.. automodule:: dexp.utils.timeit
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      timeit
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

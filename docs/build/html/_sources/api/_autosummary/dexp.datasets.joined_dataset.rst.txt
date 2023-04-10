@@ -1,0 +1,29 @@
+dexp.datasets.joined\_dataset
+=============================
+
+.. automodule:: dexp.datasets.joined_dataset
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      JoinedDataset
+   
+   
+
+   
+   
+   
+
+
+

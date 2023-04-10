@@ -1,0 +1,29 @@
+dexp.utils.misc
+===============
+
+.. automodule:: dexp.utils.misc
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      compute_num_workers
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

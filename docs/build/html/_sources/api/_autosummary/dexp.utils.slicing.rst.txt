@@ -1,0 +1,29 @@
+dexp.utils.slicing
+==================
+
+.. automodule:: dexp.utils.slicing
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      slice_from_shape
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

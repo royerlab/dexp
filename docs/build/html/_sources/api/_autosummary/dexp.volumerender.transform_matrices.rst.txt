@@ -1,0 +1,38 @@
+dexp.volumerender.transform\_matrices
+=====================================
+
+.. automodule:: dexp.volumerender.transform_matrices
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      mat4_frustrum
+      mat4_identity
+      mat4_lookat
+      mat4_ortho
+      mat4_perspective
+      mat4_rotation
+      mat4_rotation_euler
+      mat4_scale
+      mat4_stereo_perspective
+      mat4_translate
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

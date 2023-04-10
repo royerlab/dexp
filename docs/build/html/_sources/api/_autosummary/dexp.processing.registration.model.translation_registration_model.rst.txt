@@ -1,0 +1,29 @@
+dexp.processing.registration.model.translation\_registration\_model
+===================================================================
+
+.. automodule:: dexp.processing.registration.model.translation_registration_model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TranslationRegistrationModel
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,30 @@
+dexp.processing.utils.apply
+===========================
+
+.. automodule:: dexp.processing.utils.apply
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      apply_func
+      axis_wise
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

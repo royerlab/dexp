@@ -1,0 +1,29 @@
+dexp.processing.utils.projection\_generator
+===========================================
+
+.. automodule:: dexp.processing.utils.projection_generator
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      projection_generator
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+dexp.processing.registration.model.pairwise\_registration\_model
+================================================================
+
+.. automodule:: dexp.processing.registration.model.pairwise_registration_model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PairwiseRegistrationModel
+   
+   
+
+   
+   
+   
+
+
+

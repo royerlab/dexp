@@ -1,0 +1,38 @@
+dexp.processing.registration
+============================
+
+.. automodule:: dexp.processing.registration
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.processing.registration.model
+   dexp.processing.registration.sequence
+   dexp.processing.registration.sequence_proj
+   dexp.processing.registration.translation_2d
+   dexp.processing.registration.translation_nd
+   dexp.processing.registration.translation_nd_proj
+   dexp.processing.registration.warp_multiscale_nd
+   dexp.processing.registration.warp_nd
+

@@ -1,0 +1,30 @@
+dexp.processing.denoising.gaussian
+==================================
+
+.. automodule:: dexp.processing.denoising.gaussian
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      calibrate_denoise_gaussian
+      denoise_gaussian
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+dexp.video.blend
+================
+
+.. automodule:: dexp.video.blend
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      blend_color_image_sequences
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

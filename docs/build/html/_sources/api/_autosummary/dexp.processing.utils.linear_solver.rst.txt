@@ -1,0 +1,29 @@
+dexp.processing.utils.linear\_solver
+====================================
+
+.. automodule:: dexp.processing.utils.linear_solver
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      linsolve
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

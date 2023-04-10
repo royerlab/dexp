@@ -1,0 +1,29 @@
+dexp.datasets.stack\_iterator
+=============================
+
+.. automodule:: dexp.datasets.stack_iterator
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      StackIterator
+   
+   
+
+   
+   
+   
+
+
+

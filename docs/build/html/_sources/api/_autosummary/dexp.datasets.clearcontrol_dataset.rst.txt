@@ -1,0 +1,29 @@
+dexp.datasets.clearcontrol\_dataset
+===================================
+
+.. automodule:: dexp.datasets.clearcontrol_dataset
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CCDataset
+   
+   
+
+   
+   
+   
+
+
+

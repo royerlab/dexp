@@ -1,0 +1,36 @@
+dexp.processing.remove\_beads.beadsremover
+==========================================
+
+.. automodule:: dexp.processing.remove_beads.beadsremover
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      remove_beads_by_threshold
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Bead
+      BeadsRemover
+   
+   
+
+   
+   
+   
+
+
+

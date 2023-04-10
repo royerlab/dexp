@@ -1,0 +1,6 @@
+dexp.processing.deconvolution.inversion\_deconvolution
+======================================================
+
+.. currentmodule:: dexp.processing.deconvolution
+
+.. autofunction:: inversion_deconvolution

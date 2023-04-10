@@ -1,0 +1,31 @@
+dexp.processing.optimization
+============================
+
+.. automodule:: dexp.processing.optimization
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.processing.optimization.grid_search
+

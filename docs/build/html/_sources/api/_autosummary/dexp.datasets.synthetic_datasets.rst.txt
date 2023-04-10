@@ -1,0 +1,34 @@
+dexp.datasets.synthetic\_datasets
+=================================
+
+.. automodule:: dexp.datasets.synthetic_datasets
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.datasets.synthetic_datasets.binary_blobs
+   dexp.datasets.synthetic_datasets.dexp_dataset
+   dexp.datasets.synthetic_datasets.multiview_data
+   dexp.datasets.synthetic_datasets.nuclei_background_data
+

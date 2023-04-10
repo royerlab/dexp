@@ -1,0 +1,29 @@
+dexp.processing.color.border
+============================
+
+.. automodule:: dexp.processing.color.border
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      add_border
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

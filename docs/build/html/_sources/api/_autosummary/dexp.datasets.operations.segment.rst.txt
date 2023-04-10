@@ -1,0 +1,30 @@
+dexp.datasets.operations.segment
+================================
+
+.. automodule:: dexp.datasets.operations.segment
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_segment
+      intensity_sum
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

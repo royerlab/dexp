@@ -1,0 +1,35 @@
+dexp.volumerender.quaternion
+============================
+
+.. automodule:: dexp.volumerender.quaternion
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      quaternion_slerp
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Quaternion
+   
+   
+
+   
+   
+   
+
+
+

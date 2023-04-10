@@ -1,0 +1,29 @@
+dexp.processing.restoration.dehazing
+====================================
+
+.. automodule:: dexp.processing.restoration.dehazing
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dehaze
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

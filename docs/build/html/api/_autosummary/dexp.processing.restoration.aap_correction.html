@@ -1,0 +1,506 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="dexp.processing.restoration.clean_dark_regions" href="dexp.processing.restoration.clean_dark_regions.html" /><link rel="prev" title="dexp.processing.restoration" href="dexp.processing.restoration.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.01.02"/>
+        <title>dexp.processing.restoration.aap_correction - dexp documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=df49af52631e7917044a9c21a57f7b83170a6dd0" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=fade93df149f7c5fedb3ff897f799dc7d283b420" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" />
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">dexp  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  
+  <span class="sidebar-brand-text">dexp  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/contact_us.html">Contact us</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../how_to_guides/data_conversion.html">Converting to our file format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how_to_guides/visualization.html">Visualizing your data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how_to_guides/processing_multi_view.html">Processing a multi-view dataset using DEXP CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how_to_guides/implementing_processing.html">Implementing your own processing pipeline</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Commands</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../commands/dexp_commands.html">Image processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../commands/video_commands.html">Video rendering</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="dexp.datasets.html">dexp.datasets</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="dexp.datasets.base_dataset.html">dexp.datasets.base_dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.datasets.clearcontrol_dataset.html">dexp.datasets.clearcontrol_dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.datasets.joined_dataset.html">dexp.datasets.joined_dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.datasets.ome_dataset.html">dexp.datasets.ome_dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.datasets.open_dataset.html">dexp.datasets.open_dataset</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.datasets.operations.html">dexp.datasets.operations</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.background.html">dexp.datasets.operations.background</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.copy.html">dexp.datasets.operations.copy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.crop.html">dexp.datasets.operations.crop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.deconv.html">dexp.datasets.operations.deconv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.denoise.html">dexp.datasets.operations.denoise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.deskew.html">dexp.datasets.operations.deskew</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.extract_psf.html">dexp.datasets.operations.extract_psf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.fromraw.html">dexp.datasets.operations.fromraw</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.fuse.html">dexp.datasets.operations.fuse</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.generic.html">dexp.datasets.operations.generic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.histogram.html">dexp.datasets.operations.histogram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.projrender.html">dexp.datasets.operations.projrender</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.register.html">dexp.datasets.operations.register</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.segment.html">dexp.datasets.operations.segment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.stabilize.html">dexp.datasets.operations.stabilize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.tiff.html">dexp.datasets.operations.tiff</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.operations.view.html">dexp.datasets.operations.view</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.datasets.stack_iterator.html">dexp.datasets.stack_iterator</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.datasets.synthetic_datasets.html">dexp.datasets.synthetic_datasets</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.synthetic_datasets.binary_blobs.html">dexp.datasets.synthetic_datasets.binary_blobs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.synthetic_datasets.dexp_dataset.html">dexp.datasets.synthetic_datasets.dexp_dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.synthetic_datasets.multiview_data.html">dexp.datasets.synthetic_datasets.multiview_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.datasets.synthetic_datasets.nuclei_background_data.html">dexp.datasets.synthetic_datasets.nuclei_background_data</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.datasets.tiff_dataset.html">dexp.datasets.tiff_dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.datasets.zarr_dataset.html">dexp.datasets.zarr_dataset</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="dexp.optics.html">dexp.optics</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.optics.psf.html">dexp.optics.psf</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.optics.psf.microscope_psf.html">dexp.optics.psf.microscope_psf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.optics.psf.standard_psfs.html">dexp.optics.psf.standard_psfs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="dexp.processing.html">dexp.processing</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.color.html">dexp.processing.color</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.blend.html">dexp.processing.color.blend</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.border.html">dexp.processing.color.border</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.cairo_utils.html">dexp.processing.color.cairo_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.colormap.html">dexp.processing.color.colormap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.conversions.html">dexp.processing.color.conversions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.crop_resize_pad.html">dexp.processing.color.crop_resize_pad</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.insert.html">dexp.processing.color.insert</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.projection.html">dexp.processing.color.projection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.projection_legend.html">dexp.processing.color.projection_legend</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.scale_bar.html">dexp.processing.color.scale_bar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.color.time_stamp.html">dexp.processing.color.time_stamp</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.crop.html">dexp.processing.crop</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.crop.background.html">dexp.processing.crop.background</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="dexp.processing.crop.demo.html">dexp.processing.crop.demo</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.crop.demo.demo_rep_crop.html">dexp.processing.crop.demo.demo_rep_crop</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.crop.representative_crop.html">dexp.processing.crop.representative_crop</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.deconvolution.html">dexp.processing.deconvolution</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.deconvolution.admm_deconvolution.html">dexp.processing.deconvolution.admm_deconvolution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.deconvolution.admm_utils.html">dexp.processing.deconvolution.admm_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.deconvolution.blind_deconvolution.html">dexp.processing.deconvolution.blind_deconvolution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.deconvolution.inversion_deconvolution.html">dexp.processing.deconvolution.inversion_deconvolution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.deconvolution.lr_deconvolution.html">dexp.processing.deconvolution.lr_deconvolution</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.denoising.html">dexp.processing.denoising</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.denoising.butterworth.html">dexp.processing.denoising.butterworth</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="dexp.processing.denoising.demo.html">dexp.processing.denoising.demo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.denoising.demo.demo_2D_butterworth.html">dexp.processing.denoising.demo.demo_2D_butterworth</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.denoising.demo.demo_2D_gaussian.html">dexp.processing.denoising.demo.demo_2D_gaussian</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.denoising.demo.demo_3D_butterworth.html">dexp.processing.denoising.demo.demo_3D_butterworth</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.denoising.demo.demo_noise.html">dexp.processing.denoising.demo.demo_noise</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.denoising.gaussian.html">dexp.processing.denoising.gaussian</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.denoising.j_invariance.html">dexp.processing.denoising.j_invariance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.denoising.metrics.html">dexp.processing.denoising.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.denoising.noise.html">dexp.processing.denoising.noise</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.deskew.html">dexp.processing.deskew</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.deskew.classic_deskew.html">dexp.processing.deskew.classic_deskew</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.deskew.utils.html">dexp.processing.deskew.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.deskew.yang_deskew.html">dexp.processing.deskew.yang_deskew</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.equalise.html">dexp.processing.equalise</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.equalise.equalise_intensity.html">dexp.processing.equalise.equalise_intensity</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.filters.html">dexp.processing.filters</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.filters.butterworth_filter.html">dexp.processing.filters.butterworth_filter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.filters.fft_convolve.html">dexp.processing.filters.fft_convolve</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="dexp.processing.filters.kernels.html">dexp.processing.filters.kernels</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.filters.kernels.butterworth.html">dexp.processing.filters.kernels.butterworth</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.filters.kernels.gaussian.html">dexp.processing.filters.kernels.gaussian</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.filters.kernels.wiener.html">dexp.processing.filters.kernels.wiener</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.filters.kernels.wiener_butterworth.html">dexp.processing.filters.kernels.wiener_butterworth</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.filters.sobel_filter.html">dexp.processing.filters.sobel_filter</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.fusion.html">dexp.processing.fusion</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.fusion.dct_fusion.html">dexp.processing.fusion.dct_fusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.fusion.dft_fusion.html">dexp.processing.fusion.dft_fusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.fusion.tg_fusion.html">dexp.processing.fusion.tg_fusion</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.interpolation.html">dexp.processing.interpolation</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.interpolation.warp.html">dexp.processing.interpolation.warp</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.morphology.html">dexp.processing.morphology</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.morphology.component_tree.html">dexp.processing.morphology.component_tree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.morphology.utils.html">dexp.processing.morphology.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.multiview_lightsheet.html">dexp.processing.multiview_lightsheet</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.multiview_lightsheet.deconvolution.html">dexp.processing.multiview_lightsheet.deconvolution</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="dexp.processing.multiview_lightsheet.fusion.html">dexp.processing.multiview_lightsheet.fusion</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.multiview_lightsheet.fusion.basefusion.html">dexp.processing.multiview_lightsheet.fusion.basefusion</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.multiview_lightsheet.fusion.mvsols.html">dexp.processing.multiview_lightsheet.fusion.mvsols</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.multiview_lightsheet.fusion.simview.html">dexp.processing.multiview_lightsheet.fusion.simview</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.optimization.html">dexp.processing.optimization</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.optimization.grid_search.html">dexp.processing.optimization.grid_search</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.registration.html">dexp.processing.registration</a><input class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="dexp.processing.registration.model.html">dexp.processing.registration.model</a><input class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.registration.model.model_io.html">dexp.processing.registration.model.model_io</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.registration.model.pairwise_registration_model.html">dexp.processing.registration.model.pairwise_registration_model</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.registration.model.sequence_registration_model.html">dexp.processing.registration.model.sequence_registration_model</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.registration.model.translation_registration_model.html">dexp.processing.registration.model.translation_registration_model</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dexp.processing.registration.model.warp_registration_model.html">dexp.processing.registration.model.warp_registration_model</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.registration.sequence.html">dexp.processing.registration.sequence</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.registration.sequence_proj.html">dexp.processing.registration.sequence_proj</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.registration.translation_2d.html">dexp.processing.registration.translation_2d</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.registration.translation_nd.html">dexp.processing.registration.translation_nd</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.registration.translation_nd_proj.html">dexp.processing.registration.translation_nd_proj</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.registration.warp_multiscale_nd.html">dexp.processing.registration.warp_multiscale_nd</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.registration.warp_nd.html">dexp.processing.registration.warp_nd</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.remove_beads.html">dexp.processing.remove_beads</a><input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.remove_beads.beadsremover.html">dexp.processing.remove_beads.beadsremover</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="dexp.processing.restoration.html">dexp.processing.restoration</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">dexp.processing.restoration.aap_correction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.restoration.clean_dark_regions.html">dexp.processing.restoration.clean_dark_regions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.restoration.dehazing.html">dexp.processing.restoration.dehazing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.restoration.lipshitz_correction.html">dexp.processing.restoration.lipshitz_correction</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.segmentation.html">dexp.processing.segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" role="switch" type="checkbox"/><label for="toctree-checkbox-28"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.segmentation.watershed.html">dexp.processing.segmentation.watershed</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.processing.utils.html">dexp.processing.utils</a><input class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" role="switch" type="checkbox"/><label for="toctree-checkbox-29"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.apply.html">dexp.processing.utils.apply</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.blend_images.html">dexp.processing.utils.blend_images</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.center_of_mass.html">dexp.processing.utils.center_of_mass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.element_wise_affine.html">dexp.processing.utils.element_wise_affine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.fit_shape.html">dexp.processing.utils.fit_shape</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.linear_solver.html">dexp.processing.utils.linear_solver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.mkl_util.html">dexp.processing.utils.mkl_util</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.nan_to_zero.html">dexp.processing.utils.nan_to_zero</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.nd_slice.html">dexp.processing.utils.nd_slice</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.normalise.html">dexp.processing.utils.normalise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.pad.html">dexp.processing.utils.pad</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.projection_generator.html">dexp.processing.utils.projection_generator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.scatter_gather_i2i.html">dexp.processing.utils.scatter_gather_i2i</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.processing.utils.scatter_gather_i2v.html">dexp.processing.utils.scatter_gather_i2v</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="dexp.utils.html">dexp.utils</a><input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" role="switch" type="checkbox"/><label for="toctree-checkbox-30"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.utils.backends.html">dexp.utils.backends</a><input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" role="switch" type="checkbox"/><label for="toctree-checkbox-31"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.utils.backends.backend.html">dexp.utils.backends.backend</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.utils.backends.best_backend.html">dexp.utils.backends.best_backend</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.utils.backends.cupy_backend.html">dexp.utils.backends.cupy_backend</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dexp.utils.backends.numpy_backend.html">dexp.utils.backends.numpy_backend</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.utils.config.html">dexp.utils.config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.utils.dask.html">dexp.utils.dask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.utils.fft.html">dexp.utils.fft</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.utils.lock.html">dexp.utils.lock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.utils.misc.html">dexp.utils.misc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.utils.robocopy.html">dexp.utils.robocopy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.utils.slicing.html">dexp.utils.slicing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.utils.speed_test.html">dexp.utils.speed_test</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="dexp.utils.testing.html">dexp.utils.testing</a><input class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" role="switch" type="checkbox"/><label for="toctree-checkbox-32"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="dexp.utils.testing.testing.html">dexp.utils.testing.testing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.utils.timeit.html">dexp.utils.timeit</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="dexp.video.html">dexp.video</a><input class="toctree-checkbox" id="toctree-checkbox-33" name="toctree-checkbox-33" role="switch" type="checkbox"/><label for="toctree-checkbox-33"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="dexp.video.blend.html">dexp.video.blend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.video.crop_resize_pad.html">dexp.video.crop_resize_pad</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.video.overlay.html">dexp.video.overlay</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="dexp.volumerender.html">dexp.volumerender</a><input class="toctree-checkbox" id="toctree-checkbox-34" name="toctree-checkbox-34" role="switch" type="checkbox"/><label for="toctree-checkbox-34"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="dexp.volumerender.quaternion.html">dexp.volumerender.quaternion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.volumerender.transform_matrices.html">dexp.volumerender.transform_matrices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dexp.volumerender.volumerender.html">dexp.volumerender.volumerender</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <div class="section" id="module-dexp.processing.restoration.aap_correction">
+<span id="dexp-processing-restoration-aap-correction"></span><h1>dexp.processing.restoration.aap_correction<a class="headerlink" href="#module-dexp.processing.restoration.aap_correction" title="Permalink to this headline"></a></h1>
+<p class="rubric">Functions</p>
+<div class="table-wrapper"><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%"/>
+<col style="width: 90%"/>
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">axis_aligned_pattern_correction</span></code>(image[, ...])</p></td>
+<td><p>Axis aligned pattern correction</p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="dexp.processing.restoration.clean_dark_regions.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">dexp.processing.restoration.clean_dark_regions</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="dexp.processing.restoration.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">dexp.processing.restoration</div>
+                
+              </div>
+            </a>
+        </div>
+
+        <div class="related-information">
+              Copyright &#169; 2021. Chan Zuckerberg Biohub. All rights reserved |
+          Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+          <a href="https://github.com/pradyunsg/furo">Furo theme</a>.
+            | <a class="muted-link" href="../../_sources/api/_autosummary/dexp.processing.restoration.aap_correction.rst.txt"
+               rel="nofollow">
+              Show Source
+            </a>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/scripts/furo.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    </body>
+</html>

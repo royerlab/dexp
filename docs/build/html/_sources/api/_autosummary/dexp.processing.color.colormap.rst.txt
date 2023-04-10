@@ -1,0 +1,29 @@
+dexp.processing.color.colormap
+==============================
+
+.. automodule:: dexp.processing.color.colormap
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      rgb_colormap
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

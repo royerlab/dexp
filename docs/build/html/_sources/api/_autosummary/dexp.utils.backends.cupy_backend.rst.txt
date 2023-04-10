@@ -1,0 +1,35 @@
+dexp.utils.backends.cupy\_backend
+=================================
+
+.. automodule:: dexp.utils.backends.cupy_backend
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      is_cupy_available
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CupyBackend
+   
+   
+
+   
+   
+   
+
+
+

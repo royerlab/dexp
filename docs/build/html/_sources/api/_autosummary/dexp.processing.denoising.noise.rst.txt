@@ -1,0 +1,29 @@
+dexp.processing.denoising.noise
+===============================
+
+.. automodule:: dexp.processing.denoising.noise
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      add_noise
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

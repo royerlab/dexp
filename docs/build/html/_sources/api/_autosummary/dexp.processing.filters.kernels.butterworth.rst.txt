@@ -1,0 +1,29 @@
+dexp.processing.filters.kernels.butterworth
+===========================================
+
+.. automodule:: dexp.processing.filters.kernels.butterworth
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      butterworth_kernel
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

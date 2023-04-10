@@ -1,0 +1,36 @@
+dexp.processing.denoising
+=========================
+
+.. automodule:: dexp.processing.denoising
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.processing.denoising.butterworth
+   dexp.processing.denoising.demo
+   dexp.processing.denoising.gaussian
+   dexp.processing.denoising.j_invariance
+   dexp.processing.denoising.metrics
+   dexp.processing.denoising.noise
+

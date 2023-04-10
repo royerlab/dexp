@@ -1,0 +1,30 @@
+dexp.datasets.operations.register
+=================================
+
+.. automodule:: dexp.datasets.operations.register
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      compute_median_translation
+      dataset_register
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

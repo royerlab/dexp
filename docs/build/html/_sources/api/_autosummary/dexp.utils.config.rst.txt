@@ -1,0 +1,29 @@
+dexp.utils.config
+=================
+
+.. automodule:: dexp.utils.config
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      config_blosc
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

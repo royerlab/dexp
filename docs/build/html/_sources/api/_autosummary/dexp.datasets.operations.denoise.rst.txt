@@ -1,0 +1,29 @@
+dexp.datasets.operations.denoise
+================================
+
+.. automodule:: dexp.datasets.operations.denoise
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_denoise
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

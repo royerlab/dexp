@@ -1,0 +1,41 @@
+dexp.processing.color
+=====================
+
+.. automodule:: dexp.processing.color
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.processing.color.blend
+   dexp.processing.color.border
+   dexp.processing.color.cairo_utils
+   dexp.processing.color.colormap
+   dexp.processing.color.conversions
+   dexp.processing.color.crop_resize_pad
+   dexp.processing.color.insert
+   dexp.processing.color.projection
+   dexp.processing.color.projection_legend
+   dexp.processing.color.scale_bar
+   dexp.processing.color.time_stamp
+

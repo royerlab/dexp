@@ -1,0 +1,29 @@
+dexp.processing.deconvolution.lr\_deconvolution
+===============================================
+
+.. automodule:: dexp.processing.deconvolution.lr_deconvolution
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      lucy_richardson_deconvolution
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

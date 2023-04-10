@@ -1,0 +1,29 @@
+dexp.video.overlay
+==================
+
+.. automodule:: dexp.video.overlay
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      add_overlays_image_sequence
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

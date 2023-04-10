@@ -1,0 +1,6 @@
+dexp.processing.deskew.classic\_deskew
+======================================
+
+.. currentmodule:: dexp.processing.deskew
+
+.. autofunction:: classic_deskew

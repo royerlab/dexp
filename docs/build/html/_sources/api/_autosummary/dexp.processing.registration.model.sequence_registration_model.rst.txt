@@ -1,0 +1,29 @@
+dexp.processing.registration.model.sequence\_registration\_model
+================================================================
+
+.. automodule:: dexp.processing.registration.model.sequence_registration_model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SequenceRegistrationModel
+   
+   
+
+   
+   
+   
+
+
+

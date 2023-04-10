@@ -1,0 +1,30 @@
+dexp.processing.crop.representative\_crop
+=========================================
+
+.. automodule:: dexp.processing.crop.representative_crop
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      evaluate_crop
+      representative_crop
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

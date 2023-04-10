@@ -1,0 +1,29 @@
+dexp.datasets.operations.fromraw
+================================
+
+.. automodule:: dexp.datasets.operations.fromraw
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_fromraw
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

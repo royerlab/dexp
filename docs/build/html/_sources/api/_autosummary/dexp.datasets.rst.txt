@@ -1,0 +1,40 @@
+﻿dexp.datasets
+=============
+
+.. automodule:: dexp.datasets
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.datasets.base_dataset
+   dexp.datasets.clearcontrol_dataset
+   dexp.datasets.joined_dataset
+   dexp.datasets.ome_dataset
+   dexp.datasets.open_dataset
+   dexp.datasets.operations
+   dexp.datasets.stack_iterator
+   dexp.datasets.synthetic_datasets
+   dexp.datasets.tiff_dataset
+   dexp.datasets.zarr_dataset
+

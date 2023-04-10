@@ -1,0 +1,30 @@
+dexp.processing.denoising.demo.demo\_2D\_butterworth
+====================================================
+
+.. automodule:: dexp.processing.denoising.demo.demo_2D_butterworth
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      demo_butterworth_cupy
+      demo_butterworth_numpy
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

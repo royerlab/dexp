@@ -1,0 +1,29 @@
+dexp.datasets.operations.generic
+================================
+
+.. automodule:: dexp.datasets.operations.generic
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_generic
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

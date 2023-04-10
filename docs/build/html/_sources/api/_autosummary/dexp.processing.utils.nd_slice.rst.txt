@@ -1,0 +1,30 @@
+dexp.processing.utils.nd\_slice
+===============================
+
+.. automodule:: dexp.processing.utils.nd_slice
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      nd_split_slices
+      remove_margin_slice
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

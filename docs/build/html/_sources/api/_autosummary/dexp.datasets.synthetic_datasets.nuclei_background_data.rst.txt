@@ -1,0 +1,29 @@
+dexp.datasets.synthetic\_datasets.nuclei\_background\_data
+==========================================================
+
+.. automodule:: dexp.datasets.synthetic_datasets.nuclei_background_data
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      generate_nuclei_background_data
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+dexp.processing.color.projection
+================================
+
+.. automodule:: dexp.processing.color.projection
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      project_image
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

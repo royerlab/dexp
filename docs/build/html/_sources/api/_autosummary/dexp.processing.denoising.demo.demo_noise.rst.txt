@@ -1,0 +1,30 @@
+dexp.processing.denoising.demo.demo\_noise
+==========================================
+
+.. automodule:: dexp.processing.denoising.demo.demo_noise
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      demo_noise_cupy
+      demo_noise_numpy
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

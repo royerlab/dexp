@@ -1,0 +1,37 @@
+dexp.utils.testing
+==================
+
+.. automodule:: dexp.utils.testing
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      test_as_demo
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.utils.testing.testing
+

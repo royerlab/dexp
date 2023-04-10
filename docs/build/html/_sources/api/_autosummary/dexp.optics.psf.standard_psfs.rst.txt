@@ -1,0 +1,31 @@
+dexp.optics.psf.standard\_psfs
+==============================
+
+.. automodule:: dexp.optics.psf.standard_psfs
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      generate_psf
+      nikon16x08na
+      olympus20x10na
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

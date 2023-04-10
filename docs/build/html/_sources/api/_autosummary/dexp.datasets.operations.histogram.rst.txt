@@ -1,0 +1,29 @@
+dexp.datasets.operations.histogram
+==================================
+
+.. automodule:: dexp.datasets.operations.histogram
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataset_histogram
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

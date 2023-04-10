@@ -1,0 +1,33 @@
+dexp.processing.crop
+====================
+
+.. automodule:: dexp.processing.crop
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   dexp.processing.crop.background
+   dexp.processing.crop.demo
+   dexp.processing.crop.representative_crop
+

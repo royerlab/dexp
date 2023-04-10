@@ -1,0 +1,29 @@
+dexp.processing.utils.center\_of\_mass
+======================================
+
+.. automodule:: dexp.processing.utils.center_of_mass
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      center_of_mass
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

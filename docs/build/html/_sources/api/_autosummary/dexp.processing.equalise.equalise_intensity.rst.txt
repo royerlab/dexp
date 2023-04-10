@@ -1,0 +1,29 @@
+dexp.processing.equalise.equalise\_intensity
+============================================
+
+.. automodule:: dexp.processing.equalise.equalise_intensity
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      equalise_intensity
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

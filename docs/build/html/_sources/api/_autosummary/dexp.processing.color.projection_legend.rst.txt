@@ -1,0 +1,29 @@
+dexp.processing.color.projection\_legend
+========================================
+
+.. automodule:: dexp.processing.color.projection_legend
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      depth_color_scale_legend
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

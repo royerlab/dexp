@@ -1,0 +1,32 @@
+dexp.processing.morphology.component\_tree
+==========================================
+
+.. automodule:: dexp.processing.morphology.component_tree
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      area_black_top_hat
+      area_closing
+      area_opening
+      area_white_top_hat
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
